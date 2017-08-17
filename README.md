@@ -1,4 +1,4 @@
-![logo](docs/images/firemodel.jpg)
+![logo](docs/images/logo.jpg)
 
 > A Modeling abstraction for your Firebase Apps
 
@@ -64,6 +64,6 @@ npm install firemodel
 
 ## Documentation
 
-Document can be found at: [http://www.firemodel.info](http://www.firemodel.info)
+Documentation can be found at: [http://www.firemodel.info](http://www.firemodel.info)
 
 ## License
