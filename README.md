@@ -9,7 +9,7 @@ This library wraps the [`abstracted-admin`](https://www.abstracted-admin.com/) n
 ```ts
 import Model, { Relationship, RelationshipPolicy } from 'firemodel';
 
-export interface IPerson {
+export interface IPerson extends IBaseModel {
   name: string;
   age: number;
   father: Relationship<T>('belongsTo', RelationshipPolicy.keys);
@@ -20,6 +20,7 @@ export interface IPerson {
 export default class Person extends Model<IPerson> {
   constructor() {
     this.prefix = '/auth';
+    this.audit = false;
     this.mockSchema: MockGenerator = (h) => () => ({
       name: h.faker.name.firstName(),
       age: h.faker.number({min: 1, max: 100})
@@ -33,21 +34,40 @@ and then you can use it in many ways such as:
 ```ts
 import DB from 'abstracted-admin';
 import Person from './person';
+// Connect to DB
 const db = new DB();
 const person = new Person(db);
-
-// Streaming Events
-person.listenToRecord(key: string);           // "value" event listener on individual record
-person.listenToChildren('added', 'removed');  // 1:M child event listeners
-person.listenToFirst(10, 'added', 'removed'); // 1:M child event listeners with query attached
+// Connect to mock DB
+const mockDB = new DB({ mocking: true });
+const mockPerson = new Person(mockDB);
+// generate mocks in DB
+mockPerson.generate(10);
+mockPerson.generate(10, { age: 15 });
 
 // one time, async retrievals 
 const joe = await person.getOnce(key: string);
-const people = await person.getOnce();
+const people = await person.getOnce();        // value/once retrival of all records
+const people = await person
+  .orderByKey('age').limitToFirst(10)
+  .getOnce();                                 // value/once retrival of filtered/sorted records
 
-// generate mocks
-const people = person.generate(10);
-const people = person.generate(10, { age: 15 });
+// Setup Streaming Events
+person.listenToRecord(key: string);           // "value" event listener on individual record
+person.listenToRecords(key: string);          // "value" event listener on list of records
+person.listenToChildren('added', 'removed');  // 1:M child event listeners
+person
+  .limitToFirst(10).equalTo('age', 45)
+  .listenToChildren('changed');               // 1:M child event listeners with query attached
+
+// Consume Streaming Events: static
+const record: T = person.record;              // JS representation of the record (no key in record)
+const key: string = person.key;               // the key of the record (if a list-view then blank)
+person.toJSON();                              // at any point get JSON hash an individual record
+people.toJSON();                              // at any point get an array of records with key included in hash record
+
+// Consume Streaming Events: event
+person.on('event', callback);     // respond to all events
+person.on('value', callback);     // respond to a specific event: "value", "child_added", etc.
 
 // get relationship
 const bobby = await person.getOnce(key: string);
