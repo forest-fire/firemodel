@@ -27,8 +27,11 @@
   },
   "dependencies": {
     "abstracted-admin": "^0.1.0",
-    "common-types": "^1.2.1",
-    "moment": "^2.0.0"
+    "common-types": "^1.2.3",
+    "lodash": "^4.17.4",
+    "moment": "^2.0.0",
+    "pluralize": "^7.0.0",
+    "reflect-metadata": "^0.1.10"
   },
   "devDependencies": {
     "@types/chai": "^3.0.0",
@@ -39,6 +42,7 @@
     "@types/lodash": "^4.0.0",
     "@types/mocha": "^2.2.41",
     "@types/node": "^6.0.0",
+    "@types/pluralize": "^0.0.27",
     "@types/rimraf": "^0.0.28",
     "@types/shelljs": "^0.7.1",
     "@types/stack-trace": "^0.0.28",
@@ -47,14 +51,13 @@
     "chance": "^1.0.0",
     "coveralls": "^2.0.0",
     "faker": "^4.1.0",
-    "firemock": "^0.10.9",
+    "firemock": "^0.10.10",
     "js-yaml": "^3.0.0",
-    "lodash": "^4.0.0",
     "mocha": "^3.4.0",
     "nyc": "^11.0.0",
     "prettier": "^1.5.2",
     "rimraf": "^2.0.0",
-    "serverless": "^1.0.0",
+    "serverless": "^1.20.2",
     "shelljs": "^0.7.0",
     "test-console": "^1.0.0",
     "ts-node": "^3.1.0",

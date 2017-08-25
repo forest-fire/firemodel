@@ -1,9 +1,10 @@
 import { IDictionary, datetime } from 'common-types';
 import DB, { Snapshot } from 'abstracted-admin';
+import { SchemaCallback } from 'firemock';
 import * as moment from 'moment';
 import * as path from 'path';
-
-const lookUp = (target: any) => (prop: string) => (target ? target[prop] : '');
+import * as pluralize from 'pluralize';
+import { camelCase } from 'lodash';
 
 export type ModelProperty<T> = keyof T | keyof IBaseModel;
 export type PartialModel<T> = {
@@ -34,30 +35,69 @@ export type HasMany = IDictionary<boolean>;
 /** A pointer to a M:M entity relationship */
 export type ManyMany = IDictionary<boolean>;
 
-export default abstract class Model<T = IBaseModel> {
-  /** the singular name of the model */
-  protected name: string;
+export default class Model<T = IDictionary> {
   /** A singular data record of the given type */
-  protected record: Partial<T>;
+  public record: T;
+  /** the singular name of the model */
+  public get modelName() {
+    return camelCase(this.record.constructor.name);
+  };
+  public get pluralName() {
+    return this._pluralName
+      ? this._pluralName
+      : pluralize.plural(this.modelName)
+  }
+
+  public set pluralName(name: string) {
+    this._pluralName = name;
+  }
+
+  public set mockGenerator(cb: SchemaCallback) {
+    this._bespokeMockGenerator = cb;
+  }
+
+
   /** A list of records */
   protected list: T[];
   /** A fixed path that should prefix the model in the database */
   protected prefix: string = '';
   /** The basic message logger being used */
   protected logger: ILogger;
+  /** allows for pluralized name of the model to be set explicitly */
+  protected _pluralName: string;
+
+  private _bespokeMockGenerator: SchemaCallback<T>;
 
   private _db: DB;
   private _key: string;
   private _snap: Snapshot;
   private _retrievingRecord: Promise<Snapshot>;
 
-  constructor(db: DB, logger?: ILogger) {
+  constructor(Schema: any, db: DB, logger?: ILogger) {
     this._db = db;
+    this.record = new Schema();
     this.logger = logger ? logger : {
-      log: (message: string) => console.log(message),
-      warn: (message: string) => console.warn(message),
-      error: (message: string) => console.error(message),
+      log: (message: string) => console.log(`${this.modelName}/${this._key}: ${message}`),
+      warn: (message: string) => console.warn(`${this.modelName}/${this._key}: ${message}`),
+      error: (message: string) => console.error(`${this.modelName}/${this._key}: ${message}`),
     };
+    this._db.mock.addSchema(this.modelName, this._mockGenerator);
   }
+
+  public generate(quantity: number, override: IDictionary = {}) {
+    this._db.mock.queueSchema<T>(this.modelName, quantity, override);
+    this._db.mock.generate();
+  }
+
+  protected _mockGenerator: SchemaCallback = (h) => () => {
+    return this._bespokeMockGenerator
+      ? { ...this._defaultGenerator(h)(), ...this._bespokeMockGenerator(h)() as IDictionary}
+      : this._defaultGenerator(h)();
+  }
+
+  private _defaultGenerator: SchemaCallback = (h) => () => ({
+    createdAt: moment(h.faker.date.past()).toISOString(),
+    lastUpdated: moment().toISOString()
+  });
 }
 

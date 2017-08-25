@@ -7,7 +7,7 @@
 This library wraps the [`abstracted-admin`](https://www.abstracted-admin.com/) npm module to provide another layer of functionality targeting building "models" within your Firebase backend. As a simple example you can define a model as: 
 
 ```ts
-import Model, { Relationship, RelationshipPolicy } from 'firemodel';
+import Model, { Relationship, IBaseModel, RelationshipPolicy } from 'firemodel';
 
 export interface IPerson extends IBaseModel {
   name: string;
