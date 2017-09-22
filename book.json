@@ -1,0 +1,14 @@
+{
+  "plugins": ["favicon"],
+  "pluginsConfig": {
+    "favicon": {
+      "shortcut": "/docs/images/firemodel-icon.png",
+      "bookmark": "/docs/images/firemodel-icon.png",
+      "appleTouch": "/docs/images/firemodel-icon.png",
+      "appleTouchMore": {
+          "120x120": "/docs/images/firemodel-icon-120.png",
+          "180x180": "/docs/images/firemodel-icon-180.png"
+      }
+    }
+  }
+}

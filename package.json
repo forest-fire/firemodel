@@ -28,6 +28,7 @@
   "dependencies": {
     "abstracted-admin": "^0.1.0",
     "common-types": "^1.2.3",
+    "gitbook-plugin-favicon": "^0.0.2",
     "lodash": "^4.17.4",
     "moment": "^2.0.0",
     "pluralize": "^7.0.0",

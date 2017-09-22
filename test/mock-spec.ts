@@ -36,6 +36,7 @@ describe('Mocking:', () => {
     expect(people[0].age).to.be.a('number');
     expect(people[0].createdAt).to.be.a('string');
   });
+
   it.skip('Bespoke mockGenerator can be generated');
   it.skip('Default mockGenerator can get schema properties');
   it.skip('Default mockGenerator can generate reasonable mock data');

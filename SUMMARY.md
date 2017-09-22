@@ -2,8 +2,9 @@
 
 - [Getting Started](README.md)
 - [Model Definition](docs/model-definition.md)
-  - [Basics](docs/model-definition.md#basics)
+  - [Properties](docs/model-definition.md#properties)
   - [Relationships](docs/model-definition.md#relationships)
+  - [Computed Properties](docs/model-definition.md#computed)
   - [Mocking](docs/model-definition.md#mocking)
 - [Model Usage](docs/model-usage.md)
   - [One-time Retrieval](docs/model-usage.md#one-time)
