@@ -1,7 +1,9 @@
 # Table of Contents
 
 - [Read Me](README.md)
+
 ----
+
 - [Overview](docs/overview.md)
 - [Schemas](docs/schemas.md)
   - [Properties](docs/schemas.md#properties)
