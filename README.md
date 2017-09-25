@@ -8,6 +8,26 @@
 npm install firemodel
 ```
 
+## Requirements
+
+### Typescript
+
+This package _assumes_ you're using Typescript transpiled to JS rather than just straight-up Javascript. With later versions of Typescript you may actually be able to get away with using plain Javascript because via JSDocs you can specify more typing but this hasn't been tested so for your sake and mine, just use Typescript. :) 
+
+### Decorators and Reflection
+
+**firemodel** uses both _decorators_ and _reflection_ to allow for a simple syntax which provides both **compile-time** as well as **run-time** typing of your schemas. In order to get it to work you must modify your `tsconfig.json` file with the following two parameters:
+
+```ts
+{
+  "compilerOptions": {
+    // ...
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+  }
+}
+```
+
 ## Documentation
 
 Documentation can be found at: [http://www.firemodel.info](http://www.firemodel.info). If your reading on a mobile device, be sure to use the hamburger menu at the top for the table of contents.
