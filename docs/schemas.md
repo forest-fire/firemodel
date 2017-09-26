@@ -125,6 +125,11 @@ export class Person extends BaseSchema {
 ```
 
 ## Relationships {#relationships}
+There are three characteristics we'll need to understand when defining a relationship:
+
+1. Cardinality - aka, 0:1, 1:1, 0:M, 1:M, M:M
+2. Mirrored - in non-relational modelling like Firebase it is very common to have some denormalization; one area where we see this is both models engaged in the relationship having foreign keys pointing at the other.
+3. Meta/Contraints
 
 
 ## Computed Properties {#computed}

@@ -4,23 +4,23 @@
 
 ----
 
-- [Major Entities](docs/major-entities.md)
+- [Overview](docs/overview.md)
 - [Schemas](docs/schemas.md)
   - [Properties](docs/schemas.md#properties)
   - [Relationships](docs/schemas.md#relationships)
   - [Computed Properties](docs/schemas.md#computed)
 - [Model API](docs/models.md)
   - [One-time Retrieval](docs/models.md#one-time)
-  - [Events/Streams](docs/models.md#streams)
-  - [Relationships](docs/models.md#relationships)
-  - [Mocking](docs/models.md#mocking)
+  - [Events](docs/models.md#events)
+  - [Listeners & Events](docs/models.md#listeners)
 - [Record API](docs/record.md)
   - [set/push]()
   - [update]()
-- [Other Concerns](other.md)
-  - [Mocking](other.md#mocking)
-  - [Logging](other.md#logging)
-  - [Redux](other.md#redux)
+- [Other Concerns](docs/other.md)
+  - [Mocking](docs/other.md#mocking)
+  - [Logging](docs/other.md#logging)
+  - [Redux](docs/other.md#redux)
+
   ----
 
 - [Related Projects](docs/related.md)

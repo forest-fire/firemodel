@@ -1,7 +1,17 @@
-# Major Entities
-Firemodel exports a number of classes which represent the major functional entities and before going any further it's worth getting an overview of these as it will provide a good set of nomenclature/terminology used in this package:
+# Overview
 
-- [`Schemas`](./schemas.md): 
+Firemodel provides a set of typed classes which will allow you to quickly and easily structure your data, interact with a Firebase database, and play nicely with modern state management frameworks like redux, mobx, etc. 
+
+## Key Entities / Classes
+Let's review the primary classes which Firemodel provides as this represents the distinct set of API's which you will use to:
+
+1. Define your Model/Entity data structures (_schemas_)
+2. Interact with the Database on behalf of a particular data type (_models_)
+3. Interact with the data itself (_record_ and _list_)
+
+ a number of classes which represent the major functional entities and before going any further it's worth getting an overview of these as it will provide a good set of nomenclature/terminology used in this package:
+
+### [`Schemas`](./schemas.md)
 
   A schema is a class which defines a data structure. This structure will be assigned to "data records" which conform to this schematic type. It is meant to be very minimal and its only concern is defining the data structure. The data structure can be comprised of _properties_, _relationships_, and _computed properties_. A simple example might look like: 
 
@@ -14,7 +24,9 @@ Firemodel exports a number of classes which represent the major functional entit
   }
   ```
 
-- `Models`: 
+  [→ More on Schemas](./schemas.md)
+
+### [`Models`](./models.md)
 
   Models provide a useful API surface for working with a given schema. While the class definition of Model is generic, instantiating it requires the passing in of the specific schema so that it's API will address the specifics of a given schema. Instantiation will look something like:
 
@@ -28,24 +40,29 @@ Firemodel exports a number of classes which represent the major functional entit
 
   ```ts
   // One-time read of a Record
-  const joe = await person.getOnce('1234'); 
+  const joe: Record<Person> = await person.getOnce('1234'); 
   // One-time read of a List of Records
-  const latest = await person.orderByChild('lastUpdated').limitToFirst(10).getOnce(); // last 10 updated people
-  // One-time add / push
-  const added = await person.push({ ... });
-  // One-time updates
-  const response = await person.update('1234', { age: 45 });
+  const latestUpdated: List<Person> = await person.orderByChild('lastUpdated').limitToFirst(10).getOnce();
   // Subscribe to real-time updates
   person.listenTo(callback); // hybrid VALUE => Child listener
-  person.listenToChild(callback, 'added', 'removed');
+  person.listenToChildren(callback, 'added', 'removed');
+  person.listenToRecord(id); // listen to particular child
   ```
 
-- `Records`:
+  [→ More on Models](./models.md)
+
+- `Records`
 
   Is a single record which is typed against the schema and provides a simple write API to update/delete.
 
   ```ts
   const tommy: Record<Person> = person.get('1234');
+
+
+  // One-time add / push
+  const added = await person.push({ ... });
+  // One-time updates
+  const response = await person.update('1234', { age: 45 });
   ```
 
 - `Lists`: 
