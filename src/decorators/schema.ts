@@ -7,6 +7,12 @@ export interface ISchemaOptions {
   dbOffset?: string;
   /** Optionally specify a root path where the local store will put this schema under */
   storeOffset?: string;
+  property?: (prop: string) => IDictionary;
+}
+
+/** lookup meta data for schema properties */
+function propertyMeta(context: object) {
+  return (prop: string): IDictionary => Reflect.getMetadata(prop, context);
 }
 
 export function schema(options: ISchemaOptions): ClassDecorator {
@@ -19,8 +25,11 @@ export function schema(options: ISchemaOptions): ClassDecorator {
       const meta = options;
       const obj = Reflect.construct(original, args);
       Reflect.defineProperty(obj, 'META', {
-        get() {
-          return options;
+        get(): ISchemaOptions {
+          return {
+            ...options,
+            ...{ property: propertyMeta(obj) }
+          };
         },
         set() {
           throw new Error('The meta property can only be set with the @schema decorator!')

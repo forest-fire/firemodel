@@ -5,6 +5,9 @@ import * as moment from 'moment';
 import * as path from 'path';
 import * as pluralize from 'pluralize';
 import { camelCase } from 'lodash';
+import { BaseSchema } from './base-schema';
+import { Record } from './record';
+import { List } from './list';
 
 export type ModelProperty<T> = keyof T | keyof IBaseModel;
 export type PartialModel<T> = {
@@ -21,10 +24,16 @@ export interface IBaseModel {
 }
 
 export interface ILogger {
-  log: (message: string) => void,
+  msg: (message: string) => void,
   warn: (message: string) => void,
   error: (message: string) => void
 }
+
+const baseLogger = {
+  msg: (message: string) => console.log(`${this.modelName}/${this._key}: ${message}`),
+  warn: (message: string) => console.warn(`${this.modelName}/${this._key}: ${message}`),
+  error: (message: string) => console.error(`${this.modelName}/${this._key}: ${message}`),
+};
 
 /** The primary key for the given record */
 export type PrimaryKey = string;
@@ -35,7 +44,7 @@ export type HasMany = IDictionary<boolean>;
 /** A pointer to a M:M entity relationship */
 export type ManyMany = IDictionary<boolean>;
 
-export default class Model<T = IDictionary> {
+export default class Model<T extends BaseSchema> {
   /** A singular data record of the given type */
   public record: T;
   /** the singular name of the model */
@@ -56,12 +65,6 @@ export default class Model<T = IDictionary> {
     this._bespokeMockGenerator = cb;
   }
 
-
-  /** A list of records */
-  protected list: T[];
-  /** A fixed path that should prefix the model in the database */
-  protected prefix: string = '';
-  /** The basic message logger being used */
   protected logger: ILogger;
   /** allows for pluralized name of the model to be set explicitly */
   protected _pluralName: string;
@@ -73,31 +76,46 @@ export default class Model<T = IDictionary> {
   private _snap: Snapshot;
   private _retrievingRecord: Promise<Snapshot>;
 
-  constructor(Schema: any, db: DB, logger?: ILogger) {
+  constructor(
+    private schemaClass: new () => T,
+    db: DB,
+    logger?: ILogger
+  ) {
     this._db = db;
-    this.record = new Schema();
-    this.logger = logger ? logger : {
-      log: (message: string) => console.log(`${this.modelName}/${this._key}: ${message}`),
-      warn: (message: string) => console.warn(`${this.modelName}/${this._key}: ${message}`),
-      error: (message: string) => console.error(`${this.modelName}/${this._key}: ${message}`),
-    };
-    this._db.mock.addSchema(this.modelName, this._mockGenerator);
+    this.logger = logger ? logger : baseLogger;
+    // this._db.mock.addSchema(this.modelName, this._mockGenerator);
   }
 
-  public generate(quantity: number, override: IDictionary = {}) {
-    this._db.mock.queueSchema<T>(this.modelName, quantity, override);
-    this._db.mock.generate();
+  public newRecord(hash: Partial<T> = {}) {
+    const schema = new this.schemaClass();
+    // Object.keys(hash).map((key: keyof T) => schema[key] = hash[key]);
+    const record = new Record(this.schemaClass, this._db);
+    record.initialize(hash);
+    return record;
   }
 
-  protected _mockGenerator: SchemaCallback = (h) => () => {
-    return this._bespokeMockGenerator
-      ? { ...this._defaultGenerator(h)(), ...this._bespokeMockGenerator(h)() as IDictionary}
-      : this._defaultGenerator(h)();
+  public async getRecord(id: string) {
+    const record = new Record<T>(
+      this.schemaClass,
+      this._db
+    );
+    return await record.load(id);
   }
 
-  private _defaultGenerator: SchemaCallback = (h) => () => ({
-    createdAt: moment(h.faker.date.past()).toISOString(),
-    lastUpdated: moment().toISOString()
-  });
+  // public generate(quantity: number, override: IDictionary = {}) {
+  //   this._db.mock.queueSchema<T>(this.modelName, quantity, override);
+  //   this._db.mock.generate();
+  // }
+
+  // protected _mockGenerator: SchemaCallback = (h) => () => {
+  //   return this._bespokeMockGenerator
+  //     ? { ...this._defaultGenerator(h)(), ...this._bespokeMockGenerator(h)() as IDictionary}
+  //     : this._defaultGenerator(h)();
+  // }
+
+  // private _defaultGenerator: SchemaCallback = (h) => () => ({
+  //   createdAt: moment(h.faker.date.past()).toISOString(),
+  //   lastUpdated: moment().toISOString()
+  // });
 }
 

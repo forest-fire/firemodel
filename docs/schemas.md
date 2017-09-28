@@ -134,3 +134,50 @@ There are three characteristics we'll need to understand when defining a relatio
 
 ## Computed Properties {#computed}
 
+Not implemented or documented yet
+
+## Mocking
+
+Because a schema's information is typed we can approximate reasonable mocking information without any additional code. So as a default, nothing is required. However, it often pays to be a little more explicit about the MockGenerator function and you can enhance the auto-generated rules. If our Person schema is defined as:
+
+```ts
+@schema()
+export class Person extends BaseSchema {
+  @property name: string;
+  @property @positive @integer @max(100) age: number;
+  @property isMale: boolean;
+  @property skills: Skillsets[];
+}
+```
+
+and we simply leave mock generation to auto-sense appropriate values:
+
+```ts
+const PersonModel = new Model<Person>();
+PersonModel.generate(3);
+console.log(PersonModel.getList());
+```
+
+Our output would look something like:
+```ts
+[
+  {id: 'fasfs324234', name: 'run aptly', age: 55, isMale: true},
+  {id: 'fasfs324245', name: 'stinky cheese', age: 23, isMale: false},
+  {id: 'fasfs324680', name: 'watermellon canyon', age: 11, isMale: true},
+]
+```
+
+From this we might conclude that `age` and `isMale` is just fine but `name` is not ideal (we just have a "string" where what we want is a human person's name). To fix this we just add the `@mock` docorator to the schema definition:
+
+```ts
+@property @mock('faker.name.first') name: string;
+```
+
+In the above example the `@mock` decorator receives a string instruction which is uses to lookup via dotted notation from either the **Faker** or **ChoiceJS** mock generator utilities. This provides a nice shorthand but sometimes isn't flexible enough so we can also pass in a `PropertyCallback` which is similar to **firemock's** `SchemaCallback` type. 
+
+```ts
+@mock((h) => {
+  return h.faker.name.first + ' ' + h.faker.name.last;
+}) 
+@property name: string;
+```

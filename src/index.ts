@@ -1,9 +1,9 @@
 // Default Export
 export { default } from './model';
 // Named Exports
-export { property, constrainedProperty, constrain, min, max, length, desc } from './property';
-export { relationship } from './relationship';
-export { schema, ISchemaOptions } from './schema';
+export { property, constrainedProperty, constrain, min, max, length, desc } from './decorators/property';
+export { relationship } from './decorators/relationship';
+export { schema, ISchemaOptions } from './decorators/schema';
 export {
   default as Model,
   ILogger

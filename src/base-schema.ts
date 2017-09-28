@@ -1,8 +1,8 @@
 import { IDictionary, datetime } from 'common-types';
 import { set } from 'lodash';
-import { property } from './property';
-import { ISchemaOptions } from './schema';
-// export type RelationshipTypes = 'ownedBy' | 'hasMany';
+import { property } from './decorators/property';
+import { ISchemaOptions } from './decorators/schema';
+
 export interface IMetaData {
   attributes: IDictionary;
   relationships: IDictionary<IRelationship>;
@@ -29,5 +29,5 @@ export abstract class BaseSchema {
   /** The datetime at which this record was first created */
   @property public createdAt?: datetime;
   /** Metadata properties of the given schema */
-  public get META(): ISchemaOptions { return new Object() };
+  public META?: Partial<ISchemaOptions>;
 }

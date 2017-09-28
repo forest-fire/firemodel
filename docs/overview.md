@@ -51,7 +51,7 @@ Let's review the primary classes which Firemodel provides as this represents the
 
   [→ More on Models](./models.md)
 
-- `Records`
+### `Records`
 
   Is a single record which is typed against the schema and provides a simple write API to update/delete.
 
@@ -65,7 +65,7 @@ Let's review the primary classes which Firemodel provides as this represents the
   const response = await person.update('1234', { age: 45 });
   ```
 
-- `Lists`: 
+### `Lists`: 
 
   Is a set of records of a given schema type. For instance using the _people_ model from above:
 
@@ -73,9 +73,6 @@ Let's review the primary classes which Firemodel provides as this represents the
   const people: List<Person> = person.getAll();
   ```
 
-- `Listeners`:
-
-  Considering Firebase is a _real time_ database, the most typical manner of interacting to database reads is rather than polling simply expressing paths in the database you'd like to be 
 
 
 

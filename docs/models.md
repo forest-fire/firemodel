@@ -11,7 +11,7 @@ A model is functionally the happy marriage between a defined `Schema` class and 
 
 > Both of these projects fulfill the `IAbstractedFirebase` interface which the firemodel will use as the supported contract for database access.
 
-## Getting Started → Instantiation
+### Example Instantiation
 
 Based on _what_ a Model class represents you may find the instantiation of a Model class rather anticlimatic:
 
@@ -162,3 +162,6 @@ CompanyModel.listen(listener);
 Where `Firemodel.redux` is a higher order function which takes the dispatch function into scope on the first call and returns an normal event listener (in this example assigned to `listener`).
 
 More details on this can be found at: [Other Concerns > Redux](./other.md#redux)
+
+## Mocking
+

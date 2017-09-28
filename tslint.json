@@ -4,7 +4,7 @@
     "tslint-config-prettier"
   ],
   "rules": {
-    "quotemark": ["single"],
+    "quotemark": [ false ],
     "no-console": [ false ],
     "object-literal-sort-keys": false,
     "no-trailing-whitespace": false,

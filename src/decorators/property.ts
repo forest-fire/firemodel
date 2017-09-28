@@ -1,5 +1,5 @@
 import 'reflect-metadata';
-import { BaseSchema, RelationshipPolicy } from './base-schema';
+import { BaseSchema, RelationshipPolicy } from '../base-schema';
 import { IDictionary, PropertyDecorator } from 'common-types';
 
 const decorator = (constraints: IDictionary = {}) => (target: any, key: string): void => {
