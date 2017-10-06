@@ -4,7 +4,7 @@ module.exports = function(w) {
     files: [
       'src/**/*.ts',
       { "pattern": "env.yml", "instrument": false },
-      { "pattern": "test/testing/helpers.ts", "instrument": false },
+      { "pattern": "test/testing/*.ts", "instrument": false },
       { "pattern": "test/testing/test-console.ts", "instrument": false },
     ],
 

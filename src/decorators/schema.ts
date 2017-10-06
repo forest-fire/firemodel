@@ -6,8 +6,9 @@ export interface ISchemaOptions {
   /** Optionally specify a root path to store this schema under */
   dbOffset?: string;
   /** Optionally specify a root path where the local store will put this schema under */
-  storeOffset?: string;
+  localOffset?: string;
   property?: (prop: string) => IDictionary;
+  audit?: boolean;
 }
 
 /** lookup meta data for schema properties */
@@ -17,7 +18,6 @@ function propertyMeta(context: object) {
 
 export function schema(options: ISchemaOptions): ClassDecorator {
   return (target: any): void => {
-    console.log('schema options:', options, ' for ', target.name);
     const original = target;
 
     // new constructor
@@ -28,7 +28,8 @@ export function schema(options: ISchemaOptions): ClassDecorator {
         get(): ISchemaOptions {
           return {
             ...options,
-            ...{ property: propertyMeta(obj) }
+            ...{ property: propertyMeta(obj) },
+            ...{ audit: options.audit ? options.audit : false }
           };
         },
         set() {

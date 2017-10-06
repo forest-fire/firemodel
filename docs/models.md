@@ -19,7 +19,7 @@ Based on _what_ a Model class represents you may find the instantiation of a Mod
 import { DB } from 'abstracted-admin';
 import { Person } from './schemas/person';
 const db = new DB();
-const PersonModel = new Model<Person>(db);
+const PersonModel = new Model<Person>(Person, db);
 ```
 
 ## API Surface
@@ -33,19 +33,22 @@ With reads you'll primarily be getting a single record from a model or a list of
 
 ```ts
 const freddy: Record<Person> = await PersonModel.getRecord('1234');
-const people: List<Person> = await PersonModel.getList();
+const people: List<Person> = await PersonModel.getAll();
+const people: List<Person> = await PersonModel.getSome().limitToFirst(5).execute();
 ```
 
-In addition you can use "find" based derivatives if you want to search/filter:
+> note: the `getSome()` variant allows you to use any Firebase filter criteria to reduce the number of records you get back
+
+In addition you can use "find" based derivatives if you want a simple search/filter:
 
 ```ts
 const freddy: Record<Person> = await PersonModel.findRecord('name','Freddy');
-const children: List<Person> = await PersonModel.findAll('age', ['<', 18]);
+const children: List<Person> = await PersonModel.findAll('age', ['<=', 18]);
 ```
 
 The API design intentionally limits the query parameters to a single property; this is done to mimic the constraint that the Firebase query engine imposes. If you need to filter on multiple properties then use the `findAll` API to reduce to the smallest resultset you can with a single parameter and perform any secondary filtering client side.
 
-Both `findRecord` and `findAll` assume an equality operator for comparison sake by default but you can optionally include an explicit operator (valid are: "=", ">", "<") by passing in the tuple to the VALUE (as seen above).
+Both `findRecord` and `findAll` assume an equality operator for comparison sake by default but you can optionally include an explicit operator (valid are: "=", ">=", "<=") by passing in the tuple to the VALUE (as seen above).
 
 > **In Depth:**
     Both of the _findXXX_ endpoints will leverage server querying (versus client side) to increase performance (reduced network utilisation and client parsing). So, for example, `PersonModel.findRecord('name','Freddy')` will be translated into the following Firebase query:
@@ -58,7 +61,7 @@ Both `findRecord` and `findAll` assume an equality operator for comparison sake 
 
 ### One-time Writes
 
-Although some write operations are better done of the `Record` API you can do them here too, starting with the basic endpoints:
+Although you may choose to do some of the write operations off the `Record` API directly you can do them here too, starting with the basic endpoints:
 
 ```ts
 const result = await PersonModel.push( newPerson );
@@ -69,8 +72,8 @@ const result = await PersonModel.remove('1234');
 The Model also provides a relatively efficient bulk update:
 
 ```ts
-const result = await PersonModel.updateWhere('age', ['>', 80], { elderly: true });
-const result = await PersonModel.updateWhere('age', ['>', 80], (r: Record) => {
+const result = await PersonModel.updateWhere('age', ['>=', 80], { elderly: true });
+const result = await PersonModel.updateWhere('age', ['>=', 80], (r: Record) => {
   //...
 });
 ```

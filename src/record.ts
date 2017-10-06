@@ -1,4 +1,4 @@
-import { BaseSchema } from './base-schema';
+import { BaseSchema, ISchemaOptions } from './index';
 import DB from 'abstracted-admin';
 
 export class Record<T extends BaseSchema> {
@@ -8,24 +8,64 @@ export class Record<T extends BaseSchema> {
 
   constructor(
     private _schemaClass: new () => T,
+    private _pluralName: string,
     private _db: DB,
-    public data?: T
+    private _data?: T
   ) {
-    this.data = new this._schemaClass();
-    if (data) {
-      this.initialize(data);
+    this._data = new this._schemaClass();
+    if (_data) {
+      this.initialize(_data);
     }
   }
 
+  public get data() {
+    return this._data;
+  }
+
+  public get meta(): ISchemaOptions {
+    return this.data.META;
+  }
+
   public get dbPath() {
+    if (!this.data.id) {
+      throw new Error('Invalid Path: you can not ask for the dbPath before setting an "id" property.');
+    }
     return [
       this.data.META.dbOffset,
+      this.pluralName,
       this.data.id
-    ].join('.');
+    ].join('/');
+  }
+
+  public get modelName() {
+    return this.data.constructor.name.toLowerCase();
+  }
+  public get pluralName() {
+    return this._pluralName;
+  }
+
+  public get key() {
+    if (!this.data.id) {
+      throw new Error('key is not set yet!');
+    }
+    return this.data.id;
+  }
+
+  public get localPath() {
+    if (!this.data.id) {
+      throw new Error('Invalid Path: you can not ask for the dbPath before setting an "id" property.');
+    }
+    return [
+      this.data.META.localOffset,
+      this.pluralName,
+      this.data.id
+    ].join('/');
   }
 
   public initialize(data: Partial<T>) {
-    Object.keys(data).map((key: keyof T) => this.data[key] = data[key]);
+    Object.keys(data).forEach(
+      (key: keyof T) => this.data[key] = data[key]
+    );
   }
 
   public get existsOnDB() {
@@ -33,10 +73,9 @@ export class Record<T extends BaseSchema> {
   }
 
   public async load(id: string) {
-    console.log('loading', this.data.META);
-
+    this.data.id = id;
     const data = await this._db.getRecord<T>(this.dbPath);
-    if (data) {
+    if (data && data.id) {
       this._existsOnDB = true;
       this.initialize(data);
     } else {
@@ -45,5 +84,14 @@ export class Record<T extends BaseSchema> {
     }
 
     return this;
+  }
+
+  public async update(hash: Partial<T>) {
+    if (!this.data.id || !this._existsOnDB) {
+      throw new Error(`Invalid Operation: you can not update a record which doesn't have an "id" or which has never been saved to the database`);
+    }
+
+    await this._db.update<T>(this.dbPath, hash);
+
   }
 }

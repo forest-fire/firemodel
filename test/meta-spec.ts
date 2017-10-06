@@ -22,7 +22,7 @@ describe('schema() decorator: ', () => {
   it('can read Schema meta properties', () => {
     const myclass: any = new Klass();
     expect(myclass.META.dbOffset).to.equal('authenticated');
-    expect(myclass.META.storeOffset).to.equal('foobar');
+    expect(myclass.META.localOffset).to.equal('foobar');
   });
 
   it('can read Property meta properties off of META.property', () => {

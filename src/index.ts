@@ -6,6 +6,10 @@ export { relationship } from './decorators/relationship';
 export { schema, ISchemaOptions } from './decorators/schema';
 export {
   default as Model,
-  ILogger
+  ILogger,
+  IAuditRecord,
+  FirebaseCrudOperations
 } from './model';
 export { BaseSchema } from './base-schema';
+export { Record } from './record';
+export { List } from './list';

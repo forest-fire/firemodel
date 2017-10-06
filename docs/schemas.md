@@ -181,3 +181,4 @@ In the above example the `@mock` decorator receives a string instruction which i
 }) 
 @property name: string;
 ```
+1

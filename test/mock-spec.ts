@@ -22,7 +22,7 @@ export class Person extends BaseSchema {
 
 describe('Mocking:', () => {
 
-  it('Setting a mockGenerator overrides default', async () => {
+  it.skip('Setting a mockGenerator overrides default', async () => {
     const db: DB = new DB({ mocking: true });
     const person = Person.create(db);
     person.generate(10);

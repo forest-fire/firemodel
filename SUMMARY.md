@@ -22,5 +22,5 @@
   - [Redux](docs/other.md#redux)
 
   ----
-
+ 
 - [Related Projects](docs/related.md)
