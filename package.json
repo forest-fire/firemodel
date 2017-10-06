@@ -1,10 +1,10 @@
 {
   "name": "firemodel",
-  "version": "0.1.0",
+  "version": "0.1.2",
   "description": "firemodel",
   "license": "MIT",
   "repository": "",
-  "author": "",
+  "author": "Ken Snyder <ken@ken.net>",
   "keywords": [
     "serverless",
     "typescript"
@@ -23,6 +23,7 @@
     "watch": "ts-node ./scripts/watch.ts",
     "watch:test": "ts-node ./scripts/watch.ts test",
     "watch:all": "ts-node ./scripts/watch.ts all",
+    "deploy": "ts-node ./scripts/deploy.ts ",
     "cli": "ts-node cli/index.ts --"
   },
   "dependencies": {

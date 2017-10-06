@@ -59,6 +59,8 @@ describe('Model > find API: ', () => {
     db.mock.generate();
     const PersonModel = new Model<Person>(Person, db);
     const olderPeople = await PersonModel.findAll('age', ['>=', 60]);
+    const allPeople = await PersonModel.getAll();
+
     expect(olderPeople).is.an.instanceOf(List);
     expect(olderPeople.length).to.equal(50);
   });

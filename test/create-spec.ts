@@ -1,4 +1,4 @@
-import { Model, BaseSchema } from '../src/index';
+import { Model, BaseSchema, Record } from '../src/index';
 import DB from 'abstracted-admin';
 import { SchemaCallback } from 'firemock';
 import * as chai from 'chai';
@@ -10,7 +10,7 @@ const personMock: SchemaCallback<Person> = h => () => ({
 });
 
 export class Person extends BaseSchema {
-  public static create(db) {
+  public static create(db: DB) {
     const m = new Model<Person>(Person, db);
     m.mockGenerator = personMock;
     return m;
@@ -25,9 +25,9 @@ describe('Create a Model: ', () => {
     const person = new Model<Person>(Person, db);
     expect(person).to.be.an('object');
     expect(person).to.be.an.instanceOf(Model);
-    expect(person.record.constructor.name).to.equal('Person');
     expect(person.modelName).to.equal('person');
-    expect(person.record).to.be.an.instanceOf(Person);
+    expect(person.newRecord()).to.be.an.instanceOf(Record);
+    expect(person.newRecord().data).to.be.an.instanceOf(Person);
   });
 
   it('Schema\'s create() method instantiates', () => {
@@ -36,9 +36,8 @@ describe('Create a Model: ', () => {
     person.pluralName = 'foobar';
     expect(person).to.be.an('object');
     expect(person).to.be.an.instanceOf(Model);
-    expect(person.record.constructor.name).to.equal('Person');
     expect(person.modelName).to.equal('person');
-    expect(person.record).to.be.an.instanceOf(Person);
+    expect(person.newRecord().data).to.be.an.instanceOf(Person);
   });
 
   it('singular and plural names are right', () => {

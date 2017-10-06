@@ -323,14 +323,11 @@ export default class Model<T extends BaseSchema> {
     }
     switch (operation) {
       case '=':
-        query = query.equalTo(value);
-        break;
+        return query.equalTo(value);
       case '>=':
-        query = query.startAt(value);
-        break;
+        return query.startAt(value);
       case '<=':
-        query = query.endAt(value);
-        break;
+        return query.endAt(value);
 
       default:
         throw new VerboseError({
@@ -339,7 +336,6 @@ export default class Model<T extends BaseSchema> {
           module: 'findXXX'
         })
     }
-    return query;
   }
 
   private now() {
