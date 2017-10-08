@@ -15,6 +15,7 @@ import { SchemaCallback } from 'firemock';
 import * as chai from 'chai';
 import * as helpers from './testing/helpers';
 import { Klass, ContainedKlass, SubKlass } from './testing/klass';
+import { Person } from './testing/person';
 const expect = chai.expect;
 import 'reflect-metadata';
 
@@ -79,4 +80,26 @@ describe('property decorator: ', () => {
     const keys: string[] = Reflect.getMetadataKeys(myclass);
     expect(keys).to.include.members(['id', 'lastUpdated', 'createdAt']);
   });
+});
+
+describe('relationship decorators: ', () => {
+
+  it('ownedBy() sets correct meta props', async () => {
+    const person = new Person();
+    const keys: string[] = Reflect.getMetadataKeys(person);
+    expect(keys).to.include.members(['fatherId', 'motherId']);
+    expect(person.META.property('fatherId').isRelationship).to.be.true;
+    expect(person.META.property('fatherId').relType).to.be.equal('ownedBy');
+    expect(person.META.property('motherId').relType).to.be.equal('ownedBy');
+  });
+
+  it.skip('hasMany() sets correct meta props', async () => {});
+  it('ownedBy() and hasMany() relns show up on META.relationships', async () => {
+    const person = new Person();
+    expect(person.META.relationships).to.be.an('array');
+    expect(person.META.relationships.length).to.be.equal(3);
+    const ownedBy = person.META.relationships.filter(m => m.relType === 'ownedBy');
+    expect(ownedBy.length).to.equal(2);
+  });
+  it.skip('inverse() sets correct meta props', async () => {});
 });

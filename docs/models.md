@@ -59,7 +59,7 @@ Both `findRecord` and `findAll` assume an equality operator for comparison sake 
   
 > Also be aware that, if you are using FIND api endpoints you should add an index to the database to ensure this remains performant as record size increases.
 
-### One-time Writes
+### One-time Writes {#writes}
 
 Although you may choose to do some of the write operations off the `Record` API directly you can do them here too, starting with the basic endpoints:
 
@@ -95,7 +95,7 @@ So let's quickly review the types of events that Firebase provides:
     - **child_changed** - fires whenever a child `Record` is changed (anywhere in the graph below the Record)
     - **child_moved** - fires whenever a `Record` has changed in it's sort order
 
-So as a basic principle, listening to an individual `Record` will typically done with a **Value** event. When listening to a `List` it will be some combination of child events. This sets up the first introduction to the API surface for event processing:
+So as a basic principle, listening to an individual `Record` will be done with a **Value** event, while listening to a `List` will be some combination of child events. This sets up the first introduction to the API surface for event processing:
 
 ```ts
 const listener = (event: any) => {
@@ -105,66 +105,89 @@ const PersonModel = new Model<Person>(db);
 PersonModel.listenTo(listener);
 PersonModel.listenToRecord('1234', listener);
 ```
-
 Further, the `listenTo` method can also be modified in scope with standard Firebase query operators:
 
 ```ts
-PersonModel.orderByChild('lastUpdated').limitToLast(10).listen(listener);
+PersonModel.orderByChild('lastUpdated').limitToLast(10).listenTo(listener);
 ```
 
-> Query parameters for a single `Record` don't really make sense and are ignored when using the `listenToRecord()` method 
-
-Also, its important to note that a call to `listenTo()` will add the "_default_ child listeners". Which are those? Well we exclude `child_moved` and add the remaining as the default. Why? Well _child_moved_ provides information about sorting which only applies if you client app uses the server returned sorting and many cases sorting is best left to the client app. If you want to explicitly set this you can:
+Now imagine you started a listener like this:
 
 ```ts
-PersonModel.listen(listener, 'child_added', 'child_moved', ...);
+const listener = (event) => {
+  switch(event.type) {
+    case '@firemodel/MODEL_START_LISTENING':
+      console.log('MODEL LISTENING');
+    case '@firemodel/MODEL_STATE_READY':
+      console.log('READY');
+    case '@firemodel/RECORD_ADDED': 
+      console.log('MODEL ADDED');
+    case '@firemodel/CHILD_REMOVED': 
+      console.log('REMOVED');
+    case '@firemodel/etc': 
+      console.log('ETC');
+  }
+}
+
+const PersonModel = new Model<Person>(Person, db);
+PersonModel.listenTo(listener)
 ```
 
-### The Listener and the Event {#listeners}
+How might you expect your listener (and therefore your console output) to respond? Well imagining that the query returns a list of 5 people you'd get the following event stream:
 
-Up to now we've been focused on setting up an event stream but let's now turn our attention to the **Listener** functionality and what an "event" actually looks like. 
+```sh
+MODEL LISTENING
+ADDED
+ADDED
+ADDED
+ADDED
+ADDED
+MODEL READY
+```
 
-A _listener_ is really just a callback function which responds in a meaningful way to Firebase stream events. So in TypeScript grammer it would look like the example above but rather than being typed as "any" it instead is explicitly typed as a `FirebaseEvent`. FirebaseEvent is what is called a "[union type](https://www.typescriptlang.org/docs/handbook/advanced-types.html)" in Typescript. Which basically means that "it depends"; depends -- in this case -- on which event is being received. Fortunately each event has a property `kind` which defines which Firebase event triggered the callback and this allows all events to be strongly typed:
+At this point you'd know that all initial records needed to fulfill the query had been received from the Firebase backend. Going forward any of the relevant child listeners (added, removed, moved, changed) will fire if and when the data changes on the backend.
+
+### Event Structure {#event-structure}
+
+All events fired into listeners registered through the `listenTo` and `listenToRecord` methods have the following two properties:
+
+- `type` - the event name that is firing
+- `payload` - the primary state change that is being conveyed by this event
+
+Beyond that each message will pass along other pieces of relevant context. For instance, each of the child listener events will pass along at least the following properties:
+
+- `key` - the key which is being changed/added/removed/moved
+- `path` - the database path leading directly to the key effected (includes the key as part of path)
+- `model` - the schema/model which is triggering an event
+- `query` - a serialized version of the query string used (blank if just a straight database path)
+
+For more specifics refer to the type definitions which are found in [`/src/events.ts`]().
+
+### Listeners and Local State {#listeners}
+Up to now we've been focused on creating an event stream but let's now turn our attention to consuming it. Consumption of the event stream is the responsibility of the **Listener** where a listener conforms to the `FiremodelListener` type:
 
 ```ts
-export type FirebaseEvent = IValueEvent | IChildAdded | IChildRemoved | IChildChanged | IChildMoved;
-export interface IValueEvent<T> extends IFirebaseEvent<T> {
-  kind: 'value';
-}
-
-export interface IMovedEvent<T> extends IFirebaseEvent<T> {
-  kind: 'child_moved';
-  prevChildKey: string;
-}
-
-// ... 
-
-export interface IFirebaseEvent<T> {
-  /** A unique string name which represents the event */
-  type: string;
-  /** The Firebase Event which triggered this event */
-  kind: 'value' | 'child_added' | 'child_removed' | 'child_changed' | 'child_moved';
-  /** The payload/value of the changed attribute */
-  value: T;
-  /** The calling context **/
-  context?: IDictionary;
-  /** The cancelation/error callback */
-  cancelCallback?: (e: Error) => void;
-}
+export FiremodelListener = (event: IFMEvent) => void;
 ```
 
-In many cases you may find yourself writing your own Listener function, and this is entirely appropriate but if you are using **Redux** for state management then it is likely worth using the built in support to push these Firebase events into the Redux dispatcher to allow reducers to manage state locally:
+The primary function of a listener is to take an incoming state change from the database and use that to modify the local, working copy of state. When you pass in your own listener you can go about this any way that suits your needs. In this day and age of SPA's though, there are a growing number of frameworks that help developers to manage that. 
 
-```ts 
-import { ReduxDispatcher } from 'firemodel';
-const listener = ReduxDispatcher(redux.dispatch);
-PersonModel.listen(listener);
-CompanyModel.listen(listener);
+#### Redux
+
+Arguably the most popular of these local statement management frameworks is Redux. For those of you who know the framework you may have already realized that the `IFMEvent` events conform to the structure of a Redux "action." So if you wanted all state changes coming from the database to be put into your Redux flow you could create a handler that looks like so:
+
+```ts
+import { DB } from 'abstracted-admin';
+import { Model } from 'firemodel';
+import { Person } from './schemas/index';
+import { dispatch } from 'redux';
+
+const listener = (dispatch) => (event: IFMEvent) => {
+  dispatch(event);
+}
+
+const person = new Model<Person>(Person, db);
+person.listenTo(listener(dispatch));
 ```
 
-Where `Firemodel.redux` is a higher order function which takes the dispatch function into scope on the first call and returns an normal event listener (in this example assigned to `listener`).
-
-More details on this can be found at: [Other Concerns > Redux](./other.md#redux)
-
-## Mocking
-
+Since this is a very common use-case, there's even a way to just define your listener once as a static property of the `Model` class and then all models can skip sending in a listener

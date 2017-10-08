@@ -110,6 +110,18 @@ export default class Model<T extends BaseSchema> {
     return [this._record.META.dbOffset, this.pluralName].join('.');
   }
 
+  public get localPath() {
+    return [this._record.META.localOffset, this.pluralName].join('.');
+  }
+
+  public get relationships() {
+    return this._record.META.relationships;
+  }
+
+  public get properties() {
+    return this._record.META.properties;
+  }
+
   public newRecord(hash: Partial<T> = {}) {
     return new Record(this.schemaClass, this.pluralName, this._db, hash);
   }
@@ -338,6 +350,25 @@ export default class Model<T extends BaseSchema> {
     }
   }
 
+  //#region mocking
+  public generate(quantity: number, override: IDictionary = {}) {
+    this._db.mock.queueSchema<T>(this.modelName, quantity, override);
+    this._db.mock.generate();
+  }
+
+  protected _mockGenerator: SchemaCallback = (h) => () => {
+    return this._bespokeMockGenerator
+      ? { ...this._defaultGenerator(h)(), ...this._bespokeMockGenerator(h)() as IDictionary}
+      : this._defaultGenerator(h)();
+  }
+
+  private _defaultGenerator: SchemaCallback = (h) => () => ({
+    createdAt: moment(h.faker.date.past()).toISOString(),
+    lastUpdated: moment().toISOString()
+  });
+
+  //endregion
+
   private now() {
     return new Date().toISOString();
   }
@@ -345,22 +376,5 @@ export default class Model<T extends BaseSchema> {
   private logToAuditTrail(key: string, crud: string, info: IDictionary) {
 
   }
-
-  // public generate(quantity: number, override: IDictionary = {}) {
-  //   this._db.mock.queueSchema<T>(this.modelName, quantity, override);
-  //   this._db.mock.generate();
-  // }
-
-  // protected _mockGenerator: SchemaCallback = (h) => () => {
-  //   return this._bespokeMockGenerator
-  //     ? { ...this._defaultGenerator(h)(), ...this._bespokeMockGenerator(h)() as IDictionary}
-  //     : this._defaultGenerator(h)();
-  // }
-
-  // private _defaultGenerator: SchemaCallback = (h) => () => ({
-  //   createdAt: moment(h.faker.date.past()).toISOString(),
-  //   lastUpdated: moment().toISOString()
-  // });
-
   //#endregion
 }

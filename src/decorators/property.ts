@@ -1,30 +1,7 @@
 import 'reflect-metadata';
 import { BaseSchema, RelationshipPolicy } from '../base-schema';
 import { IDictionary, PropertyDecorator } from 'common-types';
-
-const decorator = (constraints: IDictionary = {}) => (target: any, key: string): void => {
-  const reflect = Reflect.getMetadata('design:type', target, key);
-  Reflect.defineMetadata(
-    key,
-    {
-      ...Reflect.getMetadata(key, target),
-      ...{type: reflect.name},
-      ...constraints
-    },
-    target
-  );
-  const _val: any = this[key];
-  Reflect.defineProperty(target, key, {
-    get: () => {
-      return this[key];
-    },
-    set: (value: any) => {
-      this[key] = value;
-    },
-    enumerable: true,
-    configurable: true
-  });
-}
+import { decorator } from './decorator';
 
 export function constrainedProperty(options: IDictionary = {}) {
   return decorator(options) as PropertyDecorator;
@@ -51,5 +28,7 @@ export function length(value: number) {
   return decorator({length: value});
 }
 
-export const property = decorator() as PropertyDecorator;
-
+export const property = decorator({
+  isRelationship: false,
+  isProperty: true
+}) as PropertyDecorator;

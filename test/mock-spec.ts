@@ -26,7 +26,7 @@ describe('Mocking:', () => {
     const db: DB = new DB({ mocking: true });
     const person = Person.create(db);
     person.generate(10);
-    const people = await db.getRecords<Person>('/people');
+    const people = await db.getList<Person>('/people');
     expect(people).lengthOf(10);
     expect(people[0]).to.have.property('id');
     expect(people[0]).to.have.property('name');

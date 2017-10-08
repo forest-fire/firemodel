@@ -28,7 +28,7 @@
   },
   "dependencies": {
     "abstracted-admin": "^0.2.4",
-    "common-types": "1.3.2",
+    "common-types": "^1.3.3",
     "lodash": "^4.17.4",
     "moment": "^2.0.0",
     "pluralize": "^7.0.0",
