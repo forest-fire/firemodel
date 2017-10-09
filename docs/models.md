@@ -95,10 +95,10 @@ So let's quickly review the types of events that Firebase provides:
     - **child_changed** - fires whenever a child `Record` is changed (anywhere in the graph below the Record)
     - **child_moved** - fires whenever a `Record` has changed in it's sort order
 
-So as a basic principle, listening to an individual `Record` will be done with a **Value** event, while listening to a `List` will be some combination of child events. This sets up the first introduction to the API surface for event processing:
+So as a basic principle, listening to an individual [`Record`](./record.md) will be done with a **Value** event, while listening to a [`List`](./list.md) will be the aggregation of the child events. This sets up the first introduction to the API surface for event processing:
 
 ```ts
-const listener = (event: any) => {
+const listener = (event: IFMEvent) => {
   // do something
 }
 const PersonModel = new Model<Person>(db);
@@ -149,45 +149,21 @@ At this point you'd know that all initial records needed to fulfill the query ha
 
 ### Event Structure {#event-structure}
 
-All events fired into listeners registered through the `listenTo` and `listenToRecord` methods have the following two properties:
+All events fired into listeners registered through the `listenTo` and `listenToRecord` methods have at least the following two properties:
 
 - `type` - the event name that is firing
+- `model` - the schema/model which this event stream listening to
+- `query` - a serialized version of the query string used to start the listener
 - `payload` - the primary state change that is being conveyed by this event
 
-Beyond that each message will pass along other pieces of relevant context. For instance, each of the child listener events will pass along at least the following properties:
-
-- `key` - the key which is being changed/added/removed/moved
-- `path` - the database path leading directly to the key effected (includes the key as part of path)
-- `model` - the schema/model which is triggering an event
-- `query` - a serialized version of the query string used (blank if just a straight database path)
-
-For more specifics refer to the type definitions which are found in [`/src/events.ts`]().
+For more specifics refer to the type definitions which are found in [`/src/events.ts`](https://github.com/forest-fire/firemodel/blob/master/src/event.ts).
 
 ### Listeners and Local State {#listeners}
 Up to now we've been focused on creating an event stream but let's now turn our attention to consuming it. Consumption of the event stream is the responsibility of the **Listener** where a listener conforms to the `FiremodelListener` type:
 
 ```ts
-export FiremodelListener = (event: IFMEvent) => void;
+export type FiremodelListener = (event: IFMEvent) => void;
 ```
 
-The primary function of a listener is to take an incoming state change from the database and use that to modify the local, working copy of state. When you pass in your own listener you can go about this any way that suits your needs. In this day and age of SPA's though, there are a growing number of frameworks that help developers to manage that. 
+The primary function of a listener is to take an incoming state change from the database and use that to modify the local, working copy of state. When you pass in your own listener you can go about this any way that suits your needs. In this day and age of SPA's though, there are a growing number of frameworks that help developers to manage local state.
 
-#### Redux
-
-Arguably the most popular of these local statement management frameworks is Redux. For those of you who know the framework you may have already realized that the `IFMEvent` events conform to the structure of a Redux "action." So if you wanted all state changes coming from the database to be put into your Redux flow you could create a handler that looks like so:
-
-```ts
-import { DB } from 'abstracted-admin';
-import { Model } from 'firemodel';
-import { Person } from './schemas/index';
-import { dispatch } from 'redux';
-
-const listener = (dispatch) => (event: IFMEvent) => {
-  dispatch(event);
-}
-
-const person = new Model<Person>(Person, db);
-person.listenTo(listener(dispatch));
-```
-
-Since this is a very common use-case, there's even a way to just define your listener once as a static property of the `Model` class and then all models can skip sending in a listener
