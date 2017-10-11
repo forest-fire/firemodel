@@ -1,7 +1,7 @@
 import { IDictionary, datetime } from 'common-types';
 import { set } from 'lodash';
 import { property } from './decorators/property';
-import { ISchemaOptions } from './decorators/schema';
+import { ISchemaOptions, ISchemaMetaProperties } from './decorators/schema';
 
 export interface IMetaData {
   attributes: IDictionary;

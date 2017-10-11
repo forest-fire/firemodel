@@ -1,19 +1,60 @@
 import 'reflect-metadata';
-import { BaseSchema, RelationshipPolicy } from '../base-schema';
-import { IDictionary, PropertyDecorator } from 'common-types';
+import { BaseSchema, RelationshipPolicy, ISchemaMetaProperties } from '../index';
+import { IDictionary, PropertyDecorator, ClassDecorator, ReflectionProperty } from 'common-types';
+import { get, set } from 'lodash';
 
-export const decorator = (nameValuePairs: IDictionary = {}) => (target: any, key: string): void => {
+function push(target: BaseSchema, path: string, value: ISchemaMetaProperties) {
+  if (Array.isArray(get(target, path))) {
+    get<ISchemaMetaProperties>(target, path).push(value);
+  } else {
+    set(target, path, [ value ]);
+  }
+}
+
+/** Properties accumlated by propertyDecorators and grouped by schema */
+const propertiesBySchema: IDictionary<ISchemaMetaProperties[]> = {};
+/** Relationships accumlated by propertyDecorators and grouped by schema */
+const relationshipsBySchema: IDictionary<ISchemaMetaProperties[]> = {};
+
+export const propertyDecorator = (
+  nameValuePairs: IDictionary = {},
+  /**
+   * if you want to set the property being decorated's name
+   * as property on meta specify the meta properties name here
+   */
+  property?: string
+) => (target: BaseSchema, key: string): void => {
   const reflect = Reflect.getMetadata('design:type', target, key);
-  Reflect.defineMetadata(
-    key,
-    {
-      ...Reflect.getMetadata(key, target),
-      ...{type: reflect.name},
-      ...nameValuePairs
-    },
-    target
-  );
+  const meta: ISchemaMetaProperties = {
+    ...Reflect.getMetadata(key, target),
+    ...{type: reflect.name},
+    ...nameValuePairs
+  };
+
+  Reflect.defineMetadata(key, meta, target);
   const _val: any = this[key];
+
+  if(nameValuePairs.isProperty) {
+    if(property) {
+      push(propertiesBySchema, target.constructor.name, {
+        ...meta,
+        [property]: key
+      });
+    } else {
+      push(propertiesBySchema, target.constructor.name, meta);
+    }
+  }
+  if(nameValuePairs.isRelationship) {
+    if(property) {
+      push(relationshipsBySchema, target.constructor.name, {
+        ...meta,
+        [property]: key
+      });
+    } else {
+      push(relationshipsBySchema, target.constructor.name, meta);
+    }
+  }
+
   Reflect.defineProperty(target, key, {
     get: () => {
       return this[key];
@@ -24,4 +65,49 @@ export const decorator = (nameValuePairs: IDictionary = {}) => (target: any, key
     enumerable: true,
     configurable: true
   });
+}
+
+/** lookup meta data for schema properties */
+function propertyMeta(context: object) {
+  return (prop: string): ISchemaMetaProperties => Reflect.getMetadata(prop, context);
+}
+
+export const classDecorator = <T>(
+  propName: string,
+  propValue: (target: object) => ReflectionProperty<T>
+): ClassDecorator => {
+  return (target: any): void => {
+    const original = target;
+
+    // new constructor
+    const f: any = function(...args: any[]) {
+      const obj = Reflect.construct(original, args);
+      Reflect.defineProperty(obj, propName, propValue(target));
+      return obj;
+    }
+
+    // copy prototype so intanceof operator still works
+    f.prototype = original.prototype;
+
+    // return new constructor (will override original)
+    return f;
+  }
+}
+
+/**
+ * Give all properties from schema and base schema
+ *
+ * @param target the schema object which is being looked up
+ */
+export function getProperties(target: object) {
+  return [
+    ...propertiesBySchema[target.constructor.name],
+    ...propertiesBySchema.BaseSchema.map(s =>
+      ( { ...s, ...{isBaseSchema: true} } )
+    )
+  ];
+}
+
+export function getRelationships(target: object) {
+  return relationshipsBySchema[target.constructor.name];
 }

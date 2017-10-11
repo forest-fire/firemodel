@@ -94,12 +94,28 @@ describe('relationship decorators: ', () => {
   });
 
   it.skip('hasMany() sets correct meta props', async () => {});
-  it('ownedBy() and hasMany() relns show up on META.relationships', async () => {
+  it('ownedBy() and hasMany() relns show up on Schema\'s relationships array', async () => {
     const person = new Person();
-    expect(person.META.relationships).to.be.an('array');
-    expect(person.META.relationships.length).to.be.equal(3);
-    const ownedBy = person.META.relationships.filter(m => m.relType === 'ownedBy');
-    expect(ownedBy.length).to.equal(2);
+    const ids = person.META.relationships.map(r => r.property);
+    expect(person.META.relationships.length).to.equal(4);
+    expect(ids).to.include('fatherId');
+    expect(ids).to.include('motherId');
+    expect(ids).to.include('children');
+    expect(ids).to.include('employerId');
   });
+
+  it('@properties show up on Schema\'s properties array', async () => {
+    const person = new Person();
+    const ids = person.META.properties.map(r => r.property);
+    const base = person.META.properties.filter(f => f.isBaseSchema);
+    expect(person.META.relationships.length).to.equal(4);
+    expect(ids).to.include('name');
+    expect(ids).to.include('age');
+    expect(ids).to.include('lastUpdated');
+    expect(ids).to.include('createdAt');
+    expect(base.length).to.equal(3);
+    expect(base.map(b => b.property)).to.include('lastUpdated');
+  });
+
   it.skip('inverse() sets correct meta props', async () => {});
 });

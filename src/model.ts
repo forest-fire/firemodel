@@ -1,13 +1,11 @@
 import { IDictionary, datetime, VerboseError } from 'common-types';
+import { ISchemaMetaProperties, BaseSchema, Record, List } from './index';
 import DB, { Snapshot } from 'abstracted-admin';
 import { SchemaCallback } from 'firemock';
 import * as moment from 'moment';
 import * as path from 'path';
 import * as pluralize from 'pluralize';
 import { camelCase } from 'lodash';
-import { BaseSchema } from './base-schema';
-import { Record } from './record';
-import { List } from './list';
 import { SerializedQuery } from 'serialized-query';
 import { snapshotToArray, ISnapShot } from 'typed-conversions';
 import { slashNotation } from './util';

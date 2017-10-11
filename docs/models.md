@@ -83,8 +83,8 @@ const result = await PersonModel.updateWhere('age', ['>=', 80], (r: Record) => {
 
 ## Real-time Event Streams {#events}
 
-### How to listen for Events 
-Firebase is a "real-time" database and so therefore one of the best ways of interacting with it is simply tell the database what "paths" you care about and then let it inform you of changes at these paths through events. This model of "reading" may take a little getting used to if you're used to standard request/reply DB interaction but for long-living applications this is definitely the way to manage state synchronization between the database and the app.
+### Subscribing 
+Firebase is a "real-time database" and so therefore one of the best ways of interacting with it is to simply tell the database what "paths" you care about and then let it inform you of changes at these paths through event streams. This model of "reading" may take a little getting used to if you're used to standard request/reply DB interaction but for long-living applications this is definitely a powerful way to manage state between Firebase and your app.
 
 So let's quickly review the types of events that Firebase provides:
 
@@ -95,21 +95,95 @@ So let's quickly review the types of events that Firebase provides:
     - **child_changed** - fires whenever a child `Record` is changed (anywhere in the graph below the Record)
     - **child_moved** - fires whenever a `Record` has changed in it's sort order
 
-So as a basic principle, listening to an individual [`Record`](./record.md) will be done with a **Value** event, while listening to a [`List`](./list.md) will be the aggregation of the child events. This sets up the first introduction to the API surface for event processing:
+Subscribing to state change events in **Firemodel** is done through the `listenTo` and `listenToRecord` methods. For performance reasons, listening to an individual [`Record`](./record.md) will be done with a _value_ event, while listening to a [`List`](./list.md) will be a combination of the _child events_:
+
+```ts
+// subscribe to all people events
+PersonModel.listenTo(listener);
+// subscribe to recent people events
+PersonModel.orderByChild('lastUpdated').limitToLast(10).listenTo(listener);
+// subscribe to a specific person's data
+PersonModel.listenToRecord('1234', listener);
+```
+
+### Events
+
+#### Event Types
+
+The events which your listener will receive depend on whether you are listening to a specific RECORD or a LIST:
+
+- **LIST**
+  - `@firebase/CHILD_ADDED` - new record
+  - `@firebase/CHILD_REMOVED` - record removed
+  - `@firebase/CHILD_MOVED` - record in new order (from server perspective)
+  - `@firebase/CHILD_CHANGED` - record was modified but still exists
+  - `@firebase/MODEL_STATE_READY` - initial state of records has been received
+  - `@firebase/RELATIONSHIP_START_LISTENER` - relationship change has added need for listener
+  - `@firebase/RELATIONSHIP_END_LISTENER` - relationship change has removed need for listener
+  - `@firebase/MODEL_START_LISTENING`
+  - `@firebase/MODEL_END_LISTENING`
+- **RECORD**
+  - `@firebase/RECORD_CHANGED` - record added or updated
+  - `@firebase/RECORD_REMOVED` - record removed
+  - `@firebase/RECORD_START_LISTENING`
+  - `@firebase/RECORD_END_LISTENING`
+
+#### Event Structure {#event-structure}
+
+![](images/event-listener-workflow.jpg)
+
+It might be intuitive to assume that the events our listeners receive are 1:1 representations of what we get from the originating Firebase event but that's not true for two reasons:
+
+1. Some events do not actually originate from a Firebase event (for example lifecycle events like `MODEL_START_LISTENING`)
+2. Each of the Firebase events are _decorated_ with additional context which the listener can respond to.
+
+All events are typed using Typescript so will be much easier to work with as an external user of this library but here are some basics about the event structure:
+
+All events sent to listeners through the `listenTo` and `listenToRecord` registration methods have at least the following four properties:
+
+- `type` - the event name that is firing
+    > **note:** all event types start with `@firemodel/` string
+- `model` - the schema/model which this event stream listening to
+- `query` - a serialized version of the query string used to start the listener
+- `payload` - the primary state change that is being conveyed by this event
+
+For more specifics refer to the type definitions which are found in [`/src/events.ts`](https://github.com/forest-fire/firemodel/blob/master/src/event.ts).
+
+
+### Listeners and Local State {#listeners}
+
+Up to now we've been focused on subscribing to an event stream but let's now turn our attention to _consuming_ it. Consumption of the event stream is the responsibility of the **Listener** where a listener conforms to the following type:
+
+```ts
+export type FiremodelListener = (event: IFMEvent) => void;
+```
+
+So if you wanted to setup a listener on the Person model and have it write out to console every time an event fired, you could do the following:
 
 ```ts
 const listener = (event: IFMEvent) => {
-  // do something
+  switch(event.type) {
+    case '@firemodel/MODEL_START_LISTENING':
+      console.log('MODEL LISTENING');
+    case '@firemodel/MODEL_STATE_READY':
+      console.log('READY');
+    case '@firemodel/RECORD_ADDED': 
+      console.log('MODEL ADDED');
+    case '@firemodel/CHILD_REMOVED': 
+      console.log('REMOVED');  
 }
 const PersonModel = new Model<Person>(db);
 PersonModel.listenTo(listener);
-PersonModel.listenToRecord('1234', listener);
 ```
-Further, the `listenTo` method can also be modified in scope with standard Firebase query operators:
+
+Note that the `listenTo` method can also be modified in scope with standard Firebase query operators:
 
 ```ts
 PersonModel.orderByChild('lastUpdated').limitToLast(10).listenTo(listener);
 ```
+
+In the above example we've gone through we are attaching the listener to a specific model/schema pairing and this allows you to have different listening behaviour based on the model but in fact in the majority of times you will likely be able to get away with having the same listener _across_ model (this will become even more clear when we look at integration with popular state management frameworks). 
+
 
 Now imagine you started a listener like this:
 
@@ -124,8 +198,6 @@ const listener = (event) => {
       console.log('MODEL ADDED');
     case '@firemodel/CHILD_REMOVED': 
       console.log('REMOVED');
-    case '@firemodel/etc': 
-      console.log('ETC');
   }
 }
 
@@ -133,7 +205,7 @@ const PersonModel = new Model<Person>(Person, db);
 PersonModel.listenTo(listener)
 ```
 
-How might you expect your listener (and therefore your console output) to respond? Well imagining that the query returns a list of 5 people you'd get the following event stream:
+Assuming an initial state of 5 people, your listener (and therefore your console output) should look something like this:
 
 ```sh
 MODEL LISTENING
@@ -145,25 +217,11 @@ ADDED
 MODEL READY
 ```
 
-At this point you'd know that all initial records needed to fulfill the query had been received from the Firebase backend. Going forward any of the relevant child listeners (added, removed, moved, changed) will fire if and when the data changes on the backend.
+Going forward any of the relevant child listeners (added, removed, moved, changed) will fire if and when the data changes on the backend.
 
-### Event Structure {#event-structure}
 
-All events fired into listeners registered through the `listenTo` and `listenToRecord` methods have at least the following two properties:
 
-- `type` - the event name that is firing
-- `model` - the schema/model which this event stream listening to
-- `query` - a serialized version of the query string used to start the listener
-- `payload` - the primary state change that is being conveyed by this event
+The primary function of a listener is to take an incoming state change from the database and use that to modify the local state. When you pass in your own listener you can go about this any way that suits your needs. 
 
-For more specifics refer to the type definitions which are found in [`/src/events.ts`](https://github.com/forest-fire/firemodel/blob/master/src/event.ts).
-
-### Listeners and Local State {#listeners}
-Up to now we've been focused on creating an event stream but let's now turn our attention to consuming it. Consumption of the event stream is the responsibility of the **Listener** where a listener conforms to the `FiremodelListener` type:
-
-```ts
-export type FiremodelListener = (event: IFMEvent) => void;
-```
-
-The primary function of a listener is to take an incoming state change from the database and use that to modify the local, working copy of state. When you pass in your own listener you can go about this any way that suits your needs. In this day and age of SPA's though, there are a growing number of frameworks that help developers to manage local state.
+While writing your own event listeners may be needed in some cases, more and more we find that some sort of state management framework like [redux](redux.md), [vuex](vuex.md), or [another](other-state-mgmt.md) are being used as the authoritative way to manage state locally. This means that getting these asynchronous Firemodel events into the framework of your choice becomes an important task. Fortunately for redux and vuex we've done most of the work. In the next section we'll explore how this can be done.
 

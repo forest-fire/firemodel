@@ -1,6 +1,13 @@
-import { Model, BaseSchema, Record, List, IAuditRecord, FirebaseCrudOperations } from '../src/index';
+import {
+  Model,
+  BaseSchema,
+  Record,
+  List,
+  IAuditRecord,
+  FirebaseCrudOperations,
+  SchemaCallback
+} from '../src/index';
 import DB from 'abstracted-admin';
-import { SchemaCallback } from 'firemock';
 import * as chai from 'chai';
 import * as helpers from './testing/helpers';
 const expect = chai.expect;

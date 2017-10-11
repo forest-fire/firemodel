@@ -1,5 +1,6 @@
 import 'reflect-metadata';
 import { IDictionary, ClassDecorator } from 'common-types';
+import { classDecorator, getRelationships, getProperties } from './decorator';
 /* tslint:disable:only-arrow-functions */
 
 export interface ISchemaOptions {
@@ -31,22 +32,24 @@ function propertyMeta(context: object) {
   return (prop: string): ISchemaMetaProperties => Reflect.getMetadata(prop, context);
 }
 
-function propertyList(context: object): ISchemaMetaProperties[] {
-  return Object.keys(context)
-    .filter(p => propertyMeta(context)(p).isProperty)
-    .map(p => propertyMeta(context)(p));
-}
-
-function relationshipList(context: object): ISchemaMetaProperties[] {
-  console.log(Reflect.getOwnMetadataKeys(context));
-  console.log(Reflect.getOwnPropertyDescriptor(context, 'fatherId'));
-
-  return Reflect.getOwnMetadataKeys(context)
-  .filter(p => propertyMeta(context)(p).isRelationship)
-  .map(p => propertyMeta(context)(p));
-}
-
 export function schema(options: ISchemaOptions): ClassDecorator {
+  // return classDecorator('META', (target) => ({
+  //   get(): ISchemaOptions {
+  //     return {
+  //       ...options,
+  //       ...{ property: propertyMeta(target) },
+  //       ...{ properties: getProperties(target) },
+  //       ...{ relationships: getRelationships(target) },
+  //       ...{ audit: options.audit ? options.audit : false }
+  //     };
+  //   },
+  //   set() {
+  //     throw new Error('The meta property can only be set with the @schema decorator!')
+  //   },
+  //   configurable: false,
+  //   enumerable: false
+  // }));
+
   return (target: any): void => {
     const original = target;
 
@@ -54,13 +57,14 @@ export function schema(options: ISchemaOptions): ClassDecorator {
     const f: any = function(...args: any[]) {
       const meta = options;
       const obj = Reflect.construct(original, args);
+
       Reflect.defineProperty(obj, 'META', {
         get(): ISchemaOptions {
           return {
             ...options,
             ...{ property: propertyMeta(obj) },
-            ...{ properties: propertyList(obj) },
-            ...{ relationships: relationshipList(obj) },
+            ...{ properties: getProperties(obj) },
+            ...{ relationships: getRelationships(obj) },
             ...{ audit: options.audit ? options.audit : false }
           };
         },

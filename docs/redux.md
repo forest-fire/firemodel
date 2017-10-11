@@ -3,8 +3,8 @@
 
 Arguably the most popular of the local statement management frameworks is **Redux**. In many ways, **Firemodel** was designed to work hand-in-hand with Redux but to understand how to integrate Redux we need to look at from two perspectives:
 
-1. Firing events
-2. Mutating local state based on events
+1. Firing events (action creators / epics)
+2. Mutating local state based on events (reducers)
 
 ##### Firing Redux Events
 
@@ -28,7 +28,7 @@ const person = new Model<Person>(Person, db);
 person.listenTo(listener(dispatch));
 ```
 
-Since this is a very common use-case there is static property on the `Model` class which you can set like so:
+If you're using Redux (or any state management framework), you're likely to want to do the same thing across models; this is possible by setting the static property on the `Model` class like so:
 
 ```ts
 import { Model } from 'firemodel';
@@ -42,11 +42,10 @@ const person = new Model<Person>(Person, db);
 person.listenTo();
 const website = new Model<Website>(Website, db);
 website.listenTo();
-// Override the global where needed
-const company = Model<Company>(Company, db);
-company.listenTo(myUniqueListener);
 ```
 
-This will ensure that all new models will use the Redux dispatch for events (unless you explicitly opt-out).
+Because Redux was imagined when building this component, that is all that's needed to have the appropriate async events sent to Redux.
 
-##### Responding to Events
+##### Responding to Events / Redux Controllers
+
+

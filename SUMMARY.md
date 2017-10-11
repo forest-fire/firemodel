@@ -14,13 +14,13 @@
   - [One-time Writes](docs/models.md#writes)
   - [Event Streams](docs/models.md#events)
   - [Listeners & Local State](docs/models.md#listeners)
-- [Integrating with State Mgmt]
+- Integrating with State Mgmt
   - [Redux](redux.md)
   - [Vuex](vuex.md)
   - [Others](other-state-mgmt.md)
-- [Record API](docs/record.md)
-  - [set/push]()
-  - [update]()
+- [Other APIs](other-apis.md)
+  - [Record](other-apis.md#record)
+  - [List](other-apis.md#record)
 - [Other Concerns](docs/other.md)
   - [Mocking](docs/other.md#mocking)
   - [Logging](docs/other.md#logging)
