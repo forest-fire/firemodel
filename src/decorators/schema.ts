@@ -1,6 +1,6 @@
 import 'reflect-metadata';
 import { IDictionary, ClassDecorator } from 'common-types';
-import { classDecorator, getRelationships, getProperties } from './decorator';
+import { getRelationships, getProperties } from './decorator';
 /* tslint:disable:only-arrow-functions */
 
 export interface ISchemaOptions {
@@ -33,23 +33,6 @@ function propertyMeta(context: object) {
 }
 
 export function schema(options: ISchemaOptions): ClassDecorator {
-  // return classDecorator('META', (target) => ({
-  //   get(): ISchemaOptions {
-  //     return {
-  //       ...options,
-  //       ...{ property: propertyMeta(target) },
-  //       ...{ properties: getProperties(target) },
-  //       ...{ relationships: getRelationships(target) },
-  //       ...{ audit: options.audit ? options.audit : false }
-  //     };
-  //   },
-  //   set() {
-  //     throw new Error('The meta property can only be set with the @schema decorator!')
-  //   },
-  //   configurable: false,
-  //   enumerable: false
-  // }));
-
   return (target: any): void => {
     const original = target;
 

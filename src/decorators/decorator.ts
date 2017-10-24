@@ -72,28 +72,6 @@ function propertyMeta(context: object) {
   return (prop: string): ISchemaMetaProperties => Reflect.getMetadata(prop, context);
 }
 
-export const classDecorator = <T>(
-  propName: string,
-  propValue: (target: object) => ReflectionProperty<T>
-): ClassDecorator => {
-  return (target: any): void => {
-    const original = target;
-
-    // new constructor
-    const f: any = function(...args: any[]) {
-      const obj = Reflect.construct(original, args);
-      Reflect.defineProperty(obj, propName, propValue(target));
-      return obj;
-    }
-
-    // copy prototype so intanceof operator still works
-    f.prototype = original.prototype;
-
-    // return new constructor (will override original)
-    return f;
-  }
-}
-
 /**
  * Give all properties from schema and base schema
  *

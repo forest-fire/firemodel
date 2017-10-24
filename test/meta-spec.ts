@@ -93,8 +93,15 @@ describe('relationship decorators: ', () => {
     expect(person.META.property('motherId').relType).to.be.equal('ownedBy');
   });
 
-  it.skip('hasMany() sets correct meta props', async () => {});
-  it('ownedBy() and hasMany() relns show up on Schema\'s relationships array', async () => {
+  it('hasMany() sets correct meta props', async () => {
+    const person = new Person();
+    const keys: string[] = Reflect.getMetadataKeys(person);
+    expect(keys).to.include.members(['children']);
+    expect(person.META.property('children').isRelationship).to.be.true;
+    expect(person.META.property('children').relType).to.be.equal('hasMany');
+  });
+
+  it('@relationships show up on Schema\'s relationships array', async () => {
     const person = new Person();
     const ids = person.META.relationships.map(r => r.property);
     expect(person.META.relationships.length).to.equal(4);
@@ -102,6 +109,11 @@ describe('relationship decorators: ', () => {
     expect(ids).to.include('motherId');
     expect(ids).to.include('children');
     expect(ids).to.include('employerId');
+  });
+  it('@relationships show up on Model', async () => {
+    const PersonModel = new Model<Person>(Person, new DB({mocking: true}));
+    expect(PersonModel.relationships.map(p => p.property)).to.include('fatherId');
+    expect(PersonModel.relationships.map(p => p.property)).to.include('children');
   });
 
   it('@properties show up on Schema\'s properties array', async () => {
@@ -117,5 +129,15 @@ describe('relationship decorators: ', () => {
     expect(base.map(b => b.property)).to.include('lastUpdated');
   });
 
-  it.skip('inverse() sets correct meta props', async () => {});
+  it('@properties show up on Model', async () => {
+    const PersonModel = new Model<Person>(Person, new DB({mocking: true}));
+    expect(PersonModel.properties.map(p => p.property)).to.include('name');
+    expect(PersonModel.properties.map(p => p.property)).to.include('lastUpdated');
+  });
+
+  it('inverse() sets correct meta props', async () => {
+    const person = new Person();
+    expect(person.META.property('motherId').inverseProperty).to.equal('children');
+    expect(person.META.property('fatherId').inverseProperty).to.equal('children');
+  });
 });
