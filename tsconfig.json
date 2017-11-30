@@ -3,11 +3,7 @@
     "declaration": true,
     "module": "commonjs",
     "target": "ES6",
-    "lib": [
-      "es2015",
-      "esnext.asynciterable",
-      "es2015.reflect"
-    ],
+    "lib": ["es2015", "esnext.asynciterable", "es2015.reflect"],
     "moduleResolution": "node",
     "sourceMap": true,
     "noImplicitAny": true,
@@ -15,16 +11,8 @@
     "emitDecoratorMetadata": true,
     "outDir": "./lib",
     "removeComments": false,
-    "typeRoots": [
-      "./node_modules/@types"
-    ]
+    "typeRoots": ["./node_modules/@types"]
   },
-  "include": [
-    "src/**/*",
-    "test/**/*-spec.ts",
-    "test/testing/*.ts"
-  ],
-  "exclude": [
-    "node_modules"
-  ]
+  "include": ["src/**/*"],
+  "exclude": ["node_modules"]
 }

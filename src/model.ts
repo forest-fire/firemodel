@@ -1,14 +1,14 @@
-import { IDictionary, datetime, VerboseError } from 'common-types';
-import { ISchemaMetaProperties, BaseSchema, Record, List } from './index';
-import DB, { Snapshot } from 'abstracted-admin';
-import { SchemaCallback } from 'firemock';
-import * as moment from 'moment';
-import * as path from 'path';
-import * as pluralize from 'pluralize';
-import { camelCase } from 'lodash';
-import { SerializedQuery } from 'serialized-query';
-import { snapshotToArray, ISnapShot } from 'typed-conversions';
-import { slashNotation } from './util';
+import { IDictionary, datetime, VerboseError } from "common-types";
+import { ISchemaMetaProperties, BaseSchema, Record, List } from "./index";
+import DB, { Snapshot } from "abstracted-admin";
+import { SchemaCallback } from "firemock";
+import * as moment from "moment";
+// import * as path from 'path';
+import * as pluralize from "pluralize";
+import { camelCase } from "lodash";
+import { SerializedQuery } from "serialized-query";
+import { snapshotToArray, ISnapShot } from "typed-conversions";
+import { slashNotation } from "./util";
 
 export type ModelProperty<T> = keyof T | keyof IBaseModel;
 export type PartialModel<T> = {
@@ -62,7 +62,7 @@ export default class Model<T extends BaseSchema> {
   //#region PROPERTIES
 
   /** The base path in the database to store audit logs */
-  public static auditBase = 'logging/audit_logs';
+  public static auditBase = "logging/audit_logs";
   /** Instantiation of schema class for meta analysis */
   protected _record: T;
   /** the singular name of the model */
@@ -105,11 +105,11 @@ export default class Model<T extends BaseSchema> {
   //#region PUBLIC API
 
   public get dbPath() {
-    return [this._record.META.dbOffset, this.pluralName].join('.');
+    return [this._record.META.dbOffset, this.pluralName].join(".");
   }
 
   public get localPath() {
-    return [this._record.META.localOffset, this.pluralName].join('.');
+    return [this._record.META.localOffset, this.pluralName].join(".");
   }
 
   public get relationships() {
@@ -135,16 +135,17 @@ export default class Model<T extends BaseSchema> {
   }
 
   public getSome(): SerializedQuery<T> {
-    const [schemaClass, pluralName, db] = [this.schemaClass, this.pluralName, this._db];
-    const query = SerializedQuery
-      .path<T>(this.dbPath)
+    const [schemaClass, pluralName, db] = [
+      this.schemaClass,
+      this.pluralName,
+      this._db
+    ];
+    const query = SerializedQuery.path<T>(this.dbPath)
       .setDB(this._db)
-      .handleSnapshot(snap => new List<T>(
-        schemaClass,
-        pluralName,
-        db,
-        snapshotToArray<T>(snap)
-      ));
+      .handleSnapshot(
+        snap =>
+          new List<T>(schemaClass, pluralName, db, snapshotToArray<T>(snap))
+      );
     return query;
   }
 
@@ -152,7 +153,7 @@ export default class Model<T extends BaseSchema> {
     prop: string,
     value: string | number | boolean | ConditionAndValue
   ) {
-    let operation: string = '=';
+    let operation: string = "=";
     if (value instanceof Array) {
       operation = value[0];
       value = value[1];
@@ -165,10 +166,11 @@ export default class Model<T extends BaseSchema> {
       return this.newRecord(results.pop());
     } else {
       throw new VerboseError({
-        code: 'not-found',
+        code: "not-found",
         message: `Not Found: didn't find any ${this
-          .pluralName} which had "${prop}" set to "${value}"; note the path in the database which was searched was "${this.dbPath}".`,
-        module: 'findRecord'
+          .pluralName} which had "${prop}" set to "${value}"; note the path in the database which was searched was "${this
+          .dbPath}".`,
+        module: "findRecord"
       });
     }
   }
@@ -179,19 +181,11 @@ export default class Model<T extends BaseSchema> {
   ) {
     const query = this._findBuilder(prop, value);
     const results = await this._db.getList<T>(query);
-    return new List<T>(
-      this.schemaClass,
-      this.pluralName,
-      this._db,
-      results
-    );
+    return new List<T>(this.schemaClass, this.pluralName, this._db, results);
   }
 
   /** Push a new record onto a model's list using Firebase a push-ID */
-  public async push(
-    newRecord: T,
-    auditInfo: IDictionary = {}
-  ) {
+  public async push(newRecord: T, auditInfo: IDictionary = {}) {
     const now = this.now();
     newRecord = {
       ...(newRecord as any),
@@ -199,9 +193,9 @@ export default class Model<T extends BaseSchema> {
     };
     auditInfo = {
       ...auditInfo,
-      ...{properties: Object.keys(newRecord)}
-    }
-    const ref = await this.crud('push', now, null, newRecord, auditInfo);
+      ...{ properties: Object.keys(newRecord) }
+    };
+    const ref = await this.crud("push", now, null, newRecord, auditInfo);
 
     return ref;
   }
@@ -217,11 +211,11 @@ export default class Model<T extends BaseSchema> {
       ...{ updatedProperties: Object.keys(updates) }
     };
     updates = {
-      ...updates as any,
+      ...(updates as any),
       ...{ lastUpdated: now }
-    }
+    };
 
-    await this.crud('update', now, key, updates, auditInfo);
+    await this.crud("update", now, key, updates, auditInfo);
     return;
   }
 
@@ -245,7 +239,7 @@ export default class Model<T extends BaseSchema> {
     if (returnValue) {
       value = await this._db.getRecord(path);
     }
-    await this.crud('remove', now, key, null, auditInfo);
+    await this.crud("remove", now, key, null, auditInfo);
 
     return value;
   }
@@ -256,7 +250,7 @@ export default class Model<T extends BaseSchema> {
     let query = SerializedQuery.path(path);
     if (since) {
       const startAt = moment(since).toISOString();
-      query = query.orderByChild('when').startAt(startAt);
+      query = query.orderByChild("when").startAt(startAt);
     }
     if (last) {
       query = query.limitToLast(last);
@@ -267,7 +261,12 @@ export default class Model<T extends BaseSchema> {
   //#endregion
 
   //#region PRIVATE API
-  private async audit(crud: string, when: string, key: string, info: IDictionary) {
+  private async audit(
+    crud: string,
+    when: string,
+    key: string,
+    info: IDictionary
+  ) {
     const path = slashNotation(Model.auditBase, this.pluralName);
     return this._db.push(path, {
       crud,
@@ -287,7 +286,13 @@ export default class Model<T extends BaseSchema> {
    * @param value The new-value parameter (meaning varies on context)
    * @param auditInfo the meta-fields for the audit trail
    */
-  private async crud(op: string, when: string, key: string, value: any, auditInfo: IDictionary) {
+  private async crud(
+    op: "set" | "update" | "push" | "remove",
+    when: string,
+    key: string,
+    value?: Partial<T>,
+    auditInfo?: IDictionary
+  ) {
     const isAuditable = this._record.META.audit;
     const auditPath = slashNotation(Model.auditBase, this.pluralName, key);
     const recordPath = slashNotation(this.dbPath, key);
@@ -296,20 +301,21 @@ export default class Model<T extends BaseSchema> {
       auditRef = await this.audit(op, when, key, auditInfo);
     }
 
-    switch(op) {
-      case 'set':
-      case 'update':
-        return this._db[op]<T>(recordPath, value);
-      case 'push':
-        return this._db[op]<T>(recordPath, value);
-      case 'remove':
+    switch (op) {
+      case "set":
+        return this._db.set<T>(recordPath, value as T);
+      case "update":
+        return this._db.update<T>(recordPath, value);
+      case "push":
+        return this._db[op]<T>(recordPath, value as T);
+      case "remove":
         return this._db[op]<T>(recordPath);
 
       default:
         throw new VerboseError({
-          code: 'unknown-operation',
+          code: "unknown-operation",
           message: `The operation "${op}" is not known!`,
-          module: 'crud'
+          module: "crud"
         });
     }
   }
@@ -319,60 +325,62 @@ export default class Model<T extends BaseSchema> {
     value: string | number | boolean | ConditionAndValue,
     singular: boolean = false
   ) {
-    let operation: string = '=';
+    let operation: string = "=";
     if (value instanceof Array) {
       operation = value[0];
       value = value[1];
     }
 
-    let query = SerializedQuery
-      .path<T>(this.dbPath)
-      .orderByChild(child);
+    let query = SerializedQuery.path<T>(this.dbPath).orderByChild(child);
     if (singular) {
       query = query.limitToFirst(1);
     }
     switch (operation) {
-      case '=':
+      case "=":
         return query.equalTo(value);
-      case '>=':
+      case ">=":
         return query.startAt(value);
-      case '<=':
+      case "<=":
         return query.endAt(value);
 
       default:
         throw new VerboseError({
-          code: 'invalid-operation',
+          code: "invalid-operation",
           message: `Invalid comparison operater "${operation}" used in find query`,
-          module: 'findXXX'
-        })
+          module: "findXXX"
+        });
     }
   }
 
   //#region mocking
+  // tslint:disable-next-line:member-ordering
   public generate(quantity: number, override: IDictionary = {}) {
     this._db.mock.queueSchema<T>(this.modelName, quantity, override);
     this._db.mock.generate();
   }
 
-  protected _mockGenerator: SchemaCallback = (h) => () => {
+  // tslint:disable-next-line:member-ordering
+  protected _mockGenerator: SchemaCallback = h => () => {
     return this._bespokeMockGenerator
-      ? { ...this._defaultGenerator(h)(), ...this._bespokeMockGenerator(h)() as IDictionary}
+      ? {
+          ...this._defaultGenerator(h)(),
+          ...(this._bespokeMockGenerator(h)() as IDictionary)
+        }
       : this._defaultGenerator(h)();
-  }
+  };
 
-  private _defaultGenerator: SchemaCallback = (h) => () => ({
+  private _defaultGenerator: SchemaCallback = h => () => ({
     createdAt: moment(h.faker.date.past()).toISOString(),
     lastUpdated: moment().toISOString()
   });
-
-  //endregion
+  //#endregion
 
   private now() {
     return new Date().toISOString();
   }
 
   private logToAuditTrail(key: string, crud: string, info: IDictionary) {
-
+    //
   }
   //#endregion
 }
