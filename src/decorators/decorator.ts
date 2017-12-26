@@ -1,13 +1,22 @@
-import 'reflect-metadata';
-import { BaseSchema, RelationshipPolicy, ISchemaMetaProperties } from '../index';
-import { IDictionary, PropertyDecorator, ClassDecorator, ReflectionProperty } from 'common-types';
-import { get, set } from 'lodash';
+import "reflect-metadata";
+import {
+  BaseSchema,
+  RelationshipPolicy,
+  ISchemaMetaProperties
+} from "../index";
+import {
+  IDictionary,
+  PropertyDecorator,
+  ClassDecorator,
+  ReflectionProperty
+} from "common-types";
+import { get, set } from "lodash";
 
-function push(target: BaseSchema, path: string, value: ISchemaMetaProperties) {
+function push(target: IDictionary, path: string, value: ISchemaMetaProperties) {
   if (Array.isArray(get(target, path))) {
-    get<ISchemaMetaProperties>(target, path).push(value);
+    get(target, path).push(value);
   } else {
-    set(target, path, [ value ]);
+    set(target, path, [value]);
   }
 }
 
@@ -24,18 +33,18 @@ export const propertyDecorator = (
    */
   property?: string
 ) => (target: BaseSchema, key: string): void => {
-  const reflect = Reflect.getMetadata('design:type', target, key);
+  const reflect = Reflect.getMetadata("design:type", target, key);
   const meta: ISchemaMetaProperties = {
     ...Reflect.getMetadata(key, target),
-    ...{type: reflect.name},
+    ...{ type: reflect.name },
     ...nameValuePairs
   };
 
   Reflect.defineMetadata(key, meta, target);
   const _val: any = this[key];
 
-  if(nameValuePairs.isProperty) {
-    if(property) {
+  if (nameValuePairs.isProperty) {
+    if (property) {
       push(propertiesBySchema, target.constructor.name, {
         ...meta,
         [property]: key
@@ -44,8 +53,8 @@ export const propertyDecorator = (
       push(propertiesBySchema, target.constructor.name, meta);
     }
   }
-  if(nameValuePairs.isRelationship) {
-    if(property) {
+  if (nameValuePairs.isRelationship) {
+    if (property) {
       push(relationshipsBySchema, target.constructor.name, {
         ...meta,
         [property]: key
@@ -65,11 +74,12 @@ export const propertyDecorator = (
     enumerable: true,
     configurable: true
   });
-}
+};
 
 /** lookup meta data for schema properties */
 function propertyMeta(context: object) {
-  return (prop: string): ISchemaMetaProperties => Reflect.getMetadata(prop, context);
+  return (prop: string): ISchemaMetaProperties =>
+    Reflect.getMetadata(prop, context);
 }
 
 /**
@@ -80,9 +90,10 @@ function propertyMeta(context: object) {
 export function getProperties(target: object) {
   return [
     ...propertiesBySchema[target.constructor.name],
-    ...propertiesBySchema.BaseSchema.map(s =>
-      ( { ...s, ...{isBaseSchema: true} } )
-    )
+    ...propertiesBySchema.BaseSchema.map(s => ({
+      ...s,
+      ...{ isBaseSchema: true }
+    }))
   ];
 }
 

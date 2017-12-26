@@ -184,8 +184,24 @@ export default class Model<T extends BaseSchema> {
     return new List<T>(this.schemaClass, this.pluralName, this._db, results);
   }
 
+  /** sets a record to the database */
+  public async set(record: T, auditInfo: IDictionary = {}) {
+    const now = this.now();
+    record = {
+      ...(record as any),
+      ...{ lastUpdated: now }
+    };
+    auditInfo = {
+      ...auditInfo,
+      ...{ properties: Object.keys(record) }
+    };
+    const ref = await this.crud("set", now, null, record, auditInfo);
+
+    return ref;
+  }
+
   /** Push a new record onto a model's list using Firebase a push-ID */
-  public async push(newRecord: T, auditInfo: IDictionary = {}) {
+  public async push(newRecord: Partial<T>, auditInfo: IDictionary = {}) {
     const now = this.now();
     newRecord = {
       ...(newRecord as any),

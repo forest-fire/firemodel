@@ -1,8 +1,7 @@
-import { BaseSchema, ISchemaOptions } from './index';
-import DB from 'abstracted-admin';
+import { BaseSchema, ISchemaOptions } from "./index";
+import DB from "abstracted-admin";
 
 export class Record<T extends BaseSchema> {
-
   private _existsOnDB: boolean = false;
   private _isDirty: boolean = false;
 
@@ -28,13 +27,11 @@ export class Record<T extends BaseSchema> {
 
   public get dbPath() {
     if (!this.data.id) {
-      throw new Error('Invalid Path: you can not ask for the dbPath before setting an "id" property.');
+      throw new Error(
+        'Invalid Path: you can not ask for the dbPath before setting an "id" property.'
+      );
     }
-    return [
-      this.data.META.dbOffset,
-      this.pluralName,
-      this.data.id
-    ].join('/');
+    return [this.data.META.dbOffset, this.pluralName, this.data.id].join("/");
   }
 
   public get modelName() {
@@ -46,26 +43,24 @@ export class Record<T extends BaseSchema> {
 
   public get key() {
     if (!this.data.id) {
-      throw new Error('key is not set yet!');
+      throw new Error("key is not set yet!");
     }
     return this.data.id;
   }
 
   public get localPath() {
     if (!this.data.id) {
-      throw new Error('Invalid Path: you can not ask for the dbPath before setting an "id" property.');
+      throw new Error(
+        'Invalid Path: you can not ask for the dbPath before setting an "id" property.'
+      );
     }
-    return [
-      this.data.META.localOffset,
-      this.pluralName,
-      this.data.id
-    ].join('/');
+    return [this.data.META.localOffset, this.pluralName, this.data.id].join(
+      "/"
+    );
   }
 
   public initialize(data: Partial<T>) {
-    Object.keys(data).forEach(
-      (key: keyof T) => this.data[key] = data[key]
-    );
+    Object.keys(data).forEach((key: keyof T) => (this.data[key] = data[key]));
   }
 
   public get existsOnDB() {
@@ -80,7 +75,10 @@ export class Record<T extends BaseSchema> {
       this.initialize(data);
     } else {
       this._existsOnDB = false;
-      throw new Error(`Unknown Key: the key "${id}" was not found in Firebase at "${this.dbPath}".`);
+      throw new Error(
+        `Unknown Key: the key "${id}" was not found in Firebase at "${this
+          .dbPath}".`
+      );
     }
 
     return this;
@@ -88,10 +86,21 @@ export class Record<T extends BaseSchema> {
 
   public async update(hash: Partial<T>) {
     if (!this.data.id || !this._existsOnDB) {
-      throw new Error(`Invalid Operation: you can not update a record which doesn't have an "id" or which has never been saved to the database`);
+      throw new Error(
+        `Invalid Operation: you can not update a record which doesn't have an "id" or which has never been saved to the database`
+      );
     }
 
-    await this._db.update<T>(this.dbPath, hash);
+    return this._db.update<T>(this.dbPath, hash);
+  }
 
+  public async set(hash: T) {
+    if (!this.data.id) {
+      throw new Error(
+        `Invalid Operation: you can not SET a record which doesn't have an "id"`
+      );
+    }
+
+    return this._db.set<T>(this.dbPath, hash);
   }
 }
