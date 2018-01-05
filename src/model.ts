@@ -1,11 +1,12 @@
-import { IDictionary, datetime, VerboseError } from "common-types";
+import { IDictionary, datetime } from "common-types";
+import { DB, Snapshot } from "abstracted-admin";
+import { VerboseError } from "./VerboseError";
 import { ISchemaMetaProperties, BaseSchema, Record, List } from "./index";
-import DB, { Snapshot } from "abstracted-admin";
 import { SchemaCallback } from "firemock";
 import * as moment from "moment";
 // import * as path from 'path';
 import * as pluralize from "pluralize";
-import { camelCase } from "lodash";
+import camelCase = require("lodash.camelcase");
 import { SerializedQuery } from "serialized-query";
 import { snapshotToArray, ISnapShot } from "typed-conversions";
 import { slashNotation } from "./util";
@@ -126,12 +127,12 @@ export default class Model<T extends BaseSchema> {
 
   public async getRecord(id: string) {
     const record = new Record<T>(this.schemaClass, this.pluralName, this._db);
-    return await record.load(id);
+    return record.load(id);
   }
 
   public async getAll() {
     const list = new List<T>(this.schemaClass, this.pluralName, this._db);
-    return await list.load(this.dbPath);
+    return list.load(this.dbPath);
   }
 
   public getSome(): SerializedQuery<T> {
@@ -167,9 +168,11 @@ export default class Model<T extends BaseSchema> {
     } else {
       throw new VerboseError({
         code: "not-found",
-        message: `Not Found: didn't find any ${this
-          .pluralName} which had "${prop}" set to "${value}"; note the path in the database which was searched was "${this
-          .dbPath}".`,
+        message: `Not Found: didn't find any ${
+          this.pluralName
+        } which had "${prop}" set to "${value}"; note the path in the database which was searched was "${
+          this.dbPath
+        }".`,
         module: "findRecord"
       });
     }

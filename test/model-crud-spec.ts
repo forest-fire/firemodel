@@ -16,7 +16,7 @@ import "reflect-metadata";
 import { Klass, ContainedKlass, SubKlass } from "./testing/klass";
 import { Person } from "./testing/person";
 import { Company } from "./testing/company";
-import { VerboseError } from "common-types";
+import { VerboseError } from "../src/VerboseError";
 import { get as getStackFrame, parse as stackParse } from "stack-trace";
 
 VerboseError.setStackParser((context: VerboseError) => stackParse(context));

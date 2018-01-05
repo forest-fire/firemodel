@@ -44,7 +44,9 @@ function getScope(): Promise<string> {
 
       console.log(
         chalk.green(
-          `${chalk.bold("mocha")} --compilers ts:ts-node/register  ${fileScope}`
+          `${chalk.bold(
+            "mocha"
+          )} --compilers ts:ts-node/register --compilerOptions ${fileScope}`
         )
       );
       resolve(fileScope);
@@ -63,7 +65,8 @@ function cleanJSTests() {
 
 function executeTests(stg: string, fileScope: string): void {
   process.env.AWS_STAGE = stg;
-  process.env.TS_NODE_COMPILER_OPTIONS = '{ "noImplicitAny": false }';
+  process.env.TS_NODE_COMPILER_OPTIONS =
+    '{ "noImplicitAny": false, "module": "commonjs" }';
   exec(
     `mocha --compilers ts:ts-node/register ` +
       `--compilerOptions --require ts-node/register ` +

@@ -1,7 +1,7 @@
-import { IDictionary, datetime } from 'common-types';
-import { set } from 'lodash';
-import { property } from './decorators/property';
-import { ISchemaOptions, ISchemaMetaProperties } from './decorators/schema';
+import { IDictionary, datetime } from "common-types";
+import set = require("lodash.set");
+import { property } from "./decorators/property";
+import { ISchemaOptions, ISchemaMetaProperties } from "./decorators/schema";
 
 export interface IMetaData {
   attributes: IDictionary;
@@ -12,13 +12,13 @@ export interface IRelationship {
   policy: RelationshipPolicy;
 }
 export enum RelationshipPolicy {
-  keys = 'keys',
-  lazy = 'lazy',
-  inline = 'inline'
+  keys = "keys",
+  lazy = "lazy",
+  inline = "inline"
 }
 export enum RelationshipCardinality {
-  hasMany = 'hasMany',
-  belongsTo = 'belongsTo'
+  hasMany = "hasMany",
+  belongsTo = "belongsTo"
 }
 
 export abstract class BaseSchema {

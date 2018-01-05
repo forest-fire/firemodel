@@ -10,7 +10,8 @@ import {
   ClassDecorator,
   ReflectionProperty
 } from "common-types";
-import { get, set } from "lodash";
+import set = require("lodash.set");
+import get = require("lodash.get");
 
 function push(target: IDictionary, path: string, value: ISchemaMetaProperties) {
   if (Array.isArray(get(target, path))) {

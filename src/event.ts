@@ -1,7 +1,7 @@
 import { Model } from "./index";
 import { SerializedQuery } from "serialized-query";
 import { FirebaseEvent, IDictionary } from "common-types";
-import { debounce } from "lodash";
+import debounce = require("lodash.debounce");
 import { snapshotToHash } from "typed-conversions";
 //#region generalized structures
 
