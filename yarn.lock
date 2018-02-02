@@ -6,6 +6,10 @@
   version "0.1.0"
   resolved "https://registry.yarnpkg.com/@firebase/app-types/-/app-types-0.1.0.tgz#27069ba4f8d74990eae7c88ec8f3d282e5215786"
 
+"@firebase/app-types@^0.1.1":
+  version "0.1.1"
+  resolved "https://registry.yarnpkg.com/@firebase/app-types/-/app-types-0.1.1.tgz#1b794e101c779310763b1bfce8c24e7728fb9a91"
+
 "@firebase/app@^0.1.1":
   version "0.1.5"
   resolved "https://registry.yarnpkg.com/@firebase/app/-/app-0.1.5.tgz#3e7610a69ba6dbebc649a1b785eb898619c8a067"
@@ -13,9 +17,17 @@
     "@firebase/app-types" "0.1.0"
     "@firebase/util" "0.1.5"
 
+"@firebase/auth-types@^0.1.1":
+  version "0.1.1"
+  resolved "https://registry.yarnpkg.com/@firebase/auth-types/-/auth-types-0.1.1.tgz#1b38caa9971cc9d8ed6dd114976d18d986f24a9a"
+
 "@firebase/database-types@0.1.0":
   version "0.1.0"
   resolved "https://registry.yarnpkg.com/@firebase/database-types/-/database-types-0.1.0.tgz#dbc9e096cf1061ac422f17e8957baac6d3c018a7"
+
+"@firebase/database-types@^0.1.1":
+  version "0.1.1"
+  resolved "https://registry.yarnpkg.com/@firebase/database-types/-/database-types-0.1.1.tgz#601b8040191766777b785c1675eac34ce57c669c"
 
 "@firebase/database@^0.1.3":
   version "0.1.6"
@@ -25,9 +37,25 @@
     "@firebase/util" "0.1.5"
     faye-websocket "0.11.1"
 
+"@firebase/firestore-types@^0.2.1":
+  version "0.2.1"
+  resolved "https://registry.yarnpkg.com/@firebase/firestore-types/-/firestore-types-0.2.1.tgz#f2f35856b283a521c64ac4fa45d140010037e046"
+
+"@firebase/messaging-types@^0.1.1":
+  version "0.1.1"
+  resolved "https://registry.yarnpkg.com/@firebase/messaging-types/-/messaging-types-0.1.1.tgz#66d61d800081b3f7e4d26f1f8523f0a307e37730"
+
+"@firebase/storage-types@^0.1.1":
+  version "0.1.1"
+  resolved "https://registry.yarnpkg.com/@firebase/storage-types/-/storage-types-0.1.1.tgz#c8e1cd328e96ef5b88e07b0a4f5ce1c68087126b"
+
 "@firebase/util@0.1.5":
   version "0.1.5"
   resolved "https://registry.yarnpkg.com/@firebase/util/-/util-0.1.5.tgz#b8daf57cedda1c035fddf5ca9c56b86a1f95b38b"
+
+"@firebase/util@^0.1.7":
+  version "0.1.8"
+  resolved "https://registry.yarnpkg.com/@firebase/util/-/util-0.1.8.tgz#7a7eb9d5fc56ba9e9b854bb2357d51f83b07df31"
 
 "@google-cloud/common-grpc@^0.5.0":
   version "0.5.1"
@@ -292,28 +320,38 @@
   version "0.0.28"
   resolved "https://registry.yarnpkg.com/@types/stack-trace/-/stack-trace-0.0.28.tgz#b3ef4f869f1d8e628408cc26d679b987b6f1aace"
 
+"@types/strip-bom@^3.0.0":
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/@types/strip-bom/-/strip-bom-3.0.0.tgz#14a8ec3956c2e81edb7520790aecf21c290aebd2"
+
+"@types/strip-json-comments@0.0.30":
+  version "0.0.30"
+  resolved "https://registry.yarnpkg.com/@types/strip-json-comments/-/strip-json-comments-0.0.30.tgz#9aa30c04db212a9a0649d6ae6fd50accc40748a1"
+
 abbrev@1:
   version "1.1.1"
   resolved "https://registry.yarnpkg.com/abbrev/-/abbrev-1.1.1.tgz#f8f2c887ad10bf67f634f005b6987fed3179aac8"
 
-abstracted-admin@^0.7.7:
-  version "0.7.7"
-  resolved "https://registry.yarnpkg.com/abstracted-admin/-/abstracted-admin-0.7.7.tgz#489bc2fe537683f104a1f4be7382a25f3bc5476f"
+abstracted-admin@^0.8.0:
+  version "0.8.0"
+  resolved "https://registry.yarnpkg.com/abstracted-admin/-/abstracted-admin-0.8.0.tgz#a5be0463c571f122f8e45968b6c48186ea60a57a"
   dependencies:
-    abstracted-firebase "0.1.3"
+    abstracted-firebase "0.2.0"
     common-types "^1.5.2"
     firebase-admin "^5.8.1"
+    firebase-api-surface "^0.7.1"
     lodash.first "^3.0.0"
     lodash.last "^3.0.0"
     moment "^2.20.1"
     serialized-query "^0.2.9"
     typed-conversions "^0.7.3"
 
-abstracted-firebase@0.1.3:
-  version "0.1.3"
-  resolved "https://registry.yarnpkg.com/abstracted-firebase/-/abstracted-firebase-0.1.3.tgz#43ecae41b3e3c1d8e4ff74b84f939e6e8e4e01d9"
+abstracted-firebase@0.2.0:
+  version "0.2.0"
+  resolved "https://registry.yarnpkg.com/abstracted-firebase/-/abstracted-firebase-0.2.0.tgz#403ebb56af3f105ba36b3658d96bd404086d3520"
   dependencies:
     common-types "^1.5.1"
+    firebase-api-surface "^0.7.1"
     lodash.first "^3.0.0"
     lodash.last "^3.0.0"
     moment "^2.20.1"
@@ -676,7 +714,7 @@ chai@^4.0.0:
     pathval "^1.0.0"
     type-detect "^4.0.0"
 
-chalk@*, chalk@^2.0.0, chalk@^2.1.0, chalk@^2.3.0:
+chalk@*, chalk@^2.1.0, chalk@^2.3.0:
   version "2.3.0"
   resolved "https://registry.yarnpkg.com/chalk/-/chalk-2.3.0.tgz#b5ea48efc9c1793dccc9b4767c93914d3f2d52ba"
   dependencies:
@@ -1116,6 +1154,18 @@ firebase-admin@^5.8.1:
     faye-websocket "0.9.3"
     jsonwebtoken "8.1.0"
     node-forge "0.7.1"
+
+firebase-api-surface@^0.7.1, firebase-api-surface@^0.7.7:
+  version "0.7.7"
+  resolved "https://registry.yarnpkg.com/firebase-api-surface/-/firebase-api-surface-0.7.7.tgz#f49989434ec7db407067ea79639db54227580eba"
+  dependencies:
+    "@firebase/app-types" "^0.1.1"
+    "@firebase/auth-types" "^0.1.1"
+    "@firebase/database-types" "^0.1.1"
+    "@firebase/firestore-types" "^0.2.1"
+    "@firebase/messaging-types" "^0.1.1"
+    "@firebase/storage-types" "^0.1.1"
+    "@firebase/util" "^0.1.7"
 
 firebase-key@^1.0.6:
   version "1.0.6"
@@ -1764,7 +1814,7 @@ js-yaml@3.6.1:
     argparse "^1.0.7"
     esprima "^2.6.0"
 
-js-yaml@^3.0.0, js-yaml@^3.7.0:
+js-yaml@^3.10.0, js-yaml@^3.7.0:
   version "3.10.0"
   resolved "https://registry.yarnpkg.com/js-yaml/-/js-yaml-3.10.0.tgz#2e78441646bd4682e963f22b6e92823c309c62dc"
   dependencies:
@@ -2764,11 +2814,11 @@ sntp@2.x.x:
   dependencies:
     hoek "4.x.x"
 
-source-map-support@^0.4.0:
-  version "0.4.18"
-  resolved "https://registry.yarnpkg.com/source-map-support/-/source-map-support-0.4.18.tgz#0286a6de8be42641338594e97ccea75f0a2c585f"
+source-map-support@^0.5.0:
+  version "0.5.3"
+  resolved "https://registry.yarnpkg.com/source-map-support/-/source-map-support-0.5.3.tgz#2b3d5fff298cfa4d1afd7d4352d569e9a0158e76"
   dependencies:
-    source-map "^0.5.6"
+    source-map "^0.6.0"
 
 source-map@^0.4.4:
   version "0.4.4"
@@ -2780,7 +2830,7 @@ source-map@^0.5.3, source-map@^0.5.6, source-map@~0.5.1:
   version "0.5.7"
   resolved "https://registry.yarnpkg.com/source-map/-/source-map-0.5.7.tgz#8a039d2d1021d22d1ea14c80d8ea468ba2ef3fcc"
 
-source-map@^0.6.1:
+source-map@^0.6.0, source-map@^0.6.1:
   version "0.6.1"
   resolved "https://registry.yarnpkg.com/source-map/-/source-map-0.6.1.tgz#74722af32e9614e9c287a8d0bbde48b5e2f1a263"
 
@@ -2993,25 +3043,27 @@ trim-right@^1.0.1:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/trim-right/-/trim-right-1.0.1.tgz#cb2e1203067e0c8de1f614094b9fe45704ea6003"
 
-ts-node@^3.1.0:
-  version "3.3.0"
-  resolved "https://registry.yarnpkg.com/ts-node/-/ts-node-3.3.0.tgz#c13c6a3024e30be1180dd53038fc209289d4bf69"
+ts-node@^4.1.0:
+  version "4.1.0"
+  resolved "https://registry.yarnpkg.com/ts-node/-/ts-node-4.1.0.tgz#36d9529c7b90bb993306c408cd07f7743de20712"
   dependencies:
     arrify "^1.0.0"
-    chalk "^2.0.0"
+    chalk "^2.3.0"
     diff "^3.1.0"
     make-error "^1.1.1"
     minimist "^1.2.0"
     mkdirp "^0.5.1"
-    source-map-support "^0.4.0"
-    tsconfig "^6.0.0"
+    source-map-support "^0.5.0"
+    tsconfig "^7.0.0"
     v8flags "^3.0.0"
     yn "^2.0.0"
 
-tsconfig@^6.0.0:
-  version "6.0.0"
-  resolved "https://registry.yarnpkg.com/tsconfig/-/tsconfig-6.0.0.tgz#6b0e8376003d7af1864f8df8f89dd0059ffcd032"
+tsconfig@^7.0.0:
+  version "7.0.0"
+  resolved "https://registry.yarnpkg.com/tsconfig/-/tsconfig-7.0.0.tgz#84538875a4dc216e5c4a5432b3a4dec3d54e91b7"
   dependencies:
+    "@types/strip-bom" "^3.0.0"
+    "@types/strip-json-comments" "0.0.30"
     strip-bom "^3.0.0"
     strip-json-comments "^2.0.0"
 
@@ -3023,7 +3075,7 @@ tslint-config-prettier@^1.1.0:
   version "1.6.0"
   resolved "https://registry.yarnpkg.com/tslint-config-prettier/-/tslint-config-prettier-1.6.0.tgz#fec1ee8fb07e8f033c63fed6b135af997f31962a"
 
-tslint@^5.9.0:
+tslint@^5.9.2:
   version "5.9.1"
   resolved "https://registry.yarnpkg.com/tslint/-/tslint-5.9.1.tgz#1255f87a3ff57eb0b0e1f0e610a8b4748046c9ae"
   dependencies:
@@ -3074,9 +3126,9 @@ typedarray@^0.0.6:
   version "0.0.6"
   resolved "https://registry.yarnpkg.com/typedarray/-/typedarray-0.0.6.tgz#867ac74e3864187b1d3d47d996a78ec5c8830777"
 
-typescript@^2.6.2:
-  version "2.6.2"
-  resolved "https://registry.yarnpkg.com/typescript/-/typescript-2.6.2.tgz#3c5b6fd7f6de0914269027f03c0946758f7673a4"
+typescript@^2.7.2:
+  version "2.8.0-dev.20180202"
+  resolved "https://registry.yarnpkg.com/typescript/-/typescript-2.8.0-dev.20180202.tgz#09c96851af6e29f50f10a877c5726ae1a94761b5"
 
 uglify-js@^2.6:
   version "2.8.29"

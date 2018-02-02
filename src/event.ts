@@ -1,8 +1,9 @@
 import { Model } from "./index";
 import { SerializedQuery } from "serialized-query";
-import { FirebaseEvent, IDictionary } from "common-types";
+import { IDictionary } from "common-types";
 import debounce = require("lodash.debounce");
 import { snapshotToHash } from "typed-conversions";
+import { rtdb } from "firebase-api-surface";
 //#region generalized structures
 
 /** Enumeration of all Firemodel Actions that will be fired */
@@ -75,18 +76,10 @@ export async function modelListener<T>(
 
   // const map = new RelationshipMap();
 
-  const child_added = childEvent<T>(FirebaseEvent.child_added, model, dispatch);
-  const child_moved = childEvent<T>(FirebaseEvent.child_moved, model, dispatch);
-  const child_removed = childEvent<T>(
-    FirebaseEvent.child_removed,
-    model,
-    dispatch
-  );
-  const child_changed = childEvent<T>(
-    FirebaseEvent.child_changed,
-    model,
-    dispatch
-  );
+  const child_added = childEvent<T>("child_added", model, dispatch);
+  const child_moved = childEvent<T>("child_moved", model, dispatch);
+  const child_removed = childEvent<T>("child_removed", model, dispatch);
+  const child_changed = childEvent<T>("child_changed", model, dispatch);
 
   query
     .deserialize()
@@ -136,7 +129,7 @@ const relationshipChanges = <T>(
   record: T
 ) => {
   switch (eventType) {
-    case FirebaseEvent.child_added:
+    case "child_added":
   }
 };
 
@@ -153,7 +146,7 @@ export function defaultDispatcher<T = IFMAction>(action: T): any {
 }
 
 export const childEvent = <T>(
-  eventType: FirebaseEvent,
+  eventType: rtdb.EventType,
   model: Model<any>,
   dispatch = defaultDispatcher
 ) => (snap: any, previous?: string) => {
