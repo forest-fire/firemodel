@@ -42,8 +42,8 @@ describe("Model > CRUD Ops: ", () => {
       age: 84
     });
 
-    const people = await PersonModel.getAll();
-    expect(people.length).to.equal(26);
+    const peeps = await PersonModel.getAll();
+    expect(peeps.length).to.equal(26);
     const charlie = await PersonModel.findRecord("name", "Charlie Chaplin");
     expect(charlie.data.age).to.equal(84);
   });
@@ -54,7 +54,8 @@ describe("Model > CRUD Ops: ", () => {
       name: "Charlie Chaplin",
       age: 84
     });
-    await helpers.timeout(50);
+    console.log(ref.key);
+
     await PersonModel.update(ref.key, { age: 100 });
     const charlie = await PersonModel.findRecord("name", "Charlie Chaplin");
     expect(charlie.data.age).to.equal(100);
@@ -69,48 +70,47 @@ describe("Model > CRUD Ops: ", () => {
       age: 84
     });
     const nada = await PersonModel.remove(ref.key);
-    const people = await PersonModel.getAll();
-    expect(people.length).to.equal(1);
-    expect(people.data[0].name).to.equal("Bob Geldoff");
+    const peeps = await PersonModel.getAll();
+    console.log(peeps.data);
+
+    expect(peeps.length).to.equal(1);
+    expect(peeps.data[0].name).to.equal("Bob Geldoff");
     expect(nada).to.be.a("undefined");
   });
 
   it("Model.set() works when ID is present", async () => {
     db.resetMockDb();
     const PersonModel = new Model<Person>(Person, db);
-    const ref = await PersonModel.set({
+    await PersonModel.set({
       id: "bob",
       name: "Bobby Geldoff",
       age: 65
     });
 
-    // const nada = await PersonModel.remove(ref.key);
     const bob = await PersonModel.getRecord("bob");
-    const val = await db.getList("/people");
+    const val = await db.getList("/peeps");
     expect(bob).to.be.an("object");
     console.log(val);
 
     expect(bob.data.name).to.be.equal("Bobby Geldoff");
-    const people = await PersonModel.getAll();
-    console.log(people.data);
-    expect(people.data).to.have.lengthOf(1);
-
-    // expect(people.data[0].name).to.equal('Bob Geldoff');
-    // expect(nada).to.be.a('undefined');
+    const peeps = await PersonModel.getAll();
+    expect(peeps.data).to.have.lengthOf(1);
+    expect(peeps.data[0].name).to.equal("Bobby Geldoff");
   });
 
   it("Model.remove() returns the previous value when asked for it", async () => {
-    const PersonModel = new Model<Person>(Person, db);
-    await PersonModel.push({ name: "Bob Geldoff", age: 65 });
-    const ref = await PersonModel.push({
+    db.resetMockDb();
+    const People = new Model<Person>(Person, db);
+    await People.push({ name: "Bob Geldoff", age: 65 });
+    const ref = await People.push({
       name: "Charlie Chaplin",
       age: 84
     });
-    const previous = await PersonModel.remove(ref.key, true);
-    const people = await PersonModel.getAll();
+    const previous = await People.remove(ref.key, true);
+    const peeps = await People.getAll();
 
-    expect(people.length).to.equal(1);
-    expect(people.data[0].name).to.equal("Bob Geldoff");
+    expect(peeps.length).to.equal(1);
+    expect(peeps.data[0].name).to.equal("Bob Geldoff");
     expect(previous.name).to.equal("Charlie Chaplin");
   });
 

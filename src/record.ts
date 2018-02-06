@@ -1,5 +1,6 @@
+// tslint:disable-next-line:no-implicit-dependencies
+import { RealTimeDB } from "abstracted-firebase";
 import { BaseSchema, ISchemaOptions } from "./index";
-import DB from "abstracted-admin";
 
 export class Record<T extends BaseSchema> {
   private _existsOnDB: boolean = false;
@@ -8,7 +9,7 @@ export class Record<T extends BaseSchema> {
   constructor(
     private _schemaClass: new () => T,
     private _pluralName: string,
-    private _db: DB,
+    private _db: RealTimeDB,
     private _data?: T
   ) {
     this._data = new this._schemaClass();
@@ -76,8 +77,9 @@ export class Record<T extends BaseSchema> {
     } else {
       this._existsOnDB = false;
       throw new Error(
-        `Unknown Key: the key "${id}" was not found in Firebase at "${this
-          .dbPath}".`
+        `Unknown Key: the key "${id}" was not found in Firebase at "${
+          this.dbPath
+        }".`
       );
     }
 
