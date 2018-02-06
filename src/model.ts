@@ -197,7 +197,7 @@ export default class Model<T extends BaseSchema> {
   /** sets a record to the database */
   public async set(record: T, auditInfo: IDictionary = {}) {
     if (!record.id) {
-      createError(
+      throw new createError(
         "set/no-id",
         `Attempt to set "${
           this.dbPath

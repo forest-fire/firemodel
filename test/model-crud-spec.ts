@@ -25,6 +25,7 @@ describe("Model > CRUD Ops: ", () => {
   let db: DB;
   beforeEach(() => {
     db = new DB({ mocking: true });
+    db.resetMockDb();
   });
 
   it("Model.push() works", async () => {
@@ -79,7 +80,6 @@ describe("Model > CRUD Ops: ", () => {
   });
 
   it("Model.set() works when ID is present", async () => {
-    db.resetMockDb();
     const PersonModel = new Model<Person>(Person, db);
     await PersonModel.set({
       id: "bob",
@@ -98,8 +98,20 @@ describe("Model > CRUD Ops: ", () => {
     expect(peeps.data[0].name).to.equal("Bobby Geldoff");
   });
 
+  it("Model.push() throws an error when no ID is present", async () => {
+    const PersonModel = new Model<Person>(Person, db);
+    try {
+      await PersonModel.set({
+        name: "Bobby Geldoff",
+        age: 65
+      });
+      throw new Error("Setting a person without an ID should not be allowed");
+    } catch (e) {
+      expect(e.code).to.equal("set/no-id");
+    }
+  });
+
   it("Model.remove() returns the previous value when asked for it", async () => {
-    db.resetMockDb();
     const People = new Model<Person>(Person, db);
     await People.push({ name: "Bob Geldoff", age: 65 });
     const ref = await People.push({
@@ -112,6 +124,22 @@ describe("Model > CRUD Ops: ", () => {
     expect(peeps.length).to.equal(1);
     expect(peeps.data[0].name).to.equal("Bob Geldoff");
     expect(previous.name).to.equal("Charlie Chaplin");
+  });
+
+  it("Model.remove() doesn't return the previous value by default", async () => {
+    db.resetMockDb();
+    const People = new Model<Person>(Person, db);
+    await People.push({ name: "Bob Geldoff", age: 65 });
+    const ref = await People.push({
+      name: "Charlie Chaplin",
+      age: 84
+    });
+    const previous = await People.remove(ref.key);
+    const peeps = await People.getAll();
+
+    expect(peeps.length).to.equal(1);
+    expect(peeps.data[0].name).to.equal("Bob Geldoff");
+    expect(previous).to.equal(undefined);
   });
 
   it.skip("Model.updateWhere() works");
