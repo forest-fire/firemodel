@@ -27,12 +27,13 @@ describe("Model > Auditing: ", () => {
     db = new DB({ mocking: true });
   });
 
-  it("Audit records stored when schema has them configured on", async () => {
+  it.only("Audit records stored when schema has them configured on", async () => {
     const CompanyModel = new Model<Company>(Company, db);
     const { key } = await CompanyModel.push({
       name: "Acme Corp",
       employees: 10
     });
+
     await CompanyModel.update(key, { founded: "1972" });
     await CompanyModel.remove(key, false, { reason: "testing" });
     const auditTrail = await CompanyModel.getAuditTrail();
@@ -50,7 +51,6 @@ describe("Model > Auditing: ", () => {
   });
 
   it("Audit records NOT stored when schema has them configured off", async () => {
-    const db = new DB({ mocking: true });
     const PersonModel = new Model<Person>(Person, db);
     const { key } = await PersonModel.push({ name: "Joe Jackson", age: 10 });
     await PersonModel.update(key, { age: 44 });

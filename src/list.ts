@@ -1,6 +1,7 @@
-import { BaseSchema, ISchemaOptions } from './index';
-import DB from 'abstracted-admin';
-import { SerializedQuery } from 'serialized-query';
+// tslint:disable-next-line:no-implicit-dependencies
+import { RealTimeDB } from "abstracted-firebase";
+import { BaseSchema, ISchemaOptions } from "./index";
+import { SerializedQuery } from "serialized-query";
 
 export class List<T extends BaseSchema> {
   private _schema: T;
@@ -8,7 +9,7 @@ export class List<T extends BaseSchema> {
   constructor(
     private _schemaClass: new () => T,
     private _pluralName: string,
-    private _db: DB,
+    private _db: RealTimeDB,
     private _data: T[] = []
   ) {
     this._schema = new this._schemaClass();
@@ -30,10 +31,7 @@ export class List<T extends BaseSchema> {
   }
 
   public get dbPath() {
-    return [
-      this._schema.META.dbOffset,
-      this.pluralName
-    ].join('/');
+    return [this._schema.META.dbOffset, this.pluralName].join("/");
   }
 
   public get meta(): ISchemaOptions {
