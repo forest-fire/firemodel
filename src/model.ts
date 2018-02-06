@@ -1,5 +1,6 @@
 import { IDictionary, datetime } from "common-types";
-import { DB, Snapshot } from "abstracted-admin";
+// tslint:disable-next-line:no-implicit-dependencies
+import { RealTimeDB, rtdb } from "abstracted-firebase";
 import { VerboseError } from "./VerboseError";
 import { ISchemaMetaProperties, BaseSchema, Record, List } from "./index";
 import { SchemaCallback } from "firemock";
@@ -9,7 +10,9 @@ import * as pluralize from "pluralize";
 import camelCase = require("lodash.camelcase");
 import { SerializedQuery } from "serialized-query";
 import { snapshotToArray, ISnapShot } from "typed-conversions";
-import { slashNotation } from "./util";
+import { slashNotation, createError } from "./util";
+import { key as fbk } from "firebase-key";
+import Reference from "../../firemock/lib/reference";
 
 export type ModelProperty<T> = keyof T | keyof IBaseModel;
 export type PartialModel<T> = {
@@ -90,14 +93,18 @@ export default class Model<T extends BaseSchema> {
 
   private _bespokeMockGenerator: SchemaCallback<T>;
 
-  private _db: DB;
+  private _db: RealTimeDB;
   private _key: string;
-  private _snap: Snapshot;
-  private _retrievingRecord: Promise<Snapshot>;
+  private _snap: rtdb.IDataSnapshot;
+  private _retrievingRecord: Promise<rtdb.IDataSnapshot>;
 
   //#endregion
 
-  constructor(private schemaClass: new () => T, db: DB, logger?: ILogger) {
+  constructor(
+    private schemaClass: new () => T,
+    db: RealTimeDB,
+    logger?: ILogger
+  ) {
     this._db = db;
     this.logger = logger ? logger : baseLogger;
     this._record = new this.schemaClass();
@@ -189,6 +196,14 @@ export default class Model<T extends BaseSchema> {
 
   /** sets a record to the database */
   public async set(record: T, auditInfo: IDictionary = {}) {
+    if (!record.id) {
+      createError(
+        "set/no-id",
+        `Attempt to set "${
+          this.dbPath
+        }" in database but record had no "id" property.`
+      );
+    }
     const now = this.now();
     record = {
       ...(record as any),
@@ -198,7 +213,13 @@ export default class Model<T extends BaseSchema> {
       ...auditInfo,
       ...{ properties: Object.keys(record) }
     };
-    const ref = await this.crud("set", now, null, record, auditInfo);
+    const ref = await this.crud(
+      "set",
+      now,
+      slashNotation(this.dbPath, record.id),
+      record,
+      auditInfo
+    );
 
     return ref;
   }
@@ -215,8 +236,7 @@ export default class Model<T extends BaseSchema> {
       ...{ properties: Object.keys(newRecord) }
     };
     const ref = await this.crud("push", now, null, newRecord, auditInfo);
-
-    return ref;
+    return ref as rtdb.IReference<T>;
   }
 
   public async update(
@@ -235,7 +255,6 @@ export default class Model<T extends BaseSchema> {
     };
 
     await this.crud("update", now, key, updates, auditInfo);
-    return;
   }
 
   /**
@@ -253,14 +272,13 @@ export default class Model<T extends BaseSchema> {
     auditInfo: IDictionary = {}
   ) {
     const now = this.now();
-    const path = slashNotation(this.dbPath, key);
     let value: T;
     if (returnValue) {
-      value = await this._db.getRecord(path);
+      value = await this._db.getValue<T>(key);
     }
     await this.crud("remove", now, key, null, auditInfo);
 
-    return value;
+    return returnValue ? value : undefined;
   }
 
   public async getAuditTrail(filter: IAuditFilter = {}) {
@@ -312,9 +330,11 @@ export default class Model<T extends BaseSchema> {
     value?: Partial<T>,
     auditInfo?: IDictionary
   ) {
+    if (op === "push") {
+      key = slashNotation(this.dbPath, fbk());
+    }
     const isAuditable = this._record.META.audit;
     const auditPath = slashNotation(Model.auditBase, this.pluralName, key);
-    const recordPath = slashNotation(this.dbPath, key);
     let auditRef;
     if (isAuditable) {
       auditRef = await this.audit(op, when, key, auditInfo);
@@ -322,13 +342,14 @@ export default class Model<T extends BaseSchema> {
 
     switch (op) {
       case "set":
-        return this._db.set<T>(recordPath, value as T);
+        return this._db.set<T>(key, value as T);
       case "update":
-        return this._db.update<T>(recordPath, value);
+        return this._db.update<T>(key, value);
       case "push":
-        return this._db[op]<T>(recordPath, value as T);
+        // PUSH unlike SET returns a reference to the newly created record
+        return this._db.set<T>(key, value as T).then(() => this._db.ref(key));
       case "remove":
-        return this._db[op]<T>(recordPath);
+        return this._db.remove<T>(key);
 
       default:
         throw new VerboseError({
