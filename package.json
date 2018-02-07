@@ -1,6 +1,6 @@
 {
   "name": "firemodel",
-  "version": "0.7.1",
+  "version": "0.7.2",
   "description": "firemodel",
   "license": "MIT",
   "repository": "https://github.com/forest-fire/firemodel",
@@ -23,7 +23,7 @@
     "cli": "ts-node cli/index.ts --"
   },
   "dependencies": {
-    "abstracted-firebase": "^0.2.2",
+    "abstracted-firebase": "^0.2.3",
     "common-types": "^1.5.2",
     "firebase-api-surface": "^0.7.9",
     "firebase-key": "^2.0.0",
@@ -58,8 +58,9 @@
     "@types/pluralize": "^0.0.28",
     "@types/rimraf": "^0.0.28",
     "@types/stack-trace": "^0.0.28",
+    "abstracted-admin": "^0.8.3",
     "async-shelljs": "^0.1.2",
-    "chai": "^4.0.0",
+    "chai": "^4.1.2",
     "chalk": "^2.3.0",
     "chance": "^1.0.0",
     "coveralls": "^2.0.0",
