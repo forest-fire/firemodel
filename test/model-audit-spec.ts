@@ -27,7 +27,7 @@ describe("Model > Auditing: ", () => {
     db = new DB({ mocking: true });
   });
 
-  it.only("Audit records stored when schema has them configured on", async () => {
+  it("Audit records stored when schema has them configured on", async () => {
     const CompanyModel = new Model<Company>(Company, db);
     const { key } = await CompanyModel.push({
       name: "Acme Corp",
