@@ -11,17 +11,17 @@
   "typings": "lib/index.d.ts",
   "scripts": {
     "clean": "rimraf lib",
-    "lint": "npx tslint --force --format verbose \"src/**/*.ts\"",
-    "build": "npx ts-node ./scripts/build.ts",
-    "test": "npx ts-node ./scripts/test.ts ",
+    "lint": "./node_modules/.bin/tslint --force --format verbose \"src/**/*.ts\"",
+    "build": "./node_modules/.bin/ts-node ./scripts/build.ts",
+    "test": "./node_modules/.bin/ts-node ./scripts/test.ts ",
     "coverage":
       "nyc --reporter=text --reporter=html mocha --compilers ts:ts-node/register",
-    "watch": "npx ts-node ./scripts/watch.ts",
-    "watch:test": "npx ts-node ./scripts/watch.ts test",
-    "watch:all": "npx ts-node ./scripts/watch.ts all",
-    "deploy": "npx ts-node ./scripts/deploy.ts ",
-    "package": "npx ts-node ./scripts/package.ts ",
-    "cli": "npx ts-node cli/index.ts --"
+    "watch": "./node_modules/.bin/ts-node ./scripts/watch.ts",
+    "watch:test": "./node_modules/.bin/ts-node ./scripts/watch.ts test",
+    "watch:all": "./node_modules/.bin/ts-node ./scripts/watch.ts all",
+    "deploy": "./node_modules/.bin/ts-node ./scripts/deploy.ts ",
+    "package": "./node_modules/.bin/ts-node ./scripts/package.ts ",
+    "cli": "./node_modules/.bin/ts-node cli/index.ts --"
   },
   "dependencies": {
     "abstracted-firebase": "^0.2.3",
