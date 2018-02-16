@@ -28,6 +28,37 @@ describe("Model > CRUD Ops: ", () => {
     db.resetMockDb();
   });
 
+  it("Write operations include both dbOffset and plural model name", async () => {
+    const PersonModel = new Model<Person>(Person, db);
+    const response = await PersonModel.push({
+      name: "Charlie Chaplin",
+      age: 84
+    });
+    const id = response.key.split("/").pop();
+    let peeps = await db.getList<Person>(`authenticated/people`);
+    expect(PersonModel.pluralName).to.equal("people");
+    expect(db.mock.db.authenticated.people[id]).to.not.equal("undefined");
+    expect(peeps).to.be.an("array");
+    expect(peeps[0].id).to.equal(id);
+    expect(peeps[0].age).to.equal(84);
+
+    await PersonModel.update(id, { age: 99 });
+    peeps = await db.getList<Person>(`authenticated/people`);
+    expect(peeps[0].age).to.equal(99);
+    await PersonModel.set({
+      id: "1234",
+      name: "Bilbo Baggins",
+      age: 12
+    });
+    peeps = await db.getList<Person>(`authenticated/people`);
+    expect(peeps.length).to.equal(2);
+    expect(peeps.filter(p => p.id === "1234")[0].age).to.equal(12);
+    await PersonModel.remove("1234");
+    peeps = await db.getList<Person>(`authenticated/people`);
+    expect(peeps.length).to.equal(1);
+    expect(peeps[0].age).to.equal(99);
+  });
+
   it("Model.push() works", async () => {
     db.mock
       .addSchema("person", h => () => ({
@@ -55,9 +86,8 @@ describe("Model > CRUD Ops: ", () => {
       name: "Charlie Chaplin",
       age: 84
     });
-    console.log(ref.key);
 
-    await PersonModel.update(ref.key, { age: 100 });
+    await PersonModel.update(ref.key.split("/").pop(), { age: 100 });
     const charlie = await PersonModel.findRecord("name", "Charlie Chaplin");
     expect(charlie.data.age).to.equal(100);
     expect(charlie.data.lastUpdated).is.not.equal(charlie.data.createdAt);
@@ -65,14 +95,13 @@ describe("Model > CRUD Ops: ", () => {
 
   it("Model.remove() works with default params", async () => {
     const PersonModel = new Model<Person>(Person, db);
-    await PersonModel.push({ name: "Bob Geldoff", age: 65 });
-    const ref = await PersonModel.push({
+    const bob = await PersonModel.push({ name: "Bob Geldoff", age: 65 });
+    const charlie = await PersonModel.push({
       name: "Charlie Chaplin",
       age: 84
     });
-    const nada = await PersonModel.remove(ref.key);
-    const peeps = await PersonModel.getAll();
-    console.log(peeps.data);
+    const nada = await PersonModel.remove(charlie.key);
+    let peeps = await PersonModel.getAll();
 
     expect(peeps.length).to.equal(1);
     expect(peeps.data[0].name).to.equal("Bob Geldoff");
@@ -90,7 +119,6 @@ describe("Model > CRUD Ops: ", () => {
     const bob = await PersonModel.getRecord("bob");
     const val = await db.getList("/peeps");
     expect(bob).to.be.an("object");
-    console.log(val);
 
     expect(bob.data.name).to.be.equal("Bobby Geldoff");
     const peeps = await PersonModel.getAll();
@@ -129,17 +157,21 @@ describe("Model > CRUD Ops: ", () => {
   it("Model.remove() doesn't return the previous value by default", async () => {
     db.resetMockDb();
     const People = new Model<Person>(Person, db);
-    await People.push({ name: "Bob Geldoff", age: 65 });
-    const ref = await People.push({
+    const bob = await People.push({ name: "Bob Geldoff", age: 65 });
+    const charlie = await People.push({
       name: "Charlie Chaplin",
       age: 84
     });
-    const previous = await People.remove(ref.key);
-    const peeps = await People.getAll();
-
+    let peeps = await People.getAll();
+    expect(peeps.length).to.equal(2);
+    const previous = await People.remove(charlie.key); // removed with full path
+    peeps = await People.getAll();
     expect(peeps.length).to.equal(1);
-    expect(peeps.data[0].name).to.equal("Bob Geldoff");
     expect(previous).to.equal(undefined);
+
+    await People.remove(bob.key.split("/").pop()); // removed with just the 'id'
+    peeps = await People.getAll();
+    expect(peeps.length).to.equal(0);
   });
 
   it.skip("Model.updateWhere() works");

@@ -1,4 +1,4 @@
-import chalk from "chalk";
+let chalk: any;
 export type LazyString = () => string;
 export interface IStackFrame {
   getTypeName: LazyString;
@@ -21,7 +21,7 @@ export interface IVerboseError {
   stackFrames?: any[];
 }
 export class VerboseError extends Error implements IVerboseError {
-  public static useColor: true;
+  public static useColor: false;
   public static filePathDepth: 3;
   /**
    * If you want to use a library like stack-trace(node) or stacktrace-js(client) add in the "get"
@@ -47,6 +47,10 @@ export class VerboseError extends Error implements IVerboseError {
     this.message = err.message;
     this.module = err.module;
     this.function = err.function;
+    if (VerboseError.useColor) {
+      // tslint:disable-next-line:no-implicit-dependencies
+      chalk = require("chalk");
+    }
     const stackFrames = VerboseError.stackParser(this);
     if (stackFrames) {
       this.stackFrames = stackFrames.filter(
@@ -59,16 +63,10 @@ export class VerboseError extends Error implements IVerboseError {
         this.stackFrames
           .map(frame => {
             const isNative =
-              typeof frame.isNative === "function"
-                ? frame.isNative()
-                : frame.isNative;
+              typeof frame.isNative === "function" ? frame.isNative() : frame.isNative;
             const colorize = (content: string) =>
-              VerboseError.useColor && isNative
-                ? chalk.grey.italic(content)
-                : content;
-            const className = frame.getTypeName()
-              ? frame.getTypeName() + " → "
-              : "";
+              VerboseError.useColor && isNative ? chalk.grey.italic(content) : content;
+            const className = frame.getTypeName() ? frame.getTypeName() + " → " : "";
             const functionName =
               frame.getMethodName() || frame.getFunctionName() || "<anonymous>";
             const classAndFunction = VerboseError.useColor
@@ -93,15 +91,15 @@ export class VerboseError extends Error implements IVerboseError {
     }
   }
 
-  toString() {
+  public toString() {
     return this.message + this.stack;
   }
 
-  toJSON() {
+  public toJSON() {
     return JSON.stringify(this.toObject(), null, 2);
   }
 
-  toObject() {
+  public toObject() {
     return {
       code: this.code,
       message: this.message,
