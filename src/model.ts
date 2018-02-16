@@ -15,9 +15,7 @@ import { key as fbk } from "firebase-key";
 import Reference from "../../firemock/lib/reference";
 
 export type ModelProperty<T> = keyof T | keyof IBaseModel;
-export type PartialModel<T> = {
-  [P in keyof ModelProperty<T>]?: ModelProperty<T>[P]
-};
+export type PartialModel<T> = { [P in keyof ModelProperty<T>]?: ModelProperty<T>[P] };
 
 /**
  * all models should extend the base model therefore we can
@@ -54,12 +52,9 @@ export interface IAuditRecord {
 export type ConditionAndValue = [string, any];
 
 const baseLogger = {
-  msg: (message: string) =>
-    console.log(`${this.modelName}/${this._key}: ${message}`),
-  warn: (message: string) =>
-    console.warn(`${this.modelName}/${this._key}: ${message}`),
-  error: (message: string) =>
-    console.error(`${this.modelName}/${this._key}: ${message}`)
+  msg: (message: string) => console.log(`${this.modelName}/${this._key}: ${message}`),
+  warn: (message: string) => console.warn(`${this.modelName}/${this._key}: ${message}`),
+  error: (message: string) => console.error(`${this.modelName}/${this._key}: ${message}`)
 };
 
 export default class Model<T extends BaseSchema> {
@@ -74,9 +69,7 @@ export default class Model<T extends BaseSchema> {
     return camelCase(this._record.constructor.name);
   }
   public get pluralName() {
-    return this._pluralName
-      ? this._pluralName
-      : pluralize.plural(this.modelName);
+    return this._pluralName ? this._pluralName : pluralize.plural(this.modelName);
   }
 
   public set pluralName(name: string) {
@@ -100,11 +93,7 @@ export default class Model<T extends BaseSchema> {
 
   //#endregion
 
-  constructor(
-    private schemaClass: new () => T,
-    db: RealTimeDB,
-    logger?: ILogger
-  ) {
+  constructor(private schemaClass: new () => T, db: RealTimeDB, logger?: ILogger) {
     this._db = db;
     this.logger = logger ? logger : baseLogger;
     this._record = new this.schemaClass();
@@ -143,16 +132,11 @@ export default class Model<T extends BaseSchema> {
   }
 
   public getSome(): SerializedQuery<T> {
-    const [schemaClass, pluralName, db] = [
-      this.schemaClass,
-      this.pluralName,
-      this._db
-    ];
+    const [schemaClass, pluralName, db] = [this.schemaClass, this.pluralName, this._db];
     const query = SerializedQuery.path<T>(this.dbPath)
       .setDB(this._db)
       .handleSnapshot(
-        snap =>
-          new List<T>(schemaClass, pluralName, db, snapshotToArray<T>(snap))
+        snap => new List<T>(schemaClass, pluralName, db, snapshotToArray<T>(snap))
       );
     return query;
   }
@@ -199,9 +183,7 @@ export default class Model<T extends BaseSchema> {
     if (!record.id) {
       throw createError(
         "set/no-id",
-        `Attempt to set "${
-          this.dbPath
-        }" in database but record had no "id" property.`
+        `Attempt to set "${this.dbPath}" in database but record had no "id" property.`
       );
     }
     const now = this.now();
@@ -235,15 +217,18 @@ export default class Model<T extends BaseSchema> {
       ...auditInfo,
       ...{ properties: Object.keys(newRecord) }
     };
-    const ref = await this.crud("push", now, null, newRecord, auditInfo);
+
+    const ref = await this.crud(
+      "push",
+      now,
+      slashNotation(this.dbPath, fbk()),
+      newRecord,
+      auditInfo
+    );
     return ref as rtdb.IReference<T>;
   }
 
-  public async update(
-    key: string,
-    updates: Partial<T>,
-    auditInfo: IDictionary = {}
-  ) {
+  public async update(key: string, updates: Partial<T>, auditInfo: IDictionary = {}) {
     const now = this.now();
     auditInfo = {
       ...{ auditInfo },
@@ -254,7 +239,7 @@ export default class Model<T extends BaseSchema> {
       ...{ lastUpdated: now }
     };
 
-    await this.crud("update", now, key, updates, auditInfo);
+    await this.crud("update", now, slashNotation(this.dbPath, key), updates, auditInfo);
   }
 
   /**
@@ -262,7 +247,7 @@ export default class Model<T extends BaseSchema> {
    *
    * Remove a record from the database
    *
-   * @param key         the specific record which is to be removed
+   * @param key         the specific record id (but can alternatively be the full path if it matches dbPath)
    * @param returnValue optionally pass back the deleted record along removing from server
    * @param auditInfo   any additional information to be passed to the audit record (if Model has turned on)
    */
@@ -276,7 +261,13 @@ export default class Model<T extends BaseSchema> {
     if (returnValue) {
       value = await this._db.getValue<T>(key);
     }
-    await this.crud("remove", now, key, null, auditInfo);
+    await this.crud(
+      "remove",
+      now,
+      key.match(this.dbPath) ? key : slashNotation(this.dbPath, key),
+      null,
+      auditInfo
+    );
 
     return returnValue ? value : undefined;
   }
@@ -298,12 +289,7 @@ export default class Model<T extends BaseSchema> {
   //#endregion
 
   //#region PRIVATE API
-  private async audit(
-    crud: string,
-    when: string,
-    key: string,
-    info: IDictionary
-  ) {
+  private async audit(crud: string, when: string, key: string, info: IDictionary) {
     const path = slashNotation(Model.auditBase, this.pluralName);
     return this._db.push(path, {
       crud,
@@ -330,9 +316,6 @@ export default class Model<T extends BaseSchema> {
     value?: Partial<T>,
     auditInfo?: IDictionary
   ) {
-    if (op === "push") {
-      key = slashNotation(this.dbPath, fbk());
-    }
     const isAuditable = this._record.META.audit;
     const auditPath = slashNotation(Model.auditBase, this.pluralName, key);
     let auditRef;
@@ -349,6 +332,7 @@ export default class Model<T extends BaseSchema> {
         // PUSH unlike SET returns a reference to the newly created record
         return this._db.set<T>(key, value as T).then(() => this._db.ref(key));
       case "remove":
+        console.log(`removing ${key}`);
         return this._db.remove<T>(key);
 
       default:

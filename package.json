@@ -1,6 +1,6 @@
 {
   "name": "firemodel",
-  "version": "0.7.3",
+  "version": "0.8.0",
   "description": "firemodel",
   "license": "MIT",
   "repository": "https://github.com/forest-fire/firemodel",
@@ -11,16 +11,17 @@
   "typings": "lib/index.d.ts",
   "scripts": {
     "clean": "rimraf lib",
-    "lint": "tslint --force --format verbose \"src/**/*.ts\"",
-    "build": "ts-node ./scripts/build.ts",
-    "test": "ts-node ./scripts/test.ts ",
+    "lint": "npx tslint --force --format verbose \"src/**/*.ts\"",
+    "build": "npx ts-node ./scripts/build.ts",
+    "test": "npx ts-node ./scripts/test.ts ",
     "coverage":
       "nyc --reporter=text --reporter=html mocha --compilers ts:ts-node/register",
-    "watch": "ts-node ./scripts/watch.ts",
-    "watch:test": "ts-node ./scripts/watch.ts test",
-    "watch:all": "ts-node ./scripts/watch.ts all",
-    "deploy": "ts-node ./scripts/deploy.ts ",
-    "cli": "ts-node cli/index.ts --"
+    "watch": "npx ts-node ./scripts/watch.ts",
+    "watch:test": "npx ts-node ./scripts/watch.ts test",
+    "watch:all": "npx ts-node ./scripts/watch.ts all",
+    "deploy": "npx ts-node ./scripts/deploy.ts ",
+    "package": "npx ts-node ./scripts/package.ts ",
+    "cli": "npx ts-node cli/index.ts --"
   },
   "dependencies": {
     "abstracted-firebase": "^0.2.3",
