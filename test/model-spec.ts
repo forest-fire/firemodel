@@ -5,8 +5,7 @@ import {
   Record,
   List,
   IAuditRecord,
-  FirebaseCrudOperations,
-  SchemaCallback
+  FirebaseCrudOperations
 } from "../src/index";
 import DB from "abstracted-admin";
 import * as chai from "chai";
@@ -25,6 +24,7 @@ describe("Model", () => {
   let db: DB;
   beforeEach(() => {
     db = new DB({ mocking: true });
+    db.resetMockDb();
   });
 
   it("can act as a factory for a Record and Schema", () => {
@@ -51,7 +51,6 @@ describe("Model", () => {
   });
 
   it("newRecord(obj) returns Record with data loaded", () => {
-    const db = new DB({ mocking: true });
     const k = new Model<Klass>(Klass, db);
     const data = { foo: "test", bar: 12 };
     expect(k.newRecord(data).data.id).to.equal(undefined);
@@ -112,16 +111,13 @@ describe("Model", () => {
     const PersonModel = new Model<Person>(Person, db);
     try {
       const doesNotExist = await PersonModel.findRecord("age", 500);
-      expect(false, "Should have thrown error when no result found").to.equal(
-        true
-      );
+      expect(false, "Should have thrown error when no result found").to.equal(true);
     } catch (e) {
       expect(e.code).to.equal("not-found");
     }
   });
 
   it("Model.getAll() retrieves a List of records from DB", async () => {
-    const db = new DB({ mocking: true });
     db.mock
       .addSchema("person", h => () => ({
         name: h.faker.name.firstName(),
