@@ -9,7 +9,7 @@ import * as moment from "moment";
 import * as pluralize from "pluralize";
 import camelCase = require("lodash.camelcase");
 import { SerializedQuery } from "serialized-query";
-import { snapshotToArray, ISnapShot } from "typed-conversions";
+import { snapshotToArray, ISnapShot, arrayToHash } from "typed-conversions";
 import { slashNotation, createError } from "./util";
 import { key as fbk } from "firebase-key";
 import Reference from "../../firemock/lib/reference";
@@ -117,12 +117,16 @@ export default class Model<T extends BaseSchema> {
     return this._record.META.properties;
   }
 
-  public newRecord(hash: Partial<T> = {}) {
-    return new Record(this.schemaClass, this.pluralName, this._db, hash);
+  public get pushKeys() {
+    return this._record.META ? this._record.META.pushKeys : [];
+  }
+
+  public newRecord(hash?: T) {
+    return new Record<T>(this.schemaClass, this.pluralName, this._db, this.pushKeys, hash);
   }
 
   public async getRecord(id: string) {
-    const record = new Record<T>(this.schemaClass, this.pluralName, this._db);
+    const record = new Record<T>(this.schemaClass, this.pluralName, this._db, this.pushKeys);
     return record.load(id);
   }
 
@@ -135,16 +139,11 @@ export default class Model<T extends BaseSchema> {
     const [schemaClass, pluralName, db] = [this.schemaClass, this.pluralName, this._db];
     const query = SerializedQuery.path<T>(this.dbPath)
       .setDB(this._db)
-      .handleSnapshot(
-        snap => new List<T>(schemaClass, pluralName, db, snapshotToArray<T>(snap))
-      );
+      .handleSnapshot(snap => new List<T>(schemaClass, pluralName, db, snapshotToArray<T>(snap)));
     return query;
   }
 
-  public async findRecord(
-    prop: string,
-    value: string | number | boolean | ConditionAndValue
-  ) {
+  public async findRecord(prop: string, value: string | number | boolean | ConditionAndValue) {
     let operation: string = "=";
     if (value instanceof Array) {
       operation = value[0];
@@ -169,10 +168,7 @@ export default class Model<T extends BaseSchema> {
     }
   }
 
-  public async findAll(
-    prop: string,
-    value: string | number | boolean | ConditionAndValue
-  ) {
+  public async findAll(prop: string, value: string | number | boolean | ConditionAndValue) {
     const query = this._findBuilder(prop, value);
     const results = await this._db.getList<T>(query);
     return new List<T>(this.schemaClass, this.pluralName, this._db, results);
@@ -243,6 +239,32 @@ export default class Model<T extends BaseSchema> {
   }
 
   /**
+   * Performs a Firebase "update" on multiple dbPaths where the whole set of changes
+   * are treated as an "atomic" transaction. Note, however, that unlike a normal "update",
+   * a partial record will destructively update with Firebase's default behavor. To retain the
+   * non-destructive behavior we must discretely update/set the individual properties of each record.
+   *
+   * @param payload an array of records -- all with the 'id' property
+   */
+  public async multiPathUpdate(payload: T[]) {
+    const now = this.now();
+    const updates: IDictionary = {};
+    payload.map(record => {
+      record.lastUpdated = now;
+      const basePath = slashNotation(this.dbPath, record.id);
+      Object.keys(record)
+        .filter(p => p !== "id")
+        .map((prop: keyof T) => {
+          updates[slashNotation(basePath, prop)] = record[prop];
+        });
+    });
+
+    await this._db.ref("/").update(updates);
+
+    return;
+  }
+
+  /**
    * Remove
    *
    * Remove a record from the database
@@ -251,11 +273,7 @@ export default class Model<T extends BaseSchema> {
    * @param returnValue optionally pass back the deleted record along removing from server
    * @param auditInfo   any additional information to be passed to the audit record (if Model has turned on)
    */
-  public async remove(
-    key: string,
-    returnValue: boolean = false,
-    auditInfo: IDictionary = {}
-  ) {
+  public async remove(key: string, returnValue: boolean = false, auditInfo: IDictionary = {}) {
     const now = this.now();
     let value: T;
     if (returnValue) {
@@ -332,7 +350,6 @@ export default class Model<T extends BaseSchema> {
         // PUSH unlike SET returns a reference to the newly created record
         return this._db.set<T>(key, value as T).then(() => this._db.ref(key));
       case "remove":
-        console.log(`removing ${key}`);
         return this._db.remove<T>(key);
 
       default:

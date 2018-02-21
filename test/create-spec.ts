@@ -1,7 +1,8 @@
-import { Model, BaseSchema, Record } from '../src/index';
-import DB from 'abstracted-admin';
-import { SchemaCallback } from 'firemock';
-import * as chai from 'chai';
+// tslint:disable:no-implicit-dependencies
+import { Model, BaseSchema, Record } from "../src/index";
+import DB from "abstracted-admin";
+import { SchemaCallback } from "firemock";
+import * as chai from "chai";
 const expect = chai.expect;
 
 const personMock: SchemaCallback<Person> = h => () => ({
@@ -19,40 +20,47 @@ export class Person extends BaseSchema {
   public age: number;
 }
 
-describe('Create a Model: ', () => {
-  it('can instantiate a Model', () => {
+describe("Create a Model: ", () => {
+  it("can instantiate a Model", () => {
     const db = new DB({ mocking: true });
     const person = new Model<Person>(Person, db);
-    expect(person).to.be.an('object');
+
+    expect(person).to.be.an("object");
     expect(person).to.be.an.instanceOf(Model);
-    expect(person.modelName).to.equal('person');
+    expect(person.modelName).to.equal("person");
     expect(person.newRecord()).to.be.an.instanceOf(Record);
     expect(person.newRecord().data).to.be.an.instanceOf(Person);
   });
 
-  it('Schema\'s create() method instantiates', () => {
+  it("Schema's create() method instantiates", () => {
     const db = new DB({ mocking: true });
     const person = Person.create(db);
-    person.pluralName = 'foobar';
-    expect(person).to.be.an('object');
+    // const person = new Model<Person>(Person, db);
+    person.pluralName = "foobar";
+    expect(person).to.be.an("object");
     expect(person).to.be.an.instanceOf(Model);
-    expect(person.modelName).to.equal('person');
+    expect(person.modelName).to.equal("person");
     expect(person.newRecord().data).to.be.an.instanceOf(Person);
+    const record = person.newRecord({ id: "1234", name: "Testy McTesty", age: 50 });
+    expect(record.existsOnDB).to.equal(false);
+    expect(record.data.name).to.equal("Testy McTesty");
+    // expect(record.data.META).to.not.equal(undefined);
+    // record.pushKey("tags", "foobar");
+    console.log(record.existsOnDB);
   });
 
-  it('singular and plural names are right', () => {
+  it("singular and plural names are right", () => {
     const db = new DB({ mocking: true });
     const person = new Model<Person>(Person, db);
-    expect(person.modelName).to.equal('person');
-    expect(person.pluralName).to.equal('people');
+    expect(person.modelName).to.equal("person");
+    expect(person.pluralName).to.equal("people");
   });
 
-  it('can override plural name by setting pluralName', () => {
+  it("can override plural name by setting pluralName", () => {
     const db = new DB({ mocking: true });
     const person = new Model<Person>(Person, db);
-    person.pluralName = 'foobar';
-    expect(person.modelName).to.equal('person');
-    expect(person.pluralName).to.equal('foobar');
+    person.pluralName = "foobar";
+    expect(person.modelName).to.equal("person");
+    expect(person.pluralName).to.equal("foobar");
   });
-
 });

@@ -1,7 +1,11 @@
 language: node_js
 node_js:
+  - '9'
   - '8'
   - '6'
 script:
+  - npm install codecov -g
   - npm run build # build
   - npm run test  # test
+after_success:
+  - codecov

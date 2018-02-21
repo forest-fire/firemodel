@@ -1,15 +1,6 @@
 import "reflect-metadata";
-import {
-  BaseSchema,
-  RelationshipPolicy,
-  ISchemaMetaProperties
-} from "../index";
-import {
-  IDictionary,
-  PropertyDecorator,
-  ClassDecorator,
-  ReflectionProperty
-} from "common-types";
+import { BaseSchema, RelationshipPolicy, ISchemaMetaProperties } from "../index";
+import { IDictionary, PropertyDecorator, ClassDecorator, ReflectionProperty } from "common-types";
 import set = require("lodash.set");
 import get = require("lodash.get");
 
@@ -79,8 +70,7 @@ export const propertyDecorator = (
 
 /** lookup meta data for schema properties */
 function propertyMeta(context: object) {
-  return (prop: string): ISchemaMetaProperties =>
-    Reflect.getMetadata(prop, context);
+  return (prop: string): ISchemaMetaProperties => Reflect.getMetadata(prop, context);
 }
 
 /**
@@ -100,4 +90,9 @@ export function getProperties(target: object) {
 
 export function getRelationships(target: object) {
   return relationshipsBySchema[target.constructor.name];
+}
+
+export function getPushKeys(target: object) {
+  const props = getProperties(target);
+  return props.filter(p => p.pushKey).map(p => p.property);
 }
