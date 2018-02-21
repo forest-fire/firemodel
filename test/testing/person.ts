@@ -13,16 +13,24 @@ import {
   ownedBy,
   hasMany,
   inverse
-} from '../../src/index';
-import { Company } from './company';
+} from "../../src/index";
+import { Company } from "./company";
+import { IDictionary } from "common-types";
+import { pushKey } from "../../src/decorators/property";
 
-@schema({ dbOffset: 'authenticated' })
+@schema({ dbOffset: "authenticated" })
 export class Person extends BaseSchema {
+  // prettier-ignore
   @property @length(20) public name: string;
   @property public age?: number;
+  @property public gender?: "male" | "female" | "other";
+  // prettier-ignore
+  @property @pushKey public tags?: IDictionary<string>;
 
-  @ownedBy(Person) @inverse('children') public motherId?: fk;
-  @ownedBy(Person) @inverse('children') public fatherId?: fk;
+  // prettier-ignore
+  @ownedBy(Person) @inverse("children") public motherId?: fk;
+  // prettier-ignore
+  @ownedBy(Person) @inverse("children") public fatherId?: fk;
   @hasMany(Person) public children?: fk[];
 
   @ownedBy(Company) public employerId?: fk;

@@ -101,11 +101,50 @@ describe("Model > CRUD Ops: ", () => {
       age: 84
     });
     const nada = await PersonModel.remove(charlie.key);
-    let peeps = await PersonModel.getAll();
+    const peeps = await PersonModel.getAll();
 
     expect(peeps.length).to.equal(1);
     expect(peeps.data[0].name).to.equal("Bob Geldoff");
     expect(nada).to.be.a("undefined");
+  });
+
+  it("Model.multiPathUpdate() works", async () => {
+    const PersonModel = new Model<Person>(Person, db);
+    await PersonModel.set({
+      id: "1234",
+      name: "Charlie Chaplin",
+      age: 84,
+      gender: "male"
+    });
+    await PersonModel.set({
+      id: "4567",
+      name: "Bob Barker",
+      age: 99,
+      gender: "male"
+    });
+    PersonModel.multiPathUpdate([
+      {
+        id: "1234",
+        name: "Foo Manny Chooey",
+        age: 15,
+        gender: "female"
+      },
+      {
+        id: "4567",
+        name: "Chris Christofferson"
+      }
+    ]);
+    const peeps = await PersonModel.getAll();
+    const r1234 = peeps.data.filter(r => r.id === "1234")[0];
+    const r4567 = peeps.data.filter(r => r.id === "4567")[0];
+    console.log(Object.keys(db.mock.db.authenticated.people));
+    console.log(db.mock.db.authenticated.people["4567"]);
+
+    expect(r1234.age).to.equal(15);
+    expect(r1234.gender).to.equal("female");
+
+    expect(r4567.name).to.equal("Chris Christofferson");
+    expect(r4567.age).to.equal(99);
   });
 
   it("Model.set() works when ID is present", async () => {

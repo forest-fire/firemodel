@@ -1,6 +1,6 @@
-import 'reflect-metadata';
-import { IDictionary, ClassDecorator } from 'common-types';
-import { getRelationships, getProperties } from './decorator';
+import "reflect-metadata";
+import { IDictionary, ClassDecorator } from "common-types";
+import { getRelationships, getProperties, getPushKeys } from "./decorator";
 /* tslint:disable:only-arrow-functions */
 
 export interface ISchemaOptions {
@@ -14,6 +14,8 @@ export interface ISchemaOptions {
   properties?: ISchemaMetaProperties[];
   /** A list of all relationships along with associated meta-data for the given schema */
   relationships?: ISchemaMetaProperties[];
+  /** A list of properties which should be pushed using  */
+  pushKeys?: string[];
 }
 
 export interface ISchemaMetaProperties {
@@ -24,6 +26,7 @@ export interface ISchemaMetaProperties {
   inverse?: string;
   isRelationship?: boolean;
   isProperty?: boolean;
+  pushKey?: boolean;
   [key: string]: any;
 }
 
@@ -41,29 +44,30 @@ export function schema(options: ISchemaOptions): ClassDecorator {
       const meta = options;
       const obj = Reflect.construct(original, args);
 
-      Reflect.defineProperty(obj, 'META', {
+      Reflect.defineProperty(obj, "META", {
         get(): ISchemaOptions {
           return {
             ...options,
             ...{ property: propertyMeta(obj) },
             ...{ properties: getProperties(obj) },
             ...{ relationships: getRelationships(obj) },
+            ...{ pushKeys: getPushKeys(obj) },
             ...{ audit: options.audit ? options.audit : false }
           };
         },
         set() {
-          throw new Error('The meta property can only be set with the @schema decorator!')
+          throw new Error("The meta property can only be set with the @schema decorator!");
         },
         configurable: false,
         enumerable: false
       });
       return obj;
-    }
+    };
 
     // copy prototype so intanceof operator still works
     f.prototype = original.prototype;
 
     // return new constructor (will override original)
     return f;
-  }
+  };
 }
