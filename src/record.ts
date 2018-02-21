@@ -12,7 +12,7 @@ export class Record<T extends BaseSchema> {
     private _pluralName: string,
     private _db: RealTimeDB,
     private _pushKeys: string[],
-    private _data?: T
+    private _data?: Partial<T>
   ) {
     this._data = new this._schemaClass();
 
@@ -25,7 +25,7 @@ export class Record<T extends BaseSchema> {
     return this._data;
   }
 
-  public get meta(): ISchemaOptions {
+  public get META(): ISchemaOptions {
     return this.data.META;
   }
 

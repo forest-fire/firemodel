@@ -19,4 +19,3 @@ export { Record } from "./record";
 export { List } from "./list";
 
 export { fk, pk } from "common-types";
-export {};
