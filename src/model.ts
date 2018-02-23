@@ -121,7 +121,7 @@ export default class Model<T extends BaseSchema> {
     return this._record.META ? this._record.META.pushKeys : [];
   }
 
-  public newRecord(hash?: T) {
+  public newRecord(hash?: Partial<T>) {
     return new Record<T>(this.schemaClass, this.pluralName, this._db, this.pushKeys, hash);
   }
 

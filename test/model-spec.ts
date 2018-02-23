@@ -45,16 +45,30 @@ describe("Model", () => {
 
   it("newRecord() returns empty record, with schema META set", () => {
     const k = new Model<Klass>(Klass, db);
-    expect(k.newRecord().data.id).to.equal(undefined);
-    expect(k.newRecord().data.foo).to.equal(undefined);
-    expect(k.newRecord().data.META.dbOffset).to.equal("authenticated");
+    const record = k.newRecord();
+    expect(record.data.id).to.equal(undefined);
+    expect(record.data.foo).to.equal(undefined);
+    expect(record.data.META.dbOffset).to.equal("authenticated");
   });
 
   it("newRecord(obj) returns Record with data loaded", () => {
     const k = new Model<Klass>(Klass, db);
-    const data = { foo: "test", bar: 12 };
-    expect(k.newRecord(data).data.id).to.equal(undefined);
-    expect(k.newRecord(data).data.foo).to.equal("test");
+    const data = {
+      foo: "test",
+      bar: 12,
+      foobar: "xyz",
+      bar2: 24,
+      bar3: 36,
+      baz: {
+        c1: 1
+      },
+      sub: "asdf",
+
+      cb: () => undefined
+    };
+    const record = k.newRecord(data);
+    expect(record.data.id).to.equal(undefined);
+    expect(record.data.foo).to.equal("test");
   });
 
   it('newRecord() ... "existsOnDB" is set to false', () => {

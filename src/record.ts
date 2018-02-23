@@ -12,7 +12,7 @@ export class Record<T extends BaseSchema> {
     private _pluralName: string,
     private _db: RealTimeDB,
     private _pushKeys: string[],
-    private _data?: T
+    private _data?: Partial<T>
   ) {
     this._data = new this._schemaClass();
 
@@ -25,7 +25,7 @@ export class Record<T extends BaseSchema> {
     return this._data;
   }
 
-  public get meta(): ISchemaOptions {
+  public get META(): ISchemaOptions {
     return this.data.META;
   }
 
@@ -102,7 +102,7 @@ export class Record<T extends BaseSchema> {
    * record structure.
    */
   public async pushKey<PK = any>(property: string, value: PK) {
-    if (this._pushKeys.indexOf(property) !== -1) {
+    if (this.META.pushKeys.indexOf(property) === -1) {
       throw new Error(
         `Invalid Operation: you can not push to property "${property}" as it has not been declared a pushKey property in the schema`
       );

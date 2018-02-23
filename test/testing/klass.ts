@@ -21,9 +21,9 @@ export class SubKlass extends BaseSchema {
 }
 
 export class ContainedKlass {
-  public c1: number = 1;
-  public c2: number = 1;
-  public c3: number = 1;
+  public c1?: number = 1;
+  public c2?: number = 1;
+  public c3?: number = 1;
 }
 
 /** a schema class */
@@ -45,5 +45,5 @@ export class Klass extends SubKlass {
   @property public cb: Callback;
   @property public baz: ContainedKlass;
   // prettier-ignore
-  @property @pushKey public tags: IDictionary<string>;
+  @property @pushKey public tags?: IDictionary<string>;
 }
