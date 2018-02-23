@@ -102,7 +102,7 @@ export class Record<T extends BaseSchema> {
    * record structure.
    */
   public async pushKey<PK = any>(property: string, value: PK) {
-    if (this._pushKeys.indexOf(property) !== -1) {
+    if (this.META.pushKeys.indexOf(property) === -1) {
       throw new Error(
         `Invalid Operation: you can not push to property "${property}" as it has not been declared a pushKey property in the schema`
       );

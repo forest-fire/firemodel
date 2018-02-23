@@ -75,6 +75,8 @@ describe("property decorator: ", () => {
     expect(myclass.META.pushKeys).to.have.lengthOf(1);
     const model = new Model<Klass>(Klass, new DB({ mocking: true }));
     expect(model.pushKeys).to.include("tags");
+    const record = model.newRecord();
+    expect(record.META.pushKeys).to.include("tags");
   });
 
   it("@min(), @max(), @length(), and @desc() decorator-factories work", () => {
