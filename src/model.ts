@@ -143,7 +143,13 @@ export default class Model<T extends BaseSchema> {
     return query;
   }
 
-  public async findRecord(prop: string, value: string | number | boolean | ConditionAndValue) {
+  /**
+   * Finds a single records within a list
+   *
+   * @param prop the property on the Schema which you are looking for a value in
+   * @param value the value you are looking for the property to equal; alternatively you can pass a tuple with a comparison operation and a value
+   */
+  public async findRecord(prop: keyof T, value: string | number | boolean | ConditionAndValue) {
     let operation: string = "=";
     if (value instanceof Array) {
       operation = value[0];
@@ -152,9 +158,13 @@ export default class Model<T extends BaseSchema> {
 
     const query = this._findBuilder(prop, value, true);
     const results = await this._db.getList<T>(query);
+    console.log("list is:", results);
 
     if (results.length > 0) {
-      return this.newRecord(results.pop());
+      const record = this.newRecord(results.pop());
+      console.log("RECORD", record);
+
+      return record;
     } else {
       throw new VerboseError({
         code: "not-found",
@@ -168,9 +178,20 @@ export default class Model<T extends BaseSchema> {
     }
   }
 
-  public async findAll(prop: string, value: string | number | boolean | ConditionAndValue) {
+  public async findAll(prop: keyof T, value: string | number | boolean | ConditionAndValue) {
     const query = this._findBuilder(prop, value);
-    const results = await this._db.getList<T>(query);
+    let results;
+    try {
+      results = await this._db.getList<T>(query);
+    } catch (e) {
+      console.log("Error attempting to findAll() in Model.", e);
+      createError(
+        e,
+        "model/findAll",
+        `Failed getting via getList() with query` + JSON.stringify(query, null, 2),
+        [{ prop, value, query }]
+      );
+    }
     return new List<T>(this.schemaClass, this.pluralName, this._db, results);
   }
 
@@ -178,6 +199,7 @@ export default class Model<T extends BaseSchema> {
   public async set(record: T, auditInfo: IDictionary = {}) {
     if (!record.id) {
       throw createError(
+        null,
         "set/no-id",
         `Attempt to set "${this.dbPath}" in database but record had no "id" property.`
       );
@@ -293,7 +315,7 @@ export default class Model<T extends BaseSchema> {
   public async getAuditTrail(filter: IAuditFilter = {}) {
     const { since, last } = filter;
     const path = `${Model.auditBase}/${this.pluralName}`;
-    let query = SerializedQuery.path(path);
+    let query = SerializedQuery.path<IAuditRecord>(path);
     if (since) {
       const startAt = moment(since).toISOString();
       query = query.orderByChild("when").startAt(startAt);
@@ -362,7 +384,7 @@ export default class Model<T extends BaseSchema> {
   }
 
   private _findBuilder(
-    child: string,
+    child: keyof T,
     value: string | number | boolean | ConditionAndValue,
     singular: boolean = false
   ) {

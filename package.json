@@ -1,12 +1,17 @@
 {
   "name": "firemodel",
-  "version": "0.9.4",
+  "version": "0.9.5",
   "description": "firemodel",
   "license": "MIT",
   "repository": "https://github.com/forest-fire/firemodel",
   "author": "Ken Snyder <ken@ken.net>",
-  "keywords": ["serverless", "typescript"],
-  "files": ["lib"],
+  "keywords": [
+    "serverless",
+    "typescript"
+  ],
+  "files": [
+    "lib"
+  ],
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
   "scripts": {
@@ -23,7 +28,7 @@
     "cli": "./node_modules/.bin/ts-node cli/index.ts --"
   },
   "dependencies": {
-    "abstracted-firebase": "^0.3.0",
+    "abstracted-firebase": "^0.4.1",
     "common-types": "^1.5.4",
     "firebase-api-surface": "^0.7.11",
     "firebase-key": "^2.0.1",
@@ -36,7 +41,7 @@
     "moment": "^2.20.1",
     "pluralize": "^7.0.0",
     "reflect-metadata": "^0.1.12",
-    "serialized-query": "^0.2.9",
+    "serialized-query": "^0.3.3",
     "typed-conversions": "^0.7.3"
   },
   "peerDependencies": {
