@@ -6,18 +6,20 @@ import { slashNotation } from "./util";
 export class Record<T extends BaseSchema> {
   private _existsOnDB: boolean = false;
   private _isDirty: boolean = false;
+  private _data?: Partial<T>;
 
   constructor(
     private _schemaClass: new () => T,
     private _pluralName: string,
     private _db: RealTimeDB,
     private _pushKeys: string[],
-    private _data?: Partial<T>
+    initializeRecord?: Partial<T>
   ) {
     this._data = new this._schemaClass();
+    console.log("initialized data is:", initializeRecord);
 
-    if (_data) {
-      this.initialize(_data);
+    if (initializeRecord) {
+      this.initialize(initializeRecord);
     }
   }
 
@@ -27,6 +29,24 @@ export class Record<T extends BaseSchema> {
 
   public get META(): ISchemaOptions {
     return this.data.META;
+  }
+
+  public toJSON() {
+    return this.toString();
+  }
+  public toString() {
+    return JSON.stringify(
+      {
+        dbPath: this.dbPath,
+        modelName: this.modelName,
+        pluralName: this.pluralName,
+        key: this.key,
+        localPath: this.localPath,
+        data: this.data
+      },
+      null,
+      2
+    );
   }
 
   public get dbPath() {
