@@ -81,9 +81,7 @@ export async function modelListener<T>(
   const child_removed = childEvent<T>("child_removed", model, dispatch);
   const child_changed = childEvent<T>("child_changed", model, dispatch);
 
-  query
-    .deserialize()
-    .on("child_added", model_ready(child_added, model, dispatch));
+  query.deserialize().on("child_added", model_ready(child_added, model, dispatch));
   query.deserialize().on("child_moved", child_moved);
   query.deserialize().on("child_removed", child_removed);
   query.deserialize().on("child_changed", child_changed);

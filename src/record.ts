@@ -2,6 +2,7 @@
 import { RealTimeDB } from "abstracted-firebase";
 import { BaseSchema, ISchemaOptions } from "./index";
 import { slashNotation } from "./util";
+import { VerboseError } from "./VerboseError";
 
 export class Record<T extends BaseSchema> {
   private _existsOnDB: boolean = false;
@@ -16,7 +17,6 @@ export class Record<T extends BaseSchema> {
     initializeRecord?: Partial<T>
   ) {
     this._data = new this._schemaClass();
-    console.log("initialized data is:", initializeRecord);
 
     if (initializeRecord) {
       this.initialize(initializeRecord);
@@ -35,18 +35,14 @@ export class Record<T extends BaseSchema> {
     return this.toString();
   }
   public toString() {
-    return JSON.stringify(
-      {
-        dbPath: this.dbPath,
-        modelName: this.modelName,
-        pluralName: this.pluralName,
-        key: this.key,
-        localPath: this.localPath,
-        data: this.data
-      },
-      null,
-      2
-    );
+    return JSON.stringify({
+      dbPath: this.dbPath,
+      modelName: this.modelName,
+      pluralName: this.pluralName,
+      key: this.key,
+      localPath: this.localPath,
+      data: this.data
+    });
   }
 
   public get dbPath() {

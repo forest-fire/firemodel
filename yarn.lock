@@ -317,30 +317,18 @@ abbrev@1:
   version "1.1.1"
   resolved "https://registry.yarnpkg.com/abbrev/-/abbrev-1.1.1.tgz#f8f2c887ad10bf67f634f005b6987fed3179aac8"
 
-abstracted-admin@^0.8.3:
-  version "0.8.5"
-  resolved "https://registry.yarnpkg.com/abstracted-admin/-/abstracted-admin-0.8.5.tgz#aaacf2795681b5ba16a007d5e62c2148d025160a"
+abstracted-admin@^0.9.5:
+  version "0.9.5"
+  resolved "https://registry.yarnpkg.com/abstracted-admin/-/abstracted-admin-0.9.5.tgz#6e19fa67563696e6cf4dcbb826f1ccc82c0b215d"
   dependencies:
-    abstracted-firebase "0.2.3"
-    common-types "^1.5.2"
-    firebase-admin "^5.8.2"
-    firebase-api-surface "^0.7.9"
+    abstracted-firebase "^0.4.1"
+    common-types "^1.5.4"
+    firebase-admin "^5.9.0"
+    firebase-api-surface "^0.7.11"
     lodash.first "^3.0.0"
     lodash.last "^3.0.0"
     moment "^2.20.1"
-    serialized-query "^0.2.9"
-    typed-conversions "^0.7.3"
-
-abstracted-firebase@0.2.3:
-  version "0.2.3"
-  resolved "https://registry.yarnpkg.com/abstracted-firebase/-/abstracted-firebase-0.2.3.tgz#8695ed5b84b2870dc82dac922ba2c73264bd3600"
-  dependencies:
-    common-types "^1.5.1"
-    firebase-api-surface "^0.7.9"
-    lodash.first "^3.0.0"
-    lodash.last "^3.0.0"
-    moment "^2.20.1"
-    serialized-query "^0.2.8"
+    serialized-query "^0.3.3"
     typed-conversions "^0.7.3"
 
 abstracted-firebase@^0.4.1:
@@ -823,7 +811,7 @@ commander@^2.12.1:
   version "2.14.1"
   resolved "https://registry.yarnpkg.com/commander/-/commander-2.14.1.tgz#2235123e37af8ca3c65df45b026dbd357b01b9aa"
 
-common-types@^1.1.0, common-types@^1.5.1, common-types@^1.5.2, common-types@^1.5.4:
+common-types@^1.1.0, common-types@^1.5.4:
   version "1.5.4"
   resolved "https://registry.yarnpkg.com/common-types/-/common-types-1.5.4.tgz#af0d7bd7018e622871f883f3418445630fb88786"
 
@@ -1194,7 +1182,7 @@ find-up@^2.1.0:
   dependencies:
     locate-path "^2.0.0"
 
-firebase-admin@^5.8.2:
+firebase-admin@^5.9.0:
   version "5.9.0"
   resolved "https://registry.yarnpkg.com/firebase-admin/-/firebase-admin-5.9.0.tgz#ef58a6932e4c0c09a0e96917334eef0f43658c44"
   dependencies:
@@ -1208,7 +1196,7 @@ firebase-admin@^5.8.2:
     jsonwebtoken "8.1.0"
     node-forge "0.7.1"
 
-firebase-api-surface@^0.7.11, firebase-api-surface@^0.7.9:
+firebase-api-surface@^0.7.11:
   version "0.7.11"
   resolved "https://registry.yarnpkg.com/firebase-api-surface/-/firebase-api-surface-0.7.11.tgz#e8977921314592fc712c25ce8ada15163f1056de"
   dependencies:
@@ -1224,7 +1212,7 @@ firebase-key@^2.0.1:
   version "2.0.1"
   resolved "https://registry.yarnpkg.com/firebase-key/-/firebase-key-2.0.1.tgz#5f1fe462c011c7f944f2f0f489c838dd1ed162ef"
 
-firemock@^0.15.8:
+firemock@^0.15.9:
   version "0.15.9"
   resolved "https://registry.yarnpkg.com/firemock/-/firemock-0.15.9.tgz#e0f646e3e521f48b40dc79451a298c2309275b63"
   dependencies:
@@ -2167,7 +2155,7 @@ modelo@^4.2.0:
   version "4.2.3"
   resolved "https://registry.yarnpkg.com/modelo/-/modelo-4.2.3.tgz#b278588a4db87fc1e5107ae3a277c0876f38d894"
 
-moment@^2.0.0, moment@^2.20.0, moment@^2.20.1:
+moment@^2.20.0, moment@^2.20.1:
   version "2.20.1"
   resolved "https://registry.yarnpkg.com/moment/-/moment-2.20.1.tgz#d6eb1a46cbcc14a2b2f9434112c1ff8907f313fd"
 
@@ -2807,13 +2795,6 @@ safe-buffer@^5.0.1, safe-buffer@^5.1.1, safe-buffer@~5.1.0, safe-buffer@~5.1.1:
   version "5.5.0"
   resolved "https://registry.yarnpkg.com/semver/-/semver-5.5.0.tgz#dc4bbc7a6ca9d916dee5d43516f0092b58f7b8ab"
 
-serialized-query@^0.2.8, serialized-query@^0.2.9:
-  version "0.2.9"
-  resolved "https://registry.yarnpkg.com/serialized-query/-/serialized-query-0.2.9.tgz#b4976a286fd2c1c0e379446482bcdd467794cf4c"
-  dependencies:
-    common-types "^1.5.1"
-    moment "^2.0.0"
-
 serialized-query@^0.3.3:
   version "0.3.3"
   resolved "https://registry.yarnpkg.com/serialized-query/-/serialized-query-0.3.3.tgz#1e56aa112b372943655e210a473a0bda78cc9546"
@@ -3240,8 +3221,8 @@ uuid@^3.0.0, uuid@^3.1.0:
   resolved "https://registry.yarnpkg.com/uuid/-/uuid-3.2.1.tgz#12c528bb9d58d0b9265d9a2f6f0fe8be17ff1f14"
 
 v8flags@^3.0.0:
-  version "3.0.1"
-  resolved "https://registry.yarnpkg.com/v8flags/-/v8flags-3.0.1.tgz#dce8fc379c17d9f2c9e9ed78d89ce00052b1b76b"
+  version "3.0.2"
+  resolved "https://registry.yarnpkg.com/v8flags/-/v8flags-3.0.2.tgz#ad6a78a20a6b23d03a8debc11211e3cc23149477"
   dependencies:
     homedir-polyfill "^1.0.1"
 

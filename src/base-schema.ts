@@ -30,4 +30,16 @@ export abstract class BaseSchema {
   @property public createdAt?: datetime;
   /** Metadata properties of the given schema */
   public META?: Partial<ISchemaOptions>;
+
+  public toString() {
+    return JSON.stringify({
+      id: this.id,
+      lastUpdated: this.lastUpdated,
+      createdAt: this.createdAt
+    });
+  }
+
+  // public toJSON() {
+  //   return this.toString();
+  // }
 }
