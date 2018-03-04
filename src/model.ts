@@ -158,14 +158,19 @@ export default class Model<T extends BaseSchema> {
 
     const query = this._findBuilder(prop, value, true);
     const results = await this._db.getList<T>(query);
-    console.log("list is:", results);
 
     if (results.length > 0) {
       const record = this.newRecord(results.pop());
-      console.log("RECORD", record);
-
       return record;
     } else {
+      console.warn(
+        `Not Found: didn't find any ${
+          this.pluralName
+        } which had "${prop}" set to "${value}"; note the path in the database which was searched was "${
+          this.dbPath
+        }".`
+      );
+
       throw new VerboseError({
         code: "not-found",
         message: `Not Found: didn't find any ${
