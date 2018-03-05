@@ -4,8 +4,6 @@ import { RealTimeDB, rtdb } from "abstracted-firebase";
 import { VerboseError } from "./VerboseError";
 import { ISchemaMetaProperties, BaseSchema, Record, List } from "./index";
 import { SchemaCallback } from "firemock";
-import * as moment from "moment";
-// import * as path from 'path';
 import * as pluralize from "pluralize";
 import camelCase = require("lodash.camelcase");
 import { SerializedQuery } from "serialized-query";
@@ -322,7 +320,7 @@ export default class Model<T extends BaseSchema> {
     const path = `${Model.auditBase}/${this.pluralName}`;
     let query = SerializedQuery.path<IAuditRecord>(path);
     if (since) {
-      const startAt = moment(since).toISOString();
+      const startAt = new Date(since).toISOString();
       query = query.orderByChild("when").startAt(startAt);
     }
     if (last) {
@@ -438,8 +436,8 @@ export default class Model<T extends BaseSchema> {
   };
 
   private _defaultGenerator: SchemaCallback = h => () => ({
-    createdAt: moment(h.faker.date.past()).toISOString(),
-    lastUpdated: moment().toISOString()
+    createdAt: new Date(h.faker.date.past()).toISOString(),
+    lastUpdated: new Date().toISOString()
   });
   //#endregion
 
