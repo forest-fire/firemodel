@@ -1,7 +1,7 @@
 // tslint:disable-next-line:no-implicit-dependencies
 import { RealTimeDB } from "abstracted-firebase";
 import { BaseSchema, ISchemaOptions } from "./index";
-import { slashNotation } from "./util";
+import { slashNotation, createError } from "./util";
 import { VerboseError } from "./VerboseError";
 
 export class Record<T extends BaseSchema> {
@@ -116,6 +116,8 @@ export class Record<T extends BaseSchema> {
    * This record must already exist in the DB before utilizing and the result is immediately
    * pushed to the database rather than waiting for an "update" call which updates the entire
    * record structure.
+   *
+   * Note that calling this function also updates the "lastUpdated" property on the Record
    */
   public async pushKey<PK = any>(property: string, value: PK) {
     if (this.META.pushKeys.indexOf(property) === -1) {
@@ -130,7 +132,30 @@ export class Record<T extends BaseSchema> {
       );
     }
 
-    return this._db.push<PK>(slashNotation(this.dbPath, property), value);
+    let pushKey;
+    try {
+      pushKey = this._db.push<PK>(slashNotation(this.dbPath, property), value);
+    } catch (e) {
+      throw createError(
+        e,
+        "failed-pushkey",
+        `There was a problem pushing a ${typeof value} onto the path "${this.dbPath}/${property}"`
+      );
+    }
+    try {
+      await this._db.set<string>(
+        `${slashNotation(this.dbPath)}/lastUpdated`,
+        new Date().toISOString()
+      );
+    } catch (e) {
+      console.warn(
+        `Pushkey was successfully pushed but couldn't update the record's [ ${
+          this.key
+        } ] lastUpdate field`
+      );
+    }
+
+    return pushKey;
   }
 
   public async set(hash: T) {
