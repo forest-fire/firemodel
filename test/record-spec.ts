@@ -43,8 +43,6 @@ describe("Record > ", () => {
   });
 
   it("using pushKey updates lastUpdated", async () => {
-    // const aBitAgo = new Date(new Date().getTime() - 250).toISOString();
-
     db.set<Person>("/authenticated/people/1234", {
       name: "Bart Simpson",
       age: 10
