@@ -188,7 +188,7 @@ export default class Model<T extends BaseSchema> {
       results = await this._db.getList<T>(query);
     } catch (e) {
       console.log("Error attempting to findAll() in Model.", e);
-      createError(
+      throw createError(
         e,
         "model/findAll",
         `Failed getting via getList() with query` + JSON.stringify(query, null, 2),
