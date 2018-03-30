@@ -48,7 +48,7 @@ export class Record<T extends BaseSchema> {
   public get dbPath() {
     if (!this.data.id) {
       throw new Error(
-        'Invalid Path: you can not ask for the dbPath before setting an "id" property.'
+        `Invalid Path: you can not ask for the dbPath before setting an "id" property. [${this._schemaClass.toString()}]`
       );
     }
     return [this.data.META.dbOffset, this.pluralName, this.data.id].join("/");
