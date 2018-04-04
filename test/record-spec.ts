@@ -35,6 +35,7 @@ describe("Record > ", () => {
       age: 10
     });
     const People = new Model<Person>(Person, db);
+    // const People = Model.create(Person, { db });
     let bart = await People.getRecord("1234");
     await bart.pushKey("tags", "doh!");
     bart = await People.getRecord("1234");
@@ -42,7 +43,7 @@ describe("Record > ", () => {
     expect(bart.data.tags[first]).to.equal("doh!");
   });
 
-  it("using pushKey updates lastUpdated", async () => {
+  it.skip("using pushKey updates lastUpdated", async () => {
     db.set<Person>("/authenticated/people/1234", {
       name: "Bart Simpson",
       age: 10
@@ -57,5 +58,38 @@ describe("Record > ", () => {
     expect(bart.data.tags[first]).to.equal("doh!");
     expect(bart.data.lastUpdated).to.not.equal(backThen);
     expect(bart.data.createdAt).to.equal(backThen);
+  });
+
+  it.skip("calling dbPath() before the ID is known provides useful error", async () => {
+    const record = Record.create(Person, { db });
+
+    try {
+      const foo = record.dbPath;
+      throw new Error("Error should have happened");
+    } catch (e) {
+      expect(e.code).to.equal("record/invalid-path");
+      expect(e.message).contains("Invalid Record Path");
+    }
+  });
+
+  it("State of Model's Schema class is not changed due to record information coming in", async () => {
+    const record = Record.create(Person, { db });
+    const record2 = Record.create(Person, { db });
+    expect(record.data).to.not.equal(record2.data);
+    expect(record.get("age")).to.equal(undefined);
+    expect(record2.get("age")).to.equal(undefined);
+    record.initialize({
+      name: "Bob",
+      age: 12,
+      fuckwit: "yup"
+    });
+    expect(record.get("age")).to.equal(12);
+    const record3 = Record.create(Person, { db });
+    console.log(record3.get("fuckwit"));
+
+    expect(record3.get("age")).to.equal(undefined);
+    expect(record2.get("age")).to.equal(undefined);
+    expect(record.get("name")).to.equal("Bob");
+    expect(record2.get("name")).to.equal(undefined);
   });
 });

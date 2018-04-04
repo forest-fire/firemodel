@@ -24,6 +24,7 @@ export class Person extends BaseSchema {
   @property @length(20) public name: string;
   @property public age?: number;
   @property public gender?: "male" | "female" | "other";
+  public fuckwit: string;
   // prettier-ignore
   @property @pushKey public tags?: IDictionary<string>;
 

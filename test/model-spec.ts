@@ -17,6 +17,7 @@ import { Person } from "./testing/person";
 import { Company } from "./testing/company";
 import { VerboseError } from "../src/VerboseError";
 import { get as getStackFrame, parse as stackParse } from "stack-trace";
+import { ILogger } from "../src/model";
 
 VerboseError.setStackParser((context: VerboseError) => stackParse(context));
 
@@ -33,6 +34,29 @@ describe("Model", () => {
     expect(k.newRecord()).to.be.instanceOf(Record);
     expect(k.newRecord().data).to.be.instanceOf(BaseSchema);
     expect(k.newRecord().data).to.be.instanceOf(Klass);
+  });
+
+  it("can be created with create() static method", () => {
+    const People = Model.create(Person);
+    expect(People).to.be.instanceOf(Model);
+    expect(People.modelName).to.equal("person");
+    expect(People.pluralName).to.equal("people");
+    expect(People.pushKeys).to.contain("tags");
+  });
+
+  it("can be created with create() static method, and logger specified", () => {
+    const messages = [];
+    const myLogger: ILogger = {
+      log: (msg: string) => messages.push(msg),
+      warn: (msg: string) => messages.push(msg),
+      debug: (msg: string) => messages.push(msg),
+      error: (msg: string) => messages.push(msg)
+    };
+    const People = Model.create(Person, { logger: myLogger });
+    expect(People).to.be.instanceOf(Model);
+    expect(People.modelName).to.equal("person");
+    expect(People.pluralName).to.equal("people");
+    expect(People.pushKeys).to.contain("tags");
   });
 
   it("modelName and pluralName properties are correct", () => {

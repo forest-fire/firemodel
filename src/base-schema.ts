@@ -1,3 +1,9 @@
+// tslint:disable:no-unused-expression
+export type NonProperties<T> = {
+  // tslint:disable-next-line:ban-types
+  [P in keyof T]: T[P] extends Function ? never : P
+}[keyof T];
+export type Properties<T> = Pick<T, NonProperties<T>>;
 import { IDictionary, datetime } from "common-types";
 import set = require("lodash.set");
 import { property } from "./decorators/property";
@@ -7,6 +13,7 @@ export interface IMetaData {
   attributes: IDictionary;
   relationships: IDictionary<IRelationship>;
 }
+
 export interface IRelationship {
   cardinality: string;
   policy: RelationshipPolicy;
@@ -24,7 +31,7 @@ export enum RelationshipCardinality {
 export abstract class BaseSchema {
   /** The primary-key for the record */
   @property public id?: string;
-  /** The last time that a given model was updated */
+  /** The last time that a given record was updated */
   @property public lastUpdated?: datetime;
   /** The datetime at which this record was first created */
   @property public createdAt?: datetime;
@@ -32,14 +39,10 @@ export abstract class BaseSchema {
   public META?: Partial<ISchemaOptions>;
 
   public toString() {
-    return JSON.stringify({
-      id: this.id,
-      lastUpdated: this.lastUpdated,
-      createdAt: this.createdAt
+    const obj: IDictionary = {};
+    this.META.properties.map(p => {
+      obj[p.property] = (this as any)[p.property];
     });
+    return JSON.stringify(obj);
   }
-
-  // public toJSON() {
-  //   return this.toString();
-  // }
 }
