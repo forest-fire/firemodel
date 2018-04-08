@@ -59,7 +59,7 @@
     "@types/lodash.last": "^3.0.3",
     "@types/lodash.set": "^4.3.3",
     "@types/mocha": "^2.2.41",
-    "@types/node": "^6.0.0",
+    "@types/node": "^9.6.2",
     "@types/pluralize": "^0.0.28",
     "@types/rimraf": "^0.0.28",
     "@types/stack-trace": "^0.0.28",
@@ -82,7 +82,7 @@
     "ts-node": "^4.1.0",
     "tslint": "^5.9.1",
     "tslint-config-prettier": "^1.8.0",
-    "typescript": "^2.7.2"
+    "typescript": "^2.9.0-dev.20180404"
   },
   "engines": {
     "node": ">=6.0.0"

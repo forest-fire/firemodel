@@ -5,6 +5,18 @@ import { slashNotation, createError } from "./util";
 import { VerboseError } from "./VerboseError";
 import { IDictionary } from "common-types";
 import Model, { ILogger } from "./model";
+import { key as fbk } from "firebase-key";
+
+export interface IWriteOperation {
+  id: string;
+  type: "set" | "pushKey" | "update";
+  /** The database path being written to */
+  path: string;
+  /** The new value being written to database */
+  value: any;
+  /** called on positive confirmation received from server */
+  callback: (type: string, value: any) => void;
+}
 
 export interface IRecordOptions {
   db?: RealTimeDB;
@@ -13,21 +25,27 @@ export interface IRecordOptions {
 }
 
 export class Record<T extends BaseSchema> {
-  private _existsOnDB: boolean = false;
-  private _isDirty: boolean = false;
-  private _data?: Partial<T>;
-
-  // tslint:disable-next-line:member-ordering
   public static create<T extends BaseSchema>(schema: new () => T, options: IRecordOptions = {}) {
     const schemaClass = new schema();
-    console.log("SCHEMA ID", schemaClass.id);
-
     const model = Model.create(schema, options);
     const record = new Record<T>(model, options);
 
     return record;
   }
 
+  public static async get<T extends BaseSchema>(
+    schema: new () => T,
+    id: string,
+    options: IRecordOptions = {}
+  ) {
+    const record = Record.create(schema, options);
+    record.load(id);
+    return record;
+  }
+
+  private _existsOnDB: boolean = false;
+  private _writeOperations: IWriteOperation[] = [];
+  private _data?: Partial<T>;
   private _db: RealTimeDB;
 
   constructor(private _model: Model<T>, data: any = {}) {
@@ -41,8 +59,8 @@ export class Record<T extends BaseSchema> {
     return this._data;
   }
 
-  public get id() {
-    return this._data.id;
+  public get isDirty() {
+    return this._writeOperations.length > 0 ? true : false;
   }
 
   public get META(): ISchemaOptions {
@@ -61,24 +79,7 @@ export class Record<T extends BaseSchema> {
     return this._model.schema.META.pushKeys;
   }
 
-  public toJSON() {
-    return this.data.toString();
-  }
-  public toString() {
-    return JSON.stringify({
-      dbPath: this.dbPath,
-      modelName: this.modelName,
-      pluralName: this.pluralName,
-      key: this.key,
-      localPath: this.localPath,
-      data: this.data.toString()
-    });
-  }
-
   public get dbPath() {
-    console.log("ID:", this.data.id);
-    console.log("Tags:", (this.data as any).tags);
-
     if (!this.data.id) {
       throw createError(
         null,
@@ -93,7 +94,8 @@ export class Record<T extends BaseSchema> {
     return this.data.constructor.name.toLowerCase();
   }
 
-  public get key() {
+  /** The Record's primary key */
+  public get id() {
     if (!this.data.id) {
       throw new Error("key is not set yet!");
     }
@@ -116,17 +118,16 @@ export class Record<T extends BaseSchema> {
   }
 
   public get existsOnDB() {
-    return this._existsOnDB;
+    return this.data && this.data.id ? true : false;
   }
 
   public async load(id: string) {
-    this.data.id = id;
+    this._data.id = id;
     const data = await this.db.getRecord<T>(this.dbPath);
+
     if (data && data.id) {
-      this._existsOnDB = true;
       this.initialize(data);
     } else {
-      this._existsOnDB = false;
       throw new Error(
         `Unknown Key: the key "${id}" was not found in Firebase at "${this.dbPath}".`
       );
@@ -146,14 +147,10 @@ export class Record<T extends BaseSchema> {
   }
 
   /**
-   * Pushes new values onto properties on the record which have been stated to be a "pushKey".
-   * This record must already exist in the DB before utilizing and the result is immediately
-   * pushed to the database rather than waiting for an "update" call which updates the entire
-   * record structure.
-   *
-   * Note that calling this function also updates the "lastUpdated" property on the Record
+   * Pushes new values onto properties on the record
+   * which have been stated to be a "pushKey"
    */
-  public async pushKey<PK = any>(property: string, value: PK) {
+  public async pushKey<K extends keyof T>(property: K, value: T[K][keyof T[K]]) {
     if (this.META.pushKeys.indexOf(property) === -1) {
       throw new Error(
         `Invalid Operation: you can not push to property "${property}" as it has not been declared a pushKey property in the schema`
@@ -165,10 +162,14 @@ export class Record<T extends BaseSchema> {
         `Invalid Operation: you can not push to property "${property}" before saving the record to the database`
       );
     }
+    const pushKey = fbk();
+    const currentState = this.get(property) || {};
+    const newState = { ...(currentState as any), [pushKey]: value };
+    // set state locally
+    this.set(property, newState);
 
-    let pushKey;
     try {
-      pushKey = this.db.push<PK>(slashNotation(this.dbPath, property), value);
+      await this.db.set<T[K][keyof T[K]]>(slashNotation(this.dbPath, property), newState);
     } catch (e) {
       throw createError(
         e,
@@ -177,17 +178,21 @@ export class Record<T extends BaseSchema> {
       );
     }
     try {
-      await this._db.set<string>(
+      await this.db.set<string>(
         `${slashNotation(this.dbPath)}/lastUpdated`,
         new Date().toISOString()
       );
     } catch (e) {
       console.warn(
         `Pushkey was successfully pushed but couldn't update the record's [ ${
-          this.key
+          this.id
         } ] lastUpdate field`
       );
     }
+
+    this.addWriteOperation({
+      type: "pushKey"
+    });
 
     return pushKey;
   }
@@ -210,5 +215,29 @@ export class Record<T extends BaseSchema> {
    */
   public get<K extends keyof T>(prop: K) {
     return this.data[prop];
+  }
+
+  public toString() {
+    return `Record::${this.modelName}@${this.id || "undefined"}`;
+  }
+
+  public toJSON() {
+    return {
+      dbPath: this.dbPath,
+      modelName: this.modelName,
+      pluralName: this.pluralName,
+      key: this.id,
+      localPath: this.localPath,
+      data: this.data.toString()
+    };
+  }
+
+  private addWriteOperation(op: Promise<void>, meta: IWriteOperation) {
+    const id = fbk();
+
+    this._writeOperations.push({
+      ...meta,
+      ...{ id }
+    });
   }
 }

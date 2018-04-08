@@ -29,38 +29,36 @@ describe("Record > ", () => {
       .pathPrefix("authenticated");
   });
 
-  it("using pushKey works", async () => {
+  it.only("using pushKey sets state locally immediately", async () => {
     db.set<Person>("/authenticated/people/1234", {
       name: "Bart Simpson",
       age: 10
     });
-    const People = new Model<Person>(Person, db);
-    // const People = Model.create(Person, { db });
-    let bart = await People.getRecord("1234");
-    await bart.pushKey("tags", "doh!");
-    bart = await People.getRecord("1234");
-    const first = helpers.firstKey(bart.data.tags);
-    expect(bart.data.tags[first]).to.equal("doh!");
+    const bart = await Record.get(Person, "1234", { db });
+    const k1 = await bart.pushKey("tags", "doh!");
+    const k2 = await bart.pushKey("tags", "whazzup?");
+    expect(bart.data.tags[k1]).to.equal("doh!");
+    expect(bart.data.tags[k2]).to.equal("whazzup?");
+    expect(Object.keys(bart.data.tags).length).to.equal(2);
   });
 
-  it.skip("using pushKey updates lastUpdated", async () => {
-    db.set<Person>("/authenticated/people/1234", {
+  it("using pushKey updates lastUpdated", async () => {
+    await db.set<Person>("/authenticated/people/1234", {
       name: "Bart Simpson",
       age: 10
     });
-    const People = new Model<Person>(Person, db);
-    let bart = await People.getRecord("1234");
+    let bart = await Record.get(Person, "1234", { db });
     const backThen = bart.data.createdAt;
     expect(bart.data.lastUpdated).to.equal(backThen);
     await bart.pushKey("tags", "doh!");
-    bart = await People.getRecord("1234");
+    bart = await Record.get(Person, "1234", { db });
     const first = helpers.firstKey(bart.data.tags);
     expect(bart.data.tags[first]).to.equal("doh!");
     expect(bart.data.lastUpdated).to.not.equal(backThen);
     expect(bart.data.createdAt).to.equal(backThen);
   });
 
-  it.skip("calling dbPath() before the ID is known provides useful error", async () => {
+  it("calling dbPath() before the ID is known provides useful error", async () => {
     const record = Record.create(Person, { db });
 
     try {
@@ -80,13 +78,10 @@ describe("Record > ", () => {
     expect(record2.get("age")).to.equal(undefined);
     record.initialize({
       name: "Bob",
-      age: 12,
-      fuckwit: "yup"
+      age: 12
     });
     expect(record.get("age")).to.equal(12);
     const record3 = Record.create(Person, { db });
-    console.log(record3.get("fuckwit"));
-
     expect(record3.get("age")).to.equal(undefined);
     expect(record2.get("age")).to.equal(undefined);
     expect(record.get("name")).to.equal("Bob");
