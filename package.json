@@ -1,17 +1,12 @@
 {
   "name": "firemodel",
-  "version": "0.9.9",
+  "version": "0.9.10",
   "description": "firemodel",
   "license": "MIT",
   "repository": "https://github.com/forest-fire/firemodel",
   "author": "Ken Snyder <ken@ken.net>",
-  "keywords": [
-    "serverless",
-    "typescript"
-  ],
-  "files": [
-    "lib"
-  ],
+  "keywords": ["serverless", "typescript"],
+  "files": ["lib"],
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
   "scripts": {

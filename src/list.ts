@@ -2,11 +2,10 @@
 import { RealTimeDB } from "abstracted-firebase";
 import { BaseSchema, ISchemaOptions } from "./index";
 import { SerializedQuery, IComparisonOperator } from "serialized-query";
-import Model, { IModelOptions, baseLogger } from "./model";
+import Model, { IModelOptions } from "./model";
 
 export class List<T extends BaseSchema> {
   public static create<T extends BaseSchema>(schema: new () => T, options: IModelOptions = {}) {
-    const schemaClass = new schema();
     const model = Model.create(schema, options);
     return new List<T>(model);
   }
