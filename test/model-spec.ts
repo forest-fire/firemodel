@@ -131,7 +131,8 @@ describe("Model", () => {
     const roger = await PersonModel.findRecord("name", "Roger Rabbit");
     expect(roger).to.be.instanceof(Record);
     expect(roger.data.name).to.equal("Roger Rabbit");
-    expect(roger.key).to.equal(roger.data.id);
+    expect(roger.get("name")).to.equal("Roger Rabbit");
+    expect(roger.id).to.equal(roger.data.id);
     expect(roger.dbPath).to.contain(roger.data.id);
     expect(roger.dbPath).to.contain("authenticated/people");
     const john = await PersonModel.findRecord("name", "John Smith");

@@ -1,10 +1,10 @@
 // tslint:disable:no-unused-expression
 export type NonProperties<T> = {
-  // tslint:disable-next-line:ban-types
-  [P in keyof T]: T[P] extends Function ? never : P
+  [// tslint:disable-next-line:ban-types
+  P in keyof T]: T[P] extends Function ? never : P
 }[keyof T];
 export type Properties<T> = Pick<T, NonProperties<T>>;
-import { IDictionary, datetime } from "common-types";
+import { IDictionary, datetime, epoch } from "common-types";
 import set = require("lodash.set");
 import { property } from "./decorators/property";
 import { ISchemaOptions, ISchemaMetaProperties } from "./decorators/schema";
@@ -32,9 +32,9 @@ export abstract class BaseSchema {
   /** The primary-key for the record */
   @property public id?: string;
   /** The last time that a given record was updated */
-  @property public lastUpdated?: datetime;
+  @property public lastUpdated?: epoch;
   /** The datetime at which this record was first created */
-  @property public createdAt?: datetime;
+  @property public createdAt?: epoch;
   /** Metadata properties of the given schema */
   public META?: Partial<ISchemaOptions>;
 

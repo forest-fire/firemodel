@@ -90,7 +90,7 @@ describe("Model > find API: ", () => {
     db.mock.queueSchema<Person>("person", 25, { age: 70 });
     db.mock.generate();
     const PersonModel = new Model<Person>(Person, db);
-    const olderPeople = await PersonModel.findAll("age", ["<=", 20]);
+    const olderPeople = await PersonModel.findAll("age", ["<", 20]);
     expect(olderPeople).is.an.instanceOf(List);
     expect(olderPeople.length).to.equal(25);
   });

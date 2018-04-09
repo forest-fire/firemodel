@@ -29,7 +29,7 @@ describe("Record > ", () => {
       .pathPrefix("authenticated");
   });
 
-  it.only("using pushKey sets state locally immediately", async () => {
+  it("using pushKey sets state locally immediately", async () => {
     db.set<Person>("/authenticated/people/1234", {
       name: "Bart Simpson",
       age: 10

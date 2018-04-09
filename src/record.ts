@@ -96,9 +96,6 @@ export class Record<T extends BaseSchema> {
 
   /** The Record's primary key */
   public get id() {
-    if (!this.data.id) {
-      throw new Error("key is not set yet!");
-    }
     return this.data.id;
   }
 
@@ -190,9 +187,9 @@ export class Record<T extends BaseSchema> {
       );
     }
 
-    this.addWriteOperation({
-      type: "pushKey"
-    });
+    // this.addWriteOperation({
+    //   type: "pushKey"
+    // });
 
     return pushKey;
   }

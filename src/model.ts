@@ -37,6 +37,8 @@ export interface IAuditFilter {
   last?: number;
 }
 
+export type IComparisonOperator = "=" | ">" | "<";
+export type IConditionAndValue = [IComparisonOperator, boolean | string | number];
 export type FirebaseCrudOperations = "push" | "set" | "update" | "remove";
 
 export interface IAuditRecord {
@@ -52,9 +54,7 @@ export interface IModelOptions {
   db?: RealTimeDB;
 }
 
-export type ConditionAndValue = [string, any];
-
-const baseLogger: ILogger = {
+export const baseLogger: ILogger = {
   log: (message: string) => console.log(`${this.modelName}/${this._key}: ${message}`),
   warn: (message: string) => console.warn(`${this.modelName}/${this._key}: ${message}`),
   debug: (message: string) => {
@@ -169,18 +169,17 @@ export default class Model<T extends BaseSchema> {
     return record.load(id);
   }
 
+  /**
+   * Returns a list of ALL objects of the given schema type
+   */
   public async getAll() {
-    const list = new List<T>(this.schemaClass, this.pluralName, this.db);
+    const list = new List<T>(this);
     return list.load(this.dbPath);
   }
 
-  public getSome(): SerializedQuery<T> {
-    const query = SerializedQuery.path<T>(this.dbPath)
-      .setDB(this.db)
-      .handleSnapshot(
-        snap => new List<T>(this.schemaClass, this.pluralName, this.db, snapshotToArray<T>(snap))
-      );
-    return query;
+  public getSome(query?: SerializedQuery) {
+    const list = new List<T>(this);
+    return list.load(query);
   }
 
   /**
@@ -189,7 +188,7 @@ export default class Model<T extends BaseSchema> {
    * @param prop the property on the Schema which you are looking for a value in
    * @param value the value you are looking for the property to equal; alternatively you can pass a tuple with a comparison operation and a value
    */
-  public async findRecord(prop: keyof T, value: string | number | boolean | ConditionAndValue) {
+  public async findRecord(prop: keyof T, value: string | number | boolean | IConditionAndValue) {
     let operation: string = "=";
     if (value instanceof Array) {
       operation = value[0];
@@ -223,7 +222,10 @@ export default class Model<T extends BaseSchema> {
     }
   }
 
-  public async findAll(prop: keyof T, value: string | number | boolean | ConditionAndValue) {
+  public async findAll(
+    prop: keyof T,
+    value: string | number | boolean | IConditionAndValue
+  ): Promise<List<T>> {
     const query = this._findBuilder(prop, value);
     let results;
     try {
@@ -237,7 +239,7 @@ export default class Model<T extends BaseSchema> {
         [{ prop, value, query }]
       );
     }
-    return new List<T>(this.schemaClass, this.pluralName, this.db, results);
+    return new List<T>(this, results);
   }
 
   /** sets a record to the database */
@@ -430,7 +432,7 @@ export default class Model<T extends BaseSchema> {
 
   private _findBuilder(
     child: keyof T,
-    value: string | number | boolean | ConditionAndValue,
+    value: string | number | boolean | IConditionAndValue,
     singular: boolean = false
   ) {
     let operation: string = "=";
@@ -446,9 +448,9 @@ export default class Model<T extends BaseSchema> {
     switch (operation) {
       case "=":
         return query.equalTo(value);
-      case ">=":
+      case ">":
         return query.startAt(value);
-      case "<=":
+      case "<":
         return query.endAt(value);
 
       default:
