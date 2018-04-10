@@ -136,6 +136,8 @@ describe("Model > find API: ", () => {
       await People.findRecord("age", 66);
       throw new Error("Should have thrown error when no records found");
     } catch (e) {
+      console.log("ERROR:", e);
+
       expect(e.code).to.equal("not-found");
     }
   });

@@ -1,7 +1,7 @@
 // tslint:disable-next-line:no-implicit-dependencies
 import { RealTimeDB } from "abstracted-firebase";
 import { BaseSchema, ISchemaOptions } from "./index";
-import { createError } from "./util";
+import { createError } from "common-types";
 import Model, { ILogger } from "./model";
 import { key as fbk } from "firebase-key";
 
@@ -77,7 +77,6 @@ export class Record<T extends BaseSchema> {
   public get dbPath() {
     if (!this.data.id) {
       throw createError(
-        null,
         "record/invalid-path",
         `Invalid Record Path: you can not ask for the dbPath before setting an "id" property.`
       );
@@ -145,7 +144,6 @@ export class Record<T extends BaseSchema> {
   public async pushKey<K extends keyof T>(property: K, value: T[K][keyof T[K]]) {
     if (this.META.pushKeys.indexOf(property) === -1) {
       throw createError(
-        null,
         "invalid-operation/not-pushkey",
         `Invalid Operation: you can not push to property "${property}" as it has not been declared a pushKey property in the schema`
       );
@@ -153,7 +151,6 @@ export class Record<T extends BaseSchema> {
 
     if (!this.existsOnDB) {
       throw createError(
-        null,
         "invalid-operation/not-on-db",
         `Invalid Operation: you can not push to property "${property}" before saving the record to the database`
       );
@@ -170,11 +167,7 @@ export class Record<T extends BaseSchema> {
     try {
       await write.execute();
     } catch (e) {
-      throw createError(
-        e,
-        "multi-path-write-error",
-        "There was a problem writing the pushKey operation to the database: " + e.message
-      );
+      throw createError("multi-path/write-error", "", e);
     }
 
     return pushKey;
@@ -187,7 +180,7 @@ export class Record<T extends BaseSchema> {
    * @param value the new value to set to
    */
   public set<K extends keyof T>(prop: K, value: T[K]) {
-    this.data[prop] = value;
+    this._data[prop] = value;
     return this;
   }
 
