@@ -32,33 +32,31 @@ describe("Create a Model: ", () => {
     expect(person.newRecord().data).to.be.an.instanceOf(Person);
   });
 
-  it("Schema's create() method instantiates", () => {
+  it("Model's create() method instantiates", () => {
     const db = new DB({ mocking: true });
-    const person = Person.create(db);
-    // const person = new Model<Person>(Person, db);
+    const person = Model.create(Person, { db });
     person.pluralName = "foobar";
     expect(person).to.be.an("object");
     expect(person).to.be.an.instanceOf(Model);
     expect(person.modelName).to.equal("person");
     expect(person.newRecord().data).to.be.an.instanceOf(Person);
-    const record = person.newRecord({ id: "1234", name: "Testy McTesty", age: 50 });
+    const record = person.newRecord({ name: "Testy McTesty", age: 50 });
     expect(record.existsOnDB).to.equal(false);
     expect(record.data.name).to.equal("Testy McTesty");
-    // expect(record.data.META).to.not.equal(undefined);
+    // expect(record.data.META.properties).is.an("object");
     // record.pushKey("tags", "foobar");
-    console.log(record.existsOnDB);
   });
 
   it("singular and plural names are right", () => {
     const db = new DB({ mocking: true });
-    const person = new Model<Person>(Person, db);
+    const person = Model.create(Person, { db });
     expect(person.modelName).to.equal("person");
     expect(person.pluralName).to.equal("people");
   });
 
   it("can override plural name by setting pluralName", () => {
     const db = new DB({ mocking: true });
-    const person = new Model<Person>(Person, db);
+    const person = Model.create(Person, { db });
     person.pluralName = "foobar";
     expect(person.modelName).to.equal("person");
     expect(person.pluralName).to.equal("foobar");

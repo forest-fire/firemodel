@@ -1,9 +1,7 @@
 // tslint:disable-next-line:no-implicit-dependencies
 import { RealTimeDB } from "abstracted-firebase";
 import { BaseSchema, ISchemaOptions } from "./index";
-import { slashNotation, createError } from "./util";
-import { VerboseError } from "./VerboseError";
-import { IDictionary } from "common-types";
+import { createError } from "./util";
 import Model, { ILogger } from "./model";
 import { key as fbk } from "firebase-key";
 
@@ -26,7 +24,6 @@ export interface IRecordOptions {
 
 export class Record<T extends BaseSchema> {
   public static create<T extends BaseSchema>(schema: new () => T, options: IRecordOptions = {}) {
-    const schemaClass = new schema();
     const model = Model.create(schema, options);
     const record = new Record<T>(model, options);
 
@@ -39,14 +36,12 @@ export class Record<T extends BaseSchema> {
     options: IRecordOptions = {}
   ) {
     const record = Record.create(schema, options);
-    record.load(id);
-    return record;
+    return record.load(id);
   }
 
   private _existsOnDB: boolean = false;
   private _writeOperations: IWriteOperation[] = [];
   private _data?: Partial<T>;
-  private _db: RealTimeDB;
 
   constructor(private _model: Model<T>, data: any = {}) {
     this._data = new _model.schemaClass();
@@ -149,13 +144,17 @@ export class Record<T extends BaseSchema> {
    */
   public async pushKey<K extends keyof T>(property: K, value: T[K][keyof T[K]]) {
     if (this.META.pushKeys.indexOf(property) === -1) {
-      throw new Error(
+      throw createError(
+        null,
+        "invalid-operation/not-pushkey",
         `Invalid Operation: you can not push to property "${property}" as it has not been declared a pushKey property in the schema`
       );
     }
 
     if (!this.existsOnDB) {
-      throw new Error(
+      throw createError(
+        null,
+        "invalid-operation/not-on-db",
         `Invalid Operation: you can not push to property "${property}" before saving the record to the database`
       );
     }
@@ -164,32 +163,19 @@ export class Record<T extends BaseSchema> {
     const newState = { ...(currentState as any), [pushKey]: value };
     // set state locally
     this.set(property, newState);
-
+    // push updates to db
+    const write = this.db.multiPathSet();
+    write.add({ path: `${this.dbPath}/lastUpdated`, value: Date.now() });
+    write.add({ path: `${this.dbPath}/${property}/${pushKey}`, value });
     try {
-      await this.db.set<T[K][keyof T[K]]>(slashNotation(this.dbPath, property), newState);
+      await write.execute();
     } catch (e) {
       throw createError(
         e,
-        "failed-pushkey",
-        `There was a problem pushing a ${typeof value} onto the path "${this.dbPath}/${property}"`
+        "multi-path-write-error",
+        "There was a problem writing the pushKey operation to the database: " + e.message
       );
     }
-    try {
-      await this.db.set<string>(
-        `${slashNotation(this.dbPath)}/lastUpdated`,
-        new Date().toISOString()
-      );
-    } catch (e) {
-      console.warn(
-        `Pushkey was successfully pushed but couldn't update the record's [ ${
-          this.id
-        } ] lastUpdate field`
-      );
-    }
-
-    // this.addWriteOperation({
-    //   type: "pushKey"
-    // });
 
     return pushKey;
   }
@@ -227,14 +213,5 @@ export class Record<T extends BaseSchema> {
       localPath: this.localPath,
       data: this.data.toString()
     };
-  }
-
-  private addWriteOperation(op: Promise<void>, meta: IWriteOperation) {
-    const id = fbk();
-
-    this._writeOperations.push({
-      ...meta,
-      ...{ id }
-    });
   }
 }

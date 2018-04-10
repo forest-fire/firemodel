@@ -172,14 +172,9 @@ export default class Model<T extends BaseSchema> {
   /**
    * Returns a list of ALL objects of the given schema type
    */
-  public async getAll() {
+  public async getAll(query?: SerializedQuery) {
     const list = new List<T>(this);
-    return list.load(this.dbPath);
-  }
-
-  public getSome(query?: SerializedQuery) {
-    const list = new List<T>(this);
-    return list.load(query);
+    return query ? list.load(query) : list.load(this.dbPath);
   }
 
   /**
@@ -202,19 +197,11 @@ export default class Model<T extends BaseSchema> {
       const record = this.newRecord(results.pop());
       return record;
     } else {
-      this.logger.error(
-        `Not Found: didn't find any ${
-          this.pluralName
-        } which had "${prop}" set to "${value}"; note the path in the database which was searched was "${
-          this.dbPath
-        }".`
-      );
-
       throw new VerboseError({
         code: "not-found",
-        message: `Not Found: didn't find any ${
+        message: `Not Found: didn't find any "${
           this.pluralName
-        } which had "${prop}" set to "${value}"; note the path in the database which was searched was "${
+        }" which had "${prop}" set to "${value}"; note the path in the database which was searched was "${
           this.dbPath
         }".`,
         module: "findRecord"

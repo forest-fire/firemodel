@@ -174,22 +174,4 @@ describe("Model", () => {
     expect(list.data[0].age).to.be.a("number");
     expect(list.meta.property("name").type).to.equal("String");
   });
-
-  it("Model.getSome() works", async () => {
-    db.mock
-      .addSchema("person", h => () => ({
-        name: h.faker.name.firstName(),
-        age: h.faker.random.number({ min: 1, max: 99 })
-      }))
-      .pathPrefix("authenticated");
-    db.mock.queueSchema<Person>("person", 50);
-    db.mock.generate();
-    const PersonModel = new Model<Person>(Person, db);
-    const listRecent = await PersonModel.getSome()
-      .limitToFirst(5)
-      .execute();
-    expect(listRecent.length).to.equal(5);
-    expect(listRecent).to.be.instanceof(List);
-    expect(listRecent.meta.property("name").type).to.equal("String");
-  });
 });

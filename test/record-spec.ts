@@ -14,7 +14,6 @@ const expect = chai.expect;
 import "reflect-metadata";
 import { Klass, ContainedKlass, SubKlass } from "./testing/klass";
 import { Person } from "./testing/person";
-import { Company } from "./testing/company";
 
 describe("Record > ", () => {
   let db: DB;
@@ -27,6 +26,7 @@ describe("Record > ", () => {
         age: h.faker.random.number({ min: 1, max: 99 })
       }))
       .pathPrefix("authenticated");
+    db.mock.queueSchema("person", 10).generate();
   });
 
   it("using pushKey sets state locally immediately", async () => {
@@ -47,15 +47,15 @@ describe("Record > ", () => {
       name: "Bart Simpson",
       age: 10
     });
-    let bart = await Record.get(Person, "1234", { db });
+    const bart = await Record.get(Person, "1234", { db });
     const backThen = bart.data.createdAt;
     expect(bart.data.lastUpdated).to.equal(backThen);
-    await bart.pushKey("tags", "doh!");
-    bart = await Record.get(Person, "1234", { db });
-    const first = helpers.firstKey(bart.data.tags);
-    expect(bart.data.tags[first]).to.equal("doh!");
-    expect(bart.data.lastUpdated).to.not.equal(backThen);
-    expect(bart.data.createdAt).to.equal(backThen);
+    const pk = await bart.pushKey("tags", "doh!");
+    const result = await Record.get(Person, "1234", { db });
+
+    expect(result.data.tags[pk]).to.equal("doh!");
+    expect(result.data.lastUpdated).to.not.equal(backThen);
+    expect(result.data.createdAt).to.equal(backThen);
   });
 
   it("calling dbPath() before the ID is known provides useful error", async () => {
