@@ -1,15 +1,14 @@
-import { IDictionary, datetime } from "common-types";
+import { IDictionary, datetime, createError } from "common-types";
 import { RealTimeDB, rtdb } from "abstracted-firebase";
 import { VerboseError } from "./VerboseError";
-import { ISchemaMetaProperties, BaseSchema, Record, List } from "./index";
+import { BaseSchema, Record, List } from "./index";
 import { SchemaCallback } from "firemock";
 import * as pluralize from "pluralize";
 import camelCase = require("lodash.camelcase");
 import { SerializedQuery } from "serialized-query";
 import { snapshotToArray, ISnapShot, arrayToHash } from "typed-conversions";
-import { slashNotation, createError } from "./util";
+import { slashNotation } from "./util";
 import { key as fbk } from "firebase-key";
-import Reference from "../../firemock/lib/reference";
 
 export type ModelProperty<T> = keyof T | keyof IBaseModel;
 export type PartialModel<T> = { [P in keyof ModelProperty<T>]?: ModelProperty<T>[P] };
@@ -220,10 +219,9 @@ export default class Model<T extends BaseSchema> {
     } catch (e) {
       console.log("Error attempting to findAll() in Model.", e);
       throw createError(
-        e,
         "model/findAll",
-        `Failed getting via getList() with query` + JSON.stringify(query, null, 2),
-        [{ prop, value, query }]
+        `\nFailed getting via getList() with query` + JSON.stringify(query, null, 2),
+        e
       );
     }
     return new List<T>(this, results);
@@ -233,7 +231,6 @@ export default class Model<T extends BaseSchema> {
   public async set(record: T, auditInfo: IDictionary = {}) {
     if (!record.id) {
       throw createError(
-        null,
         "set/no-id",
         `Attempt to set "${this.dbPath}" in database but record had no "id" property.`
       );
@@ -363,7 +360,7 @@ export default class Model<T extends BaseSchema> {
   //#endregion
 
   //#region PRIVATE API
-  private async audit(crud: string, when: string, key: string, info: IDictionary) {
+  private async audit(crud: string, when: number, key: string, info: IDictionary) {
     const path = slashNotation(Model.auditBase, this.pluralName);
     return this.db.push(path, {
       crud,
@@ -385,7 +382,7 @@ export default class Model<T extends BaseSchema> {
    */
   private async crud(
     op: "set" | "update" | "push" | "remove",
-    when: string,
+    when: number,
     key: string,
     value?: Partial<T>,
     auditInfo?: IDictionary
@@ -473,7 +470,7 @@ export default class Model<T extends BaseSchema> {
   //#endregion
 
   private now() {
-    return new Date().toISOString();
+    return Date.now();
   }
 
   private logToAuditTrail(key: string, crud: string, info: IDictionary) {

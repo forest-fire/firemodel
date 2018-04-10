@@ -1,6 +1,6 @@
 {
   "name": "firemodel",
-  "version": "0.10.1",
+  "version": "0.10.3",
   "description": "firemodel",
   "license": "MIT",
   "repository": "https://github.com/forest-fire/firemodel",
@@ -24,7 +24,7 @@
   },
   "dependencies": {
     "abstracted-firebase": "^0.5.1",
-    "common-types": "^1.6.30",
+    "common-types": "^1.7.0",
     "firebase-api-surface": "^0.7.11",
     "firebase-key": "^2.0.1",
     "lodash.camelcase": "^4.3.0",
