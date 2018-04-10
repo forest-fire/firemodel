@@ -1,18 +1,9 @@
 // tslint:disable:no-implicit-dependencies
-import {
-  Model,
-  BaseSchema,
-  Record,
-  List,
-  IAuditRecord,
-  FirebaseCrudOperations
-} from "../src/index";
+import { Record } from "../src/index";
 import DB from "abstracted-admin";
 import * as chai from "chai";
-import * as helpers from "./testing/helpers";
 const expect = chai.expect;
 import "reflect-metadata";
-import { Klass, ContainedKlass, SubKlass } from "./testing/klass";
 import { Person } from "./testing/person";
 
 describe("Record > ", () => {
