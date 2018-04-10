@@ -17,6 +17,7 @@ import { Person } from "./testing/person";
 import { Company } from "./testing/company";
 import { VerboseError } from "../src/VerboseError";
 import { get as getStackFrame, parse as stackParse } from "stack-trace";
+import { ILogger } from "../src/model";
 
 VerboseError.setStackParser((context: VerboseError) => stackParse(context));
 
@@ -33,6 +34,29 @@ describe("Model", () => {
     expect(k.newRecord()).to.be.instanceOf(Record);
     expect(k.newRecord().data).to.be.instanceOf(BaseSchema);
     expect(k.newRecord().data).to.be.instanceOf(Klass);
+  });
+
+  it("can be created with create() static method", () => {
+    const People = Model.create(Person);
+    expect(People).to.be.instanceOf(Model);
+    expect(People.modelName).to.equal("person");
+    expect(People.pluralName).to.equal("people");
+    expect(People.pushKeys).to.contain("tags");
+  });
+
+  it("can be created with create() static method, and logger specified", () => {
+    const messages = [];
+    const myLogger: ILogger = {
+      log: (msg: string) => messages.push(msg),
+      warn: (msg: string) => messages.push(msg),
+      debug: (msg: string) => messages.push(msg),
+      error: (msg: string) => messages.push(msg)
+    };
+    const People = Model.create(Person, { logger: myLogger });
+    expect(People).to.be.instanceOf(Model);
+    expect(People.modelName).to.equal("person");
+    expect(People.pluralName).to.equal("people");
+    expect(People.pushKeys).to.contain("tags");
   });
 
   it("modelName and pluralName properties are correct", () => {
@@ -107,7 +131,8 @@ describe("Model", () => {
     const roger = await PersonModel.findRecord("name", "Roger Rabbit");
     expect(roger).to.be.instanceof(Record);
     expect(roger.data.name).to.equal("Roger Rabbit");
-    expect(roger.key).to.equal(roger.data.id);
+    expect(roger.get("name")).to.equal("Roger Rabbit");
+    expect(roger.id).to.equal(roger.data.id);
     expect(roger.dbPath).to.contain(roger.data.id);
     expect(roger.dbPath).to.contain("authenticated/people");
     const john = await PersonModel.findRecord("name", "John Smith");
@@ -148,23 +173,5 @@ describe("Model", () => {
     expect(list.data[0].name).to.be.a("string");
     expect(list.data[0].age).to.be.a("number");
     expect(list.meta.property("name").type).to.equal("String");
-  });
-
-  it("Model.getSome() works", async () => {
-    db.mock
-      .addSchema("person", h => () => ({
-        name: h.faker.name.firstName(),
-        age: h.faker.random.number({ min: 1, max: 99 })
-      }))
-      .pathPrefix("authenticated");
-    db.mock.queueSchema<Person>("person", 50);
-    db.mock.generate();
-    const PersonModel = new Model<Person>(Person, db);
-    const listRecent = await PersonModel.getSome()
-      .limitToFirst(5)
-      .execute();
-    expect(listRecent.length).to.equal(5);
-    expect(listRecent).to.be.instanceof(List);
-    expect(listRecent.meta.property("name").type).to.equal("String");
   });
 });

@@ -1,5 +1,4 @@
 import { IDictionary, datetime } from "common-types";
-// tslint:disable-next-line:no-implicit-dependencies
 import { RealTimeDB, rtdb } from "abstracted-firebase";
 import { VerboseError } from "./VerboseError";
 import { ISchemaMetaProperties, BaseSchema, Record, List } from "./index";
@@ -25,8 +24,9 @@ export interface IBaseModel {
 }
 
 export interface ILogger {
-  msg: (message: string) => void;
+  log: (message: string) => void;
   warn: (message: string) => void;
+  debug: (message: string) => void;
   error: (message: string) => void;
 }
 
@@ -37,6 +37,8 @@ export interface IAuditFilter {
   last?: number;
 }
 
+export type IComparisonOperator = "=" | ">" | "<";
+export type IConditionAndValue = [IComparisonOperator, boolean | string | number];
 export type FirebaseCrudOperations = "push" | "set" | "update" | "remove";
 
 export interface IAuditRecord {
@@ -47,24 +49,44 @@ export interface IAuditRecord {
   info: IDictionary;
 }
 
-export type ConditionAndValue = [string, any];
+export interface IModelOptions {
+  logger?: ILogger;
+  db?: RealTimeDB;
+}
 
-const baseLogger = {
-  msg: (message: string) => console.log(`${this.modelName}/${this._key}: ${message}`),
+export const baseLogger: ILogger = {
+  log: (message: string) => console.log(`${this.modelName}/${this._key}: ${message}`),
   warn: (message: string) => console.warn(`${this.modelName}/${this._key}: ${message}`),
+  debug: (message: string) => {
+    const stage = process.env.STAGE || process.env.AWS_STAGE || process.env.ENV;
+    if (stage !== "prod") {
+      console.log(`${this.modelName}/${this._key}: ${message}`);
+    }
+  },
   error: (message: string) => console.error(`${this.modelName}/${this._key}: ${message}`)
 };
 
 export default class Model<T extends BaseSchema> {
   //#region PROPERTIES
+  public static defaultDb: RealTimeDB = null;
 
   /** The base path in the database to store audit logs */
   public static auditBase = "logging/audit_logs";
+
+  public static create<T>(schema: new () => T, options: IModelOptions = {}) {
+    const schemaClass = new schema();
+
+    const db = options.db || Model.defaultDb;
+    const logger = options.logger || baseLogger;
+    const model = new Model<T>(schema, db, logger);
+    return model;
+  }
+
   /** Instantiation of schema class for meta analysis */
-  protected _record: T;
+  protected _schema: T;
   /** the singular name of the model */
   public get modelName() {
-    return camelCase(this._record.constructor.name);
+    return camelCase(this._schema.constructor.name);
   }
   public get pluralName() {
     return this._pluralName ? this._pluralName : pluralize.plural(this.modelName);
@@ -84,6 +106,10 @@ export default class Model<T extends BaseSchema> {
 
   private _bespokeMockGenerator: SchemaCallback<T>;
 
+  /**
+   * All access to the database is done via a passed in dependency which
+   * meets the contracts specified by the RealTimeDB interface
+   */
   private _db: RealTimeDB;
   private _key: string;
   private _snap: rtdb.IDataSnapshot;
@@ -91,54 +117,64 @@ export default class Model<T extends BaseSchema> {
 
   //#endregion
 
-  constructor(private schemaClass: new () => T, db: RealTimeDB, logger?: ILogger) {
+  constructor(private _schemaClass: new () => T, db: RealTimeDB, logger?: ILogger) {
     this._db = db;
+    if (!Model.defaultDb) {
+      Model.defaultDb = db;
+    }
     this.logger = logger ? logger : baseLogger;
-    this._record = new this.schemaClass();
+    this._schema = new this.schemaClass();
   }
 
   //#region PUBLIC API
+  public get schemaClass() {
+    return this._schemaClass;
+  }
+
+  /** Database access */
+  public get db() {
+    return this._db;
+  }
+
+  public get schema() {
+    return this._schema;
+  }
 
   public get dbPath() {
-    return [this._record.META.dbOffset, this.pluralName].join(".");
+    return [this._schema.META.dbOffset, this.pluralName].join(".");
   }
 
   public get localPath() {
-    return [this._record.META.localOffset, this.pluralName].join(".");
+    return [this._schema.META.localOffset, this.pluralName].join(".");
   }
 
   public get relationships() {
-    return this._record.META.relationships;
+    return this._schema.META.relationships;
   }
 
   public get properties() {
-    return this._record.META.properties;
+    return this._schema.META.properties;
   }
 
   public get pushKeys() {
-    return this._record.META ? this._record.META.pushKeys : [];
+    return this._schema.META ? this._schema.META.pushKeys : [];
   }
 
   public newRecord(hash?: Partial<T>) {
-    return new Record<T>(this.schemaClass, this.pluralName, this._db, this.pushKeys, hash);
+    return hash ? new Record<T>(this, hash) : new Record<T>(this);
   }
 
   public async getRecord(id: string) {
-    const record = new Record<T>(this.schemaClass, this.pluralName, this._db, this.pushKeys);
+    const record = new Record<T>(this);
     return record.load(id);
   }
 
-  public async getAll() {
-    const list = new List<T>(this.schemaClass, this.pluralName, this._db);
-    return list.load(this.dbPath);
-  }
-
-  public getSome(): SerializedQuery<T> {
-    const [schemaClass, pluralName, db] = [this.schemaClass, this.pluralName, this._db];
-    const query = SerializedQuery.path<T>(this.dbPath)
-      .setDB(this._db)
-      .handleSnapshot(snap => new List<T>(schemaClass, pluralName, db, snapshotToArray<T>(snap)));
-    return query;
+  /**
+   * Returns a list of ALL objects of the given schema type
+   */
+  public async getAll(query?: SerializedQuery) {
+    const list = new List<T>(this);
+    return query ? list.load(query) : list.load(this.dbPath);
   }
 
   /**
@@ -147,7 +183,7 @@ export default class Model<T extends BaseSchema> {
    * @param prop the property on the Schema which you are looking for a value in
    * @param value the value you are looking for the property to equal; alternatively you can pass a tuple with a comparison operation and a value
    */
-  public async findRecord(prop: keyof T, value: string | number | boolean | ConditionAndValue) {
+  public async findRecord(prop: keyof T, value: string | number | boolean | IConditionAndValue) {
     let operation: string = "=";
     if (value instanceof Array) {
       operation = value[0];
@@ -155,25 +191,17 @@ export default class Model<T extends BaseSchema> {
     }
 
     const query = this._findBuilder(prop, value, true);
-    const results = await this._db.getList<T>(query);
+    const results = await this.db.getList<T>(query);
 
     if (results.length > 0) {
       const record = this.newRecord(results.pop());
       return record;
     } else {
-      console.warn(
-        `Not Found: didn't find any ${
-          this.pluralName
-        } which had "${prop}" set to "${value}"; note the path in the database which was searched was "${
-          this.dbPath
-        }".`
-      );
-
       throw new VerboseError({
         code: "not-found",
-        message: `Not Found: didn't find any ${
+        message: `Not Found: didn't find any "${
           this.pluralName
-        } which had "${prop}" set to "${value}"; note the path in the database which was searched was "${
+        }" which had "${prop}" set to "${value}"; note the path in the database which was searched was "${
           this.dbPath
         }".`,
         module: "findRecord"
@@ -181,11 +209,14 @@ export default class Model<T extends BaseSchema> {
     }
   }
 
-  public async findAll(prop: keyof T, value: string | number | boolean | ConditionAndValue) {
+  public async findAll(
+    prop: keyof T,
+    value: string | number | boolean | IConditionAndValue
+  ): Promise<List<T>> {
     const query = this._findBuilder(prop, value);
     let results;
     try {
-      results = await this._db.getList<T>(query);
+      results = await this.db.getList<T>(query);
     } catch (e) {
       console.log("Error attempting to findAll() in Model.", e);
       throw createError(
@@ -195,7 +226,7 @@ export default class Model<T extends BaseSchema> {
         [{ prop, value, query }]
       );
     }
-    return new List<T>(this.schemaClass, this.pluralName, this._db, results);
+    return new List<T>(this, results);
   }
 
   /** sets a record to the database */
@@ -284,7 +315,7 @@ export default class Model<T extends BaseSchema> {
         });
     });
 
-    await this._db.ref("/").update(updates);
+    await this.db.ref("/").update(updates);
 
     return;
   }
@@ -327,14 +358,14 @@ export default class Model<T extends BaseSchema> {
       query = query.limitToLast(last);
     }
 
-    return this._db.getList<IAuditRecord>(query);
+    return this.db.getList<IAuditRecord>(query);
   }
   //#endregion
 
   //#region PRIVATE API
   private async audit(crud: string, when: string, key: string, info: IDictionary) {
     const path = slashNotation(Model.auditBase, this.pluralName);
-    return this._db.push(path, {
+    return this.db.push(path, {
       crud,
       when,
       key,
@@ -359,7 +390,7 @@ export default class Model<T extends BaseSchema> {
     value?: Partial<T>,
     auditInfo?: IDictionary
   ) {
-    const isAuditable = this._record.META.audit;
+    const isAuditable = this._schema.META.audit;
     const auditPath = slashNotation(Model.auditBase, this.pluralName, key);
     let auditRef;
     if (isAuditable) {
@@ -368,14 +399,14 @@ export default class Model<T extends BaseSchema> {
 
     switch (op) {
       case "set":
-        return this._db.set<T>(key, value as T);
+        return this.db.set<T>(key, value as T);
       case "update":
-        return this._db.update<T>(key, value);
+        return this.db.update<T>(key, value);
       case "push":
         // PUSH unlike SET returns a reference to the newly created record
-        return this._db.set<T>(key, value as T).then(() => this._db.ref(key));
+        return this.db.set<T>(key, value as T).then(() => this.db.ref(key));
       case "remove":
-        return this._db.remove<T>(key);
+        return this.db.remove<T>(key);
 
       default:
         throw new VerboseError({
@@ -388,7 +419,7 @@ export default class Model<T extends BaseSchema> {
 
   private _findBuilder(
     child: keyof T,
-    value: string | number | boolean | ConditionAndValue,
+    value: string | number | boolean | IConditionAndValue,
     singular: boolean = false
   ) {
     let operation: string = "=";
@@ -404,9 +435,9 @@ export default class Model<T extends BaseSchema> {
     switch (operation) {
       case "=":
         return query.equalTo(value);
-      case ">=":
+      case ">":
         return query.startAt(value);
-      case "<=":
+      case "<":
         return query.endAt(value);
 
       default:
@@ -421,8 +452,8 @@ export default class Model<T extends BaseSchema> {
   //#region mocking
   // tslint:disable-next-line:member-ordering
   public generate(quantity: number, override: IDictionary = {}) {
-    this._db.mock.queueSchema<T>(this.modelName, quantity, override);
-    this._db.mock.generate();
+    this.db.mock.queueSchema<T>(this.modelName, quantity, override);
+    this.db.mock.generate();
   }
 
   // tslint:disable-next-line:member-ordering

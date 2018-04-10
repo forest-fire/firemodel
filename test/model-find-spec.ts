@@ -1,23 +1,14 @@
 // tslint:disable:no-implicit-dependencies
-import {
-  Model,
-  BaseSchema,
-  Record,
-  List,
-  IAuditRecord,
-  FirebaseCrudOperations
-} from "../src/index";
+import { Model, Record, List } from "../src/index";
 import DB from "abstracted-admin";
 import { SchemaCallback } from "firemock";
 import * as chai from "chai";
-import * as helpers from "./testing/helpers";
 const expect = chai.expect;
 import "reflect-metadata";
 import { Klass, ContainedKlass, SubKlass } from "./testing/klass";
 import { Person } from "./testing/person";
-import { Company } from "./testing/company";
 import { VerboseError } from "../src/VerboseError";
-import { get as getStackFrame, parse as stackParse } from "stack-trace";
+import { parse as stackParse } from "stack-trace";
 
 VerboseError.setStackParser((context: VerboseError) => stackParse(context));
 
@@ -72,7 +63,7 @@ describe("Model > find API: ", () => {
     db.mock.queueSchema<Person>("person", 25, { age: 70 });
     db.mock.generate();
     const PersonModel = new Model<Person>(Person, db);
-    const olderPeople = await PersonModel.findAll("age", [">=", 60]);
+    const olderPeople = await PersonModel.findAll("age", [">", 60]);
     const allPeople = await PersonModel.getAll();
 
     expect(olderPeople).is.an.instanceOf(List);
@@ -90,7 +81,7 @@ describe("Model > find API: ", () => {
     db.mock.queueSchema<Person>("person", 25, { age: 70 });
     db.mock.generate();
     const PersonModel = new Model<Person>(Person, db);
-    const olderPeople = await PersonModel.findAll("age", ["<=", 20]);
+    const olderPeople = await PersonModel.findAll("age", ["<", 20]);
     expect(olderPeople).is.an.instanceOf(List);
     expect(olderPeople.length).to.equal(25);
   });
@@ -142,7 +133,7 @@ describe("Model > find API: ", () => {
     db.mock.generate();
     const People = new Model<Person>(Person, db);
     try {
-      const person = await People.findRecord("age", 66);
+      await People.findRecord("age", 66);
       throw new Error("Should have thrown error when no records found");
     } catch (e) {
       expect(e.code).to.equal("not-found");
@@ -152,7 +143,7 @@ describe("Model > find API: ", () => {
   it("Model.findRecord throw error database is non-existant", async () => {
     const People = new Model<Person>(Person, db);
     try {
-      const person = await People.findRecord("age", 66);
+      await People.findRecord("age", 66);
       throw new Error("Should have thrown error when no records found");
     } catch (e) {
       expect(e.code).to.equal("not-found");

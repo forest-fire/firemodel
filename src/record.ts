@@ -1,25 +1,52 @@
 // tslint:disable-next-line:no-implicit-dependencies
 import { RealTimeDB } from "abstracted-firebase";
 import { BaseSchema, ISchemaOptions } from "./index";
-import { slashNotation, createError } from "./util";
-import { VerboseError } from "./VerboseError";
+import { createError } from "./util";
+import Model, { ILogger } from "./model";
+import { key as fbk } from "firebase-key";
+
+export interface IWriteOperation {
+  id: string;
+  type: "set" | "pushKey" | "update";
+  /** The database path being written to */
+  path: string;
+  /** The new value being written to database */
+  value: any;
+  /** called on positive confirmation received from server */
+  callback: (type: string, value: any) => void;
+}
+
+export interface IRecordOptions {
+  db?: RealTimeDB;
+  logging?: ILogger;
+  id?: string;
+}
 
 export class Record<T extends BaseSchema> {
+  public static create<T extends BaseSchema>(schema: new () => T, options: IRecordOptions = {}) {
+    const model = Model.create(schema, options);
+    const record = new Record<T>(model, options);
+
+    return record;
+  }
+
+  public static async get<T extends BaseSchema>(
+    schema: new () => T,
+    id: string,
+    options: IRecordOptions = {}
+  ) {
+    const record = Record.create(schema, options);
+    return record.load(id);
+  }
+
   private _existsOnDB: boolean = false;
-  private _isDirty: boolean = false;
+  private _writeOperations: IWriteOperation[] = [];
   private _data?: Partial<T>;
 
-  constructor(
-    private _schemaClass: new () => T,
-    private _pluralName: string,
-    private _db: RealTimeDB,
-    private _pushKeys: string[],
-    initializeRecord?: Partial<T>
-  ) {
-    this._data = new this._schemaClass();
-
-    if (initializeRecord) {
-      this.initialize(initializeRecord);
+  constructor(private _model: Model<T>, data: any = {}) {
+    this._data = new _model.schemaClass();
+    if (data) {
+      this.initialize(data);
     }
   }
 
@@ -27,28 +54,32 @@ export class Record<T extends BaseSchema> {
     return this._data;
   }
 
-  public get META(): ISchemaOptions {
-    return this.data.META;
+  public get isDirty() {
+    return this._writeOperations.length > 0 ? true : false;
   }
 
-  public toJSON() {
-    return this.toString();
+  public get META(): ISchemaOptions {
+    return this._model.schema.META;
   }
-  public toString() {
-    return JSON.stringify({
-      dbPath: this.dbPath,
-      modelName: this.modelName,
-      pluralName: this.pluralName,
-      key: this.key,
-      localPath: this.localPath,
-      data: this.data
-    });
+
+  protected get db() {
+    return this._model.db;
+  }
+
+  protected get pluralName() {
+    return this._model.pluralName;
+  }
+
+  protected get pushKeys() {
+    return this._model.schema.META.pushKeys;
   }
 
   public get dbPath() {
     if (!this.data.id) {
-      throw new Error(
-        `Invalid Path: you can not ask for the dbPath before setting an "id" property. [${this._schemaClass.toString()}]`
+      throw createError(
+        null,
+        "record/invalid-path",
+        `Invalid Record Path: you can not ask for the dbPath before setting an "id" property.`
       );
     }
     return [this.data.META.dbOffset, this.pluralName, this.data.id].join("/");
@@ -57,14 +88,9 @@ export class Record<T extends BaseSchema> {
   public get modelName() {
     return this.data.constructor.name.toLowerCase();
   }
-  public get pluralName() {
-    return this._pluralName;
-  }
 
-  public get key() {
-    if (!this.data.id) {
-      throw new Error("key is not set yet!");
-    }
+  /** The Record's primary key */
+  public get id() {
     return this.data.id;
   }
 
@@ -77,22 +103,23 @@ export class Record<T extends BaseSchema> {
     return [this.data.META.localOffset, this.pluralName, this.data.id].join("/");
   }
 
-  public initialize(data: Partial<T>) {
-    Object.keys(data).forEach((key: keyof T) => (this.data[key] = data[key]));
+  public initialize(data: T) {
+    Object.keys(data).map((key: keyof T) => {
+      this._data[key] = data[key];
+    });
   }
 
   public get existsOnDB() {
-    return this._existsOnDB;
+    return this.data && this.data.id ? true : false;
   }
 
   public async load(id: string) {
-    this.data.id = id;
-    const data = await this._db.getRecord<T>(this.dbPath);
+    this._data.id = id;
+    const data = await this.db.getRecord<T>(this.dbPath);
+
     if (data && data.id) {
-      this._existsOnDB = true;
       this.initialize(data);
     } else {
-      this._existsOnDB = false;
       throw new Error(
         `Unknown Key: the key "${id}" was not found in Firebase at "${this.dbPath}".`
       );
@@ -108,61 +135,83 @@ export class Record<T extends BaseSchema> {
       );
     }
 
-    return this._db.update<T>(this.dbPath, hash);
+    return this.db.update<T>(this.dbPath, hash);
   }
 
   /**
-   * Pushes new values onto properties on the record which have been stated to be a "pushKey".
-   * This record must already exist in the DB before utilizing and the result is immediately
-   * pushed to the database rather than waiting for an "update" call which updates the entire
-   * record structure.
-   *
-   * Note that calling this function also updates the "lastUpdated" property on the Record
+   * Pushes new values onto properties on the record
+   * which have been stated to be a "pushKey"
    */
-  public async pushKey<PK = any>(property: string, value: PK) {
+  public async pushKey<K extends keyof T>(property: K, value: T[K][keyof T[K]]) {
     if (this.META.pushKeys.indexOf(property) === -1) {
-      throw new Error(
+      throw createError(
+        null,
+        "invalid-operation/not-pushkey",
         `Invalid Operation: you can not push to property "${property}" as it has not been declared a pushKey property in the schema`
       );
     }
 
     if (!this.existsOnDB) {
-      throw new Error(
+      throw createError(
+        null,
+        "invalid-operation/not-on-db",
         `Invalid Operation: you can not push to property "${property}" before saving the record to the database`
       );
     }
-
-    let pushKey;
+    const pushKey = fbk();
+    const currentState = this.get(property) || {};
+    const newState = { ...(currentState as any), [pushKey]: value };
+    // set state locally
+    this.set(property, newState);
+    // push updates to db
+    const write = this.db.multiPathSet();
+    write.add({ path: `${this.dbPath}/lastUpdated`, value: Date.now() });
+    write.add({ path: `${this.dbPath}/${property}/${pushKey}`, value });
     try {
-      pushKey = this._db.push<PK>(slashNotation(this.dbPath, property), value);
+      await write.execute();
     } catch (e) {
       throw createError(
         e,
-        "failed-pushkey",
-        `There was a problem pushing a ${typeof value} onto the path "${this.dbPath}/${property}"`
-      );
-    }
-    try {
-      await this._db.set<string>(
-        `${slashNotation(this.dbPath)}/lastUpdated`,
-        new Date().toISOString()
-      );
-    } catch (e) {
-      console.warn(
-        `Pushkey was successfully pushed but couldn't update the record's [ ${
-          this.key
-        } ] lastUpdate field`
+        "multi-path-write-error",
+        "There was a problem writing the pushKey operation to the database: " + e.message
       );
     }
 
     return pushKey;
   }
 
-  public async set(hash: T) {
-    if (!this.data.id) {
-      throw new Error(`Invalid Operation: you can not SET a record which doesn't have an "id"`);
-    }
+  /**
+   * Changes the local state of a property on the record
+   *
+   * @param prop the property on the record to be changed
+   * @param value the new value to set to
+   */
+  public set<K extends keyof T>(prop: K, value: T[K]) {
+    this.data[prop] = value;
+    return this;
+  }
 
-    return this._db.set<T>(this.dbPath, hash);
+  /**
+   * get a property value from the record
+   *
+   * @param prop the property being retrieved
+   */
+  public get<K extends keyof T>(prop: K) {
+    return this.data[prop];
+  }
+
+  public toString() {
+    return `Record::${this.modelName}@${this.id || "undefined"}`;
+  }
+
+  public toJSON() {
+    return {
+      dbPath: this.dbPath,
+      modelName: this.modelName,
+      pluralName: this.pluralName,
+      key: this.id,
+      localPath: this.localPath,
+      data: this.data.toString()
+    };
   }
 }
