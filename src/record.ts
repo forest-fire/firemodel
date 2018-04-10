@@ -51,7 +51,7 @@ export class Record<T extends BaseSchema> {
   }
 
   public get data() {
-    return this._data;
+    return this._data as Readonly<T>;
   }
 
   public get isDirty() {
