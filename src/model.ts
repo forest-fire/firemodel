@@ -1,7 +1,7 @@
 import { IDictionary, datetime, createError } from "common-types";
 import { RealTimeDB, rtdb } from "abstracted-firebase";
 import { VerboseError } from "./VerboseError";
-import { BaseSchema, Record, List } from "./index";
+import { ISchemaMetaProperties, BaseSchema, Record, List } from "./index";
 import { SchemaCallback } from "firemock";
 import * as pluralize from "pluralize";
 import camelCase = require("lodash.camelcase");
@@ -73,8 +73,6 @@ export default class Model<T extends BaseSchema> {
   public static auditBase = "logging/audit_logs";
 
   public static create<T>(schema: new () => T, options: IModelOptions = {}) {
-    const schemaClass = new schema();
-
     const db = options.db || Model.defaultDb;
     const logger = options.logger || baseLogger;
     const model = new Model<T>(schema, db, logger);
@@ -110,9 +108,6 @@ export default class Model<T extends BaseSchema> {
    * meets the contracts specified by the RealTimeDB interface
    */
   private _db: RealTimeDB;
-  private _key: string;
-  private _snap: rtdb.IDataSnapshot;
-  private _retrievingRecord: Promise<rtdb.IDataSnapshot>;
 
   //#endregion
 
@@ -183,12 +178,6 @@ export default class Model<T extends BaseSchema> {
    * @param value the value you are looking for the property to equal; alternatively you can pass a tuple with a comparison operation and a value
    */
   public async findRecord(prop: keyof T, value: string | number | boolean | IConditionAndValue) {
-    let operation: string = "=";
-    if (value instanceof Array) {
-      operation = value[0];
-      value = value[1];
-    }
-
     const query = this._findBuilder(prop, value, true);
     const results = await this.db.getList<T>(query);
 
@@ -196,15 +185,14 @@ export default class Model<T extends BaseSchema> {
       const record = this.newRecord(results.pop());
       return record;
     } else {
-      throw new VerboseError({
-        code: "not-found",
-        message: `Not Found: didn't find any "${
+      throw createError(
+        "not-found",
+        `Not Found: didn't find any "${
           this.pluralName
         }" which had "${prop}" set to "${value}"; note the path in the database which was searched was "${
           this.dbPath
-        }".`,
-        module: "findRecord"
-      });
+        }".`
+      );
     }
   }
 
@@ -473,8 +461,5 @@ export default class Model<T extends BaseSchema> {
     return Date.now();
   }
 
-  private logToAuditTrail(key: string, crud: string, info: IDictionary) {
-    //
-  }
   //#endregion
 }

@@ -24,7 +24,7 @@
   },
   "dependencies": {
     "abstracted-firebase": "^0.5.1",
-    "common-types": "^1.7.0",
+    "common-types": "^1.7.1",
     "firebase-api-surface": "^0.7.11",
     "firebase-key": "^2.0.1",
     "lodash.camelcase": "^4.3.0",

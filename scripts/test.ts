@@ -4,7 +4,7 @@ import { exec, asyncExec, find } from "async-shelljs";
 import * as rm from "rimraf";
 import * as process from "process";
 import "../test/testing/test-console";
-import { stdout, stderr } from "test-console";
+import { stdout } from "test-console";
 
 function prepOutput(output: string) {
   return output.replace(/\t\r\n/, "").replace("undefined", "");
@@ -13,7 +13,7 @@ function prepOutput(output: string) {
 function getExecutionStage(): Promise<string> {
   return new Promise<string>(resolve => {
     const inspect = stdout.inspect();
-    exec(`npm get stage`, (code, output) => {
+    exec(`npm get stage`, (_code, output) => {
       inspect.restore();
 
       const result = prepOutput(output).trim();
