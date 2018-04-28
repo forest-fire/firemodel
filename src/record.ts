@@ -36,7 +36,8 @@ export class Record<T extends BaseSchema> {
     options: IRecordOptions = {}
   ) {
     const record = Record.create(schema, options);
-    return record.load(id);
+    await record.load(id);
+    return record;
   }
 
   private _existsOnDB: boolean = false;
