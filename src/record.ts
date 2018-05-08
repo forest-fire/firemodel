@@ -1,5 +1,5 @@
 // tslint:disable-next-line:no-implicit-dependencies
-import { RealTimeDB } from "abstracted-firebase";
+import pushKey, { RealTimeDB } from "abstracted-firebase";
 import { BaseSchema, ISchemaOptions } from "./index";
 import { createError } from "common-types";
 import Model, { ILogger } from "./model";
@@ -23,11 +23,31 @@ export interface IRecordOptions {
 }
 
 export class Record<T extends BaseSchema> {
-  public static create<T extends BaseSchema>(schema: new () => T, options: IRecordOptions = {}) {
+  public static create<T extends BaseSchema>(
+    schema: new () => T,
+    options: IRecordOptions = {}
+  ) {
     const model = Model.create(schema, options);
     const record = new Record<T>(model, options);
 
     return record;
+  }
+
+  public static async add<T extends BaseSchema>(
+    schema: new () => T,
+    newRecord: T,
+    options: IRecordOptions = {}
+  ) {
+    const model = Model.create(schema, options);
+    const record = new Record<T>(model, options);
+    const id: string = newRecord.id || fbk();
+    await model.db.push(record.dbPath, {
+      ...(newRecord as any),
+      ...{ id }
+    });
+
+    const result = await Record.get(schema, id);
+    return result;
   }
 
   public static async get<T extends BaseSchema>(
