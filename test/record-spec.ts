@@ -1,5 +1,5 @@
 // tslint:disable:no-implicit-dependencies
-import { Record } from "../src/index";
+import Model, { Record } from "../src/index";
 import DB from "abstracted-admin";
 import * as chai from "chai";
 const expect = chai.expect;
@@ -10,6 +10,7 @@ describe("Record > ", () => {
   let db: DB;
   beforeEach(() => {
     db = new DB({ mocking: true });
+    Model.defaultDb = db;
     db.resetMockDb();
     db.mock
       .addSchema("person", h => () => ({
@@ -47,6 +48,22 @@ describe("Record > ", () => {
     expect(result.data.tags[pk]).to.equal("doh!");
     expect(result.data.lastUpdated).to.not.equal(backThen);
     expect(result.data.createdAt).to.equal(backThen);
+  });
+
+  it("create Record with static get() factory", async () => {
+    await db.set<Person>("/authenticated/people/8888", {
+      name: "Roger Rabbit",
+      age: 3,
+      tags: { 123: "cartoon" },
+      employerId: "disney"
+    });
+    const roger = await Record.get(Person, "8888");
+    expect(roger).to.be.an.instanceOf(Record);
+    expect(roger.data).to.be.an.instanceOf(Person);
+    expect(roger.get("name")).to.equal("Roger Rabbit");
+    expect(roger.get("age")).to.equal(3);
+    expect(roger.get("employerId")).to.equal("disney");
+    expect(roger.data.tags["123"]).to.equal("cartoon");
   });
 
   it("calling dbPath() before the ID is known provides useful error", async () => {
