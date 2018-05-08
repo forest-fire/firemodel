@@ -95,6 +95,11 @@ export class Record<T extends BaseSchema> {
     return this._model.schema.META.pushKeys;
   }
 
+  /**
+   * returns the fully qualified name in the database to this record;
+   * this of course includes the record id so if that's not set yet calling
+   * this getter will result in an error
+   */
   public get dbPath() {
     if (!this.data.id) {
       throw createError(
@@ -112,6 +117,14 @@ export class Record<T extends BaseSchema> {
   /** The Record's primary key */
   public get id() {
     return this.data.id;
+  }
+
+  /**
+   * returns the record's database offset without including the ID of the record;
+   * among other things this can be useful prior to establishing an ID for a record
+   */
+  public get dbOffset() {
+    return this.data.META.dbOffset;
   }
 
   public get localPath() {
