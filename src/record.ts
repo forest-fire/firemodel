@@ -41,7 +41,7 @@ export class Record<T extends BaseSchema> {
     const model = Model.create(schema, options);
     const record = new Record<T>(model, options);
     const id: string = newRecord.id || fbk();
-    await model.db.push(record.dbPath, {
+    await model.db.push(record.dbOffset, {
       ...(newRecord as any),
       ...{ id }
     });
