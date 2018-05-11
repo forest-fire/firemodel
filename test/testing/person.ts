@@ -31,7 +31,7 @@ export class Person extends BaseSchema {
   @ownedBy(Person) @inverse("children") public motherId?: fk;
   // prettier-ignore
   @ownedBy(Person) @inverse("children") public fatherId?: fk;
-  @hasMany(Person) public children?: fk[];
+  @hasMany(Person) public children?: IDictionary;
 
   @ownedBy(Company) public employerId?: fk;
 }

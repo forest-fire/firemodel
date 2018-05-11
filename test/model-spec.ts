@@ -28,14 +28,6 @@ describe("Model", () => {
     db.resetMockDb();
   });
 
-  it("can act as a factory for a Record and Schema", () => {
-    const k = new Model<Klass>(Klass, db);
-    expect(k).to.be.an("object");
-    expect(k.newRecord()).to.be.instanceOf(Record);
-    expect(k.newRecord().data).to.be.instanceOf(BaseSchema);
-    expect(k.newRecord().data).to.be.instanceOf(Klass);
-  });
-
   it("can be created with create() static method", () => {
     const People = Model.create(Person);
     expect(People).to.be.instanceOf(Model);
@@ -65,43 +57,6 @@ describe("Model", () => {
     expect(person.pluralName).to.equal("people");
     person.pluralName = "testing";
     expect(person.pluralName).to.equal("testing");
-  });
-
-  it("newRecord() returns empty record, with schema META set", () => {
-    const k = new Model<Klass>(Klass, db);
-    const record = k.newRecord();
-    expect(record.data.id).to.equal(undefined);
-    expect(record.data.foo).to.equal(undefined);
-    expect(record.data.META.dbOffset).to.equal("authenticated");
-  });
-
-  it("newRecord(obj) returns Record with data loaded", () => {
-    const k = new Model<Klass>(Klass, db);
-    const data = {
-      foo: "test",
-      bar: 12,
-      foobar: "xyz",
-      bar2: 24,
-      bar3: 36,
-      baz: {
-        c1: 1
-      },
-      sub: "asdf",
-
-      cb: () => undefined
-    };
-    const record = k.newRecord(data);
-    expect(record.data.id).to.equal(undefined);
-    expect(record.data.foo).to.equal("test");
-  });
-
-  it('newRecord() ... "existsOnDB" is set to false', () => {
-    const k = new Model<Klass>(Klass, db);
-    const data = { foo: "test", bar: 12 };
-    const r1 = k.newRecord();
-    const r2 = k.newRecord(data);
-    expect(r1.existsOnDB).to.equal(false);
-    expect(r2.existsOnDB).to.equal(false);
   });
 
   it("getRecord() retrieves a record from the DB", async () => {

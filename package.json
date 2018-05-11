@@ -5,8 +5,13 @@
   "license": "MIT",
   "repository": "https://github.com/forest-fire/firemodel",
   "author": "Ken Snyder <ken@ken.net>",
-  "keywords": ["serverless", "typescript"],
-  "files": ["lib"],
+  "keywords": [
+    "serverless",
+    "typescript"
+  ],
+  "files": [
+    "lib"
+  ],
   "main": "lib/index.js",
   "module": "esm/index.js",
   "typings": "lib/index.d.ts",
@@ -15,8 +20,7 @@
     "lint": "./node_modules/.bin/tslint --force --format verbose \"src/**/*.ts\"",
     "build": "./node_modules/.bin/ts-node ./scripts/build.ts",
     "test": "./node_modules/.bin/ts-node ./scripts/test.ts ",
-    "coverage":
-      "nyc --reporter=text --reporter=html mocha --compilers ts:ts-node/register",
+    "coverage": "nyc --reporter=text --reporter=html mocha --compilers ts:ts-node/register",
     "watch": "./node_modules/.bin/ts-node ./scripts/watch.ts",
     "watch:test": "./node_modules/.bin/ts-node ./scripts/watch.ts test",
     "watch:all": "./node_modules/.bin/ts-node ./scripts/watch.ts all",
@@ -27,8 +31,8 @@
     "docs:build": "vuepress build docs"
   },
   "dependencies": {
-    "abstracted-firebase": "^0.5.1",
-    "common-types": "^1.7.1",
+    "abstracted-firebase": "^0.5.4",
+    "common-types": "^1.7.27",
     "firebase-api-surface": "^0.7.11",
     "firebase-key": "^2.0.1",
     "lodash.camelcase": "^4.3.0",
@@ -37,7 +41,6 @@
     "lodash.get": "^4.4.2",
     "lodash.last": "^3.0.0",
     "lodash.set": "^4.3.2",
-    "moment": "^2.20.1",
     "pluralize": "^7.0.0",
     "reflect-metadata": "^0.1.12",
     "serialized-query": "^0.3.8",
@@ -62,7 +65,7 @@
     "@types/pluralize": "^0.0.28",
     "@types/rimraf": "^0.0.28",
     "@types/stack-trace": "^0.0.28",
-    "abstracted-admin": "^0.9.6",
+    "abstracted-admin": "^0.9.8",
     "async-shelljs": "^0.1.2",
     "chai": "^4.1.2",
     "chalk": "^2.3.2",

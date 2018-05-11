@@ -1,7 +1,7 @@
 // tslint:disable-next-line:no-implicit-dependencies
 import pushKey, { RealTimeDB } from "abstracted-firebase";
 import { BaseSchema, ISchemaOptions } from "./index";
-import { createError } from "common-types";
+import { createError, fk, IDictionary } from "common-types";
 import Model, { ILogger } from "./model";
 import { key as fbk } from "firebase-key";
 
@@ -38,9 +38,10 @@ export class Record<T extends BaseSchema> {
     newRecord: T,
     options: IRecordOptions = {}
   ) {
+    // const r = new Record(schema, options);
     const r = Record.create(schema, options);
-    r.initialize(newRecord);
-    await r.save();
+
+    await r.initialize(newRecord);
 
     return r;
   }
@@ -59,11 +60,8 @@ export class Record<T extends BaseSchema> {
   private _writeOperations: IWriteOperation[] = [];
   private _data?: Partial<T>;
 
-  constructor(private _model: Model<T>, data: any = {}) {
+  constructor(private _model: Model<T>, options: IRecordOptions = {}) {
     this._data = new _model.schemaClass();
-    if (data) {
-      this.initialize(data);
-    }
   }
 
   public get data() {
@@ -154,29 +152,45 @@ export class Record<T extends BaseSchema> {
    *
    * @param data the initial state you want to start with
    */
-  public initialize(data: T) {
-    Object.keys(data).map((key: keyof T) => {
-      this._data[key] = data[key];
+  public async initialize(data: T) {
+    Object.keys(data).map(key => {
+      this._data[key as keyof T] = data[key as keyof T];
     });
-  }
+    const relationships = this.META.relationships;
 
-  public async save() {
-    if (this.id) {
-      const e = new Error(`Saving after ID is set is not allowed [ ${this.id} ]`);
-      e.name = "InvalidSave";
-      throw e;
+    const ownedByRels = relationships
+      .filter(r => r.relType === "ownedBy")
+      .map(r => r.property);
+    const hasManyRels = relationships
+      .filter(r => r.relType === "hasMany")
+      .map(r => r.property);
+
+    // default hasMany to empty hash
+    hasManyRels.map((p: string) => {
+      if (!this._data[p as keyof T]) {
+        (this._data as any)[p] = {};
+      }
+    });
+
+    const now = new Date().getTime();
+    if (!this._data.lastUpdated) {
+      this._data.lastUpdated = now;
     }
-    this.id = fbk();
-
-    await this.db.set<T>(this.dbPath, this.data);
-
-    return this;
+    if (!this._data.createdAt) {
+      this._data.createdAt = now;
+    }
+    if (!this.id) {
+      this._save();
+    }
   }
 
   public get existsOnDB() {
     return this.data && this.data.id ? true : false;
   }
 
+  /**
+   * Load data from a record in database
+   */
   public async load(id: string) {
     this._data.id = id;
     const data = await this.db.getRecord<T>(this.dbPath);
@@ -220,22 +234,57 @@ export class Record<T extends BaseSchema> {
         `Invalid Operation: you can not push to property "${property}" before saving the record to the database`
       );
     }
-    const pushKey = fbk();
+    const key = fbk();
     const currentState = this.get(property) || {};
-    const newState = { ...(currentState as any), [pushKey]: value };
+    const newState = { ...(currentState as any), [key]: value };
     // set state locally
     this.set(property, newState);
     // push updates to db
-    const write = this.db.multiPathSet();
-    write.add({ path: `${this.dbPath}/lastUpdated`, value: Date.now() });
-    write.add({ path: `${this.dbPath}/${property}/${pushKey}`, value });
+    const write = this.db.multiPathSet(`${this.dbPath}/`);
+    write.add({ path: `lastUpdated`, value: new Date().getTime() });
+    write.add({ path: `${property}/${key}`, value });
     try {
       await write.execute();
     } catch (e) {
       throw createError("multi-path/write-error", "", e);
     }
 
-    return pushKey;
+    return key;
+  }
+
+  /**
+   * Adds another fk to a hasMany relationship
+   *
+   * @param property the property which is acting as a foreign key (array)
+   * @param ref reference to ID of related entity
+   * @param optionalValue the default behaviour is to add the value TRUE but you can optionally add some additional piece of information here instead.
+   */
+  public async addHasMany(property: keyof T, ref: fk, optionalValue: any = true) {
+    if (this.META.property(property).relType !== "hasMany") {
+      const e = new Error(
+        `The property "${property}" does NOT have a "hasMany" relationship on ${
+          this.modelName
+        }`
+      );
+      e.name = "InvalidRelationship";
+      throw e;
+    }
+    if (
+      typeof this.data[property] === "object" &&
+      (this.data[property] as IDictionary)[ref]
+    ) {
+      const e = new Error(
+        `The fk of "${ref}" already exists in "${this.modelName}.${property}"!`
+      );
+      e.name = "AlreadyExists";
+      throw e;
+    }
+
+    await this.db
+      .multiPathSet(this.dbPath)
+      .add({ path: `${property}/${ref}/`, value: optionalValue })
+      .add({ path: "lastUpdated", value: new Date().getTime() })
+      .execute();
   }
 
   /**
@@ -271,5 +320,18 @@ export class Record<T extends BaseSchema> {
       localPath: this.localPath,
       data: this.data.toString()
     };
+  }
+
+  private async _save() {
+    if (this.id) {
+      const e = new Error(`Saving after ID is set is not allowed [ ${this.id} ]`);
+      e.name = "InvalidSave";
+      throw e;
+    }
+    this.id = fbk();
+
+    await this.db.set<T>(this.dbPath, this.data);
+
+    return this;
   }
 }

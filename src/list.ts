@@ -1,11 +1,14 @@
 // tslint:disable-next-line:no-implicit-dependencies
 import { RealTimeDB } from "abstracted-firebase";
-import { BaseSchema, ISchemaOptions } from "./index";
+import { BaseSchema, ISchemaOptions, Record } from "./index";
 import { SerializedQuery, IComparisonOperator } from "serialized-query";
 import Model, { IModelOptions } from "./model";
 
 export class List<T extends BaseSchema> {
-  public static create<T extends BaseSchema>(schema: new () => T, options: IModelOptions = {}) {
+  public static create<T extends BaseSchema>(
+    schema: new () => T,
+    options: IModelOptions = {}
+  ) {
     const model = Model.create(schema, options);
     return new List<T>(model);
   }
@@ -125,6 +128,12 @@ export class List<T extends BaseSchema> {
   /** Returns another List with data filtered down by passed in filter function */
   public filter(f: ListFilterFunction<T>) {
     return new List(this._model, this._data.filter(f));
+  }
+
+  /** Returns another List with data filtered down by passed in filter function */
+  public find(f: ListFilterFunction<T>) {
+    const filtered = this._data.filter(f);
+    return filtered.length > 0 ? Record.add(this._model.schemaClass, filtered[0]) : null;
   }
 
   /** Maps the data in the list to a plain JS object. Note: maintaining a List container isn't practical as the transformed data structure might not be a defined schema type */

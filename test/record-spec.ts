@@ -12,10 +12,13 @@ describe("Record > ", () => {
     db = new DB({ mocking: true });
     Model.defaultDb = db;
     db.resetMockDb();
+    const now = new Date().getTime();
     db.mock
       .addSchema("person", h => () => ({
         name: h.faker.name.firstName(),
-        age: h.faker.random.number({ min: 1, max: 99 })
+        age: h.faker.random.number({ min: 1, max: 99 }),
+        lastUpdated: now,
+        createdAt: now
       }))
       .pathPrefix("authenticated");
     db.mock.queueSchema("person", 10).generate();
@@ -73,18 +76,22 @@ describe("Record > ", () => {
   });
 
   it("using pushKey updates lastUpdated", async () => {
+    const now = new Date().getTime();
     await db.set<Person>("/authenticated/people/1234", {
       name: "Bart Simpson",
-      age: 10
+      age: 10,
+      lastUpdated: now,
+      createdAt: now
     });
     const bart = await Record.get(Person, "1234", { db });
     const backThen = bart.data.createdAt;
+
     expect(bart.data.lastUpdated).to.equal(backThen);
     const pk = await bart.pushKey("tags", "doh!");
     const result = await Record.get(Person, "1234", { db });
 
     expect(result.data.tags[pk]).to.equal("doh!");
-    expect(result.data.lastUpdated).to.not.equal(backThen);
+    expect(result.data.lastUpdated).to.be.greaterThan(backThen);
     expect(result.data.createdAt).to.equal(backThen);
   });
 
