@@ -38,16 +38,11 @@ export class Record<T extends BaseSchema> {
     newRecord: T,
     options: IRecordOptions = {}
   ) {
-    const model = Model.create(schema, options);
-    const record = new Record<T>(model, options);
-    const id: string = newRecord.id || fbk();
-    await model.db.push(record.dbOffset, {
-      ...(newRecord as any),
-      ...{ id }
-    });
+    const r = Record.create(schema, options);
+    r.initialize(newRecord);
+    await r.save();
 
-    const result = await Record.get(schema, id);
-    return result;
+    return r;
   }
 
   public static async get<T extends BaseSchema>(
@@ -119,6 +114,18 @@ export class Record<T extends BaseSchema> {
     return this.data.id;
   }
 
+  public set id(val: string) {
+    if (this.data.id) {
+      const e = new Error(
+        `You may not re-set the ID of a record [ ${this.data.id} → ${val} ].`
+      );
+      e.name = "NotAllowed";
+      throw e;
+    }
+
+    this._data.id = val;
+  }
+
   /**
    * returns the record's database offset without including the ID of the record;
    * among other things this can be useful prior to establishing an ID for a record
@@ -127,6 +134,10 @@ export class Record<T extends BaseSchema> {
     return this.data.META.dbOffset;
   }
 
+  /**
+   * returns the record's location in the frontend state management framework;
+   * depends on appropriate configuration of model to be accurate.
+   */
   public get localPath() {
     if (!this.data.id) {
       throw new Error(
@@ -136,10 +147,30 @@ export class Record<T extends BaseSchema> {
     return [this.data.META.localOffset, this.pluralName, this.data.id].join("/");
   }
 
+  /**
+   * Allows an empty Record to be initialized to a known state.
+   * This is not intended to allow for mass property manipulation other
+   * than at time of initialization
+   *
+   * @param data the initial state you want to start with
+   */
   public initialize(data: T) {
     Object.keys(data).map((key: keyof T) => {
       this._data[key] = data[key];
     });
+  }
+
+  public async save() {
+    if (this.id) {
+      const e = new Error(`Saving after ID is set is not allowed [ ${this.id} ]`);
+      e.name = "InvalidSave";
+      throw e;
+    }
+    this.id = fbk();
+
+    await this.db.set<T>(this.dbPath, this.data);
+
+    return this;
   }
 
   public get existsOnDB() {

@@ -21,6 +21,44 @@ describe("Record > ", () => {
     db.mock.queueSchema("person", 10).generate();
   });
 
+  it("Record's add() factory adds record to database", async () => {
+    const r = await Record.add(Person, {
+      name: "Bob",
+      age: 40
+    });
+    expect(r).to.be.instanceof(Record);
+    expect(r.get("name")).to.equal("Bob");
+    expect(r.id).to.exist.and.be.a("string");
+  });
+
+  it("Once an ID is set it can not be reset", async () => {
+    const r = await Record.add(Person, {
+      name: "Bob",
+      age: 40
+    });
+    const id = r.id;
+    try {
+      r.id = "12345";
+      throw new Error("Let ID be reset!");
+    } catch (e) {
+      expect(r.id).to.equal(id);
+      expect(e.name).to.equal("NotAllowed");
+    }
+  });
+
+  it("Record's add() factor disallows the addition of state which already has an ID", async () => {
+    try {
+      const r = await Record.add(Person, {
+        id: "invalid",
+        name: "Bob",
+        age: 40
+      });
+      throw new Error("Allowed addition when ID was part of payload!");
+    } catch (e) {
+      // do nothing
+    }
+  });
+
   it("using pushKey sets state locally immediately", async () => {
     db.set<Person>("/authenticated/people/1234", {
       name: "Bart Simpson",

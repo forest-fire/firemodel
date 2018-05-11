@@ -1,6 +1,6 @@
 {
   "name": "firemodel",
-  "version": "0.10.7",
+  "version": "0.10.8",
   "description": "firemodel",
   "license": "MIT",
   "repository": "https://github.com/forest-fire/firemodel",
@@ -22,7 +22,9 @@
     "watch:all": "./node_modules/.bin/ts-node ./scripts/watch.ts all",
     "deploy": "./node_modules/.bin/ts-node ./scripts/deploy.ts ",
     "package": "./node_modules/.bin/ts-node ./scripts/package.ts ",
-    "cli": "./node_modules/.bin/ts-node cli/index.ts --"
+    "cli": "./node_modules/.bin/ts-node cli/index.ts --",
+    "docs:dev": "vuepress dev docs",
+    "docs:build": "vuepress build docs"
   },
   "dependencies": {
     "abstracted-firebase": "^0.5.1",
@@ -79,7 +81,8 @@
     "ts-node": "^5.0.1",
     "tslint": "^5.9.1",
     "tslint-config-prettier": "^1.10.0",
-    "typescript": "^2.9.0-dev.20180404"
+    "typescript": "^2.9.0-dev.20180404",
+    "vuepress": "^0.8.4"
   },
   "engines": {
     "node": ">=6.0.0"
