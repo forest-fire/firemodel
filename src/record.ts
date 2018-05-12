@@ -273,11 +273,15 @@ export class Record<T extends BaseSchema> {
       typeof this.data[property] === "object" &&
       (this.data[property] as IDictionary)[ref]
     ) {
-      const e = new Error(
+      // const e = new Error(
+      //   `The fk of "${ref}" already exists in "${this.modelName}.${property}"!`
+      // );
+      // e.name = "AlreadyExists";
+      // throw e;
+      console.warn(
         `The fk of "${ref}" already exists in "${this.modelName}.${property}"!`
       );
-      e.name = "AlreadyExists";
-      throw e;
+      return;
     }
 
     await this.db
