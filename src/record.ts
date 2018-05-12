@@ -158,10 +158,10 @@ export class Record<T extends BaseSchema> {
     });
     const relationships = this.META.relationships;
 
-    const ownedByRels = relationships
+    const ownedByRels = (relationships || [])
       .filter(r => r.relType === "ownedBy")
       .map(r => r.property);
-    const hasManyRels = relationships
+    const hasManyRels = (relationships || [])
       .filter(r => r.relType === "hasMany")
       .map(r => r.property);
 
