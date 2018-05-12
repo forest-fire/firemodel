@@ -302,7 +302,8 @@ export class Record<T extends BaseSchema> {
     await this.db
       .multiPathSet(this.dbPath)
       .add({ path: `${prop}/`, value })
-      .add({ path: "lastUpdated", value: new Date().getTime() });
+      .add({ path: "lastUpdated", value: new Date().getTime() })
+      .execute();
 
     return;
   }
