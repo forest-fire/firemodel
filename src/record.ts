@@ -221,7 +221,7 @@ export class Record<T extends BaseSchema> {
    * which have been stated to be a "pushKey"
    */
   public async pushKey<K extends keyof T>(property: K, value: T[K][keyof T[K]]) {
-    if (this.META.pushKeys.indexOf(property) === -1) {
+    if (this.META.pushKeys.indexOf(property as any) === -1) {
       throw createError(
         "invalid-operation/not-pushkey",
         `Invalid Operation: you can not push to property "${property}" as it has not been declared a pushKey property in the schema`
@@ -293,9 +293,18 @@ export class Record<T extends BaseSchema> {
    * @param prop the property on the record to be changed
    * @param value the new value to set to
    */
-  public set<K extends keyof T>(prop: K, value: T[K]) {
+  public async set<K extends keyof T>(prop: K, value: T[K]) {
+    // TODO: add interaction points for client-side state management; goal
+    // is to have local state changed immediately but with meta data to indicate
+    // that we're waiting for backend confirmation.
     this._data[prop] = value;
-    return this;
+
+    await this.db
+      .multiPathSet(this.dbPath)
+      .add({ path: `${prop}/`, value })
+      .add({ path: "lastUpdated", value: new Date().getTime() });
+
+    return;
   }
 
   /**

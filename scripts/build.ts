@@ -53,7 +53,7 @@ async function execute(scope: string) {
 
   console.log(
     chalk.dim(`- transpiling typescript ( `) +
-      chalk.dim.grey(`./node_modules/.bin/tsc --module 2015 ${scope}`) +
+      chalk.dim.grey(`./node_modules/.bin/tsc ${scope}`) +
       chalk.dim(` )`)
   );
   exec(`./node_modules/.bin/tsc ${scope}`, (code, out) => {
