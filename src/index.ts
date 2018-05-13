@@ -24,3 +24,4 @@ export { Record } from "./record";
 export { List } from "./list";
 
 export { fk, pk } from "common-types";
+export { key as fbKey } from "firebase-key";
