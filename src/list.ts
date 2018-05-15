@@ -146,6 +146,13 @@ export class List<T extends BaseSchema> {
   }
 
   public async load(pathOrQuery: string | SerializedQuery<T>) {
+    if (!this.db) {
+      const e = new Error(
+        `The attempt to load data into a List requires that the DB property be initialized first!`
+      );
+      e.name = "NoDatabase";
+      throw e;
+    }
     this._data = await this.db.getList<T>(pathOrQuery);
     return this;
   }

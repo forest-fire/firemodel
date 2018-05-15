@@ -192,6 +192,14 @@ export class Record<T extends BaseSchema> {
    * Load data from a record in database
    */
   public async load(id: string) {
+    if (!this.db) {
+      const e = new Error(
+        `The attempt to load data into a Record requires that the DB property be initialized first!`
+      );
+      e.name = "NoDatabase";
+      throw e;
+    }
+
     this._data.id = id;
     const data = await this.db.getRecord<T>(this.dbPath);
 
