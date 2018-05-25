@@ -5,8 +5,13 @@
   "license": "MIT",
   "repository": "https://github.com/forest-fire/firemodel",
   "author": "Ken Snyder <ken@ken.net>",
-  "keywords": ["serverless", "typescript"],
-  "files": ["lib"],
+  "keywords": [
+    "serverless",
+    "typescript"
+  ],
+  "files": [
+    "lib"
+  ],
   "main": "lib/index.js",
   "module": "esm/index.js",
   "typings": "lib/index.d.ts",
@@ -15,8 +20,7 @@
     "lint": "./node_modules/.bin/tslint --force --format verbose \"src/**/*.ts\"",
     "build": "./node_modules/.bin/ts-node ./scripts/build.ts",
     "test": "./node_modules/.bin/ts-node ./scripts/test.ts ",
-    "coverage":
-      "nyc --reporter=text --reporter=html mocha --compilers ts:ts-node/register",
+    "coverage": "nyc --reporter=text --reporter=html mocha --compilers ts:ts-node/register",
     "watch": "./node_modules/.bin/ts-node ./scripts/watch.ts",
     "watch:test": "./node_modules/.bin/ts-node ./scripts/watch.ts test",
     "watch:all": "./node_modules/.bin/ts-node ./scripts/watch.ts all",
@@ -80,7 +84,7 @@
     "ts-node": "^5.0.1",
     "tslint": "^5.9.1",
     "tslint-config-prettier": "^1.10.0",
-    "typescript": "^2.9.0-dev.20180404",
+    "typescript": "2.8.3",
     "vuepress": "^0.8.4"
   },
   "engines": {

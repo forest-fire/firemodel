@@ -33,6 +33,30 @@ export class List<T extends BaseSchema> {
     return list;
   }
 
+  /**
+   * Loads all the records of a given schema-type ordered by lastUpdated
+   *
+   * @param schema the schema type
+   * @param options model options
+   */
+  public static async all<T extends BaseSchema>(
+    schema: new () => T,
+    options: IModelOptions = {}
+  ): Promise<List<T>> {
+    const query = new SerializedQuery().orderByChild("lastUpdated");
+    const list = await List.from(schema, query, options);
+
+    return list;
+  }
+
+  /**
+   * Loads the first X records of the Schema type where
+   * ordering is provided by the "createdAt" property
+   *
+   * @param schema the schema type
+   * @param howMany the number of records to bring back
+   * @param options model options
+   */
   public static async first<T extends BaseSchema>(
     schema: new () => T,
     howMany: number,
