@@ -3,6 +3,7 @@ import { RealTimeDB } from "abstracted-firebase";
 import { BaseSchema, ISchemaOptions, Record } from "./index";
 import { SerializedQuery, IComparisonOperator } from "serialized-query";
 import Model, { IModelOptions } from "./model";
+import { DEFAULT_ENCODING } from "crypto";
 
 export class List<T extends BaseSchema> {
   public static create<T extends BaseSchema>(
@@ -167,6 +168,34 @@ export class List<T extends BaseSchema> {
 
   public get data() {
     return this._data;
+  }
+
+  /**
+   * Returns the specified record Record object
+   *
+   * @param id the unique ID which is being looked for
+   */
+  public get(id: string) {
+    const find = this.filter(f => f.id === id);
+    if (find.length === 0) {
+      const e = new Error(`Could not find "${id}" in list of ${this._model.pluralName}`);
+      e.name = "NotFound";
+      throw e;
+    }
+
+    const r = new Record(this._model);
+    r.initialize(find.data[0]);
+    return r;
+  }
+
+  /**
+   * Returns the specified record Model object
+   *
+   * @param id the unique ID which is being looked for
+   */
+  public getModel(id: string) {
+    const record = this.get(id);
+    return record.data;
   }
 
   public async load(pathOrQuery: string | SerializedQuery<T>) {

@@ -107,4 +107,60 @@ describe("List class: ", () => {
     expect(inactive).to.be.length(4);
     expect(recentCreatedDate).to.be.greaterThan(inactiveCreatedDate);
   });
+
+  it("an instantiated List can call get() with a valid ID and get a Record", async () => {
+    db.mock
+      .addSchema<Person>("person", h => () => ({
+        name: h.faker.name.firstName(),
+        age: h.faker.random.number({ min: 1, max: 50 }),
+        createdAt: h.faker.date.past().valueOf(),
+        lastUpdated: h.faker.date.recent().valueOf()
+      }))
+      .pathPrefix("authenticated");
+    db.mock.queueSchema("person", 30).generate();
+    const firstPersonId = helpers.firstKey(db.mock.db.authenticated.people);
+    const list = await List.all(Person);
+    const record = list.get(firstPersonId);
+    expect(record).to.be.an("object");
+    expect(record).to.be.an.instanceOf(Record);
+    expect(record.data).to.be.an.instanceOf(Person);
+    expect(record.data.name).to.be.a("string");
+  });
+
+  it("an instantiated List can call getModel() with a valid ID and get a Model", async () => {
+    db.mock
+      .addSchema<Person>("person", h => () => ({
+        name: h.faker.name.firstName(),
+        age: h.faker.random.number({ min: 1, max: 50 }),
+        createdAt: h.faker.date.past().valueOf(),
+        lastUpdated: h.faker.date.recent().valueOf()
+      }))
+      .pathPrefix("authenticated");
+    db.mock.queueSchema("person", 30).generate();
+    const firstPersonId = helpers.firstKey(db.mock.db.authenticated.people);
+    const list = await List.all(Person);
+    const person = list.getModel(firstPersonId);
+    expect(person).to.be.an("object");
+    expect(person).to.be.an.instanceOf(Person);
+    expect(person.name).to.be.a("string");
+  });
+
+  it("an instantiated List calling get() with an invalid ID throws an error", async () => {
+    db.mock
+      .addSchema<Person>("person", h => () => ({
+        name: h.faker.name.firstName(),
+        age: h.faker.random.number({ min: 1, max: 50 }),
+        createdAt: h.faker.date.past().valueOf(),
+        lastUpdated: h.faker.date.recent().valueOf()
+      }))
+      .pathPrefix("authenticated");
+    db.mock.queueSchema("person", 30).generate();
+    const list = await List.all(Person);
+    try {
+      const record = list.get("not-there");
+      throw new Error("Invalid ID should have thrown error");
+    } catch (e) {
+      expect(e.name).to.equal("NotFound");
+    }
+  });
 });
