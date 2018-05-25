@@ -1,30 +1,28 @@
 {
   "name": "firemodel",
-  "version": "0.10.15",
+  "version": "0.10.16",
   "description": "firemodel",
   "license": "MIT",
   "repository": "https://github.com/forest-fire/firemodel",
   "author": "Ken Snyder <ken@ken.net>",
-  "keywords": [
-    "serverless",
-    "typescript"
-  ],
-  "files": [
-    "lib"
-  ],
+  "keywords": ["serverless", "typescript"],
+  "files": ["lib"],
   "main": "lib/index.js",
-  "module": "esm/index.js",
+  "module": "dist/firemodel.es.js",
+  "browser": "dist/firemodel.min.js",
   "typings": "lib/index.d.ts",
   "scripts": {
     "clean": "rimraf lib",
     "lint": "./node_modules/.bin/tslint --force --format verbose \"src/**/*.ts\"",
-    "build": "./node_modules/.bin/ts-node ./scripts/build.ts",
+    "build":
+      "./node_modules/.bin/ts-node ./scripts/build.ts && node_modules/.bin/bili lib/index.js --format es,umd-min",
     "test": "./node_modules/.bin/ts-node ./scripts/test.ts ",
-    "coverage": "nyc --reporter=text --reporter=html mocha --compilers ts:ts-node/register",
+    "coverage":
+      "nyc --reporter=text --reporter=html mocha --compilers ts:ts-node/register",
     "watch": "./node_modules/.bin/ts-node ./scripts/watch.ts",
     "watch:test": "./node_modules/.bin/ts-node ./scripts/watch.ts test",
     "watch:all": "./node_modules/.bin/ts-node ./scripts/watch.ts all",
-    "deploy": "./node_modules/.bin/ts-node ./scripts/deploy.ts ",
+    "deploy": "./node_modules/.bin/ts-node ./scripts/deploy.ts",
     "package": "./node_modules/.bin/ts-node ./scripts/package.ts ",
     "cli": "./node_modules/.bin/ts-node cli/index.ts --",
     "docs:dev": "vuepress dev docs",
@@ -67,6 +65,7 @@
     "@types/stack-trace": "^0.0.28",
     "abstracted-admin": "^0.9.8",
     "async-shelljs": "^0.1.2",
+    "bili": "^3.1.2",
     "chai": "^4.1.2",
     "chalk": "^2.3.2",
     "chance": "^1.0.0",
@@ -79,6 +78,7 @@
     "nyc": "^11.6.0",
     "prettier": "^1.11.1",
     "rimraf": "^2.6.0",
+    "rollup": "^0.59.3",
     "stack-trace": "^0.0.10",
     "test-console": "^1.1.0",
     "ts-node": "^5.0.1",
