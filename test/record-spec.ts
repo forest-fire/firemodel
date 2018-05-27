@@ -111,6 +111,36 @@ describe("Record > ", () => {
     expect(roger.data.tags["123"]).to.equal("cartoon");
   });
 
+  it("using updateProps() allows updating multiple props (incl lastUpdated) which are reflected on record immediately", async () => {
+    await db.set<Person>("/authenticated/people/8888", {
+      name: "Roger Rabbit",
+      age: 3,
+      tags: { 123: "cartoon" },
+      employerId: "disney",
+      lastUpdated: 12345
+    });
+    const roger = await Record.get(Person, "8888");
+    await roger.updateProps({
+      name: "Bugs Bunny",
+      employerId: "rogue"
+    });
+    // IMMEDIATE CHANGE on RECORD
+    expect(roger.get("name")).to.equal("Bugs Bunny");
+    expect(roger.get("age")).to.equal(3);
+    expect(roger.get("employerId")).to.equal("rogue");
+    expect(roger.data.tags["123"]).to.equal("cartoon");
+    expect(roger.get("lastUpdated"))
+      .to.be.a("number")
+      .and.not.equal(12345);
+    // CHANGE REFLECTED on RELOAD from DB
+    const bugs = await Record.get(Person, "8888");
+    expect(bugs.get("name")).to.equal("Bugs Bunny");
+    expect(bugs.get("age")).to.equal(3);
+    expect(bugs.get("employerId")).to.equal("rogue");
+    expect(bugs.data.tags["123"]).to.equal("cartoon");
+    expect(bugs.get("lastUpdated")).to.equal(roger.get("lastUpdated"));
+  });
+
   it("calling dbPath() before the ID is known provides useful error", async () => {
     const record = Record.create(Person, { db });
 

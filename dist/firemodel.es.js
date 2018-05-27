@@ -1426,6 +1426,41 @@ function () {
       return this._data.map(f);
     }
   }, {
+    key: "get",
+
+    /**
+     * Returns the specified record Record object
+     *
+     * @param id the unique ID which is being looked for
+     */
+    value: function get(id) {
+      var find = this.filter(function (f) {
+        return f.id === id;
+      });
+
+      if (find.length === 0) {
+        var e = new Error("Could not find \"".concat(id, "\" in list of ").concat(this._model.pluralName));
+        e.name = "NotFound";
+        throw e;
+      }
+
+      var r = new index_1$1.Record(this._model);
+      r.initialize(find.data[0]);
+      return r;
+    }
+    /**
+     * Returns the specified record Model object
+     *
+     * @param id the unique ID which is being looked for
+     */
+
+  }, {
+    key: "getModel",
+    value: function getModel(id) {
+      var record = this.get(id);
+      return record.data;
+    }
+  }, {
     key: "load",
     value: function load(pathOrQuery) {
       return __awaiter$2(this, void 0, void 0, function* () {

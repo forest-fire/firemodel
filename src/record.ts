@@ -5,6 +5,10 @@ import { createError, fk, IDictionary } from "common-types";
 import Model, { ILogger } from "./model";
 import { key as fbk } from "firebase-key";
 
+export interface IMultiPropUpdate<T extends string> {
+  [key: keyof T]: any;
+}
+
 export interface IWriteOperation {
   id: string;
   type: "set" | "pushKey" | "update";
@@ -258,6 +262,26 @@ export class Record<T extends BaseSchema> {
     }
 
     return key;
+  }
+
+  public async updateProps(props: Partial<T>) {
+    const updater = this.db.multiPathSet(this.dbPath);
+    Object.keys(props).map((key: keyof T) => {
+      updater.add({ path: key, value: props[key] });
+      this.set(key, props[key]);
+    });
+    const now = new Date().getTime();
+    updater.add({ path: "lastUpdated", value: now });
+    this.set("lastUpdated", now);
+    try {
+      await updater.execute();
+    } catch (e) {
+      throw createError(
+        "UpdateProps",
+        `An error occurred trying to update ${this._model.modelName}:${this.id}`,
+        e
+      );
+    }
   }
 
   /**
