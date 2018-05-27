@@ -1117,6 +1117,42 @@ function () {
       });
     }
     /**
+     * Updates a set of properties on a given model atomically (aka, all at once); will automatically
+     * include the "lastUpdated" property.
+     *
+     * @param props a hash of name value pairs which represent the props being updated and their new values
+     */
+
+  }, {
+    key: "updateProps",
+    value: function updateProps(props) {
+      return __awaiter$1(this, void 0, void 0, function* () {
+        var _this2 = this;
+
+        var updater = this.db.multiPathSet(this.dbPath);
+        Object.keys(props).map(function (key) {
+          updater.add({
+            path: key,
+            value: props[key]
+          });
+
+          _this2.set(key, props[key]);
+        });
+        var now = new Date().getTime();
+        updater.add({
+          path: "lastUpdated",
+          value: now
+        });
+        this.set("lastUpdated", now);
+
+        try {
+          yield updater.execute();
+        } catch (e) {
+          throw common_types_1$1.createError("UpdateProps", "An error occurred trying to update ".concat(this._model.modelName, ":").concat(this.id), e);
+        }
+      });
+    }
+    /**
      * Adds another fk to a hasMany relationship
      *
      * @param property the property which is acting as a foreign key (array)

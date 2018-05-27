@@ -264,6 +264,12 @@ export class Record<T extends BaseSchema> {
     return key;
   }
 
+  /**
+   * Updates a set of properties on a given model atomically (aka, all at once); will automatically
+   * include the "lastUpdated" property.
+   *
+   * @param props a hash of name value pairs which represent the props being updated and their new values
+   */
   public async updateProps(props: Partial<T>) {
     const updater = this.db.multiPathSet(this.dbPath);
     Object.keys(props).map((key: keyof T) => {
