@@ -273,6 +273,10 @@ export class Record<T extends BaseSchema> {
   public async updateProps(props: Partial<T>) {
     const updater = this.db.multiPathSet(this.dbPath);
     Object.keys(props).map((key: keyof T) => {
+      if (typeof props[key] === "object") {
+        const existingState = this.get(key);
+        props[key] = { ...(existingState as any), ...(props[key] as any) };
+      }
       updater.add({ path: key, value: props[key] });
       this.set(key, props[key]);
     });

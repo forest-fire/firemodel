@@ -1131,6 +1131,12 @@ function () {
 
         var updater = this.db.multiPathSet(this.dbPath);
         Object.keys(props).map(function (key) {
+          if (_typeof(props[key]) === "object") {
+            var existingState = _this2.get(key);
+
+            props[key] = Object.assign({}, existingState, props[key]);
+          }
+
           updater.add({
             path: key,
             value: props[key]

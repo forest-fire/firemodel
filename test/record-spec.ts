@@ -141,6 +141,26 @@ describe("Record > ", () => {
     expect(bugs.get("lastUpdated")).to.equal(roger.get("lastUpdated"));
   });
 
+  it("using updateProps() allows non-destructive updates on object types", async () => {
+    await db.set<Person>("/authenticated/people/8888", {
+      name: "Roger Rabbit",
+      age: 3,
+      tags: { "123": "cartoon" },
+      employerId: "disney",
+      lastUpdated: 12345
+    });
+    const roger = await Record.get(Person, "8888");
+    await roger.updateProps({
+      tags: { "456": "something else" }
+    });
+    // IMMEDIATE CHANGE on RECORD
+    expect(roger.get("tags")).to.haveOwnProperty("123");
+    expect(roger.get("tags")).to.haveOwnProperty("456");
+    const bugs = await Record.get(Person, "8888");
+    expect(bugs.get("tags")).to.haveOwnProperty("123");
+    expect(bugs.get("tags")).to.haveOwnProperty("456");
+  });
+
   it("calling dbPath() before the ID is known provides useful error", async () => {
     const record = Record.create(Person, { db });
 
