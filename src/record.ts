@@ -5,10 +5,6 @@ import { createError, fk, IDictionary } from "common-types";
 import Model, { ILogger } from "./model";
 import { key as fbk } from "firebase-key";
 
-export interface IMultiPropUpdate<T extends string> {
-  [key: keyof T]: any;
-}
-
 export interface IWriteOperation {
   id: string;
   type: "set" | "pushKey" | "update";
@@ -311,10 +307,7 @@ export class Record<T extends BaseSchema> {
       e.name = "InvalidRelationship";
       throw e;
     }
-    if (
-      typeof this.data[property] === "object" &&
-      (this.data[property] as IDictionary)[ref]
-    ) {
+    if (typeof this.data[property] === "object" && this.data[property][ref]) {
       console.warn(
         `The fk of "${ref}" already exists in "${this.modelName}.${property}"!`
       );

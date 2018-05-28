@@ -61,6 +61,7 @@ async function execute(scope: string) {
       console.log(chalk.green.bold(`- build completed successfully 👍\n`));
     } else {
       console.log(chalk.red.bold(`\n- Completed with code: ${code}  😡 `));
+      process.exit(1);
     }
   });
 }

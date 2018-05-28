@@ -16,27 +16,25 @@ Platform:
 npm manifest: 
   {
     "name": "firemodel",
-    "version": "0.10.15",
+    "version": "0.10.20",
     "description": "firemodel",
     "license": "MIT",
     "repository": "https://github.com/forest-fire/firemodel",
     "author": "Ken Snyder <ken@ken.net>",
-    "keywords": [
-      "serverless",
-      "typescript"
-    ],
-    "files": [
-      "lib"
-    ],
+    "keywords": ["serverless", "typescript"],
+    "files": ["lib"],
     "main": "lib/index.js",
-    "module": "esm/index.js",
+    "module": "dist/firemodel.es.js",
+    "browser": "dist/firemodel.min.js",
     "typings": "lib/index.d.ts",
     "scripts": {
       "clean": "rimraf lib",
       "lint": "./node_modules/.bin/tslint --force --format verbose \"src/**/*.ts\"",
-      "build": "./node_modules/.bin/ts-node ./scripts/build.ts && node_modules/.bin/bili --format es,umd,umd-min",
+      "build":
+        "./node_modules/.bin/ts-node ./scripts/build.ts && node_modules/.bin/bili lib/index.js --format es,umd-min",
       "test": "./node_modules/.bin/ts-node ./scripts/test.ts ",
-      "coverage": "nyc --reporter=text --reporter=html mocha --compilers ts:ts-node/register",
+      "coverage":
+        "nyc --reporter=text --reporter=html mocha --compilers ts:ts-node/register",
       "watch": "./node_modules/.bin/ts-node ./scripts/watch.ts",
       "watch:test": "./node_modules/.bin/ts-node ./scripts/watch.ts test",
       "watch:all": "./node_modules/.bin/ts-node ./scripts/watch.ts all",
@@ -8488,7 +8486,7 @@ Trace:
   Error: Command failed.
   Exit code: 1
   Command: sh
-  Arguments: -c ./node_modules/.bin/ts-node ./scripts/build.ts && node_modules/.bin/bili --format es,umd,umd-min
+  Arguments: -c ./node_modules/.bin/ts-node ./scripts/build.ts && node_modules/.bin/bili lib/index.js --format es,umd-min
   Directory: /Users/ken/mine/forest-fire/firemodel
   Output:
   

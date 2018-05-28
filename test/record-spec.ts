@@ -156,9 +156,31 @@ describe("Record > ", () => {
     // IMMEDIATE CHANGE on RECORD
     expect(roger.get("tags")).to.haveOwnProperty("123");
     expect(roger.get("tags")).to.haveOwnProperty("456");
+    // CHANGE REFLECTED after pulling from DB
     const bugs = await Record.get(Person, "8888");
     expect(bugs.get("tags")).to.haveOwnProperty("123");
     expect(bugs.get("tags")).to.haveOwnProperty("456");
+  });
+
+  it("using updateProps() allows non-destructive updates on object type when initial value is undefined", async () => {
+    await db.set<Person>("/authenticated/people/8888", {
+      name: "Roger Rabbit",
+      age: 3,
+      employerId: "disney",
+      lastUpdated: 12345
+    });
+    const roger = await Record.get(Person, "8888");
+    await roger.updateProps({
+      tags: { "456": "something else" },
+      scratchpad: { foo: "bar" }
+    });
+    // IMMEDIATE CHANGE on RECORD
+    expect(roger.get("tags")).to.haveOwnProperty("456");
+    expect(roger.get("scratchpad")).to.haveOwnProperty("foo");
+    // CHANGE REFLECTED after pulling from DB
+    const bugs = await Record.get(Person, "8888");
+    expect(bugs.get("tags")).to.haveOwnProperty("456");
+    expect(bugs.get("scratchpad")).to.haveOwnProperty("foo");
   });
 
   it("calling dbPath() before the ID is known provides useful error", async () => {
