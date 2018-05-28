@@ -272,13 +272,17 @@ export class Record<T extends BaseSchema> {
       if (typeof props[key] === "object") {
         const existingState = this.get(key);
         props[key] = { ...(existingState as any), ...(props[key] as any) };
+      } else {
+        if (key !== "lastUpdated") {
+          updater.add({ path: key, value: props[key] });
+        }
       }
-      updater.add({ path: key, value: props[key] });
       this.set(key, props[key]);
     });
     const now = new Date().getTime();
     updater.add({ path: "lastUpdated", value: now });
-    this.set("lastUpdated", now);
+    this._data.lastUpdated = now;
+
     try {
       await updater.execute();
     } catch (e) {
@@ -336,7 +340,7 @@ export class Record<T extends BaseSchema> {
     await this.db
       .multiPathSet(this.dbPath)
       .add({ path: `${prop}/`, value })
-      .add({ path: "lastUpdated", value: new Date().getTime() })
+      .add({ path: "lastUpdated/", value: new Date().getTime() })
       .execute();
 
     return;

@@ -1135,12 +1135,14 @@ function () {
             var existingState = _this2.get(key);
 
             props[key] = Object.assign({}, existingState, props[key]);
+          } else {
+            if (key !== "lastUpdated") {
+              updater.add({
+                path: key,
+                value: props[key]
+              });
+            }
           }
-
-          updater.add({
-            path: key,
-            value: props[key]
-          });
 
           _this2.set(key, props[key]);
         });
@@ -1149,7 +1151,7 @@ function () {
           path: "lastUpdated",
           value: now
         });
-        this.set("lastUpdated", now);
+        this._data.lastUpdated = now;
 
         try {
           yield updater.execute();
@@ -1210,7 +1212,7 @@ function () {
           path: "".concat(prop, "/"),
           value: value
         }).add({
-          path: "lastUpdated",
+          path: "lastUpdated/",
           value: new Date().getTime()
         }).execute();
         return;
