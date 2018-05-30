@@ -127,7 +127,7 @@ describe("List class: ", () => {
     expect(record.data.name).to.be.a("string");
   });
 
-  it("an instantiated List can call getModel() with a valid ID and get a Model", async () => {
+  it("an instantiated List can call getData() with a valid ID and get a Model", async () => {
     db.mock
       .addSchema<Person>("person", h => () => ({
         name: h.faker.name.firstName(),
@@ -139,7 +139,7 @@ describe("List class: ", () => {
     db.mock.queueSchema("person", 30).generate();
     const firstPersonId = helpers.firstKey(db.mock.db.authenticated.people);
     const list = await List.all(Person);
-    const person = list.getModel(firstPersonId);
+    const person = list.getData(firstPersonId);
     expect(person).to.be.an("object");
     expect(person).to.be.an.instanceOf(Person);
     expect(person.name).to.be.a("string");
@@ -161,6 +161,43 @@ describe("List class: ", () => {
       throw new Error("Invalid ID should have thrown error");
     } catch (e) {
       expect(e.name).to.equal("NotFound");
+    }
+  });
+
+  it("an instantiated List calling get() with an invalid ID and default value returnes the default value", async () => {
+    db.mock
+      .addSchema<Person>("person", h => () => ({
+        name: h.faker.name.firstName(),
+        age: h.faker.random.number({ min: 1, max: 50 }),
+        createdAt: h.faker.date.past().valueOf(),
+        lastUpdated: h.faker.date.recent().valueOf()
+      }))
+      .pathPrefix("authenticated");
+    db.mock.queueSchema("person", 30).generate();
+    const list = await List.all(Person);
+    try {
+      const record = list.get("not-there", null);
+      expect(record).to.equal(null);
+    } catch (e) {
+      throw new Error("When default value is provided no error should be raised");
+    }
+  });
+  it("an instantiated List calling getData() with an invalid ID and default value returnes the default value", async () => {
+    db.mock
+      .addSchema<Person>("person", h => () => ({
+        name: h.faker.name.firstName(),
+        age: h.faker.random.number({ min: 1, max: 50 }),
+        createdAt: h.faker.date.past().valueOf(),
+        lastUpdated: h.faker.date.recent().valueOf()
+      }))
+      .pathPrefix("authenticated");
+    db.mock.queueSchema("person", 30).generate();
+    const list = await List.all(Person);
+    try {
+      const record = list.getData("not-there", null);
+      expect(record).to.equal(null);
+    } catch (e) {
+      throw new Error("When default value is provided no error should be raised");
     }
   });
 });

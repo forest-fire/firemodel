@@ -178,14 +178,16 @@ export class List<T extends BaseSchema> {
    * @param id the unique ID which is being looked for
    * @param defaultIfNotFound the default value returned if the ID is not found in the list
    */
-  public get(id: string, defaultIfNotFound?: any) {
+  public get(id: string, defaultIfNotFound: string = "__DO_NOT_USE__") {
+    console.log(id, defaultIfNotFound, defaultIfNotFound !== "__DO_NOT_USE__");
+
     const find = this.filter(f => f.id === id);
     if (find.length === 0) {
-      const e = new Error(`Could not find "${id}" in list of ${this._model.pluralName}`);
-      e.name = "NotFound";
-      if (defaultIfNotFound) {
+      if (defaultIfNotFound !== "__DO_NOT_USE__") {
         return defaultIfNotFound;
       }
+      const e = new Error(`Could not find "${id}" in list of ${this._model.pluralName}`);
+      e.name = "NotFound";
       throw e;
     }
 
@@ -200,9 +202,10 @@ export class List<T extends BaseSchema> {
    * @param id the unique ID which is being looked for
    * @param defaultIfNotFound the default value returned if the ID is not found in the list
    */
-  public getModel(id: string, defaultIfNotFound?: any) {
+  public getData(id: string, defaultIfNotFound: string = "__DO_NOT_USE__") {
     const record = this.get(id, defaultIfNotFound);
-    return record.data;
+
+    return record === defaultIfNotFound ? defaultIfNotFound : ((record as any).data as T);
   }
 
   public async load(pathOrQuery: string | SerializedQuery<T>) {
