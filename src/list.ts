@@ -3,7 +3,6 @@ import { RealTimeDB } from "abstracted-firebase";
 import { BaseSchema, ISchemaOptions, Record } from "./index";
 import { SerializedQuery, IComparisonOperator } from "serialized-query";
 import Model, { IModelOptions } from "./model";
-import { DEFAULT_ENCODING } from "crypto";
 
 export class List<T extends BaseSchema> {
   public static create<T extends BaseSchema>(
@@ -161,9 +160,12 @@ export class List<T extends BaseSchema> {
     return filtered.length > 0 ? Record.add(this._model.schemaClass, filtered[0]) : null;
   }
 
-  /** Maps the data in the list to a plain JS object. Note: maintaining a List container isn't practical as the transformed data structure might not be a defined schema type */
+  /**
+   * provides a map over the data structured managed by the List; there will be no mutations to the
+   * data managed by the list
+   */
   public map<K = any>(f: ListMapFunction<T, K>) {
-    return this._data.map(f);
+    return this.data.map(f);
   }
 
   public get data() {
@@ -174,12 +176,16 @@ export class List<T extends BaseSchema> {
    * Returns the specified record Record object
    *
    * @param id the unique ID which is being looked for
+   * @param defaultIfNotFound the default value returned if the ID is not found in the list
    */
-  public get(id: string) {
+  public get(id: string, defaultIfNotFound?: any) {
     const find = this.filter(f => f.id === id);
     if (find.length === 0) {
       const e = new Error(`Could not find "${id}" in list of ${this._model.pluralName}`);
       e.name = "NotFound";
+      if (defaultIfNotFound) {
+        return defaultIfNotFound;
+      }
       throw e;
     }
 
@@ -192,9 +198,10 @@ export class List<T extends BaseSchema> {
    * Returns the specified record Model object
    *
    * @param id the unique ID which is being looked for
+   * @param defaultIfNotFound the default value returned if the ID is not found in the list
    */
-  public getModel(id: string) {
-    const record = this.get(id);
+  public getModel(id: string, defaultIfNotFound?: any) {
+    const record = this.get(id, defaultIfNotFound);
     return record.data;
   }
 

@@ -1462,12 +1462,15 @@ function () {
 
       return filtered.length > 0 ? index_1$1.Record.add(this._model.schemaClass, filtered[0]) : null;
     }
-    /** Maps the data in the list to a plain JS object. Note: maintaining a List container isn't practical as the transformed data structure might not be a defined schema type */
+    /**
+     * provides a map over the data structured managed by the List; there will be no mutations to the
+     * data managed by the list
+     */
 
   }, {
     key: "map",
     value: function map(f) {
-      return this._data.map(f);
+      return this.data.map(f);
     }
   }, {
     key: "get",
@@ -1476,8 +1479,9 @@ function () {
      * Returns the specified record Record object
      *
      * @param id the unique ID which is being looked for
+     * @param defaultIfNotFound the default value returned if the ID is not found in the list
      */
-    value: function get(id) {
+    value: function get(id, defaultIfNotFound) {
       var find = this.filter(function (f) {
         return f.id === id;
       });
@@ -1485,6 +1489,11 @@ function () {
       if (find.length === 0) {
         var e = new Error("Could not find \"".concat(id, "\" in list of ").concat(this._model.pluralName));
         e.name = "NotFound";
+
+        if (defaultIfNotFound) {
+          return defaultIfNotFound;
+        }
+
         throw e;
       }
 
@@ -1496,12 +1505,13 @@ function () {
      * Returns the specified record Model object
      *
      * @param id the unique ID which is being looked for
+     * @param defaultIfNotFound the default value returned if the ID is not found in the list
      */
 
   }, {
     key: "getModel",
-    value: function getModel(id) {
-      var record = this.get(id);
+    value: function getModel(id, defaultIfNotFound) {
+      var record = this.get(id, defaultIfNotFound);
       return record.data;
     }
   }, {
