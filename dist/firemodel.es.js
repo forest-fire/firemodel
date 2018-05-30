@@ -1481,19 +1481,20 @@ function () {
      * @param id the unique ID which is being looked for
      * @param defaultIfNotFound the default value returned if the ID is not found in the list
      */
-    value: function get(id, defaultIfNotFound) {
+    value: function get(id) {
+      var defaultIfNotFound = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : "__DO_NOT_USE__";
+      console.log(id, defaultIfNotFound, defaultIfNotFound !== "__DO_NOT_USE__");
       var find = this.filter(function (f) {
         return f.id === id;
       });
 
       if (find.length === 0) {
-        var e = new Error("Could not find \"".concat(id, "\" in list of ").concat(this._model.pluralName));
-        e.name = "NotFound";
-
-        if (defaultIfNotFound) {
+        if (defaultIfNotFound !== "__DO_NOT_USE__") {
           return defaultIfNotFound;
         }
 
+        var e = new Error("Could not find \"".concat(id, "\" in list of ").concat(this._model.pluralName));
+        e.name = "NotFound";
         throw e;
       }
 
@@ -1509,10 +1510,11 @@ function () {
      */
 
   }, {
-    key: "getModel",
-    value: function getModel(id, defaultIfNotFound) {
+    key: "getData",
+    value: function getData(id) {
+      var defaultIfNotFound = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : "__DO_NOT_USE__";
       var record = this.get(id, defaultIfNotFound);
-      return record.data;
+      return record === defaultIfNotFound ? defaultIfNotFound : record.data;
     }
   }, {
     key: "load",
