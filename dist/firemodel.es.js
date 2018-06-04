@@ -1483,7 +1483,6 @@ function () {
      */
     value: function get(id) {
       var defaultIfNotFound = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : "__DO_NOT_USE__";
-      console.log(id, defaultIfNotFound, defaultIfNotFound !== "__DO_NOT_USE__");
       var find = this.filter(function (f) {
         return f.id === id;
       });

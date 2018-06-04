@@ -178,9 +178,7 @@ export class List<T extends BaseSchema> {
    * @param id the unique ID which is being looked for
    * @param defaultIfNotFound the default value returned if the ID is not found in the list
    */
-  public get(id: string, defaultIfNotFound: string = "__DO_NOT_USE__") {
-    console.log(id, defaultIfNotFound, defaultIfNotFound !== "__DO_NOT_USE__");
-
+  public get(id: string, defaultIfNotFound: any = "__DO_NOT_USE__"): Record<T> {
     const find = this.filter(f => f.id === id);
     if (find.length === 0) {
       if (defaultIfNotFound !== "__DO_NOT_USE__") {
@@ -197,12 +195,12 @@ export class List<T extends BaseSchema> {
   }
 
   /**
-   * Returns the specified record Model object
+   * Returns the single instance of an object contained by the List container
    *
    * @param id the unique ID which is being looked for
    * @param defaultIfNotFound the default value returned if the ID is not found in the list
    */
-  public getData(id: string, defaultIfNotFound: string = "__DO_NOT_USE__") {
+  public getData(id: string, defaultIfNotFound: any = "__DO_NOT_USE__"): T {
     const record = this.get(id, defaultIfNotFound);
 
     return record === defaultIfNotFound ? defaultIfNotFound : ((record as any).data as T);
