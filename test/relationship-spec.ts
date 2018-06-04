@@ -15,8 +15,7 @@ describe("Relationship > ", () => {
   });
 
   it("using addHasMany() on a hasMany relationship works", async () => {
-    const person = Record.create(Person, { db });
-    await person.initialize({
+    const person = await Record.add(Person, {
       name: "Bob",
       age: 23
     });

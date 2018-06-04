@@ -34,6 +34,16 @@ describe("Record > ", () => {
     expect(r.id).to.exist.and.be.a("string");
   });
 
+  it("Record's load() populates state, does not add to db", async () => {
+    const r = Record.load(Person, {
+      name: "Bob",
+      age: 40
+    });
+    expect(r).to.be.instanceof(Record);
+    expect(r.get("name")).to.equal("Bob");
+    expect(r.id).to.be.an("undefined");
+  });
+
   it("Once an ID is set it can not be reset", async () => {
     const r = await Record.add(Person, {
       name: "Bob",
@@ -201,7 +211,7 @@ describe("Record > ", () => {
     expect(record.data).to.not.equal(record2.data);
     expect(record.get("age")).to.equal(undefined);
     expect(record2.get("age")).to.equal(undefined);
-    record.initialize({
+    record._initialize({
       name: "Bob",
       age: 12
     });

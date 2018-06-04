@@ -33,6 +33,22 @@ describe("List class: ", () => {
     expect(list.dbPath).to.equal(`${list.meta.dbOffset}/people`);
   });
 
+  it("can instantiate with all() method", async () => {
+    db.mock
+      .addSchema("person", h => () => ({
+        name: h.faker.name.firstName(),
+        age: h.faker.random.number({ min: 1, max: 50 })
+      }))
+      .pathPrefix("authenticated");
+    db.mock.queueSchema("person", 25).generate();
+    const list = await List.all(Person);
+    expect(list).to.be.instanceof(List);
+    expect(list.length).to.equal(25);
+    expect(list.modelName).to.equal("person");
+    expect(list.pluralName).to.equal("people");
+    expect(list.dbPath).to.equal(`${list.meta.dbOffset}/people`);
+  });
+
   it("can instantiate with from() method", async () => {
     db.mock
       .addSchema("person", h => () => ({
@@ -199,5 +215,88 @@ describe("List class: ", () => {
     } catch (e) {
       throw new Error("When default value is provided no error should be raised");
     }
+  });
+
+  it("an instantiated List calling findData() with a valid ID returnes the default value", async () => {
+    db.mock
+      .addSchema<Person>("person", h => () => ({
+        name: h.faker.name.firstName(),
+        age: h.faker.random.number({ min: 1, max: 50 }),
+        createdAt: h.faker.date.past().valueOf(),
+        lastUpdated: h.faker.date.recent().valueOf()
+      }))
+      .pathPrefix("authenticated");
+    db.mock.queueSchema("person", 30).generate();
+    const list = await List.all(Person);
+    try {
+      const record = list.getData("not-there", null);
+      expect(record).to.equal(null);
+    } catch (e) {
+      throw new Error("When default value is provided no error should be raised");
+    }
+  });
+
+  it("using findWhere() returns a record when property/value is found", async () => {
+    db.mock
+      .addSchema<Person>("person", h => () => ({
+        name: h.faker.name.firstName(),
+        age: h.faker.random.number({ min: 1, max: 50 }),
+        createdAt: h.faker.date.past().valueOf(),
+        lastUpdated: h.faker.date.recent().valueOf()
+      }))
+      .pathPrefix("authenticated");
+    db.mock.queueSchema("person", 30);
+    db.mock.queueSchema("person", 1, { name: "foobar" });
+    db.mock.queueSchema("person", 3, { age: 12 }).generate();
+    const list = await List.all(Person);
+    const firstPersonId = helpers.firstKey(db.mock.db.authenticated.people);
+    expect(list.findWhere("id", firstPersonId)).is.an("object");
+    expect(list.findWhere("name", "foobar")).is.an("object");
+    expect(list.findWhere("age", 12)).is.an("object");
+  });
+
+  it("using findWhere() returns appropriately when record not found", async () => {
+    db.mock
+      .addSchema<Person>("person", h => () => ({
+        name: h.faker.name.firstName(),
+        age: h.faker.random.number({ min: 1, max: 50 }),
+        createdAt: h.faker.date.past().valueOf(),
+        lastUpdated: h.faker.date.recent().valueOf()
+      }))
+      .pathPrefix("authenticated");
+    db.mock.queueSchema("person", 3, { age: 12 }).generate();
+    const list = await List.all(Person);
+    try {
+      expect(list.findWhere("name", "foobar")).is.an("object");
+    } catch (e) {
+      expect(e.name).to.equal("NotFound");
+    }
+    expect(list.findWhere("name", "foobar", "default")).to.equal("default");
+  });
+
+  it("using find() returns a record when passed in filter finds record", async () => {
+    db.mock
+      .addSchema<Person>("person", h => () => ({
+        name: h.faker.name.firstName(),
+        age: h.faker.random.number({ min: 1, max: 50 }),
+        createdAt: h.faker.date.past().valueOf(),
+        lastUpdated: h.faker.date.recent().valueOf()
+      }))
+      .pathPrefix("authenticated");
+    db.mock.queueSchema("person", 30);
+    db.mock.queueSchema("person", 1, { name: "foobar" });
+    db.mock.queueSchema("person", 3, { age: 12 }).generate();
+
+    const byId = (id: string) => (item: Person) => item.id === id;
+    const byAge = (age: number) => (item: Person) => item.age === age;
+
+    const list = await List.all(Person);
+    const firstPersonId = helpers.firstKey(db.mock.db.authenticated.people);
+    expect(list.find(byId(firstPersonId))).is.an("object");
+    expect(list.find(byId(firstPersonId)).data.age).is.equal(
+      list.findWhere("id", firstPersonId).data.age
+    );
+    expect(list.find(byAge(12))).is.an("object");
+    expect(list.find(byAge(12)).data.age).is.equal(list.findWhere("age", 12).data.age);
   });
 });

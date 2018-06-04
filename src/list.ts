@@ -4,6 +4,8 @@ import { BaseSchema, ISchemaOptions, Record } from "./index";
 import { SerializedQuery, IComparisonOperator } from "serialized-query";
 import Model, { IModelOptions } from "./model";
 
+const DEFAULT_IF_NOT_FOUND = "__DO_NOT_USE__";
+
 export class List<T extends BaseSchema> {
   public static create<T extends BaseSchema>(
     schema: new () => T,
@@ -159,22 +161,48 @@ export class List<T extends BaseSchema> {
     const filtered = this._data.filter(f);
     const r = Record.create(this._model.schemaClass);
     if (filtered.length > 0) {
-      r.initialize(filtered[0]);
+      r._initialize(filtered[0]);
       return r;
     } else {
       return null;
     }
   }
 
+  public filterWhere(prop: keyof T, value: T[typeof prop]): List<T> {
+    const whereFilter = (item: T) => item[prop] === value;
+    return new List(this._model, this._data.filter(whereFilter));
+  }
+
   /**
-   * same as `find` except rather than returning a Record<Model<Schema>> it just returns
-   * the schema object
+   * findWhere
    *
-   * @param f filter function
+   * returns the first record in the list where the property equals the
+   * specified value. If no value is found then an error is thrown unless
+   * it is stated
    */
-  public findData(f: ListFilterFunction<T>) {
-    const r = this.find(f);
-    return r ? r.data : r;
+  public findWhere(
+    prop: keyof T,
+    value: T[typeof prop],
+    defaultIfNotFound = DEFAULT_IF_NOT_FOUND
+  ): Record<T> {
+    console.log(this._data);
+    const list = this.filterWhere(prop, value);
+
+    if (list.length > 0) {
+      return Record.load(this._model.schemaClass, list._data[0]);
+    } else {
+      if (defaultIfNotFound !== DEFAULT_IF_NOT_FOUND) {
+        return defaultIfNotFound as any;
+      } else {
+        const e = new Error(
+          `findWhere(${prop}, ${value}) was not found in the List [ length: ${
+            this.data.length
+          } ]`
+        );
+        e.name = "NotFound";
+        throw e;
+      }
+    }
   }
 
   /**
@@ -195,10 +223,10 @@ export class List<T extends BaseSchema> {
    * @param id the unique ID which is being looked for
    * @param defaultIfNotFound the default value returned if the ID is not found in the list
    */
-  public get(id: string, defaultIfNotFound: any = "__DO_NOT_USE__"): Record<T> {
+  public get(id: string, defaultIfNotFound: any = DEFAULT_IF_NOT_FOUND): Record<T> {
     const find = this.filter(f => f.id === id);
     if (find.length === 0) {
-      if (defaultIfNotFound !== "__DO_NOT_USE__") {
+      if (defaultIfNotFound !== DEFAULT_IF_NOT_FOUND) {
         return defaultIfNotFound;
       }
       const e = new Error(`Could not find "${id}" in list of ${this._model.pluralName}`);
@@ -207,7 +235,7 @@ export class List<T extends BaseSchema> {
     }
 
     const r = new Record(this._model);
-    r.initialize(find.data[0]);
+    r._initialize(find.data[0]);
     return r;
   }
 

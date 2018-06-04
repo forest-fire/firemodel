@@ -996,7 +996,7 @@ function () {
 
 
   _createClass(Record, [{
-    key: "initialize",
+    key: "_initialize",
 
     /**
      * Allows an empty Record to be initialized to a known state.
@@ -1005,70 +1005,38 @@ function () {
      *
      * @param data the initial state you want to start with
      */
-    value: function initialize(data) {
-      return __awaiter$1(this, void 0, void 0, function* () {
-        var _this = this;
+    value: function _initialize(data) {
+      var _this = this;
 
-        Object.keys(data).map(function (key) {
-          _this._data[key] = data[key];
-        });
-        var relationships = this.META.relationships;
-        var ownedByRels = (relationships || []).filter(function (r) {
-          return r.relType === "ownedBy";
-        }).map(function (r) {
-          return r.property;
-        });
-        var hasManyRels = (relationships || []).filter(function (r) {
-          return r.relType === "hasMany";
-        }).map(function (r) {
-          return r.property;
-        }); // default hasMany to empty hash
+      Object.keys(data).map(function (key) {
+        _this._data[key] = data[key];
+      });
+      var relationships = this.META.relationships;
+      var ownedByRels = (relationships || []).filter(function (r) {
+        return r.relType === "ownedBy";
+      }).map(function (r) {
+        return r.property;
+      });
+      var hasManyRels = (relationships || []).filter(function (r) {
+        return r.relType === "hasMany";
+      }).map(function (r) {
+        return r.property;
+      }); // default hasMany to empty hash
 
-        hasManyRels.map(function (p) {
-          if (!_this._data[p]) {
-            _this._data[p] = {};
-          }
-        });
-        var now = new Date().getTime();
-
-        if (!this._data.lastUpdated) {
-          this._data.lastUpdated = now;
-        }
-
-        if (!this._data.createdAt) {
-          this._data.createdAt = now;
-        }
-
-        if (!this.id) {
-          this._save();
+      hasManyRels.map(function (p) {
+        if (!_this._data[p]) {
+          _this._data[p] = {};
         }
       });
-    }
-  }, {
-    key: "load",
+      var now = new Date().getTime();
 
-    /**
-     * Load data from a record in database
-     */
-    value: function load(id) {
-      return __awaiter$1(this, void 0, void 0, function* () {
-        if (!this.db) {
-          var e = new Error("The attempt to load data into a Record requires that the DB property be initialized first!");
-          e.name = "NoDatabase";
-          throw e;
-        }
+      if (!this._data.lastUpdated) {
+        this._data.lastUpdated = now;
+      }
 
-        this._data.id = id;
-        var data = yield this.db.getRecord(this.dbPath);
-
-        if (data && data.id) {
-          this.initialize(data);
-        } else {
-          throw new Error("Unknown Key: the key \"".concat(id, "\" was not found in Firebase at \"").concat(this.dbPath, "\"."));
-        }
-
-        return this;
-      });
+      if (!this._data.createdAt) {
+        this._data.createdAt = now;
+      }
     }
   }, {
     key: "update",
@@ -1253,6 +1221,32 @@ function () {
         data: this.data.toString()
       };
     }
+    /**
+     * Load data from a record in database
+     */
+
+  }, {
+    key: "_getFromDB",
+    value: function _getFromDB(id) {
+      return __awaiter$1(this, void 0, void 0, function* () {
+        if (!this.db) {
+          var e = new Error("The attempt to load data into a Record requires that the DB property be initialized first!");
+          e.name = "NoDatabase";
+          throw e;
+        }
+
+        this._data.id = id;
+        var data = yield this.db.getRecord(this.dbPath);
+
+        if (data && data.id) {
+          this._initialize(data);
+        } else {
+          throw new Error("Unknown Key: the key \"".concat(id, "\" was not found in Firebase at \"").concat(this.dbPath, "\"."));
+        }
+
+        return this;
+      });
+    }
   }, {
     key: "_save",
     value: function _save() {
@@ -1386,11 +1380,33 @@ function () {
     value: function add(schema, newRecord) {
       var options = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
       return __awaiter$1(this, void 0, void 0, function* () {
-        // const r = new Record(schema, options);
         var r = Record.create(schema, options);
-        yield r.initialize(newRecord);
+
+        r._initialize(newRecord);
+
+        yield r._save();
         return r;
       });
+    }
+    /**
+     * load
+     *
+     * static method to create a Record when you want to load the
+     * state of the record with something you already have.
+     *
+     * Intent should be that this record already exists in the
+     * database. If you want to add to the database then use add()
+     */
+
+  }, {
+    key: "load",
+    value: function load(schema, record) {
+      var options = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+      var r = Record.create(schema, options);
+
+      r._initialize(record);
+
+      return r;
     }
   }, {
     key: "get",
@@ -1398,7 +1414,7 @@ function () {
       var options = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
       return __awaiter$1(this, void 0, void 0, function* () {
         var record = Record.create(schema, options);
-        yield record.load(id);
+        yield record._getFromDB(id);
         return record;
       });
     }
@@ -1451,6 +1467,8 @@ var serialized_query_1$1 = require("serialized-query");
 
 var model_1$1 = require("./model");
 
+var DEFAULT_IF_NOT_FOUND = "__DO_NOT_USE__";
+
 var List =
 /*#__PURE__*/
 function () {
@@ -1480,24 +1498,48 @@ function () {
       var r = index_1$1.Record.create(this._model.schemaClass);
 
       if (filtered.length > 0) {
-        r.initialize(filtered[0]);
+        r._initialize(filtered[0]);
+
         return r;
       } else {
         return null;
       }
     }
+  }, {
+    key: "filterWhere",
+    value: function filterWhere(prop, value) {
+      var whereFilter = function whereFilter(item) {
+        return item[prop] === value;
+      };
+
+      return new List(this._model, this._data.filter(whereFilter));
+    }
     /**
-     * same as `find` except rather than returning a Record<Model<Schema>> it just returns
-     * the schema object
+     * findWhere
      *
-     * @param f filter function
+     * returns the first record in the list where the property equals the
+     * specified value. If no value is found then an error is thrown unless
+     * it is stated
      */
 
   }, {
-    key: "findData",
-    value: function findData(f) {
-      var r = this.find(f);
-      return r ? r.data : r;
+    key: "findWhere",
+    value: function findWhere(prop, value) {
+      var defaultIfNotFound = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : DEFAULT_IF_NOT_FOUND;
+      console.log(this._data);
+      var list = this.filterWhere(prop, value);
+
+      if (list.length > 0) {
+        return index_1$1.Record.load(this._model.schemaClass, list._data[0]);
+      } else {
+        if (defaultIfNotFound !== DEFAULT_IF_NOT_FOUND) {
+          return defaultIfNotFound;
+        } else {
+          var e = new Error("findWhere(".concat(prop, ", ").concat(value, ") was not found in the List [ length: ").concat(this.data.length, " ]"));
+          e.name = "NotFound";
+          throw e;
+        }
+      }
     }
     /**
      * provides a map over the data structured managed by the List; there will be no mutations to the
@@ -1519,13 +1561,13 @@ function () {
      * @param defaultIfNotFound the default value returned if the ID is not found in the list
      */
     value: function get(id) {
-      var defaultIfNotFound = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : "__DO_NOT_USE__";
+      var defaultIfNotFound = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : DEFAULT_IF_NOT_FOUND;
       var find = this.filter(function (f) {
         return f.id === id;
       });
 
       if (find.length === 0) {
-        if (defaultIfNotFound !== "__DO_NOT_USE__") {
+        if (defaultIfNotFound !== DEFAULT_IF_NOT_FOUND) {
           return defaultIfNotFound;
         }
 
@@ -1535,7 +1577,9 @@ function () {
       }
 
       var r = new index_1$1.Record(this._model);
-      r.initialize(find.data[0]);
+
+      r._initialize(find.data[0]);
+
       return r;
     }
     /**

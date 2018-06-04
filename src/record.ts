@@ -53,10 +53,29 @@ export class Record<T extends BaseSchema> {
     newRecord: T,
     options: IRecordOptions = {}
   ) {
-    // const r = new Record(schema, options);
     const r = Record.create(schema, options);
+    r._initialize(newRecord);
+    await r._save();
 
-    await r.initialize(newRecord);
+    return r;
+  }
+
+  /**
+   * load
+   *
+   * static method to create a Record when you want to load the
+   * state of the record with something you already have.
+   *
+   * Intent should be that this record already exists in the
+   * database. If you want to add to the database then use add()
+   */
+  public static load<T extends BaseSchema>(
+    schema: new () => T,
+    record: T,
+    options: IRecordOptions = {}
+  ) {
+    const r = Record.create(schema, options);
+    r._initialize(record);
 
     return r;
   }
@@ -67,7 +86,7 @@ export class Record<T extends BaseSchema> {
     options: IRecordOptions = {}
   ) {
     const record = Record.create(schema, options);
-    await record.load(id);
+    await record._getFromDB(id);
     return record;
   }
 
@@ -167,7 +186,7 @@ export class Record<T extends BaseSchema> {
    *
    * @param data the initial state you want to start with
    */
-  public async initialize(data: T) {
+  public _initialize(data: T) {
     Object.keys(data).map(key => {
       this._data[key as keyof T] = data[key as keyof T];
     });
@@ -194,39 +213,10 @@ export class Record<T extends BaseSchema> {
     if (!this._data.createdAt) {
       this._data.createdAt = now;
     }
-    if (!this.id) {
-      this._save();
-    }
   }
 
   public get existsOnDB() {
     return this.data && this.data.id ? true : false;
-  }
-
-  /**
-   * Load data from a record in database
-   */
-  public async load(id: string) {
-    if (!this.db) {
-      const e = new Error(
-        `The attempt to load data into a Record requires that the DB property be initialized first!`
-      );
-      e.name = "NoDatabase";
-      throw e;
-    }
-
-    this._data.id = id;
-    const data = await this.db.getRecord<T>(this.dbPath);
-
-    if (data && data.id) {
-      this.initialize(data);
-    } else {
-      throw new Error(
-        `Unknown Key: the key "${id}" was not found in Firebase at "${this.dbPath}".`
-      );
-    }
-
-    return this;
   }
 
   public async update(hash: Partial<T>) {
@@ -383,6 +373,32 @@ export class Record<T extends BaseSchema> {
       localPath: this.localPath,
       data: this.data.toString()
     };
+  }
+
+  /**
+   * Load data from a record in database
+   */
+  private async _getFromDB(id: string) {
+    if (!this.db) {
+      const e = new Error(
+        `The attempt to load data into a Record requires that the DB property be initialized first!`
+      );
+      e.name = "NoDatabase";
+      throw e;
+    }
+
+    this._data.id = id;
+    const data = await this.db.getRecord<T>(this.dbPath);
+
+    if (data && data.id) {
+      this._initialize(data);
+    } else {
+      throw new Error(
+        `Unknown Key: the key "${id}" was not found in Firebase at "${this.dbPath}".`
+      );
+    }
+
+    return this;
   }
 
   private async _save() {
