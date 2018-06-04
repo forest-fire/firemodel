@@ -23,6 +23,12 @@ export interface IRecordOptions {
 }
 
 export class Record<T extends BaseSchema> {
+  /**
+   * create
+   *
+   * creates a new -- and empty -- Record object; often used in
+   * conjunction with the Record's initialize() method
+   */
   public static create<T extends BaseSchema>(
     schema: new () => T,
     options: IRecordOptions = {}
@@ -33,6 +39,15 @@ export class Record<T extends BaseSchema> {
     return record;
   }
 
+  /**
+   * add
+   *
+   * Adds a new record to the database
+   *
+   * @param schema the schema of the record
+   * @param newRecord the data for the new record
+   * @param options
+   */
   public static async add<T extends BaseSchema>(
     schema: new () => T,
     newRecord: T,

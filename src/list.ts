@@ -44,7 +44,7 @@ export class List<T extends BaseSchema> {
     options: IModelOptions = {}
   ): Promise<List<T>> {
     const query = new SerializedQuery().orderByChild("lastUpdated");
-    const list = await List.from(schema, query, options);
+    const list = await List.from<T>(schema, query, options);
 
     return list;
   }
@@ -155,9 +155,26 @@ export class List<T extends BaseSchema> {
   }
 
   /** Returns another List with data filtered down by passed in filter function */
-  public find(f: ListFilterFunction<T>) {
+  public find(f: ListFilterFunction<T>): Record<T> {
     const filtered = this._data.filter(f);
-    return filtered.length > 0 ? Record.add(this._model.schemaClass, filtered[0]) : null;
+    const r = Record.create(this._model.schemaClass);
+    if (filtered.length > 0) {
+      r.initialize(filtered[0]);
+      return r;
+    } else {
+      return null;
+    }
+  }
+
+  /**
+   * same as `find` except rather than returning a Record<Model<Schema>> it just returns
+   * the schema object
+   *
+   * @param f filter function
+   */
+  public findData(f: ListFilterFunction<T>) {
+    const r = this.find(f);
+    return r ? r.data : r;
   }
 
   /**

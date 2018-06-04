@@ -987,6 +987,13 @@ function () {
     this._writeOperations = [];
     this._data = new _model.schemaClass();
   }
+  /**
+   * create
+   *
+   * creates a new -- and empty -- Record object; often used in
+   * conjunction with the Record's initialize() method
+   */
+
 
   _createClass(Record, [{
     key: "initialize",
@@ -1364,6 +1371,16 @@ function () {
       var record = new Record(model, options);
       return record;
     }
+    /**
+     * add
+     *
+     * Adds a new record to the database
+     *
+     * @param schema the schema of the record
+     * @param newRecord the data for the new record
+     * @param options
+     */
+
   }, {
     key: "add",
     value: function add(schema, newRecord) {
@@ -1460,7 +1477,27 @@ function () {
     value: function find(f) {
       var filtered = this._data.filter(f);
 
-      return filtered.length > 0 ? index_1$1.Record.add(this._model.schemaClass, filtered[0]) : null;
+      var r = index_1$1.Record.create(this._model.schemaClass);
+
+      if (filtered.length > 0) {
+        r.initialize(filtered[0]);
+        return r;
+      } else {
+        return null;
+      }
+    }
+    /**
+     * same as `find` except rather than returning a Record<Model<Schema>> it just returns
+     * the schema object
+     *
+     * @param f filter function
+     */
+
+  }, {
+    key: "findData",
+    value: function findData(f) {
+      var r = this.find(f);
+      return r ? r.data : r;
     }
     /**
      * provides a map over the data structured managed by the List; there will be no mutations to the
@@ -1502,7 +1539,7 @@ function () {
       return r;
     }
     /**
-     * Returns the specified record Model object
+     * Returns the single instance of an object contained by the List container
      *
      * @param id the unique ID which is being looked for
      * @param defaultIfNotFound the default value returned if the ID is not found in the list
