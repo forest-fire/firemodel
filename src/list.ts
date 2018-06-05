@@ -3,6 +3,7 @@ import { RealTimeDB } from "abstracted-firebase";
 import { BaseSchema, ISchemaOptions, Record } from "./index";
 import { SerializedQuery, IComparisonOperator } from "serialized-query";
 import Model, { IModelOptions } from "./model";
+import { epochWithMilliseconds } from "common-types";
 
 const DEFAULT_IF_NOT_FOUND = "__DO_NOT_USE__";
 
@@ -70,12 +71,43 @@ export class List<T extends BaseSchema> {
     return list;
   }
 
+  /**
+   * recent
+   *
+   * Get recent items of a given type/schema (based on lastUpdated)
+   *
+   * @param schema the TYPE you are interested
+   * @param howMany the quantity to of records to bring back
+   * @param offset start at an offset position (useful for paging)
+   * @param options
+   */
   public static async recent<T extends BaseSchema>(
     schema: new () => T,
     howMany: number,
+    offset: number = 0,
     options: IModelOptions = {}
   ): Promise<List<T>> {
     const query = new SerializedQuery().orderByChild("lastUpdated").limitToFirst(howMany);
+    const list = await List.from(schema, query, options);
+
+    return list;
+  }
+
+  /**
+   * since
+   *
+   * Bring back all records that have changed since a given date
+   *
+   * @param schema the TYPE you are interested
+   * @param since  the datetime in miliseconds
+   * @param options
+   */
+  public static async since<T extends BaseSchema>(
+    schema: new () => T,
+    since: epochWithMilliseconds,
+    options: IModelOptions = {}
+  ): Promise<List<T>> {
+    const query = new SerializedQuery().orderByChild("lastUpdated").startAt(since);
     const list = await List.from(schema, query, options);
 
     return list;
@@ -157,18 +189,29 @@ export class List<T extends BaseSchema> {
   }
 
   /** Returns another List with data filtered down by passed in filter function */
-  public find(f: ListFilterFunction<T>): Record<T> {
+  public find(
+    f: ListFilterFunction<T>,
+    defaultIfNotFound = DEFAULT_IF_NOT_FOUND
+  ): Record<T> {
     const filtered = this._data.filter(f);
     const r = Record.create(this._model.schemaClass);
     if (filtered.length > 0) {
       r._initialize(filtered[0]);
       return r;
     } else {
-      return null;
+      if (defaultIfNotFound !== DEFAULT_IF_NOT_FOUND) {
+        return defaultIfNotFound as any;
+      } else {
+        const e = new Error(
+          `find(fn) did not find a value in the List [ length: ${this.data.length} ]`
+        );
+        e.name = "NotFound";
+        throw e;
+      }
     }
   }
 
-  public filterWhere(prop: keyof T, value: T[typeof prop]): List<T> {
+  public filterWhere<K extends keyof T>(prop: K, value: T[K]): List<T> {
     const whereFilter = (item: T) => item[prop] === value;
     return new List(this._model, this._data.filter(whereFilter));
   }

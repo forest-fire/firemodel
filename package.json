@@ -1,12 +1,17 @@
 {
   "name": "firemodel",
-  "version": "0.11.7",
+  "version": "0.11.10",
   "description": "firemodel",
   "license": "MIT",
   "repository": "https://github.com/forest-fire/firemodel",
   "author": "Ken Snyder <ken@ken.net>",
-  "keywords": ["serverless", "typescript"],
-  "files": ["lib"],
+  "keywords": [
+    "serverless",
+    "typescript"
+  ],
+  "files": [
+    "lib"
+  ],
   "main": "lib/index.js",
   "module": "dist/firemodel.es.js",
   "browser": "dist/firemodel.min.js",
@@ -14,11 +19,9 @@
   "scripts": {
     "clean": "rimraf lib",
     "lint": "./node_modules/.bin/tslint --force --format verbose \"src/**/*.ts\"",
-    "build":
-      "./node_modules/.bin/ts-node ./scripts/build.ts && node_modules/.bin/bili lib/index.js --format es,umd-min",
+    "build": "./node_modules/.bin/ts-node ./scripts/build.ts && node_modules/.bin/bili lib/index.js --format es,umd-min",
     "test": "./node_modules/.bin/ts-node ./scripts/test.ts ",
-    "coverage":
-      "nyc --reporter=text --reporter=html mocha --compilers ts:ts-node/register",
+    "coverage": "nyc --reporter=text --reporter=html mocha --compilers ts:ts-node/register",
     "watch": "./node_modules/.bin/ts-node ./scripts/watch.ts",
     "watch:test": "./node_modules/.bin/ts-node ./scripts/watch.ts test",
     "watch:all": "./node_modules/.bin/ts-node ./scripts/watch.ts all",
@@ -30,7 +33,7 @@
   },
   "dependencies": {
     "abstracted-firebase": "^0.5.4",
-    "common-types": "^1.7.27",
+    "common-types": "^1.7.35",
     "firebase-api-surface": "^0.7.11",
     "firebase-key": "^2.0.1",
     "lodash.camelcase": "^4.3.0",

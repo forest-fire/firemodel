@@ -1493,6 +1493,8 @@ function () {
   }, {
     key: "find",
     value: function find(f) {
+      var defaultIfNotFound = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : DEFAULT_IF_NOT_FOUND;
+
       var filtered = this._data.filter(f);
 
       var r = index_1$1.Record.create(this._model.schemaClass);
@@ -1502,7 +1504,13 @@ function () {
 
         return r;
       } else {
-        return null;
+        if (defaultIfNotFound !== DEFAULT_IF_NOT_FOUND) {
+          return defaultIfNotFound;
+        } else {
+          var e = new Error("find(fn) did not find a value in the List [ length: ".concat(this.data.length, " ]"));
+          e.name = "NotFound";
+          throw e;
+        }
       }
     }
   }, {
@@ -1713,12 +1721,43 @@ function () {
         return list;
       });
     }
+    /**
+     * recent
+     *
+     * Get recent items of a given type/schema (based on lastUpdated)
+     *
+     * @param schema the TYPE you are interested
+     * @param howMany the quantity to of records to bring back
+     * @param offset start at an offset position (useful for paging)
+     * @param options
+     */
+
   }, {
     key: "recent",
     value: function recent(schema, howMany) {
-      var options = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+      var options = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : {};
       return __awaiter$2(this, void 0, void 0, function* () {
         var query = new serialized_query_1$1.SerializedQuery().orderByChild("lastUpdated").limitToFirst(howMany);
+        var list = yield List.from(schema, query, options);
+        return list;
+      });
+    }
+    /**
+     * since
+     *
+     * Bring back all records that have changed since a given date
+     *
+     * @param schema the TYPE you are interested
+     * @param since  the datetime in miliseconds
+     * @param options
+     */
+
+  }, {
+    key: "since",
+    value: function since(schema, _since) {
+      var options = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+      return __awaiter$2(this, void 0, void 0, function* () {
+        var query = new serialized_query_1$1.SerializedQuery().orderByChild("lastUpdated").startAt(_since);
         var list = yield List.from(schema, query, options);
         return list;
       });
