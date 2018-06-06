@@ -12,7 +12,7 @@ module.exports = {
       },
       {
         text: "Using",
-        link: "/using/getting-started"
+        link: "/using/"
       },
       {
         text: "Mocking",
@@ -28,10 +28,16 @@ module.exports = {
         }
       ],
       "/using/": [
+        ["/using/", "Getting Started"],
         {
           title: "Using",
           collapsable: false,
-          children: ["getting-started", "reading", "writing", "listening"]
+          children: ["reading", "writing", "listening"]
+        },
+        {
+          title: "Advanced Topics",
+          collapsable: false,
+          children: ["auditing", "frontend-state-mgmt"]
         }
       ],
       "/mocking/": [

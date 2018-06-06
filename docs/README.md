@@ -2,7 +2,7 @@
 home: true
 heroImage: logo.jpg
 actionText: Read Docs →
-actionLink: /logo.jpg
+actionLink: modeling/concepts
 features:
 - title: Modeling
   details: Model your entities once and use them in the frontend, backend, and database
