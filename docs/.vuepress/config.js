@@ -21,11 +21,11 @@ module.exports = {
     ],
     sidebar: {
       "/modeling/": [
-        ["/modeling/", "Overview"],
+        ["/modeling/", "Modeling Overview"],
         {
-          title: "Modeling",
+          title: "Modeling Primitives",
           collapsable: false,
-          children: ["concepts", "properties", "constraints", "relationships"]
+          children: ["properties", "constraints", "relationships"]
         },
         {
           title: "Other Sections",
