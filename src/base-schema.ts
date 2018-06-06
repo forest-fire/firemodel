@@ -1,11 +1,10 @@
 // tslint:disable:no-unused-expression
 export type NonProperties<T> = {
-  [// tslint:disable-next-line:ban-types
-  P in keyof T]: T[P] extends Function ? never : P
+  [P in keyof T]: T[P] extends () => any ? never : P
 }[keyof T];
 export type Properties<T> = Pick<T, NonProperties<T>>;
 import { IDictionary, datetime, epoch } from "common-types";
-import set = require("lodash.set");
+import { set } from "lodash";
 import { property } from "./decorators/property";
 import { ISchemaOptions, ISchemaMetaProperties } from "./decorators/schema";
 

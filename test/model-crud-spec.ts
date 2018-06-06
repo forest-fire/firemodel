@@ -34,7 +34,7 @@ describe("Model > CRUD Ops: ", () => {
       name: "Charlie Chaplin",
       age: 84
     });
-    const id = response.key.split("/").pop();
+    const id = response.id;
     let peeps = await db.getList<Person>(`authenticated/people`);
     expect(PersonModel.pluralName).to.equal("people");
     expect(db.mock.db.authenticated.people[id]).to.not.equal("undefined");
@@ -68,29 +68,35 @@ describe("Model > CRUD Ops: ", () => {
       .pathPrefix("authenticated");
     db.mock.queueSchema<Person>("person", 25);
     db.mock.generate();
-    const PersonModel = new Model<Person>(Person, db);
-    const response = await PersonModel.push({
+    const PersonModel = Model.create(Person, { db });
+    await PersonModel.push({
       name: "Charlie Chaplin",
       age: 84
     });
 
     const peeps = await PersonModel.getAll();
     expect(peeps.length).to.equal(26);
-    const charlie = await PersonModel.findRecord("name", "Charlie Chaplin");
+    const charlie = await peeps.find(p => p.name === "Charlie Chaplin");
     expect(charlie.data.age).to.equal(84);
   });
 
   it("Model.update() works", async () => {
     const PersonModel = new Model<Person>(Person, db);
-    const ref = await PersonModel.push({
+    const charlie = await PersonModel.push({
       name: "Charlie Chaplin",
       age: 84
     });
+    expect(charlie).to.be.an.instanceOf(Record);
+    expect(charlie.data.age).to.equal(84);
 
-    await PersonModel.update(ref.key.split("/").pop(), { age: 100 });
-    const charlie = await PersonModel.findRecord("name", "Charlie Chaplin");
-    expect(charlie.data.age).to.equal(100);
-    expect(charlie.data.lastUpdated).is.not.equal(charlie.data.createdAt);
+    await PersonModel.update(charlie.id, { age: 100 });
+    const list = await List.where(Person, "name", "Charlie Chaplin");
+    expect(list)
+      .is.an.instanceOf(List)
+      .and.has.length(1);
+    const c2 = list.data[0];
+    expect(c2.age).to.equal(100);
+    expect(c2.lastUpdated).is.not.equal(c2.createdAt);
   });
 
   it("Model.remove() works with default params", async () => {
@@ -100,51 +106,12 @@ describe("Model > CRUD Ops: ", () => {
       name: "Charlie Chaplin",
       age: 84
     });
-    const nada = await PersonModel.remove(charlie.key);
+    const nada = await PersonModel.remove(charlie.id);
     const peeps = await PersonModel.getAll();
 
     expect(peeps.length).to.equal(1);
     expect(peeps.data[0].name).to.equal("Bob Geldoff");
     expect(nada).to.be.a("undefined");
-  });
-
-  it("Model.multiPathUpdate() works", async () => {
-    const PersonModel = new Model<Person>(Person, db);
-    await PersonModel.set({
-      id: "1234",
-      name: "Charlie Chaplin",
-      age: 84,
-      gender: "male"
-    });
-    await PersonModel.set({
-      id: "4567",
-      name: "Bob Barker",
-      age: 99,
-      gender: "male"
-    });
-    PersonModel.multiPathUpdate([
-      {
-        id: "1234",
-        name: "Foo Manny Chooey",
-        age: 15,
-        gender: "female"
-      },
-      {
-        id: "4567",
-        name: "Chris Christofferson"
-      }
-    ]);
-    const peeps = await PersonModel.getAll();
-    const r1234 = peeps.data.filter(r => r.id === "1234")[0];
-    const r4567 = peeps.data.filter(r => r.id === "4567")[0];
-    console.log(Object.keys(db.mock.db.authenticated.people));
-    console.log(db.mock.db.authenticated.people["4567"]);
-
-    expect(r1234.age).to.equal(15);
-    expect(r1234.gender).to.equal("female");
-
-    expect(r4567.name).to.equal("Chris Christofferson");
-    expect(r4567.age).to.equal(99);
   });
 
   it("Model.set() works when ID is present", async () => {
@@ -166,7 +133,7 @@ describe("Model > CRUD Ops: ", () => {
   });
 
   it("Model.push() throws an error when no ID is present", async () => {
-    const PersonModel = new Model<Person>(Person, db);
+    const PersonModel = Model.create(Person, { db });
     try {
       await PersonModel.set({
         name: "Bobby Geldoff",
@@ -185,7 +152,8 @@ describe("Model > CRUD Ops: ", () => {
       name: "Charlie Chaplin",
       age: 84
     });
-    const previous = await People.remove(ref.key, true);
+    const previous = await People.remove(ref.id, true);
+
     const peeps = await People.getAll();
 
     expect(peeps.length).to.equal(1);
@@ -195,7 +163,7 @@ describe("Model > CRUD Ops: ", () => {
 
   it("Model.remove() doesn't return the previous value by default", async () => {
     db.resetMockDb();
-    const People = new Model<Person>(Person, db);
+    const People = Model.create(Person, { db });
     const bob = await People.push({ name: "Bob Geldoff", age: 65 });
     const charlie = await People.push({
       name: "Charlie Chaplin",
@@ -203,12 +171,12 @@ describe("Model > CRUD Ops: ", () => {
     });
     let peeps = await People.getAll();
     expect(peeps.length).to.equal(2);
-    const previous = await People.remove(charlie.key); // removed with full path
+    const previous = await People.remove(charlie.dbPath); // removed with full path
     peeps = await People.getAll();
     expect(peeps.length).to.equal(1);
     expect(previous).to.equal(undefined);
 
-    await People.remove(bob.key.split("/").pop()); // removed with just the 'id'
+    await People.remove(bob.id); // removed with just the 'id'
     peeps = await People.getAll();
     expect(peeps.length).to.equal(0);
   });

@@ -1,14 +1,17 @@
 import { IDictionary, datetime, createError } from "common-types";
-import { RealTimeDB, rtdb } from "abstracted-firebase";
+import { RealTimeDB } from "abstracted-firebase";
 import { VerboseError } from "./VerboseError";
-import { ISchemaMetaProperties, BaseSchema, Record, List } from "./index";
+import { BaseSchema, Record, List } from "./index";
 import { SchemaCallback } from "firemock";
 import * as pluralize from "pluralize";
-import camelCase = require("lodash.camelcase");
+import { camelCase } from "lodash";
 import { SerializedQuery } from "serialized-query";
-import { snapshotToArray, ISnapShot, arrayToHash } from "typed-conversions";
 import { slashNotation } from "./util";
 import { key as fbk } from "firebase-key";
+import {
+  ISchemaRelationshipMetaProperties,
+  ISchemaMetaProperties
+} from "./decorators/schema";
 
 export type ModelProperty<T> = keyof T | keyof IBaseModel;
 export type PartialModel<T> = { [P in keyof ModelProperty<T>]?: ModelProperty<T>[P] };
@@ -65,7 +68,7 @@ export const baseLogger: ILogger = {
   error: (message: string) => console.error(`${this.modelName}/${this._key}: ${message}`)
 };
 
-export default class Model<T extends BaseSchema> {
+export class Model<T extends BaseSchema> {
   //#region PROPERTIES
   public static defaultDb: RealTimeDB = null;
 
@@ -142,11 +145,11 @@ export default class Model<T extends BaseSchema> {
     return [this._schema.META.localOffset, this.pluralName].join(".");
   }
 
-  public get relationships() {
+  public get relationships(): ISchemaRelationshipMetaProperties[] {
     return this._schema.META.relationships;
   }
 
-  public get properties() {
+  public get properties(): ISchemaMetaProperties[] {
     return this._schema.META.properties;
   }
 
@@ -154,13 +157,27 @@ export default class Model<T extends BaseSchema> {
     return this._schema.META ? this._schema.META.pushKeys : [];
   }
 
-  public newRecord(hash?: Partial<T>) {
-    return hash ? new Record<T>(this, hash) : new Record<T>(this);
-  }
+  // /**
+  //  * Add a new record of type T, optionally including the payload
+  //  *
+  //  * @param hash the values that you want this new object to be initialized as; note that if you include an "id" property it will assume this is from the DB, if you don't then it will immediately add it and create an id.
+  //  */
+  // public async newRecord(hash?: Partial<T>) {
+  //   console.log(this.schemaClass);
 
+  //   return hash
+  //     ? Record.add(this.schemaClass, hash as T, { db: this.db })
+  //     : Record.create(this.schemaClass, { db: this.db });
+  // }
+
+  /**
+   * Get an existing record from the  DB and return as a Record
+   *
+   * @param id the primary key for the record
+   */
   public async getRecord(id: string) {
-    const record = new Record<T>(this);
-    return record.load(id);
+    const record = await Record.get(this._schemaClass, id);
+    return record;
   }
 
   /**
@@ -177,12 +194,16 @@ export default class Model<T extends BaseSchema> {
    * @param prop the property on the Schema which you are looking for a value in
    * @param value the value you are looking for the property to equal; alternatively you can pass a tuple with a comparison operation and a value
    */
-  public async findRecord(prop: keyof T, value: string | number | boolean | IConditionAndValue) {
+  public async findRecord(
+    prop: keyof T,
+    value: string | number | boolean | IConditionAndValue
+  ) {
     const query = this._findBuilder(prop, value, true);
     const results = await this.db.getList<T>(query);
 
     if (results.length > 0) {
-      const record = this.newRecord(results.pop());
+      const first = results.pop();
+      const record = Record.get(this._schemaClass, first.id);
       return record;
     } else {
       throw createError(
@@ -246,6 +267,7 @@ export default class Model<T extends BaseSchema> {
   /** Push a new record onto a model's list using Firebase a push-ID */
   public async push(newRecord: Partial<T>, auditInfo: IDictionary = {}) {
     const now = this.now();
+    const id = fbk();
     newRecord = {
       ...(newRecord as any),
       ...{ lastUpdated: now, createdAt: now }
@@ -255,14 +277,7 @@ export default class Model<T extends BaseSchema> {
       ...{ properties: Object.keys(newRecord) }
     };
 
-    const ref = await this.crud(
-      "push",
-      now,
-      slashNotation(this.dbPath, fbk()),
-      newRecord,
-      auditInfo
-    );
-    return ref as rtdb.IReference<T>;
+    return Record.get(this._schemaClass, id);
   }
 
   public async update(key: string, updates: Partial<T>, auditInfo: IDictionary = {}) {
@@ -280,32 +295,6 @@ export default class Model<T extends BaseSchema> {
   }
 
   /**
-   * Performs a Firebase "update" on multiple dbPaths where the whole set of changes
-   * are treated as an "atomic" transaction. Note, however, that unlike a normal "update",
-   * a partial record will destructively update with Firebase's default behavor. To retain the
-   * non-destructive behavior we must discretely update/set the individual properties of each record.
-   *
-   * @param payload an array of records -- all with the 'id' property
-   */
-  public async multiPathUpdate(payload: T[]) {
-    const now = this.now();
-    const updates: IDictionary = {};
-    payload.map(record => {
-      record.lastUpdated = now;
-      const basePath = slashNotation(this.dbPath, record.id);
-      Object.keys(record)
-        .filter(p => p !== "id")
-        .map((prop: keyof T) => {
-          updates[slashNotation(basePath, prop)] = record[prop];
-        });
-    });
-
-    await this.db.ref("/").update(updates);
-
-    return;
-  }
-
-  /**
    * Remove
    *
    * Remove a record from the database
@@ -314,12 +303,27 @@ export default class Model<T extends BaseSchema> {
    * @param returnValue optionally pass back the deleted record along removing from server
    * @param auditInfo   any additional information to be passed to the audit record (if Model has turned on)
    */
-  public async remove(key: string, returnValue: boolean = false, auditInfo: IDictionary = {}) {
+  public async remove(
+    key: string,
+    returnValue: boolean = false,
+    auditInfo: IDictionary = {}
+  ) {
+    if (!key) {
+      const e = new Error(
+        `Trying to call remove(id) on a ${
+          this.modelName
+        } Model class can not be done when ID is undefined!`
+      );
+      e.name = "NotAllowed";
+      throw e;
+    }
+
     const now = this.now();
     let value: T;
     if (returnValue) {
-      value = await this._db.getValue<T>(key);
+      value = await this._db.getValue<T>(slashNotation(this.dbPath, key));
     }
+
     await this.crud(
       "remove",
       now,
@@ -376,10 +380,10 @@ export default class Model<T extends BaseSchema> {
     auditInfo?: IDictionary
   ) {
     const isAuditable = this._schema.META.audit;
-    const auditPath = slashNotation(Model.auditBase, this.pluralName, key);
-    let auditRef;
     if (isAuditable) {
-      auditRef = await this.audit(op, when, key, auditInfo);
+      console.log("auditing: ", op);
+
+      await this.audit(op, when, key, auditInfo);
     }
 
     switch (op) {

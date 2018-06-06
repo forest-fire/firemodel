@@ -1,8 +1,8 @@
 // tslint:disable-next-line:no-implicit-dependencies
 import pushKey, { RealTimeDB } from "abstracted-firebase";
 import { BaseSchema, ISchemaOptions } from "./index";
-import { createError } from "common-types";
-import Model, { ILogger } from "./model";
+import { createError, fk, IDictionary } from "common-types";
+import { Model, ILogger } from "./model";
 import { key as fbk } from "firebase-key";
 
 export interface IWriteOperation {
@@ -23,6 +23,12 @@ export interface IRecordOptions {
 }
 
 export class Record<T extends BaseSchema> {
+  /**
+   * create
+   *
+   * creates a new -- and empty -- Record object; often used in
+   * conjunction with the Record's initialize() method
+   */
   public static create<T extends BaseSchema>(
     schema: new () => T,
     options: IRecordOptions = {}
@@ -33,21 +39,52 @@ export class Record<T extends BaseSchema> {
     return record;
   }
 
+  /**
+   * add
+   *
+   * Adds a new record to the database
+   *
+   * @param schema the schema of the record
+   * @param newRecord the data for the new record
+   * @param options
+   */
   public static async add<T extends BaseSchema>(
     schema: new () => T,
     newRecord: T,
     options: IRecordOptions = {}
   ) {
-    const model = Model.create(schema, options);
-    const record = new Record<T>(model, options);
-    const id: string = newRecord.id || fbk();
-    await model.db.push(record.dbOffset, {
-      ...(newRecord as any),
-      ...{ id }
-    });
+    let r;
+    try {
+      r = Record.create(schema, options);
+      r._initialize(newRecord);
+      await r._save();
+    } catch (e) {
+      const err = new Error(`Problem adding new Record: ${e.message}`);
+      err.name = e.name !== "Error" ? e.name : "FiremodelError";
+      throw e;
+    }
 
-    const result = await Record.get(schema, id);
-    return result;
+    return r;
+  }
+
+  /**
+   * load
+   *
+   * static method to create a Record when you want to load the
+   * state of the record with something you already have.
+   *
+   * Intent should be that this record already exists in the
+   * database. If you want to add to the database then use add()
+   */
+  public static load<T extends BaseSchema>(
+    schema: new () => T,
+    record: T,
+    options: IRecordOptions = {}
+  ) {
+    const r = Record.create(schema, options);
+    r._initialize(record);
+
+    return r;
   }
 
   public static async get<T extends BaseSchema>(
@@ -56,7 +93,7 @@ export class Record<T extends BaseSchema> {
     options: IRecordOptions = {}
   ) {
     const record = Record.create(schema, options);
-    await record.load(id);
+    await record._getFromDB(id);
     return record;
   }
 
@@ -64,11 +101,8 @@ export class Record<T extends BaseSchema> {
   private _writeOperations: IWriteOperation[] = [];
   private _data?: Partial<T>;
 
-  constructor(private _model: Model<T>, data: any = {}) {
+  constructor(private _model: Model<T>, options: IRecordOptions = {}) {
     this._data = new _model.schemaClass();
-    if (data) {
-      this.initialize(data);
-    }
   }
 
   public get data() {
@@ -119,6 +153,18 @@ export class Record<T extends BaseSchema> {
     return this.data.id;
   }
 
+  public set id(val: string) {
+    if (this.data.id) {
+      const e = new Error(
+        `You may not re-set the ID of a record [ ${this.data.id} → ${val} ].`
+      );
+      e.name = "NotAllowed";
+      throw e;
+    }
+
+    this._data.id = val;
+  }
+
   /**
    * returns the record's database offset without including the ID of the record;
    * among other things this can be useful prior to establishing an ID for a record
@@ -127,6 +173,10 @@ export class Record<T extends BaseSchema> {
     return this.data.META.dbOffset;
   }
 
+  /**
+   * returns the record's location in the frontend state management framework;
+   * depends on appropriate configuration of model to be accurate.
+   */
   public get localPath() {
     if (!this.data.id) {
       throw new Error(
@@ -136,29 +186,44 @@ export class Record<T extends BaseSchema> {
     return [this.data.META.localOffset, this.pluralName, this.data.id].join("/");
   }
 
-  public initialize(data: T) {
-    Object.keys(data).map((key: keyof T) => {
-      this._data[key] = data[key];
+  /**
+   * Allows an empty Record to be initialized to a known state.
+   * This is not intended to allow for mass property manipulation other
+   * than at time of initialization
+   *
+   * @param data the initial state you want to start with
+   */
+  public _initialize(data: T) {
+    Object.keys(data).map(key => {
+      this._data[key as keyof T] = data[key as keyof T];
     });
+    const relationships = this.META.relationships;
+
+    const ownedByRels = (relationships || [])
+      .filter(r => r.relType === "ownedBy")
+      .map(r => r.property);
+    const hasManyRels = (relationships || [])
+      .filter(r => r.relType === "hasMany")
+      .map(r => r.property);
+
+    // default hasMany to empty hash
+    hasManyRels.map((p: string) => {
+      if (!this._data[p as keyof T]) {
+        (this._data as any)[p] = {};
+      }
+    });
+
+    const now = new Date().getTime();
+    if (!this._data.lastUpdated) {
+      this._data.lastUpdated = now;
+    }
+    if (!this._data.createdAt) {
+      this._data.createdAt = now;
+    }
   }
 
   public get existsOnDB() {
     return this.data && this.data.id ? true : false;
-  }
-
-  public async load(id: string) {
-    this._data.id = id;
-    const data = await this.db.getRecord<T>(this.dbPath);
-
-    if (data && data.id) {
-      this.initialize(data);
-    } else {
-      throw new Error(
-        `Unknown Key: the key "${id}" was not found in Firebase at "${this.dbPath}".`
-      );
-    }
-
-    return this;
   }
 
   public async update(hash: Partial<T>) {
@@ -176,7 +241,7 @@ export class Record<T extends BaseSchema> {
    * which have been stated to be a "pushKey"
    */
   public async pushKey<K extends keyof T>(property: K, value: T[K][keyof T[K]]) {
-    if (this.META.pushKeys.indexOf(property) === -1) {
+    if (this.META.pushKeys.indexOf(property as any) === -1) {
       throw createError(
         "invalid-operation/not-pushkey",
         `Invalid Operation: you can not push to property "${property}" as it has not been declared a pushKey property in the schema`
@@ -189,22 +254,91 @@ export class Record<T extends BaseSchema> {
         `Invalid Operation: you can not push to property "${property}" before saving the record to the database`
       );
     }
-    const pushKey = fbk();
+    const key = fbk();
     const currentState = this.get(property) || {};
-    const newState = { ...(currentState as any), [pushKey]: value };
+    const newState = { ...(currentState as any), [key]: value };
     // set state locally
     this.set(property, newState);
     // push updates to db
-    const write = this.db.multiPathSet();
-    write.add({ path: `${this.dbPath}/lastUpdated`, value: Date.now() });
-    write.add({ path: `${this.dbPath}/${property}/${pushKey}`, value });
+    const write = this.db.multiPathSet(`${this.dbPath}/`);
+    write.add({ path: `lastUpdated`, value: new Date().getTime() });
+    write.add({ path: `${property}/${key}`, value });
     try {
       await write.execute();
     } catch (e) {
       throw createError("multi-path/write-error", "", e);
     }
 
-    return pushKey;
+    return key;
+  }
+
+  /**
+   * Updates a set of properties on a given model atomically (aka, all at once); will automatically
+   * include the "lastUpdated" property.
+   *
+   * @param props a hash of name value pairs which represent the props being updated and their new values
+   */
+  public async updateProps(props: Partial<T>) {
+    const updater = this.db.multiPathSet(this.dbPath);
+    Object.keys(props).map((key: Extract<keyof T, string>) => {
+      if (typeof props[key] === "object") {
+        const existingState = this.get(key);
+        props[key] = { ...(existingState as any), ...(props[key] as any) };
+      } else {
+        if (key !== "lastUpdated") {
+          updater.add({ path: key, value: props[key] });
+        }
+      }
+      this.set(key, props[key]);
+    });
+    const now = new Date().getTime();
+    updater.add({ path: "lastUpdated", value: now });
+    this._data.lastUpdated = now;
+
+    try {
+      await updater.execute();
+    } catch (e) {
+      throw createError(
+        "UpdateProps",
+        `An error occurred trying to update ${this._model.modelName}:${this.id}`,
+        e
+      );
+    }
+  }
+
+  /**
+   * Adds another fk to a hasMany relationship
+   *
+   * @param property the property which is acting as a foreign key (array)
+   * @param ref reference to ID of related entity
+   * @param optionalValue the default behaviour is to add the value TRUE but you can optionally add some additional piece of information here instead.
+   */
+  public async addHasMany(
+    property: Extract<keyof T, string>,
+    ref: Extract<fk, string>,
+    optionalValue: any = true
+  ) {
+    if (this.META.property(property).relType !== "hasMany") {
+      const e = new Error(
+        `The property "${property}" does NOT have a "hasMany" relationship on ${
+          this.modelName
+        }`
+      );
+      e.name = "InvalidRelationship";
+      throw e;
+    }
+    if (typeof this.data[property] === "object" && (this.data[property] as any)[ref]) {
+      console.warn(
+        `The fk of "${ref}" already exists in "${this.modelName}.${property}"!`
+      );
+      return;
+    }
+
+    await this.db
+      .multiPathSet(this.dbPath)
+      .add({ path: `${property}/${ref}/`, value: optionalValue })
+      .add({ path: "lastUpdated", value: new Date().getTime() })
+      .execute();
   }
 
   /**
@@ -213,9 +347,19 @@ export class Record<T extends BaseSchema> {
    * @param prop the property on the record to be changed
    * @param value the new value to set to
    */
-  public set<K extends keyof T>(prop: K, value: T[K]) {
+  public async set<K extends keyof T>(prop: K, value: T[K]) {
+    // TODO: add interaction points for client-side state management; goal
+    // is to have local state changed immediately but with meta data to indicate
+    // that we're waiting for backend confirmation.
     this._data[prop] = value;
-    return this;
+
+    await this.db
+      .multiPathSet(this.dbPath)
+      .add({ path: `${prop}/`, value })
+      .add({ path: "lastUpdated/", value: new Date().getTime() })
+      .execute();
+
+    return;
   }
 
   /**
@@ -240,5 +384,52 @@ export class Record<T extends BaseSchema> {
       localPath: this.localPath,
       data: this.data.toString()
     };
+  }
+
+  /**
+   * Load data from a record in database
+   */
+  private async _getFromDB(id: string) {
+    if (!this.db) {
+      const e = new Error(
+        `The attempt to load data into a Record requires that the DB property be initialized first!`
+      );
+      e.name = "NoDatabase";
+      throw e;
+    }
+
+    this._data.id = id;
+    const data = await this.db.getRecord<T>(this.dbPath);
+
+    if (data && data.id) {
+      this._initialize(data);
+    } else {
+      throw new Error(
+        `Unknown Key: the key "${id}" was not found in Firebase at "${this.dbPath}".`
+      );
+    }
+
+    return this;
+  }
+
+  private async _save() {
+    if (this.id) {
+      const e = new Error(`Saving after ID is set is not allowed [ ${this.id} ]`);
+      e.name = "InvalidSave";
+      throw e;
+    }
+    this.id = fbk();
+
+    if (!this.db) {
+      const e = new Error(
+        `Attempt to save Record failed as the Database has not been connected yet. Try setting Model.defaultDb first.`
+      );
+      e.name = "FiremodelError";
+      throw e;
+    }
+
+    await this.db.set<T>(this.dbPath, this.data);
+
+    return this;
   }
 }

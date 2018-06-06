@@ -1,7 +1,7 @@
 # Other Concerns
 
-## Mocking {#mocking}
+## Mocking
 
-## Logging {#logging}
+## Logging
 
-## Redux {#redux}
+## Redux

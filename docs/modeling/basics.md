@@ -101,12 +101,12 @@ Firebase is a "real-time database" and so therefore one of the best ways of inte
 
 So let's quickly review the types of events that Firebase provides:
 
-1. **Value Events** - a _value_ event gives you back the entire tree of data at the given path everytime a change takes place. The path you listen to on a value event can be a single value, a Record, or a list of Record but typically its best to use value events for relatively "leaf nodes" which in the case of Firemodel would be a `Record` more than a `List`.
-2. **Child Events** - _child_ events assume that the path being listened to is a `List` of records and then you can choose what things amoungst these children you care about:
-   * **child_added** - fires initially for each record in the query resultset but from then on only fires when a new `Record` is added
-   * **child_removed** - only fires when an existing `Record` is removed
-   * **child_changed** - fires whenever a child `Record` is changed (anywhere in the graph below the Record)
-   * **child_moved** - fires whenever a `Record` has changed in it's sort order
+1.  **Value Events** - a _value_ event gives you back the entire tree of data at the given path everytime a change takes place. The path you listen to on a value event can be a single value, a Record, or a list of Record but typically its best to use value events for relatively "leaf nodes" which in the case of Firemodel would be a `Record` more than a `List`.
+2.  **Child Events** - _child_ events assume that the path being listened to is a `List` of records and then you can choose what things amoungst these children you care about:
+    * **child_added** - fires initially for each record in the query resultset but from then on only fires when a new `Record` is added
+    * **child_removed** - only fires when an existing `Record` is removed
+    * **child_changed** - fires whenever a child `Record` is changed (anywhere in the graph below the Record)
+    * **child_moved** - fires whenever a `Record` has changed in it's sort order
 
 Subscribing to state change events in **Firemodel** is done through the `listenTo` and `listenToRecord` methods. For performance reasons, listening to an individual [`Record`](./record.md) will be done with a _value_ event, while listening to a [`List`](./list.md) will be a combination of the _child events_:
 
@@ -149,8 +149,8 @@ The events which your listener will receive depend on whether you are listening 
 
 It might be intuitive to assume that the events our listeners receive are 1:1 representations of what we get from the originating Firebase event but that's not true for two reasons:
 
-1. Some events do not actually originate from a Firebase event (for example lifecycle events like `MODEL_START_LISTENING`)
-2. Each of the Firebase events are _decorated_ with additional context which the listener can respond to.
+1.  Some events do not actually originate from a Firebase event (for example lifecycle events like `MODEL_START_LISTENING`)
+2.  Each of the Firebase events are _decorated_ with additional context which the listener can respond to.
 
 All events are typed using Typescript so will be much easier to work with as an external user of this library but here are some basics about the event structure:
 

@@ -1,7 +1,6 @@
 import { Model } from "./index";
 import { SerializedQuery } from "serialized-query";
-import { IDictionary } from "common-types";
-import debounce = require("lodash.debounce");
+import { debounce } from "lodash";
 import { snapshotToHash } from "typed-conversions";
 import { rtdb } from "firebase-api-surface";
 //#region generalized structures
@@ -85,8 +84,6 @@ export async function modelListener<T>(
   query.deserialize().on("child_moved", child_moved);
   query.deserialize().on("child_removed", child_removed);
   query.deserialize().on("child_changed", child_changed);
-
-  const active = await query.deserialize();
 }
 
 const model_ready = (
@@ -120,22 +117,13 @@ const model_ready = (
   };
 };
 
-const relationshipChanges = <T>(
-  eventType: string,
-  model: Model<any>,
-  dispatch: Dispatcher,
-  record: T
-) => {
+const relationshipChanges = <T>(eventType: string) => {
   switch (eventType) {
     case "child_added":
   }
 };
 
-export function recordListener<T>(
-  model: Model<T>,
-  ref: SerializedQuery,
-  dispatch = defaultDispatcher
-) {
+export function recordListener<T>() {
   //
 }
 
@@ -160,7 +148,7 @@ export const childEvent = <T>(
 
   dispatch(action);
   if (eventType !== "child_moved") {
-    relationshipChanges<T>(eventType, model, dispatch, snapshotToHash<T>(snap));
+    relationshipChanges<T>(eventType);
   }
 };
 

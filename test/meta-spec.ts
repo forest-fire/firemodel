@@ -9,7 +9,8 @@ import {
   min,
   max,
   length,
-  schema
+  schema,
+  Record
 } from "../src/index";
 import DB from "abstracted-admin";
 import { SchemaCallback } from "firemock";
@@ -40,7 +41,9 @@ describe("schema() decorator: ", () => {
       myclass.META = { foo: "bar" };
       expect(false, "setting meta property is not allowed!");
     } catch (e) {
-      expect(e.message).to.equal("The meta property can only be set with the @schema decorator!");
+      expect(e.message).to.equal(
+        "The meta property can only be set with the @schema decorator!"
+      );
     }
   });
 });
@@ -63,7 +66,9 @@ describe("property decorator: ", () => {
   it("constrainedProperty() decorator-factory allows adding multiple contraints", () => {
     const myclass = new Klass();
     expect(Reflect.getMetadata("foobar", myclass).length).to.equal(15);
-    expect(Reflect.getMetadata("foobar", myclass).desc).to.equal("who doesn't love a foobar?");
+    expect(Reflect.getMetadata("foobar", myclass).desc).to.equal(
+      "who doesn't love a foobar?"
+    );
     expect(Reflect.getMetadata("bar3", myclass).min).to.equal(5);
     expect(Reflect.getMetadata("bar3", myclass).max).to.equal(10);
   });
@@ -75,7 +80,7 @@ describe("property decorator: ", () => {
     expect(myclass.META.pushKeys).to.have.lengthOf(1);
     const model = new Model<Klass>(Klass, new DB({ mocking: true }));
     expect(model.pushKeys).to.include("tags");
-    const record = model.newRecord();
+    const record = Record.create(Klass);
     expect(record.META.pushKeys).to.include("tags");
   });
 

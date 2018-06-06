@@ -1,7 +1,6 @@
 // tslint:disable:no-implicit-dependencies
 import { IDictionary } from "common-types";
-import first = require("lodash.first");
-import last = require("lodash.last");
+import { first, last } from "lodash";
 
 import * as fs from "fs";
 import * as yaml from "js-yaml";
@@ -12,9 +11,12 @@ import { stdout, stderr } from "test-console";
 // tslint:disable-next-line
 interface Console {
   _restored: boolean;
-  Console: typeof NodeJS.Console;
+  // Console: typeof NodeJS.Console;
   assert(value: any, message?: string, ...optionalParams: any[]): void;
-  dir(obj: any, options?: { showHidden?: boolean; depth?: number; colors?: boolean }): void;
+  dir(
+    obj: any,
+    options?: { showHidden?: boolean; depth?: number; colors?: boolean }
+  ): void;
   error(message?: any, ...optionalParams: any[]): void;
   info(message?: any, ...optionalParams: any[]): void;
   log(message?: any, ...optionalParams: any[]): void;

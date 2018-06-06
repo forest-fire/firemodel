@@ -24,6 +24,7 @@ export class Person extends BaseSchema {
   @property @length(20) public name: string;
   @property public age?: number;
   @property public gender?: "male" | "female" | "other";
+  @property public scratchpad?: IDictionary;
   // prettier-ignore
   @property @pushKey public tags?: IDictionary<string>;
 
@@ -31,7 +32,7 @@ export class Person extends BaseSchema {
   @ownedBy(Person) @inverse("children") public motherId?: fk;
   // prettier-ignore
   @ownedBy(Person) @inverse("children") public fatherId?: fk;
-  @hasMany(Person) public children?: fk[];
+  @hasMany(Person) public children?: IDictionary;
 
   @ownedBy(Company) public employerId?: fk;
 }
