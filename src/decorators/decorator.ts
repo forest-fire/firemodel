@@ -1,8 +1,17 @@
 import "reflect-metadata";
-import { BaseSchema, RelationshipPolicy, ISchemaMetaProperties } from "../index";
-import { IDictionary, PropertyDecorator, ClassDecorator, ReflectionProperty } from "common-types";
-import set = require("lodash.set");
-import get = require("lodash.get");
+import {
+  BaseSchema,
+  RelationshipPolicy,
+  ISchemaMetaProperties,
+  ISchemaRelationshipMetaProperties
+} from "../index";
+import {
+  IDictionary,
+  PropertyDecorator,
+  ClassDecorator,
+  ReflectionProperty
+} from "common-types";
+import { set, get } from "lodash";
 
 function push(target: IDictionary, path: string, value: ISchemaMetaProperties) {
   if (Array.isArray(get(target, path))) {
@@ -89,7 +98,9 @@ export function getProperties(target: object) {
 }
 
 export function getRelationships(target: object) {
-  return relationshipsBySchema[target.constructor.name];
+  return relationshipsBySchema[
+    target.constructor.name
+  ] as ISchemaRelationshipMetaProperties[];
 }
 
 export function getPushKeys(target: object) {

@@ -29,15 +29,16 @@ describe("Model > Auditing: ", () => {
 
   it("Audit records stored when schema has them configured on", async () => {
     const CompanyModel = new Model<Company>(Company, db);
-    const { key } = await CompanyModel.push({
+    const { id } = await CompanyModel.push({
       name: "Acme Corp",
       employees: 10
     });
 
-    await CompanyModel.update(key, { founded: "1972" });
-    await CompanyModel.remove(key, false, { reason: "testing" });
+    await CompanyModel.update(id, { founded: "1972" });
+    await CompanyModel.remove(id, false, { reason: "testing" });
     const auditTrail = await CompanyModel.getAuditTrail();
     expect(auditTrail).to.be.an("array");
+
     expect(auditTrail.length).to.equal(3);
     const pushed = auditTrail.filter(a => a.crud === "push").pop();
     expect(pushed.info).to.haveOwnProperty("properties");
@@ -52,9 +53,9 @@ describe("Model > Auditing: ", () => {
 
   it("Audit records NOT stored when schema has them configured off", async () => {
     const PersonModel = new Model<Person>(Person, db);
-    const { key } = await PersonModel.push({ name: "Joe Jackson", age: 10 });
-    await PersonModel.update(key, { age: 44 });
-    await PersonModel.remove(key, false, { reason: "testing" });
+    const { id } = await PersonModel.push({ name: "Joe Jackson", age: 10 });
+    await PersonModel.update(id, { age: 44 });
+    await PersonModel.remove(id, false, { reason: "testing" });
     const auditTrail = await PersonModel.getAuditTrail();
     expect(auditTrail).to.be.an("array");
     expect(auditTrail.length).to.equal(0);
