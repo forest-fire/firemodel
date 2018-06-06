@@ -8,6 +8,10 @@ import { camelCase } from "lodash";
 import { SerializedQuery } from "serialized-query";
 import { slashNotation } from "./util";
 import { key as fbk } from "firebase-key";
+import {
+  ISchemaRelationshipMetaProperties,
+  ISchemaMetaProperties
+} from "./decorators/schema";
 
 export type ModelProperty<T> = keyof T | keyof IBaseModel;
 export type PartialModel<T> = { [P in keyof ModelProperty<T>]?: ModelProperty<T>[P] };
@@ -141,11 +145,11 @@ export class Model<T extends BaseSchema> {
     return [this._schema.META.localOffset, this.pluralName].join(".");
   }
 
-  public get relationships() {
+  public get relationships(): ISchemaRelationshipMetaProperties[] {
     return this._schema.META.relationships;
   }
 
-  public get properties() {
+  public get properties(): ISchemaMetaProperties[] {
     return this._schema.META.properties;
   }
 

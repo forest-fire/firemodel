@@ -1,4 +1,4 @@
-# Concepts
+# Modeling Overview
 
 Modeling is the act of describing the data structures/entities in your application or architecture. The term "model" is familiar to many and this is _useful_ as well as _detrimental_ in understanding what a `Model` is in **FireModel**.
 
@@ -54,3 +54,24 @@ const daYouth: List<Person> = People.where("age", ["<", 10]);
 ## BaseSchema
 
 Some of you eagle eyes may have noticed in our example schema we _extended_ the `BaseSchema` definition. This definition is very basic but provides a mild amount of "opinion" which helps to create more "out of the box" functionality.
+
+```typescript
+export abstract class BaseSchema {
+  /** The primary-key for the record */
+  @property public id?: string;
+  /** The last time that a given record was updated */
+  @property public lastUpdated?: epoch;
+  /** The datetime at which this record was first created */
+  @property public createdAt?: epoch;
+  /** Metadata properties of the given schema */
+  public META?: Partial<ISchemaOptions>;
+
+  public toString() {
+    const obj: IDictionary = {};
+    this.META.properties.map(p => {
+      obj[p.property] = (this as any)[p.property];
+    });
+    return JSON.stringify(obj);
+  }
+}
+```

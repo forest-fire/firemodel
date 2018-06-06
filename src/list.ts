@@ -2,6 +2,7 @@ import { BaseSchema, ISchemaOptions, Record } from "./index";
 import { SerializedQuery, IComparisonOperator } from "serialized-query";
 import { Model, IModelOptions } from "./model";
 import { epochWithMilliseconds } from "common-types";
+import RealTimeDB from "abstracted-firebase";
 
 export { RealTimeDB } from "abstracted-firebase";
 
@@ -169,7 +170,7 @@ export class List<T extends BaseSchema> {
     return this._data.length;
   }
 
-  protected get db() {
+  protected get db(): RealTimeDB {
     return this._model.db;
   }
 

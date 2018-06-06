@@ -8,7 +8,7 @@ module.exports = {
     nav: [
       {
         text: "Modeling",
-        link: "/modeling/concepts"
+        link: "/modeling/"
       },
       {
         text: "Using",
@@ -16,35 +16,61 @@ module.exports = {
       },
       {
         text: "Mocking",
-        link: "/mocking/overview"
+        link: "/mocking/"
       }
     ],
     sidebar: {
       "/modeling/": [
+        ["/modeling/", "Overview"],
         {
           title: "Modeling",
           collapsable: false,
           children: ["concepts", "properties", "constraints", "relationships"]
+        },
+        {
+          title: "Other Sections",
+          collapsable: false,
+          children: [
+            ["/using/", "Using FireModel"],
+            ["/mocking/", "Mocking in FireModel"]
+          ]
         }
       ],
       "/using/": [
         ["/using/", "Getting Started"],
         {
-          title: "Using",
+          title: "Using FireModel",
           collapsable: false,
           children: ["reading", "writing", "listening"]
         },
         {
           title: "Advanced Topics",
           collapsable: false,
-          children: ["auditing", "frontend-state-mgmt"]
+          children: ["auditing", "frontend-state-mgmt", "graphql"]
+        },
+        {
+          title: "Other Sections",
+          collapsable: false,
+          children: [
+            ["/modeling/", "Modeling in FireModel"],
+            ["/mocking/", "Mocking in FireModel"]
+          ]
         }
       ],
       "/mocking/": [
+        ["/mocking/", "Overview and Scope"],
         {
           title: "Mocking",
           collapsable: false,
-          children: ["overview", "queuing", "execution"]
+          children: ["configure-mocking", "queuing"]
+        },
+        {
+          title: "Other Sections",
+          collapsable: false,
+          children: [
+            ["/modeling/", "Modeling in FireModel"],
+            ["/using/", "Using FireModel"]
+          ]
         }
       ]
     }

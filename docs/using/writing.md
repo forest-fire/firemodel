@@ -103,7 +103,12 @@ mpu.add({ path: "age", value: 16 });
 await mpu.execute();
 ```
 
-In this example it doesn't seem all that adventagous but in deeply nested records this can be much easier to grok. Maybe the better example is actually showing this in interaction with with a `List`:
+In this example what we get, beyond the same named function in _abstracted-firebase_, is:
+
+- The default/root path to the record -- in this case "authenticated/people" -- is not needed as the model already knows where to start.
+- The "lastUpdated" property gets updated automatically.
+
+That's ok but it does get mildly cooler when you interact with the `List` class:
 
 ```typescript
 const people = List.all(Person);
@@ -112,3 +117,5 @@ mpu.add({ path: "4567/name", value: "Joey" });
 mpu.add({ path: "1234/age", value: 16 });
 await mpu.execute();
 ```
+
+The benefits here are similar to with `Record` but the `List` understands that it contains many records and therefore the "lastUpdated" props it updates are done 1:M for the given records which the List has updated and not the others. This may not seem that cool but ... it is. Trust me. Remember, I am the ultimate arbiter of the truth (it's an important job but I still get 5 weeks vacation each year).
