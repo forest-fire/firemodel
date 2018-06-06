@@ -66,7 +66,7 @@ export const baseLogger: ILogger = {
   error: (message: string) => console.error(`${this.modelName}/${this._key}: ${message}`)
 };
 
-export default class Model<T extends BaseSchema> {
+export class Model<T extends BaseSchema> {
   //#region PROPERTIES
   public static defaultDb: RealTimeDB = null;
 

@@ -7,6 +7,7 @@ import * as helpers from "./testing/helpers";
 const expect = chai.expect;
 import "reflect-metadata";
 import { Person } from "./testing/person";
+import { wait } from "common-types";
 
 describe("List class: ", () => {
   let db: DB;
@@ -59,7 +60,7 @@ describe("List class: ", () => {
     db.mock.queueSchema("person", 25).generate();
 
     const q = new SerializedQuery().limitToLast(5);
-    const results = await List.from(Person, q, { db });
+    const results = await List.fromQuery(Person, q, { db });
     expect(results.length).to.equal(5);
   });
 
@@ -122,6 +123,24 @@ describe("List class: ", () => {
     expect(recent).to.be.length(6);
     expect(inactive).to.be.length(4);
     expect(recentCreatedDate).to.be.greaterThan(inactiveCreatedDate);
+  });
+
+  it("can instantiate with since() returns correct results", async () => {
+    const timestamp = new Date().getTime();
+    db.mock
+      .addSchema<Person>("person", h => () => ({
+        name: h.faker.name.firstName(),
+        age: h.faker.random.number({ min: 1, max: 49 }),
+        createdAt: h.faker.date.past().valueOf(),
+        lastUpdated: timestamp
+      }))
+      .pathPrefix("authenticated");
+    db.mock.queueSchema("person", 30, { lastUpdated: timestamp - 5000 }).generate();
+    db.mock.queueSchema("person", 8, { lastUpdated: timestamp + 1000 }).generate();
+
+    const since = await List.since(Person, timestamp);
+
+    expect(since).to.be.length(8);
   });
 
   it("an instantiated List can call get() with a valid ID and get a Record", async () => {

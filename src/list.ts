@@ -2,7 +2,7 @@
 import { RealTimeDB } from "abstracted-firebase";
 import { BaseSchema, ISchemaOptions, Record } from "./index";
 import { SerializedQuery, IComparisonOperator } from "serialized-query";
-import Model, { IModelOptions } from "./model";
+import { Model, IModelOptions } from "./model";
 import { epochWithMilliseconds } from "common-types";
 
 const DEFAULT_IF_NOT_FOUND = "__DO_NOT_USE__";
@@ -23,7 +23,7 @@ export class List<T extends BaseSchema> {
    * @param query the serialized query; note that this LIST will override the path of the query
    * @param options model options
    */
-  public static async from<T extends BaseSchema>(
+  public static async fromQuery<T extends BaseSchema>(
     schema: new () => T,
     query: SerializedQuery,
     options: IModelOptions = {}
@@ -47,7 +47,7 @@ export class List<T extends BaseSchema> {
     options: IModelOptions = {}
   ): Promise<List<T>> {
     const query = new SerializedQuery().orderByChild("lastUpdated");
-    const list = await List.from<T>(schema, query, options);
+    const list = await List.fromQuery<T>(schema, query, options);
 
     return list;
   }
@@ -66,7 +66,7 @@ export class List<T extends BaseSchema> {
     options: IModelOptions = {}
   ): Promise<List<T>> {
     const query = new SerializedQuery().orderByChild("createdAt").limitToLast(howMany);
-    const list = await List.from(schema, query, options);
+    const list = await List.fromQuery(schema, query, options);
 
     return list;
   }
@@ -88,7 +88,7 @@ export class List<T extends BaseSchema> {
     options: IModelOptions = {}
   ): Promise<List<T>> {
     const query = new SerializedQuery().orderByChild("lastUpdated").limitToFirst(howMany);
-    const list = await List.from(schema, query, options);
+    const list = await List.fromQuery(schema, query, options);
 
     return list;
   }
@@ -107,8 +107,18 @@ export class List<T extends BaseSchema> {
     since: epochWithMilliseconds,
     options: IModelOptions = {}
   ): Promise<List<T>> {
-    const query = new SerializedQuery().orderByChild("lastUpdated").startAt(since);
-    const list = await List.from(schema, query, options);
+    if (typeof since !== "number") {
+      const e = new Error(
+        `Invalid "since" parameter; value must be number instead got a(n) ${typeof since} [ ${since} ]`
+      );
+      e.name = "NotAllowed";
+      throw e;
+    }
+
+    // const query = new SerializedQuery().orderByChild("lastUpdated").startAt(since);
+    const query = new SerializedQuery<T>().orderByChild("lastUpdated").startAt(since);
+    console.log("QUERY", query);
+    const list = await List.fromQuery(schema, query, options);
 
     return list;
   }
@@ -119,7 +129,7 @@ export class List<T extends BaseSchema> {
     options: IModelOptions = {}
   ): Promise<List<T>> {
     const query = new SerializedQuery().orderByChild("lastUpdated").limitToLast(howMany);
-    const list = await List.from(schema, query, options);
+    const list = await List.fromQuery(schema, query, options);
 
     return list;
   }
@@ -130,7 +140,7 @@ export class List<T extends BaseSchema> {
     options: IModelOptions = {}
   ): Promise<List<T>> {
     const query = new SerializedQuery().orderByChild("createdAt").limitToFirst(howMany);
-    const list = await List.from(schema, query, options);
+    const list = await List.fromQuery(schema, query, options);
 
     return list;
   }
@@ -148,7 +158,7 @@ export class List<T extends BaseSchema> {
       operation = value[0];
     }
     const query = new SerializedQuery().orderByChild(property).where(operation, val);
-    const list = await List.from(schema, query, options);
+    const list = await List.fromQuery(schema, query, options);
 
     return list;
   }

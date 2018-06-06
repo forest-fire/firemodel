@@ -1,5 +1,3 @@
-// Default Export
-export { default } from "./model";
 // Named Exports
 export {
   property,
@@ -18,8 +16,9 @@ export {
   ISchemaMetaProperties,
   ISchemaRelationshipMetaProperties
 } from "./decorators/schema";
-export { default as Model, ILogger, IAuditRecord, FirebaseCrudOperations } from "./model";
+export { ILogger, IAuditRecord, FirebaseCrudOperations } from "./model";
 export { BaseSchema, RelationshipPolicy, RelationshipCardinality } from "./base-schema";
+export { Model } from "./model";
 export { Record } from "./record";
 export { List } from "./list";
 

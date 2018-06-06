@@ -2,7 +2,7 @@
 import pushKey, { RealTimeDB } from "abstracted-firebase";
 import { BaseSchema, ISchemaOptions } from "./index";
 import { createError, fk, IDictionary } from "common-types";
-import Model, { ILogger } from "./model";
+import { Model, ILogger } from "./model";
 import { key as fbk } from "firebase-key";
 
 export interface IWriteOperation {
@@ -53,9 +53,16 @@ export class Record<T extends BaseSchema> {
     newRecord: T,
     options: IRecordOptions = {}
   ) {
-    const r = Record.create(schema, options);
-    r._initialize(newRecord);
-    await r._save();
+    let r;
+    try {
+      r = Record.create(schema, options);
+      r._initialize(newRecord);
+      await r._save();
+    } catch (e) {
+      const err = new Error(`Problem adding new Record: ${e.message}`);
+      err.name = e.name !== "Error" ? e.name : "FiremodelError";
+      throw e;
+    }
 
     return r;
   }
@@ -273,7 +280,7 @@ export class Record<T extends BaseSchema> {
    */
   public async updateProps(props: Partial<T>) {
     const updater = this.db.multiPathSet(this.dbPath);
-    Object.keys(props).map((key: keyof T) => {
+    Object.keys(props).map((key: Extract<keyof T, string>) => {
       if (typeof props[key] === "object") {
         const existingState = this.get(key);
         props[key] = { ...(existingState as any), ...(props[key] as any) };
@@ -306,7 +313,11 @@ export class Record<T extends BaseSchema> {
    * @param ref reference to ID of related entity
    * @param optionalValue the default behaviour is to add the value TRUE but you can optionally add some additional piece of information here instead.
    */
-  public async addHasMany(property: keyof T, ref: fk, optionalValue: any = true) {
+  public async addHasMany(
+    property: Extract<keyof T, string>,
+    ref: Extract<fk, string>,
+    optionalValue: any = true
+  ) {
     if (this.META.property(property).relType !== "hasMany") {
       const e = new Error(
         `The property "${property}" does NOT have a "hasMany" relationship on ${
@@ -316,7 +327,7 @@ export class Record<T extends BaseSchema> {
       e.name = "InvalidRelationship";
       throw e;
     }
-    if (typeof this.data[property] === "object" && this.data[property][ref]) {
+    if (typeof this.data[property] === "object" && (this.data[property] as any)[ref]) {
       console.warn(
         `The fk of "${ref}" already exists in "${this.modelName}.${property}"!`
       );
@@ -408,6 +419,14 @@ export class Record<T extends BaseSchema> {
       throw e;
     }
     this.id = fbk();
+
+    if (!this.db) {
+      const e = new Error(
+        `Attempt to save Record failed as the Database has not been connected yet. Try setting Model.defaultDb first.`
+      );
+      e.name = "FiremodelError";
+      throw e;
+    }
 
     await this.db.set<T>(this.dbPath, this.data);
 

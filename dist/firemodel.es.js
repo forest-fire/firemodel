@@ -80,7 +80,362 @@ function _nonIterableSpread() {
   throw new TypeError("Invalid attempt to spread non-iterable instance");
 }
 
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+require("reflect-metadata");
+
+var decorator_1 = require("./decorator");
+
+function constrainedProperty() {
+  var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+  return decorator_1.propertyDecorator(Object.assign({}, options, {
+    isRelationship: false,
+    isProperty: true
+  }), "property");
+}
+
+exports.constrainedProperty = constrainedProperty;
+/** allows the introduction of a new constraint to the metadata of a property */
+
+function constrain(prop, value) {
+  return decorator_1.propertyDecorator(_defineProperty({}, prop, value));
+}
+
+exports.constrain = constrain;
+
+function desc(value) {
+  return decorator_1.propertyDecorator({
+    desc: value
+  });
+}
+
+exports.desc = desc;
+
+function min(value) {
+  return decorator_1.propertyDecorator({
+    min: value
+  });
+}
+
+exports.min = min;
+
+function max(value) {
+  return decorator_1.propertyDecorator({
+    max: value
+  });
+}
+
+exports.max = max;
+
+function length(value) {
+  return decorator_1.propertyDecorator({
+    length: value
+  });
+}
+
+exports.length = length;
+exports.property = decorator_1.propertyDecorator({
+  isRelationship: false,
+  isProperty: true
+}, "property");
+exports.pushKey = decorator_1.propertyDecorator({
+  pushKey: true
+}, "property");
+
+var property = /*#__PURE__*/Object.freeze({
+
+});
+
 var _this = undefined;
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+require("reflect-metadata");
+
+var set$1 = require("lodash.set");
+
+var get = require("lodash.get");
+
+function push(target, path, value) {
+  if (Array.isArray(get(target, path))) {
+    get(target, path).push(value);
+  } else {
+    set$1(target, path, [value]);
+  }
+}
+/** Properties accumlated by propertyDecorators and grouped by schema */
+
+
+var propertiesBySchema = {};
+/** Relationships accumlated by propertyDecorators and grouped by schema */
+
+var relationshipsBySchema = {};
+
+exports.propertyDecorator = function () {
+  var nameValuePairs = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+  var
+  /**
+   * if you want to set the property being decorated's name
+   * as property on meta specify the meta properties name here
+   */
+  property = arguments.length > 1 ? arguments[1] : undefined;
+  return function (target, key) {
+    var reflect = Reflect.getMetadata("design:type", target, key);
+    var meta = Object.assign({}, Reflect.getMetadata(key, target), {
+      type: reflect.name
+    }, nameValuePairs);
+    Reflect.defineMetadata(key, meta, target);
+    var _val = _this[key];
+
+    if (nameValuePairs.isProperty) {
+      if (property) {
+        push(propertiesBySchema, target.constructor.name, Object.assign({}, meta, _defineProperty({}, property, key)));
+      } else {
+        push(propertiesBySchema, target.constructor.name, meta);
+      }
+    }
+
+    if (nameValuePairs.isRelationship) {
+      if (property) {
+        push(relationshipsBySchema, target.constructor.name, Object.assign({}, meta, _defineProperty({}, property, key)));
+      } else {
+        push(relationshipsBySchema, target.constructor.name, meta);
+      }
+    } // Reflect.defineProperty(target, key, {
+    //   get: () => {
+    //     return this[key];
+    //   },
+    //   set: (value: any) => {
+    //     this[key] = value;
+    //   },
+    //   enumerable: true,
+    //   configurable: true
+    // });
+
+  };
+};
+/**
+ * Give all properties from schema and base schema
+ *
+ * @param target the schema object which is being looked up
+ */
+
+
+function getProperties(target) {
+  return _toConsumableArray(propertiesBySchema[target.constructor.name]).concat(_toConsumableArray(propertiesBySchema.BaseSchema.map(function (s) {
+    return Object.assign({}, s, {
+      isBaseSchema: true
+    });
+  })));
+}
+
+exports.getProperties = getProperties;
+
+function getRelationships(target) {
+  return relationshipsBySchema[target.constructor.name];
+}
+
+exports.getRelationships = getRelationships;
+
+function getPushKeys(target) {
+  var props = getProperties(target);
+  return props.filter(function (p) {
+    return p.pushKey;
+  }).map(function (p) {
+    return p.property;
+  });
+}
+
+exports.getPushKeys = getPushKeys;
+
+var decorator_1$1 = /*#__PURE__*/Object.freeze({
+
+});
+
+var relationship = createCommonjsModule(function (module, exports) {
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+
+
+
+
+function hasMany(schemaClass) {
+  return decorator_1$1.propertyDecorator({
+    isRelationship: true,
+    isProperty: false,
+    relType: 'hasMany'
+  }, 'property');
+}
+
+exports.hasMany = hasMany;
+
+function ownedBy(schemaClass) {
+  return decorator_1$1.propertyDecorator({
+    isRelationship: true,
+    isProperty: false,
+    relType: 'ownedBy'
+  }, 'property');
+}
+
+exports.ownedBy = ownedBy;
+
+function inverse(inverseProperty) {
+  return decorator_1$1.propertyDecorator({
+    inverseProperty: inverseProperty
+  });
+}
+
+exports.inverse = inverse;
+});
+
+unwrapExports(relationship);
+var relationship_1 = relationship.hasMany;
+var relationship_2 = relationship.ownedBy;
+var relationship_3 = relationship.inverse;
+
+var schema_1 = createCommonjsModule(function (module, exports) {
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+
+
+
+/** lookup meta data for schema properties */
+
+
+function propertyMeta(context) {
+  return function (prop) {
+    return Reflect.getMetadata(prop, context);
+  };
+}
+
+function schema(options) {
+  return function (target) {
+    var original = target; // new constructor
+
+    var f = function f() {
+
+      for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
+        args[_key] = arguments[_key];
+      }
+
+      var obj = Reflect.construct(original, args);
+      Reflect.defineProperty(obj, "META", {
+        get: function get() {
+          return Object.assign({}, options, {
+            property: propertyMeta(obj)
+          }, {
+            properties: decorator_1$1.getProperties(obj)
+          }, {
+            relationships: decorator_1$1.getRelationships(obj)
+          }, {
+            pushKeys: decorator_1$1.getPushKeys(obj)
+          }, {
+            audit: options.audit ? options.audit : false
+          });
+        },
+        set: function set() {
+          throw new Error("The meta property can only be set with the @schema decorator!");
+        },
+        configurable: false,
+        enumerable: false
+      });
+      return obj;
+    }; // copy prototype so intanceof operator still works
+
+
+    f.prototype = original.prototype; // return new constructor (will override original)
+
+    return f;
+  };
+}
+
+exports.schema = schema;
+});
+
+unwrapExports(schema_1);
+var schema_2 = schema_1.schema;
+
+var __decorate = undefined && undefined.__decorate || function (decorators, target, key, desc) {
+  var c = arguments.length,
+      r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc,
+      d;
+  if ((typeof Reflect === "undefined" ? "undefined" : _typeof(Reflect)) === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);else for (var i = decorators.length - 1; i >= 0; i--) {
+    if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+  }
+  return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+
+var __metadata = undefined && undefined.__metadata || function (k, v) {
+  if ((typeof Reflect === "undefined" ? "undefined" : _typeof(Reflect)) === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var property_1 = require("./decorators/property");
+
+var RelationshipPolicy;
+
+(function (RelationshipPolicy) {
+  RelationshipPolicy["keys"] = "keys";
+  RelationshipPolicy["lazy"] = "lazy";
+  RelationshipPolicy["inline"] = "inline";
+})(RelationshipPolicy = exports.RelationshipPolicy || (exports.RelationshipPolicy = {}));
+
+var RelationshipCardinality;
+
+(function (RelationshipCardinality) {
+  RelationshipCardinality["hasMany"] = "hasMany";
+  RelationshipCardinality["belongsTo"] = "belongsTo";
+})(RelationshipCardinality = exports.RelationshipCardinality || (exports.RelationshipCardinality = {}));
+
+var BaseSchema =
+/*#__PURE__*/
+function () {
+  function BaseSchema() {
+    _classCallCheck(this, BaseSchema);
+  }
+
+  _createClass(BaseSchema, [{
+    key: "toString",
+    value: function toString() {
+      var _this = this;
+
+      var obj = {};
+      this.META.properties.map(function (p) {
+        obj[p.property] = _this[p.property];
+      });
+      return JSON.stringify(obj);
+    }
+  }]);
+
+  return BaseSchema;
+}();
+
+__decorate([property_1.property, __metadata("design:type", String)], BaseSchema.prototype, "id", void 0);
+
+__decorate([property_1.property, __metadata("design:type", Number)], BaseSchema.prototype, "lastUpdated", void 0);
+
+__decorate([property_1.property, __metadata("design:type", Number)], BaseSchema.prototype, "createdAt", void 0);
+
+exports.BaseSchema = BaseSchema;
+
+var baseSchema = /*#__PURE__*/Object.freeze({
+
+});
+
+var _this$1 = undefined;
 
 var __awaiter = undefined && undefined.__awaiter || function (thisArg, _arguments, P, generator) {
   return new (P || (P = Promise))(function (resolve, reject) {
@@ -132,20 +487,20 @@ var firebase_key_1 = require("firebase-key");
 
 exports.baseLogger = {
   log: function log(message) {
-    return console.log("".concat(_this.modelName, "/").concat(_this._key, ": ").concat(message));
+    return console.log("".concat(_this$1.modelName, "/").concat(_this$1._key, ": ").concat(message));
   },
   warn: function warn(message) {
-    return console.warn("".concat(_this.modelName, "/").concat(_this._key, ": ").concat(message));
+    return console.warn("".concat(_this$1.modelName, "/").concat(_this$1._key, ": ").concat(message));
   },
   debug: function debug(message) {
     var stage = process.env.STAGE || process.env.AWS_STAGE || process.env.ENV;
 
     if (stage !== "prod") {
-      console.log("".concat(_this.modelName, "/").concat(_this._key, ": ").concat(message));
+      console.log("".concat(_this$1.modelName, "/").concat(_this$1._key, ": ").concat(message));
     }
   },
   error: function error(message) {
-    return console.error("".concat(_this.modelName, "/").concat(_this._key, ": ").concat(message));
+    return console.error("".concat(_this$1.modelName, "/").concat(_this$1._key, ": ").concat(message));
   }
 };
 
@@ -576,364 +931,9 @@ Model.defaultDb = null;
 /** The base path in the database to store audit logs */
 
 Model.auditBase = "logging/audit_logs";
-exports.default = Model;
+exports.Model = Model;
 
 var model = /*#__PURE__*/Object.freeze({
-
-});
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-
-require("reflect-metadata");
-
-var decorator_1 = require("./decorator");
-
-function constrainedProperty() {
-  var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-  return decorator_1.propertyDecorator(Object.assign({}, options, {
-    isRelationship: false,
-    isProperty: true
-  }), "property");
-}
-
-exports.constrainedProperty = constrainedProperty;
-/** allows the introduction of a new constraint to the metadata of a property */
-
-function constrain(prop, value) {
-  return decorator_1.propertyDecorator(_defineProperty({}, prop, value));
-}
-
-exports.constrain = constrain;
-
-function desc(value) {
-  return decorator_1.propertyDecorator({
-    desc: value
-  });
-}
-
-exports.desc = desc;
-
-function min(value) {
-  return decorator_1.propertyDecorator({
-    min: value
-  });
-}
-
-exports.min = min;
-
-function max(value) {
-  return decorator_1.propertyDecorator({
-    max: value
-  });
-}
-
-exports.max = max;
-
-function length(value) {
-  return decorator_1.propertyDecorator({
-    length: value
-  });
-}
-
-exports.length = length;
-exports.property = decorator_1.propertyDecorator({
-  isRelationship: false,
-  isProperty: true
-}, "property");
-exports.pushKey = decorator_1.propertyDecorator({
-  pushKey: true
-}, "property");
-
-var property = /*#__PURE__*/Object.freeze({
-
-});
-
-var _this$1 = undefined;
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-
-require("reflect-metadata");
-
-var set$1 = require("lodash.set");
-
-var get = require("lodash.get");
-
-function push(target, path, value) {
-  if (Array.isArray(get(target, path))) {
-    get(target, path).push(value);
-  } else {
-    set$1(target, path, [value]);
-  }
-}
-/** Properties accumlated by propertyDecorators and grouped by schema */
-
-
-var propertiesBySchema = {};
-/** Relationships accumlated by propertyDecorators and grouped by schema */
-
-var relationshipsBySchema = {};
-
-exports.propertyDecorator = function () {
-  var nameValuePairs = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-  var
-  /**
-   * if you want to set the property being decorated's name
-   * as property on meta specify the meta properties name here
-   */
-  property = arguments.length > 1 ? arguments[1] : undefined;
-  return function (target, key) {
-    var reflect = Reflect.getMetadata("design:type", target, key);
-    var meta = Object.assign({}, Reflect.getMetadata(key, target), {
-      type: reflect.name
-    }, nameValuePairs);
-    Reflect.defineMetadata(key, meta, target);
-    var _val = _this$1[key];
-
-    if (nameValuePairs.isProperty) {
-      if (property) {
-        push(propertiesBySchema, target.constructor.name, Object.assign({}, meta, _defineProperty({}, property, key)));
-      } else {
-        push(propertiesBySchema, target.constructor.name, meta);
-      }
-    }
-
-    if (nameValuePairs.isRelationship) {
-      if (property) {
-        push(relationshipsBySchema, target.constructor.name, Object.assign({}, meta, _defineProperty({}, property, key)));
-      } else {
-        push(relationshipsBySchema, target.constructor.name, meta);
-      }
-    } // Reflect.defineProperty(target, key, {
-    //   get: () => {
-    //     return this[key];
-    //   },
-    //   set: (value: any) => {
-    //     this[key] = value;
-    //   },
-    //   enumerable: true,
-    //   configurable: true
-    // });
-
-  };
-};
-/**
- * Give all properties from schema and base schema
- *
- * @param target the schema object which is being looked up
- */
-
-
-function getProperties(target) {
-  return _toConsumableArray(propertiesBySchema[target.constructor.name]).concat(_toConsumableArray(propertiesBySchema.BaseSchema.map(function (s) {
-    return Object.assign({}, s, {
-      isBaseSchema: true
-    });
-  })));
-}
-
-exports.getProperties = getProperties;
-
-function getRelationships(target) {
-  return relationshipsBySchema[target.constructor.name];
-}
-
-exports.getRelationships = getRelationships;
-
-function getPushKeys(target) {
-  var props = getProperties(target);
-  return props.filter(function (p) {
-    return p.pushKey;
-  }).map(function (p) {
-    return p.property;
-  });
-}
-
-exports.getPushKeys = getPushKeys;
-
-var decorator_1$1 = /*#__PURE__*/Object.freeze({
-
-});
-
-var relationship = createCommonjsModule(function (module, exports) {
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-
-
-
-
-
-function hasMany(schemaClass) {
-  return decorator_1$1.propertyDecorator({
-    isRelationship: true,
-    isProperty: false,
-    relType: 'hasMany'
-  }, 'property');
-}
-
-exports.hasMany = hasMany;
-
-function ownedBy(schemaClass) {
-  return decorator_1$1.propertyDecorator({
-    isRelationship: true,
-    isProperty: false,
-    relType: 'ownedBy'
-  }, 'property');
-}
-
-exports.ownedBy = ownedBy;
-
-function inverse(inverseProperty) {
-  return decorator_1$1.propertyDecorator({
-    inverseProperty: inverseProperty
-  });
-}
-
-exports.inverse = inverse;
-});
-
-unwrapExports(relationship);
-var relationship_1 = relationship.hasMany;
-var relationship_2 = relationship.ownedBy;
-var relationship_3 = relationship.inverse;
-
-var schema_1 = createCommonjsModule(function (module, exports) {
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-
-
-
-
-/** lookup meta data for schema properties */
-
-
-function propertyMeta(context) {
-  return function (prop) {
-    return Reflect.getMetadata(prop, context);
-  };
-}
-
-function schema(options) {
-  return function (target) {
-    var original = target; // new constructor
-
-    var f = function f() {
-
-      for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
-        args[_key] = arguments[_key];
-      }
-
-      var obj = Reflect.construct(original, args);
-      Reflect.defineProperty(obj, "META", {
-        get: function get() {
-          return Object.assign({}, options, {
-            property: propertyMeta(obj)
-          }, {
-            properties: decorator_1$1.getProperties(obj)
-          }, {
-            relationships: decorator_1$1.getRelationships(obj)
-          }, {
-            pushKeys: decorator_1$1.getPushKeys(obj)
-          }, {
-            audit: options.audit ? options.audit : false
-          });
-        },
-        set: function set() {
-          throw new Error("The meta property can only be set with the @schema decorator!");
-        },
-        configurable: false,
-        enumerable: false
-      });
-      return obj;
-    }; // copy prototype so intanceof operator still works
-
-
-    f.prototype = original.prototype; // return new constructor (will override original)
-
-    return f;
-  };
-}
-
-exports.schema = schema;
-});
-
-unwrapExports(schema_1);
-var schema_2 = schema_1.schema;
-
-var __decorate = undefined && undefined.__decorate || function (decorators, target, key, desc) {
-  var c = arguments.length,
-      r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc,
-      d;
-  if ((typeof Reflect === "undefined" ? "undefined" : _typeof(Reflect)) === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);else for (var i = decorators.length - 1; i >= 0; i--) {
-    if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-  }
-  return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-
-var __metadata = undefined && undefined.__metadata || function (k, v) {
-  if ((typeof Reflect === "undefined" ? "undefined" : _typeof(Reflect)) === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-
-var property_1 = require("./decorators/property");
-
-var RelationshipPolicy;
-
-(function (RelationshipPolicy) {
-  RelationshipPolicy["keys"] = "keys";
-  RelationshipPolicy["lazy"] = "lazy";
-  RelationshipPolicy["inline"] = "inline";
-})(RelationshipPolicy = exports.RelationshipPolicy || (exports.RelationshipPolicy = {}));
-
-var RelationshipCardinality;
-
-(function (RelationshipCardinality) {
-  RelationshipCardinality["hasMany"] = "hasMany";
-  RelationshipCardinality["belongsTo"] = "belongsTo";
-})(RelationshipCardinality = exports.RelationshipCardinality || (exports.RelationshipCardinality = {}));
-
-var BaseSchema =
-/*#__PURE__*/
-function () {
-  function BaseSchema() {
-    _classCallCheck(this, BaseSchema);
-  }
-
-  _createClass(BaseSchema, [{
-    key: "toString",
-    value: function toString() {
-      var _this = this;
-
-      var obj = {};
-      this.META.properties.map(function (p) {
-        obj[p.property] = _this[p.property];
-      });
-      return JSON.stringify(obj);
-    }
-  }]);
-
-  return BaseSchema;
-}();
-
-__decorate([property_1.property, __metadata("design:type", String)], BaseSchema.prototype, "id", void 0);
-
-__decorate([property_1.property, __metadata("design:type", Number)], BaseSchema.prototype, "lastUpdated", void 0);
-
-__decorate([property_1.property, __metadata("design:type", Number)], BaseSchema.prototype, "createdAt", void 0);
-
-exports.BaseSchema = BaseSchema;
-
-var baseSchema = /*#__PURE__*/Object.freeze({
 
 });
 
@@ -1258,6 +1258,14 @@ function () {
         }
 
         this.id = firebase_key_1$1.key();
+
+        if (!this.db) {
+          var _e = new Error("Attempt to save Record failed as the Database has not been connected yet. Try setting Model.defaultDb first.");
+
+          _e.name = "FiremodelError";
+          throw _e;
+        }
+
         yield this.db.set(this.dbPath, this.data);
         return this;
       });
@@ -1361,7 +1369,7 @@ function () {
     key: "create",
     value: function create(schema) {
       var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
-      var model = model_1.default.create(schema, options);
+      var model = model_1.Model.create(schema, options);
       var record = new Record(model, options);
       return record;
     }
@@ -1380,11 +1388,20 @@ function () {
     value: function add(schema, newRecord) {
       var options = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
       return __awaiter$1(this, void 0, void 0, function* () {
-        var r = Record.create(schema, options);
+        var r;
 
-        r._initialize(newRecord);
+        try {
+          r = Record.create(schema, options);
 
-        yield r._save();
+          r._initialize(newRecord);
+
+          yield r._save();
+        } catch (e) {
+          var err = new Error("Problem adding new Record: ".concat(e.message));
+          err.name = e.name !== "Error" ? e.name : "FiremodelError";
+          throw e;
+        }
+
         return r;
       });
     }
@@ -1662,7 +1679,7 @@ function () {
     key: "create",
     value: function create(schema) {
       var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
-      var model = model_1$1.default.create(schema, options);
+      var model = model_1$1.Model.create(schema, options);
       return new List(model);
     }
     /**
@@ -1674,11 +1691,11 @@ function () {
      */
 
   }, {
-    key: "from",
-    value: function from(schema, query) {
+    key: "fromQuery",
+    value: function fromQuery(schema, query) {
       var options = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
       return __awaiter$2(this, void 0, void 0, function* () {
-        var model = model_1$1.default.create(schema, options);
+        var model = model_1$1.Model.create(schema, options);
         query.setPath(model.dbPath);
         var list = List.create(schema, options);
         yield list.load(query);
@@ -1698,7 +1715,7 @@ function () {
       var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
       return __awaiter$2(this, void 0, void 0, function* () {
         var query = new serialized_query_1$1.SerializedQuery().orderByChild("lastUpdated");
-        var list = yield List.from(schema, query, options);
+        var list = yield List.fromQuery(schema, query, options);
         return list;
       });
     }
@@ -1717,7 +1734,7 @@ function () {
       var options = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
       return __awaiter$2(this, void 0, void 0, function* () {
         var query = new serialized_query_1$1.SerializedQuery().orderByChild("createdAt").limitToLast(howMany);
-        var list = yield List.from(schema, query, options);
+        var list = yield List.fromQuery(schema, query, options);
         return list;
       });
     }
@@ -1738,7 +1755,7 @@ function () {
       var options = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : {};
       return __awaiter$2(this, void 0, void 0, function* () {
         var query = new serialized_query_1$1.SerializedQuery().orderByChild("lastUpdated").limitToFirst(howMany);
-        var list = yield List.from(schema, query, options);
+        var list = yield List.fromQuery(schema, query, options);
         return list;
       });
     }
@@ -1757,8 +1774,16 @@ function () {
     value: function since(schema, _since) {
       var options = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
       return __awaiter$2(this, void 0, void 0, function* () {
+        if (typeof _since !== "number") {
+          var e = new Error("Invalid \"since\" parameter; value must be number instead got a(n) ".concat(_typeof(_since), " [ ").concat(_since, " ]"));
+          e.name = "NotAllowed";
+          throw e;
+        } // const query = new SerializedQuery().orderByChild("lastUpdated").startAt(since);
+
+
         var query = new serialized_query_1$1.SerializedQuery().orderByChild("lastUpdated").startAt(_since);
-        var list = yield List.from(schema, query, options);
+        console.log("QUERY", query);
+        var list = yield List.fromQuery(schema, query, options);
         return list;
       });
     }
@@ -1768,7 +1793,7 @@ function () {
       var options = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
       return __awaiter$2(this, void 0, void 0, function* () {
         var query = new serialized_query_1$1.SerializedQuery().orderByChild("lastUpdated").limitToLast(howMany);
-        var list = yield List.from(schema, query, options);
+        var list = yield List.fromQuery(schema, query, options);
         return list;
       });
     }
@@ -1778,7 +1803,7 @@ function () {
       var options = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
       return __awaiter$2(this, void 0, void 0, function* () {
         var query = new serialized_query_1$1.SerializedQuery().orderByChild("createdAt").limitToFirst(howMany);
-        var list = yield List.from(schema, query, options);
+        var list = yield List.fromQuery(schema, query, options);
         return list;
       });
     }
@@ -1796,7 +1821,7 @@ function () {
         }
 
         var query = new serialized_query_1$1.SerializedQuery().orderByChild(property).where(operation, val);
-        var list = yield List.from(schema, query, options);
+        var list = yield List.fromQuery(schema, query, options);
         return list;
       });
     }
@@ -1815,11 +1840,7 @@ var lib = createCommonjsModule(function (module, exports) {
 
 Object.defineProperty(exports, "__esModule", {
   value: true
-}); // Default Export
-
-
-
-exports.default = model.default; // Named Exports
+}); // Named Exports
 
 
 
@@ -1842,15 +1863,15 @@ exports.inverse = relationship.inverse;
 
 exports.schema = schema_1.schema;
 
-var model_2 = model;
-
-exports.Model = model_2.default;
-
 
 
 exports.BaseSchema = baseSchema.BaseSchema;
 exports.RelationshipPolicy = baseSchema.RelationshipPolicy;
 exports.RelationshipCardinality = baseSchema.RelationshipCardinality;
+
+
+
+exports.Model = model.Model;
 
 
 
@@ -1878,13 +1899,13 @@ var lib_9 = lib.hasMany;
 var lib_10 = lib.ownedBy;
 var lib_11 = lib.inverse;
 var lib_12 = lib.schema;
-var lib_13 = lib.Model;
-var lib_14 = lib.BaseSchema;
-var lib_15 = lib.RelationshipPolicy;
-var lib_16 = lib.RelationshipCardinality;
+var lib_13 = lib.BaseSchema;
+var lib_14 = lib.RelationshipPolicy;
+var lib_15 = lib.RelationshipCardinality;
+var lib_16 = lib.Model;
 var lib_17 = lib.Record;
 var lib_18 = lib.List;
 var lib_19 = lib.fbKey;
 
 export default index;
-export { lib_1 as property, lib_2 as pushKey, lib_3 as constrainedProperty, lib_4 as constrain, lib_5 as min, lib_6 as max, lib_7 as length, lib_8 as desc, lib_9 as hasMany, lib_10 as ownedBy, lib_11 as inverse, lib_12 as schema, lib_13 as Model, lib_14 as BaseSchema, lib_15 as RelationshipPolicy, lib_16 as RelationshipCardinality, lib_17 as Record, lib_18 as List, lib_19 as fbKey };
+export { lib_1 as property, lib_2 as pushKey, lib_3 as constrainedProperty, lib_4 as constrain, lib_5 as min, lib_6 as max, lib_7 as length, lib_8 as desc, lib_9 as hasMany, lib_10 as ownedBy, lib_11 as inverse, lib_12 as schema, lib_13 as BaseSchema, lib_14 as RelationshipPolicy, lib_15 as RelationshipCardinality, lib_16 as Model, lib_17 as Record, lib_18 as List, lib_19 as fbKey };

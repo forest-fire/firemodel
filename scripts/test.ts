@@ -46,7 +46,7 @@ async function lintSource() {
 async function mochaTests(stg: string, searchTerms: string[]) {
   process.env.AWS_STAGE = stg;
   process.env.TS_NODE_COMPILER_OPTIONS = '{ "noImplicitAny": false }';
-  await asyncExec(`mocha --require ts-node/register ` + searchTerms.join(" "));
+  await asyncExec(`mocha --exit --require ts-node/register ` + searchTerms.join(" "));
 }
 
 (async () => {
@@ -83,7 +83,9 @@ async function mochaTests(stg: string, searchTerms: string[]) {
         )
       );
     } else {
-      console.log(`- Continuing onto mocha tests because of ${chalk.bold("--ignoreLint")} flag 🦄`);
+      console.log(
+        `- Continuing onto mocha tests because of ${chalk.bold("--ignoreLint")} flag 🦄`
+      );
     }
   }
 

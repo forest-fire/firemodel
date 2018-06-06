@@ -1,5 +1,5 @@
 // tslint:disable:no-implicit-dependencies
-import Model, { Record } from "../src/index";
+import { Model, Record } from "../src/index";
 import DB from "abstracted-admin";
 import * as chai from "chai";
 const expect = chai.expect;
