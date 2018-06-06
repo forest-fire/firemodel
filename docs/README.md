@@ -13,6 +13,10 @@ features:
 footer: LifeGadget | Copyright © 2018 to present
 ---
 
+### Module Exports
+
+This library exports to `ES2015`, `CJS`, and `UMD`. Use `ES2015` if you are using a build system and want tree shaking goodness (although likely rollup, webpack, etc. will choose that automagically for you).
+
 ## License
 
 Copyright (c) 2017 LifeGadget Ltd

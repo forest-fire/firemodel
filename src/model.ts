@@ -1,15 +1,13 @@
 import { IDictionary, datetime, createError } from "common-types";
-import { RealTimeDB, rtdb } from "abstracted-firebase";
+import { RealTimeDB } from "abstracted-firebase";
 import { VerboseError } from "./VerboseError";
-import { ISchemaMetaProperties, BaseSchema, Record, List } from "./index";
+import { BaseSchema, Record, List } from "./index";
 import { SchemaCallback } from "firemock";
 import * as pluralize from "pluralize";
-import camelCase = require("lodash.camelcase");
+import { camelCase } from "lodash";
 import { SerializedQuery } from "serialized-query";
-import { snapshotToArray, ISnapShot, arrayToHash } from "typed-conversions";
 import { slashNotation } from "./util";
 import { key as fbk } from "firebase-key";
-import { ISchemaRelationshipMetaProperties } from "./decorators/schema";
 
 export type ModelProperty<T> = keyof T | keyof IBaseModel;
 export type PartialModel<T> = { [P in keyof ModelProperty<T>]?: ModelProperty<T>[P] };
@@ -275,13 +273,6 @@ export class Model<T extends BaseSchema> {
       ...{ properties: Object.keys(newRecord) }
     };
 
-    const ref = await this.crud(
-      "push",
-      now,
-      slashNotation(this.dbPath, id),
-      newRecord,
-      auditInfo
-    );
     return Record.get(this._schemaClass, id);
   }
 
@@ -385,12 +376,10 @@ export class Model<T extends BaseSchema> {
     auditInfo?: IDictionary
   ) {
     const isAuditable = this._schema.META.audit;
-    const auditPath = slashNotation(Model.auditBase, this.pluralName, key);
-    let auditRef;
     if (isAuditable) {
       console.log("auditing: ", op);
 
-      auditRef = await this.audit(op, when, key, auditInfo);
+      await this.audit(op, when, key, auditInfo);
     }
 
     switch (op) {

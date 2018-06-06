@@ -1489,43 +1489,7 @@
   version "3.11.1"
   resolved "https://registry.yarnpkg.com/@types/js-yaml/-/js-yaml-3.11.1.tgz#ac5bab26be5f9c6f74b6b23420f2cfa5a7a6ba40"
 
-"@types/lodash.camelcase@^4.3.3":
-  version "4.3.3"
-  resolved "https://registry.yarnpkg.com/@types/lodash.camelcase/-/lodash.camelcase-4.3.3.tgz#ea5fcc4badea2259008df74425cf80d4536385fc"
-  dependencies:
-    "@types/lodash" "*"
-
-"@types/lodash.debounce@^4.0.3":
-  version "4.0.3"
-  resolved "https://registry.yarnpkg.com/@types/lodash.debounce/-/lodash.debounce-4.0.3.tgz#d712aee9e6136be77f70523ed9f0fc049a6cf15a"
-  dependencies:
-    "@types/lodash" "*"
-
-"@types/lodash.first@^3.0.3":
-  version "3.0.3"
-  resolved "https://registry.yarnpkg.com/@types/lodash.first/-/lodash.first-3.0.3.tgz#efdc34d68d68b55010688a4c350f89f176bb22ba"
-  dependencies:
-    "@types/lodash" "*"
-
-"@types/lodash.get@^4.4.3":
-  version "4.4.3"
-  resolved "https://registry.yarnpkg.com/@types/lodash.get/-/lodash.get-4.4.3.tgz#ac823d175a9593c10555b5097b72281effd544b5"
-  dependencies:
-    "@types/lodash" "*"
-
-"@types/lodash.last@^3.0.3":
-  version "3.0.3"
-  resolved "https://registry.yarnpkg.com/@types/lodash.last/-/lodash.last-3.0.3.tgz#eabe67a0ef50f1665406762dbb5fa09dcef3e31a"
-  dependencies:
-    "@types/lodash" "*"
-
-"@types/lodash.set@^4.3.3":
-  version "4.3.3"
-  resolved "https://registry.yarnpkg.com/@types/lodash.set/-/lodash.set-4.3.3.tgz#3a08ca068717a9784ebd2ab489e0376a32d7228a"
-  dependencies:
-    "@types/lodash" "*"
-
-"@types/lodash@*":
+"@types/lodash@^4.14.109":
   version "4.14.109"
   resolved "https://registry.yarnpkg.com/@types/lodash/-/lodash-4.14.109.tgz#b1c4442239730bf35cabaf493c772b18c045886d"
 
@@ -2640,7 +2604,7 @@ chalk@^2.0.0, chalk@^2.0.1, chalk@^2.1.0, chalk@^2.3.0, chalk@^2.3.1, chalk@^2.3
     escape-string-regexp "^1.0.5"
     supports-color "^5.3.0"
 
-chance@^1.0.0:
+chance@^1.0.16:
   version "1.0.16"
   resolved "https://registry.yarnpkg.com/chance/-/chance-1.0.16.tgz#bd61912716b0010c3dca8e3948a960efcaa7bb1b"
 
@@ -5326,10 +5290,6 @@ lodash.camelcase@^4.3.0:
 lodash.clonedeep@^4.5.0:
   version "4.5.0"
   resolved "https://registry.yarnpkg.com/lodash.clonedeep/-/lodash.clonedeep-4.5.0.tgz#e23f3f9c4f8fbdde872529c1071857a086e5ccef"
-
-lodash.debounce@^4.0.8:
-  version "4.0.8"
-  resolved "https://registry.yarnpkg.com/lodash.debounce/-/lodash.debounce-4.0.8.tgz#82d79bff30a67c4005ffd5e2515300ad9ca4d7af"
 
 lodash.difference@^4.5.0:
   version "4.5.0"

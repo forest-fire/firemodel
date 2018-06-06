@@ -1,4 +1,4 @@
-# Modeling Basics
+# Concepts
 
 Modeling is the act of describing the data structures/entities in your application or architecture. The term "model" is familiar to many and this is _useful_ as well as _detrimental_ in understanding what a `Model` is in **FireModel**.
 

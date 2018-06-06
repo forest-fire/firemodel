@@ -1,10 +1,10 @@
 // tslint:disable:no-implicit-dependencies
 import chalk from "chalk";
-import { exec } from "async-shelljs";
-import * as rm from "rimraf";
+import { exec, asyncExec } from "async-shelljs";
+import rm from "rimraf";
 import * as process from "process";
 import "../test/testing/test-console";
-import { stdout, stderr } from "test-console";
+import { stdout } from "test-console";
 
 function prepOutput(output: string) {
   return output
@@ -56,7 +56,7 @@ async function execute(scope: string) {
       chalk.dim.grey(`./node_modules/.bin/tsc ${scope}`) +
       chalk.dim(` )`)
   );
-  exec(`./node_modules/.bin/tsc ${scope}`, (code, out) => {
+  exec(`./node_modules/.bin/tsc ${scope}`, code => {
     if (code === 0) {
       console.log(chalk.green.bold(`- build completed successfully 👍\n`));
     } else {
@@ -69,4 +69,5 @@ async function execute(scope: string) {
 (async () => {
   const scope: string = await getScope();
   await execute(scope);
+  await asyncExec("bili lib/index.js --format umd,umd-min,es");
 })();
