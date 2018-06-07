@@ -3,12 +3,11 @@
 Object.defineProperty(exports, '__esModule', { value: true });
 
 require('reflect-metadata');
-var lodash = require('lodash');
+var lodashEs = require('lodash-es');
 var commonTypes = require('common-types');
 var pluralize = require('pluralize');
 var serializedQuery = require('serialized-query');
 var firebaseKey = require('firebase-key');
-require('abstracted-firebase');
 
 function _typeof(obj) {
   if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") {
@@ -66,16 +65,20 @@ function _inherits(subClass, superClass) {
     throw new TypeError("Super expression must either be null or a function");
   }
 
-  _setPrototypeOf(subClass.prototype, superClass && superClass.prototype);
-
+  subClass.prototype = Object.create(superClass && superClass.prototype, {
+    constructor: {
+      value: subClass,
+      writable: true,
+      configurable: true
+    }
+  });
   if (superClass) _setPrototypeOf(subClass, superClass);
 }
 
 function _getPrototypeOf(o) {
-  _getPrototypeOf = Object.getPrototypeOf || function _getPrototypeOf(o) {
-    return o.__proto__;
+  _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) {
+    return o.__proto__ || Object.getPrototypeOf(o);
   };
-
   return _getPrototypeOf(o);
 }
 
@@ -88,14 +91,27 @@ function _setPrototypeOf(o, p) {
   return _setPrototypeOf(o, p);
 }
 
+function isNativeReflectConstruct() {
+  if (typeof Reflect === "undefined" || !Reflect.construct) return false;
+  if (Reflect.construct.sham) return false;
+  if (typeof Proxy === "function") return true;
+
+  try {
+    Date.prototype.toString.call(Reflect.construct(Date, [], function () {}));
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
+
 function _construct(Parent, args, Class) {
-  if (typeof Reflect !== "undefined" && Reflect.construct) {
+  if (isNativeReflectConstruct()) {
     _construct = Reflect.construct;
   } else {
     _construct = function _construct(Parent, args, Class) {
       var a = [null];
       a.push.apply(a, args);
-      var Constructor = Parent.bind.apply(Parent, a);
+      var Constructor = Function.bind.apply(Parent, a);
       var instance = new Constructor();
       if (Class) _setPrototypeOf(instance, Class.prototype);
       return instance;
@@ -109,6 +125,8 @@ function _wrapNativeSuper(Class) {
   var _cache = typeof Map === "function" ? new Map() : undefined;
 
   _wrapNativeSuper = function _wrapNativeSuper(Class) {
+    if (Class === null) return null;
+
     if (typeof Class !== "function") {
       throw new TypeError("Super expression must either be null or a function");
     }
@@ -119,7 +137,9 @@ function _wrapNativeSuper(Class) {
       _cache.set(Class, Wrapper);
     }
 
-    function Wrapper() {}
+    function Wrapper() {
+      return _construct(Class, arguments, _getPrototypeOf(this).constructor);
+    }
 
     Wrapper.prototype = Object.create(Class.prototype, {
       constructor: {
@@ -129,9 +149,7 @@ function _wrapNativeSuper(Class) {
         configurable: true
       }
     });
-    return _setPrototypeOf(Wrapper, _setPrototypeOf(function Super() {
-      return _construct(Class, arguments, _getPrototypeOf(this).constructor);
-    }, Class));
+    return _setPrototypeOf(Wrapper, Class);
   };
 
   return _wrapNativeSuper(Class);
@@ -176,10 +194,10 @@ function _nonIterableSpread() {
 var _this = undefined;
 
 function push(target, path, value) {
-  if (Array.isArray(lodash.get(target, path))) {
-    lodash.get(target, path).push(value);
+  if (Array.isArray(lodashEs.get(target, path))) {
+    lodashEs.get(target, path).push(value);
   } else {
-    lodash.set(target, path, [value]);
+    lodashEs.set(target, path, [value]);
   }
 }
 /** Properties accumlated by propertyDecorators and grouped by schema */
@@ -425,6 +443,8 @@ var chalk;
 var VerboseError =
 /*#__PURE__*/
 function (_Error) {
+  _inherits(VerboseError, _Error);
+
   _createClass(VerboseError, null, [{
     key: "setStackParser",
 
@@ -514,8 +534,6 @@ function (_Error) {
       };
     }
   }]);
-
-  _inherits(VerboseError, _Error);
 
   return VerboseError;
 }(_wrapNativeSuper(Error));
@@ -931,7 +949,7 @@ function () {
 
     /** the singular name of the model */
     get: function get() {
-      return lodash.camelCase(this._schema.constructor.name);
+      return lodashEs.camelCase(this._schema.constructor.name);
     }
   }, {
     key: "pluralName",
@@ -1871,8 +1889,6 @@ function () {
 
   return List$$1;
 }();
-
-// Named Exports
 
 exports.fbKey = firebaseKey.key;
 exports.property = property;

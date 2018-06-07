@@ -1,5 +1,5 @@
 // tslint:disable-next-line:no-implicit-dependencies
-import pushKey, { RealTimeDB } from "abstracted-firebase";
+import { RealTimeDB } from "abstracted-firebase";
 import { BaseSchema, ISchemaOptions } from "./index";
 import { createError, fk, IDictionary } from "common-types";
 import { Model, ILogger } from "./model";

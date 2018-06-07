@@ -1,7 +1,6 @@
 import "reflect-metadata";
 import {
   BaseSchema,
-  RelationshipPolicy,
   ISchemaMetaProperties,
   ISchemaRelationshipMetaProperties
 } from "../index";
@@ -11,7 +10,7 @@ import {
   ClassDecorator,
   ReflectionProperty
 } from "common-types";
-import { set, get } from "lodash";
+import { set, get } from "lodash-es";
 
 function push(target: IDictionary, path: string, value: ISchemaMetaProperties) {
   if (Array.isArray(get(target, path))) {

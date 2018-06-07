@@ -2,9 +2,7 @@ import { BaseSchema, ISchemaOptions, Record } from "./index";
 import { SerializedQuery, IComparisonOperator } from "serialized-query";
 import { Model, IModelOptions } from "./model";
 import { epochWithMilliseconds } from "common-types";
-import RealTimeDB from "abstracted-firebase";
-
-export { RealTimeDB } from "abstracted-firebase";
+import { RealTimeDB } from "abstracted-firebase";
 
 const DEFAULT_IF_NOT_FOUND = "__DO_NOT_USE__";
 

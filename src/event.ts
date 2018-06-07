@@ -1,6 +1,6 @@
 import { Model } from "./index";
 import { SerializedQuery } from "serialized-query";
-import { debounce } from "lodash";
+import { debounce } from "lodash-es";
 import { snapshotToHash } from "typed-conversions";
 import { rtdb } from "firebase-api-surface";
 //#region generalized structures

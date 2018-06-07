@@ -4,7 +4,7 @@ import { VerboseError } from "./VerboseError";
 import { BaseSchema, Record, List } from "./index";
 import { SchemaCallback } from "firemock";
 import * as pluralize from "pluralize";
-import { camelCase } from "lodash";
+import { camelCase } from "lodash-es";
 import { SerializedQuery } from "serialized-query";
 import { slashNotation } from "./util";
 import { key as fbk } from "firebase-key";

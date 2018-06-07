@@ -4,7 +4,6 @@ export type NonProperties<T> = {
 }[keyof T];
 export type Properties<T> = Pick<T, NonProperties<T>>;
 import { IDictionary, datetime, epoch } from "common-types";
-import { set } from "lodash";
 import { property } from "./decorators/property";
 import { ISchemaOptions, ISchemaMetaProperties } from "./decorators/schema";
 
