@@ -1,5 +1,5 @@
 import {
-  Model,
+  OldOldModel,
   BaseSchema,
   property,
   constrainedProperty,
@@ -13,7 +13,7 @@ import {
   ownedBy,
   hasMany,
   inverse
-} from "../../src/index";
+} from "../../src";
 import { Company } from "./company";
 import { IDictionary } from "common-types";
 import { pushKey } from "../../src/decorators/property";

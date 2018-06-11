@@ -2,7 +2,7 @@
 import { RealTimeDB } from "abstracted-firebase";
 import { BaseSchema, ISchemaOptions } from ".";
 import { createError, fk, IDictionary } from "common-types";
-import { Model, ILogger } from "./model";
+import { OldModel, ILogger } from "./model";
 import { key as fbk } from "firebase-key";
 import { FireModel } from "./FireModel";
 
@@ -40,7 +40,7 @@ export class Record<T extends BaseSchema> extends FireModel<T> {
     schema: new () => T,
     options: IRecordOptions = {}
   ) {
-    const model = Model.create(schema, options);
+    const model = OldModel.create(schema, options);
     const record = new Record<T>(model, options);
 
     return record;
@@ -108,7 +108,7 @@ export class Record<T extends BaseSchema> extends FireModel<T> {
   private _writeOperations: IWriteOperation[] = [];
   private _data?: Partial<T>;
 
-  constructor(private _model: Model<T>, options: IRecordOptions = {}) {
+  constructor(private _model: OldModel<T>, options: IRecordOptions = {}) {
     super();
     this._data = new _model.schemaClass();
   }
@@ -430,7 +430,7 @@ export class Record<T extends BaseSchema> extends FireModel<T> {
 
     if (!this.db) {
       const e = new Error(
-        `Attempt to save Record failed as the Database has not been connected yet. Try setting Model.defaultDb first.`
+        `Attempt to save Record failed as the Database has not been connected yet. Try settingFireModel first.`
       );
       e.name = "FiremodelError";
       throw e;

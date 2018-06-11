@@ -1,6 +1,6 @@
 // tslint:disable:no-implicit-dependencies
 import {
-  Model,
+  OldModel,
   BaseSchema,
   property,
   constrainedProperty,
@@ -78,7 +78,7 @@ describe("property decorator: ", () => {
     expect(Reflect.getMetadata("tags", myclass).pushKey).to.equal(true);
     expect(myclass.META.pushKeys).to.include("tags");
     expect(myclass.META.pushKeys).to.have.lengthOf(1);
-    const model = new Model<Klass>(Klass, new DB({ mocking: true }));
+    const model = new OldModel<Klass>(Klass, new DB({ mocking: true }));
     expect(model.pushKeys).to.include("tags");
     const record = Record.create(Klass);
     expect(record.META.pushKeys).to.include("tags");
@@ -123,7 +123,7 @@ describe("relationship decorators: ", () => {
     expect(ids).to.include("employerId");
   });
   it("@relationships show up on Model", async () => {
-    const PersonModel = new Model<Person>(Person, new DB({ mocking: true }));
+    const PersonModel = new OldModel<Person>(Person, new DB({ mocking: true }));
     expect(PersonModel.relationships.map(p => p.property)).to.include("fatherId");
     expect(PersonModel.relationships.map(p => p.property)).to.include("children");
   });
@@ -142,7 +142,7 @@ describe("relationship decorators: ", () => {
   });
 
   it("@properties show up on Model", async () => {
-    const PersonModel = new Model<Person>(Person, new DB({ mocking: true }));
+    const PersonModel = new OldModel<Person>(Person, new DB({ mocking: true }));
     expect(PersonModel.properties.map(p => p.property)).to.include("name");
     expect(PersonModel.properties.map(p => p.property)).to.include("lastUpdated");
   });

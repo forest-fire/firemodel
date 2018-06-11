@@ -1,5 +1,5 @@
 // tslint:disable:no-implicit-dependencies
-import { Model, BaseSchema } from "../src/index";
+import { OldModel, BaseSchema } from "../src/index";
 import { DB } from "abstracted-admin";
 import { SchemaCallback } from "firemock";
 import * as chai from "chai";
@@ -12,7 +12,7 @@ const personMock: SchemaCallback<Person> = h => () => ({
 
 export class Person extends BaseSchema {
   public static create(db) {
-    const m = new Model<Person>(Person, db);
+    const m = new OldModel<Person>(Person, db);
     m.mockGenerator = personMock;
     return m;
   }

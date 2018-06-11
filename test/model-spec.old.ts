@@ -1,5 +1,5 @@
 // tslint:disable:no-implicit-dependencies
-import { Model, BaseSchema, Record, List } from "../src/index";
+import { OldModel, BaseSchema, Record, List } from "../src";
 import { DB } from "abstracted-admin";
 import * as chai from "chai";
 const expect = chai.expect;
@@ -38,7 +38,7 @@ describe("Model", () => {
   });
 
   it("modelName and pluralName properties are correct", () => {
-    const person = new Model<Person>(Person, db);
+    const person = new OldModel<Person>(Person, db);
     expect(person.modelName).to.equal("person");
     expect(person.pluralName).to.equal("people");
     person.pluralName = "testing";
@@ -46,7 +46,7 @@ describe("Model", () => {
   });
 
   it("getRecord() retrieves a record from the DB", async () => {
-    const PersonModel = new Model<Person>(Person, db);
+    const PersonModel = new OldModel<Person>(Person, db);
     await db.set<Person>("/authenticated/people/1234", {
       name: "Billy Bob",
       age: 45
@@ -68,7 +68,7 @@ describe("Model", () => {
     db.mock.queueSchema<Person>("person", 1, { name: "Roger Rabbit" });
     db.mock.queueSchema<Person>("person", 2, { name: "John Smith", age: 100 });
     db.mock.generate();
-    const PersonModel = new Model<Person>(Person, db);
+    const PersonModel = new OldModel<Person>(Person, db);
     const roger = await PersonModel.findRecord("name", "Roger Rabbit");
     expect(roger).to.be.instanceof(Record);
     expect(roger.data.name).to.equal("Roger Rabbit");
@@ -88,7 +88,7 @@ describe("Model", () => {
       }))
       .pathPrefix("authenticated");
     db.mock.queueSchema<Person>("person", 50);
-    const PersonModel = new Model<Person>(Person, db);
+    const PersonModel = new OldModel<Person>(Person, db);
     try {
       const doesNotExist = await PersonModel.findRecord("age", 500);
       expect(false, "Should have thrown error when no result found").to.equal(true);
@@ -106,7 +106,7 @@ describe("Model", () => {
       .pathPrefix("authenticated");
     db.mock.queueSchema<Person>("person", 50);
     db.mock.generate();
-    const PersonModel = new Model<Person>(Person, db);
+    const PersonModel = new OldModel<Person>(Person, db);
     const list = await PersonModel.getAll();
     expect(list).to.be.instanceof(List);
     expect(list.data).to.an("array");

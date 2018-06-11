@@ -1,6 +1,6 @@
 // tslint:disable:no-implicit-dependencies
 import {
-  Model,
+  OldModel,
   BaseSchema,
   Record,
   List,
@@ -22,7 +22,7 @@ describe("Model > Auditing: ", () => {
   });
 
   it("Audit records stored when schema has them configured on", async () => {
-    const CompanyModel = new Model<Company>(Company, db);
+    const CompanyModel = new OldModel<Company>(Company, db);
     const { id } = await CompanyModel.push({
       name: "Acme Corp",
       employees: 10
@@ -46,7 +46,7 @@ describe("Model > Auditing: ", () => {
   });
 
   it("Audit records NOT stored when schema has them configured off", async () => {
-    const PersonModel = new Model<Person>(Person, db);
+    const PersonModel = new OldModel<Person>(Person, db);
     const { id } = await PersonModel.push({ name: "Joe Jackson", age: 10 });
     await PersonModel.update(id, { age: 44 });
     await PersonModel.remove(id, false, { reason: "testing" });

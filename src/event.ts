@@ -1,4 +1,4 @@
-import { Model } from ".";
+import { OldModel } from ".";
 import { SerializedQuery } from "serialized-query";
 import { debounce } from "lodash";
 import { snapshotToHash } from "typed-conversions";
@@ -60,7 +60,7 @@ export interface IFMStartListening extends IFMAction {
  * @param dispatch The callback function which is called
  */
 export async function modelListener<T>(
-  model: Model<T>,
+  model: OldModel<T>,
   query: SerializedQuery<T>,
   dispatch = defaultDispatcher
 ) {
@@ -88,7 +88,7 @@ export async function modelListener<T>(
 
 const model_ready = (
   child_added: ChildEventCallback,
-  model: Model<any>,
+  model: OldModel<any>,
   dispatch = defaultDispatcher
 ) => {
   const started = new Date().getTime();
@@ -133,7 +133,7 @@ export function defaultDispatcher<T = IFMAction>(action: T): any {
 
 export const childEvent = <T>(
   eventType: rtdb.EventType,
-  model: Model<any>,
+  model: OldModel<any>,
   dispatch = defaultDispatcher
 ) => (snap: any, previous?: string) => {
   const action: IFMChildAction = {

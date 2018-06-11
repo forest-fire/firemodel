@@ -1,5 +1,5 @@
 // tslint:disable:no-implicit-dependencies
-import { Model, Record } from "../src/index";
+import { OldModel, Record } from "../src/index";
 import { DB } from "abstracted-admin";
 import * as chai from "chai";
 const expect = chai.expect;
@@ -11,7 +11,7 @@ describe("Relationship > ", () => {
   beforeEach(async () => {
     db = new DB({ mocking: true });
     await db.waitForConnection();
-    Model.defaultDb = db;
+    FireModel = db;
   });
 
   it("using addHasMany() on a hasMany relationship works", async () => {

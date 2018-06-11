@@ -17,7 +17,7 @@ export {
 } from "./decorators/schema";
 export { ILogger, IAuditRecord, FirebaseCrudOperations } from "./model";
 export { BaseSchema, RelationshipPolicy, RelationshipCardinality } from "./base-schema";
-export { Model } from "./model";
+export { OldModel } from "./model";
 export { Record } from "./record";
 export { List } from "./list";
 

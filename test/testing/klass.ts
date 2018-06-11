@@ -1,5 +1,5 @@
 import {
-  Model,
+  OldOldModel,
   BaseSchema,
   property,
   constrainedProperty,

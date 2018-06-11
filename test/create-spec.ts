@@ -1,6 +1,6 @@
 // tslint:disable:no-implicit-dependencies
-import { Model, BaseSchema, Record } from "../src/index";
-import {DB} from "abstracted-admin";
+import { OldModel, BaseSchema, Record } from "../src/index";
+import { DB } from "abstracted-admin";
 import { SchemaCallback } from "firemock";
 import * as chai from "chai";
 const expect = chai.expect;
@@ -12,7 +12,7 @@ const personMock: SchemaCallback<Person> = h => () => ({
 
 export class Person extends BaseSchema {
   public static create(db: DB) {
-    const m = new Model<Person>(Person, db);
+    const m = new OldModel<Person>(Person, db);
     m.mockGenerator = personMock;
     return m;
   }
@@ -23,10 +23,10 @@ export class Person extends BaseSchema {
 describe("Create a Model: ", async () => {
   it("can instantiate a Model", async () => {
     const db = new DB({ mocking: true });
-    const person = new Model<Person>(Person, db);
+    const person = new OldModel<Person>(Person, db);
 
     expect(person).to.be.an("object");
-    expect(person).to.be.an.instanceOf(Model);
+    expect(person).to.be.an.instanceOf(OldModel);
     expect(person.modelName).to.equal("person");
     // const record = await person.newRecord();
     // expect(record).to.be.an.instanceOf(Record);
@@ -35,10 +35,10 @@ describe("Create a Model: ", async () => {
 
   it("Model's create() method instantiates", async () => {
     const db = new DB({ mocking: true });
-    const person = Model.create(Person, { db });
+    const person = OldModel.create(Person, { db });
     person.pluralName = "foobar";
     expect(person).to.be.an("object");
-    expect(person).to.be.an.instanceOf(Model);
+    expect(person).to.be.an.instanceOf(OldModel);
     expect(person.modelName).to.equal("person");
     // const record = await person.newRecord();
     // expect(record.existsOnDB).to.equal(false);
@@ -52,14 +52,14 @@ describe("Create a Model: ", async () => {
 
   it("singular and plural names are right", () => {
     const db = new DB({ mocking: true });
-    const person = Model.create(Person, { db });
+    const person = OldModel.create(Person, { db });
     expect(person.modelName).to.equal("person");
     expect(person.pluralName).to.equal("people");
   });
 
   it("can override plural name by setting pluralName", () => {
     const db = new DB({ mocking: true });
-    const person = Model.create(Person, { db });
+    const person = OldModel.create(Person, { db });
     person.pluralName = "foobar";
     expect(person.modelName).to.equal("person");
     expect(person.pluralName).to.equal("foobar");

@@ -1,5 +1,5 @@
 // tslint:disable:no-implicit-dependencies
-import { Model, BaseSchema, Record, List } from "../src/index";
+import { OldModel, BaseSchema, Record, List } from "../src/index";
 import { DB, SerializedQuery } from "abstracted-admin";
 import * as chai from "chai";
 import * as helpers from "./testing/helpers";
@@ -7,16 +7,17 @@ const expect = chai.expect;
 import "reflect-metadata";
 import { Person } from "./testing/person";
 import { wait } from "common-types";
+import { FireModel } from "../src/FireModel";
 
 describe("List class: ", () => {
   let db: DB;
   beforeEach(async () => {
     db = new DB({ mocking: true });
     await db.waitForConnection();
-    Model.defaultDb = db;
+    FireModel.defaultDb = db;
   });
   it("can instantiate with new operator", () => {
-    const PersonModel = Model.create(Person, { db });
+    const PersonModel = OldModel.create(Person, { db });
     const list = new List<Person>(PersonModel);
     expect(list).to.be.instanceof(List);
     expect(list.length).to.equal(0);

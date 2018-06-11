@@ -70,7 +70,7 @@ export const baseLogger: ILogger = {
   error: (message: string) => console.error(`${this.modelName}/${this._key}: ${message}`)
 };
 
-export class Model<T extends BaseSchema> extends FireModel<T> {
+export class OldModel<T extends BaseSchema> extends FireModel<T> {
   public static set defaultDb(db: RealTimeDB) {
     FireModel.defaultDb = db;
   }
@@ -82,9 +82,9 @@ export class Model<T extends BaseSchema> extends FireModel<T> {
   public static auditBase = "logging/audit_logs";
 
   public static create<T>(schema: new () => T, options: IModelOptions = {}) {
-    const db = options.db || Model.defaultDb;
+    const db = options.db || OldModel.defaultDb;
     const logger = options.logger || baseLogger;
-    const model = new Model<T>(schema, db, logger);
+    const model = new OldModel<T>(schema, db, logger);
     return model;
   }
 
@@ -123,8 +123,8 @@ export class Model<T extends BaseSchema> extends FireModel<T> {
   constructor(private _schemaClass: new () => T, db: RealTimeDB, logger?: ILogger) {
     super();
     this._db = db;
-    if (!Model.defaultDb) {
-      Model.defaultDb = db;
+    if (!OldModel.defaultDb) {
+      OldModel.defaultDb = db;
     }
     this.logger = logger ? logger : baseLogger;
     this._schema = new this.schemaClass();
@@ -354,7 +354,7 @@ export class Model<T extends BaseSchema> extends FireModel<T> {
 
   public async getAuditTrail(filter: IAuditFilter = {}) {
     const { since, last } = filter;
-    const path = `${Model.auditBase}/${this.pluralName}`;
+    const path = `${OldModel.auditBase}/${this.pluralName}`;
     let query = SerializedQuery.path<IAuditRecord>(path);
     if (since) {
       const startAt = new Date(since).toISOString();
@@ -370,7 +370,7 @@ export class Model<T extends BaseSchema> extends FireModel<T> {
 
   //#region PRIVATE API
   private async audit(crud: string, when: number, key: string, info: IDictionary) {
-    const path = slashNotation(Model.auditBase, this.pluralName);
+    const path = slashNotation(OldModel.auditBase, this.pluralName);
     return this.db.push(path, {
       crud,
       when,

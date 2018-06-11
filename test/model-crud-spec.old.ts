@@ -1,5 +1,5 @@
 // tslint:disable:no-implicit-dependencies
-import { Model, Record, List } from "../src/index";
+import { OldModel, Record, List } from "../src";
 import { DB } from "abstracted-admin";
 import { SchemaCallback, Reference } from "firemock";
 import * as chai from "chai";
@@ -15,7 +15,7 @@ describe("Model > CRUD Ops: ", () => {
   });
 
   it("Write operations include both dbOffset and plural model name", async () => {
-    const PersonModel = new Model<Person>(Person, db);
+    const PersonModel = new OldModel<Person>(Person, db);
     const response = await PersonModel.push({
       name: "Charlie Chaplin",
       age: 84
@@ -69,7 +69,7 @@ describe("Model > CRUD Ops: ", () => {
   });
 
   it("Model.update() works", async () => {
-    const PersonModel = new Model<Person>(Person, db);
+    const PersonModel = new OldModel<Person>(Person, db);
     const charlie = await PersonModel.push({
       name: "Charlie Chaplin",
       age: 84
@@ -92,7 +92,7 @@ describe("Model > CRUD Ops: ", () => {
   });
 
   it("Model.remove() works with default params", async () => {
-    const PersonModel = new Model<Person>(Person, db);
+    const PersonModel = new OldModel<Person>(Person, db);
     const bob = await PersonModel.push({ name: "Bob Geldoff", age: 65 });
     const charlie = await PersonModel.push({
       name: "Charlie Chaplin",
@@ -107,7 +107,7 @@ describe("Model > CRUD Ops: ", () => {
   });
 
   it("Model.set() works when ID is present", async () => {
-    const PersonModel = new Model<Person>(Person, db);
+    const PersonModel = new OldModel<Person>(Person, db);
     await PersonModel.set({
       id: "bob",
       name: "Bobby Geldoff",
@@ -138,7 +138,7 @@ describe("Model > CRUD Ops: ", () => {
   });
 
   it("Model.remove() returns the previous value when asked for it", async () => {
-    const People = new Model<Person>(Person, db);
+    const People = new OldModel<Person>(Person, db);
     await People.push({ name: "Bob Geldoff", age: 65 });
     const ref = await People.push({
       name: "Charlie Chaplin",

@@ -1,5 +1,5 @@
 // tslint:disable:no-implicit-dependencies
-import { Model, Record, List } from "../src/index";
+import { OldModel, Record, List } from "../src";
 import { DB } from "abstracted-admin";
 import * as chai from "chai";
 const expect = chai.expect;
@@ -23,7 +23,7 @@ describe("Model > find API: ", () => {
     db.mock.queueSchema<Person>("person", 25, { age: 10 });
     db.mock.queueSchema<Person>("person", 25, { age: 70 });
     db.mock.generate();
-    const PersonModel = new Model<Person>(Person, db);
+    const PersonModel = new OldModel<Person>(Person, db);
     const olderPeople = await PersonModel.findAll("age", 70);
     expect(olderPeople).is.an.instanceOf(List);
     expect(olderPeople.length).to.equal(25);
@@ -40,7 +40,7 @@ describe("Model > find API: ", () => {
     db.mock.queueSchema<Person>("person", 25, { age: 60 });
     db.mock.queueSchema<Person>("person", 25, { age: 70 });
     db.mock.generate();
-    const PersonModel = new Model<Person>(Person, db);
+    const PersonModel = new OldModel<Person>(Person, db);
     const olderPeople = await PersonModel.findAll("age", ["=", 60]);
     expect(olderPeople).is.an.instanceOf(List);
     expect(olderPeople.length).to.equal(25);
@@ -57,7 +57,7 @@ describe("Model > find API: ", () => {
     db.mock.queueSchema<Person>("person", 25, { age: 60 });
     db.mock.queueSchema<Person>("person", 25, { age: 70 });
     db.mock.generate();
-    const PersonModel = new Model<Person>(Person, db);
+    const PersonModel = new OldModel<Person>(Person, db);
     const olderPeople = await PersonModel.findAll("age", [">", 60]);
     const allPeople = await PersonModel.getAll();
 
@@ -75,7 +75,7 @@ describe("Model > find API: ", () => {
     db.mock.queueSchema<Person>("person", 25, { age: 60 });
     db.mock.queueSchema<Person>("person", 25, { age: 70 });
     db.mock.generate();
-    const PersonModel = new Model<Person>(Person, db);
+    const PersonModel = new OldModel<Person>(Person, db);
     const olderPeople = await PersonModel.findAll("age", ["<", 20]);
     expect(olderPeople).is.an.instanceOf(List);
     expect(olderPeople.length).to.equal(25);
@@ -91,7 +91,7 @@ describe("Model > find API: ", () => {
     db.mock.queueSchema<Person>("person", 25, { age: 70 });
     db.mock.queueSchema<Person>("person", 1, { age: 64, name: "Bob" });
     db.mock.generate();
-    const People = new Model<Person>(Person, db);
+    const People = new OldModel<Person>(Person, db);
     const person = await People.findRecord("age", 64);
     expect(person).to.be.instanceOf(Record);
     expect(person.data).to.be.instanceof(Person);
@@ -110,7 +110,7 @@ describe("Model > find API: ", () => {
     db.mock.queueSchema<Person>("person", 1, { age: 64, name: "Bob" });
     db.mock.queueSchema<Person>("person", 1, { age: 64, name: "Roger" });
     db.mock.generate();
-    const People = new Model<Person>(Person, db);
+    const People = new OldModel<Person>(Person, db);
     const person = await People.findRecord("age", 64);
     expect(person.data.age).to.equal(64);
     expect(person.data.name).to.equal("Bob");
@@ -126,7 +126,7 @@ describe("Model > find API: ", () => {
     db.mock.queueSchema<Person>("person", 25, { age: 60 });
     db.mock.queueSchema<Person>("person", 1, { age: 64, name: "Bob" });
     db.mock.generate();
-    const People = new Model<Person>(Person, db);
+    const People = new OldModel<Person>(Person, db);
     try {
       await People.findRecord("age", 66);
       throw new Error("Should have thrown error when no records found");
@@ -138,7 +138,7 @@ describe("Model > find API: ", () => {
   });
 
   it("Model.findRecord throw error database is non-existant", async () => {
-    const People = new Model<Person>(Person, db);
+    const People = new OldModel<Person>(Person, db);
     try {
       await People.findRecord("age", 66);
       throw new Error("Should have thrown error when no records found");

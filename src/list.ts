@@ -1,6 +1,6 @@
 import { BaseSchema, ISchemaOptions, Record } from ".";
 import { SerializedQuery, IComparisonOperator } from "serialized-query";
-import { Model, IModelOptions } from "./model";
+import { OldModel, IModelOptions } from "./model";
 import { epochWithMilliseconds } from "common-types";
 import { FireModel } from "./FireModel";
 // tslint:disable-next-line:no-implicit-dependencies
@@ -19,7 +19,7 @@ export class List<T extends BaseSchema> extends FireModel<T> {
     schema: new () => T,
     options: IModelOptions = {}
   ) {
-    const model = Model.create(schema, options);
+    const model = OldModel.create(schema, options);
     return new List<T>(model);
   }
 
@@ -35,7 +35,7 @@ export class List<T extends BaseSchema> extends FireModel<T> {
     query: SerializedQuery,
     options: IModelOptions = {}
   ): Promise<List<T>> {
-    const model = Model.create(schema, options);
+    const model = OldModel.create(schema, options);
     query.setPath(model.dbPath);
     const list = List.create(schema, options);
 
@@ -169,7 +169,7 @@ export class List<T extends BaseSchema> extends FireModel<T> {
     return list;
   }
 
-  constructor(private _model: Model<T>, private _data: T[] = []) {
+  constructor(private _model: OldModel<T>, private _data: T[] = []) {
     super();
   }
 
