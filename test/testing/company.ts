@@ -1,6 +1,6 @@
 import {
   OldOldModel,
-  BaseSchema,
+  Model,
   property,
   constrainedProperty,
   constrain,
@@ -12,7 +12,7 @@ import {
 } from "../../src/index";
 
 @schema({ dbOffset: "authenticated", audit: true })
-export class Company extends BaseSchema {
+export class Company extends Model {
   @property
   @length(20)
   public name: string;

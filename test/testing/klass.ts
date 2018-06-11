@@ -1,6 +1,6 @@
 import {
   OldOldModel,
-  BaseSchema,
+  Model,
   property,
   constrainedProperty,
   constrain,
@@ -16,7 +16,7 @@ import { pushKey } from "../../src/decorators/property";
 /* tslint:disable:max-classes-per-file */
 export type Callback = (m: string) => boolean;
 
-export class SubKlass extends BaseSchema {
+export class SubKlass extends Model {
   @property public sub: string = "subklass";
 }
 

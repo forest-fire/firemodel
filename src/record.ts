@@ -1,8 +1,8 @@
 // tslint:disable-next-line:no-implicit-dependencies
 import { RealTimeDB } from "abstracted-firebase";
-import { BaseSchema, ISchemaOptions } from ".";
+import { Model, ISchemaOptions } from ".";
 import { createError, fk, IDictionary } from "common-types";
-import { OldModel, ILogger } from "./model";
+import { OldModel, ILogger } from "./old-model";
 import { key as fbk } from "firebase-key";
 import { FireModel } from "./FireModel";
 
@@ -23,7 +23,7 @@ export interface IRecordOptions {
   id?: string;
 }
 
-export class Record<T extends BaseSchema> extends FireModel<T> {
+export class Record<T extends Model> extends FireModel<T> {
   public static set defaultDb(db: RealTimeDB) {
     FireModel.defaultDb = db;
   }
@@ -36,7 +36,7 @@ export class Record<T extends BaseSchema> extends FireModel<T> {
    * creates a new -- and empty -- Record object; often used in
    * conjunction with the Record's initialize() method
    */
-  public static create<T extends BaseSchema>(
+  public static create<T extends Model>(
     schema: new () => T,
     options: IRecordOptions = {}
   ) {
@@ -55,7 +55,7 @@ export class Record<T extends BaseSchema> extends FireModel<T> {
    * @param newRecord the data for the new record
    * @param options
    */
-  public static async add<T extends BaseSchema>(
+  public static async add<T extends Model>(
     schema: new () => T,
     newRecord: T,
     options: IRecordOptions = {}
@@ -83,7 +83,7 @@ export class Record<T extends BaseSchema> extends FireModel<T> {
    * Intent should be that this record already exists in the
    * database. If you want to add to the database then use add()
    */
-  public static load<T extends BaseSchema>(
+  public static load<T extends Model>(
     schema: new () => T,
     record: T,
     options: IRecordOptions = {}
@@ -94,7 +94,7 @@ export class Record<T extends BaseSchema> extends FireModel<T> {
     return r;
   }
 
-  public static async get<T extends BaseSchema>(
+  public static async get<T extends Model>(
     schema: new () => T,
     id: string,
     options: IRecordOptions = {}

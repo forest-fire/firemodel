@@ -1,6 +1,6 @@
-import { BaseSchema, ISchemaOptions, Record } from ".";
+import { Model, ISchemaOptions, Record } from ".";
 import { SerializedQuery, IComparisonOperator } from "serialized-query";
-import { OldModel, IModelOptions } from "./model";
+import { OldModel, IModelOptions } from "./old-model";
 import { epochWithMilliseconds } from "common-types";
 import { FireModel } from "./FireModel";
 // tslint:disable-next-line:no-implicit-dependencies
@@ -8,14 +8,14 @@ import { RealTimeDB } from "abstracted-firebase";
 
 const DEFAULT_IF_NOT_FOUND = "__DO_NOT_USE__";
 
-export class List<T extends BaseSchema> extends FireModel<T> {
+export class List<T extends Model> extends FireModel<T> {
   public static set defaultDb(db: RealTimeDB) {
     FireModel.defaultDb = db;
   }
   public static get defaultDb() {
     return FireModel.defaultDb;
   }
-  public static create<T extends BaseSchema>(
+  public static create<T extends Model>(
     schema: new () => T,
     options: IModelOptions = {}
   ) {
@@ -30,7 +30,7 @@ export class List<T extends BaseSchema> extends FireModel<T> {
    * @param query the serialized query; note that this LIST will override the path of the query
    * @param options model options
    */
-  public static async fromQuery<T extends BaseSchema>(
+  public static async fromQuery<T extends Model>(
     schema: new () => T,
     query: SerializedQuery,
     options: IModelOptions = {}
@@ -49,7 +49,7 @@ export class List<T extends BaseSchema> extends FireModel<T> {
    * @param schema the schema type
    * @param options model options
    */
-  public static async all<T extends BaseSchema>(
+  public static async all<T extends Model>(
     schema: new () => T,
     options: IModelOptions = {}
   ): Promise<List<T>> {
@@ -67,7 +67,7 @@ export class List<T extends BaseSchema> extends FireModel<T> {
    * @param howMany the number of records to bring back
    * @param options model options
    */
-  public static async first<T extends BaseSchema>(
+  public static async first<T extends Model>(
     schema: new () => T,
     howMany: number,
     options: IModelOptions = {}
@@ -88,7 +88,7 @@ export class List<T extends BaseSchema> extends FireModel<T> {
    * @param offset start at an offset position (useful for paging)
    * @param options
    */
-  public static async recent<T extends BaseSchema>(
+  public static async recent<T extends Model>(
     schema: new () => T,
     howMany: number,
     offset: number = 0,
@@ -109,7 +109,7 @@ export class List<T extends BaseSchema> extends FireModel<T> {
    * @param since  the datetime in miliseconds
    * @param options
    */
-  public static async since<T extends BaseSchema>(
+  public static async since<T extends Model>(
     schema: new () => T,
     since: epochWithMilliseconds,
     options: IModelOptions = {}
@@ -129,7 +129,7 @@ export class List<T extends BaseSchema> extends FireModel<T> {
     return list;
   }
 
-  public static async inactive<T extends BaseSchema>(
+  public static async inactive<T extends Model>(
     schema: new () => T,
     howMany: number,
     options: IModelOptions = {}
@@ -140,7 +140,7 @@ export class List<T extends BaseSchema> extends FireModel<T> {
     return list;
   }
 
-  public static async last<T extends BaseSchema>(
+  public static async last<T extends Model>(
     schema: new () => T,
     howMany: number,
     options: IModelOptions = {}
@@ -151,7 +151,7 @@ export class List<T extends BaseSchema> extends FireModel<T> {
     return list;
   }
 
-  public static async where<T extends BaseSchema, K extends keyof T>(
+  public static async where<T extends Model, K extends keyof T>(
     schema: new () => T,
     property: K,
     value: T[K] | [IComparisonOperator, T[K]],

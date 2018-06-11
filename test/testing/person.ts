@@ -1,6 +1,6 @@
 import {
-  OldOldModel,
-  BaseSchema,
+  OldModel,
+  Model,
   property,
   constrainedProperty,
   constrain,
@@ -19,7 +19,7 @@ import { IDictionary } from "common-types";
 import { pushKey } from "../../src/decorators/property";
 
 @schema({ dbOffset: "authenticated" })
-export class Person extends BaseSchema {
+export class Person extends Model {
   // prettier-ignore
   @property @length(20) public name: string;
   @property public age?: number;

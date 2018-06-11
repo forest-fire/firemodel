@@ -12,7 +12,7 @@ const db = new DB();
 FireModel.defaultDb = db;
 
 describe("Tests using REAL db →", () => {
-  it("List.since() works", async () => {
+  it.skip("List.since() works", async () => {
     try {
       await Record.add(Person, {
         name: "Carl Yazstrimski",
