@@ -1,17 +1,6 @@
-import {
-  OldOldModel,
-  Model,
-  property,
-  constrainedProperty,
-  constrain,
-  desc,
-  min,
-  max,
-  length,
-  schema
-} from "../../src/index";
+import { length, model, property, Model } from "../../src/index";
 
-@schema({ dbOffset: "authenticated", audit: true })
+@model({ dbOffset: "authenticated", audit: true })
 export class Company extends Model {
   @property
   @length(20)

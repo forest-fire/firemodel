@@ -59,17 +59,6 @@ export const propertyDecorator = (
       push(relationshipsBySchema, target.constructor.name, meta);
     }
   }
-
-  // Reflect.defineProperty(target, key, {
-  //   get: () => {
-  //     return this[key];
-  //   },
-  //   set: (value: any) => {
-  //     this[key] = value;
-  //   },
-  //   enumerable: true,
-  //   configurable: true
-  // });
 };
 
 /** lookup meta data for schema properties */

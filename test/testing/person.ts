@@ -8,7 +8,7 @@ import {
   min,
   max,
   length,
-  schema,
+  model,
   fk,
   ownedBy,
   hasMany,
@@ -18,7 +18,7 @@ import { Company } from "./company";
 import { IDictionary } from "common-types";
 import { pushKey } from "../../src/decorators/property";
 
-@schema({ dbOffset: "authenticated" })
+@model({ dbOffset: "authenticated" })
 export class Person extends Model {
   // prettier-ignore
   @property @length(20) public name: string;
