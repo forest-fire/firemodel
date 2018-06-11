@@ -24,6 +24,12 @@ export interface IRecordOptions {
 }
 
 export class Record<T extends BaseSchema> extends FireModel<T> {
+  public static set defaultDb(db: RealTimeDB) {
+    FireModel.defaultDb = db;
+  }
+  public static get defaultDb() {
+    return FireModel.defaultDb;
+  }
   /**
    * create
    *

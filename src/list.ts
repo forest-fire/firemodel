@@ -3,10 +3,18 @@ import { SerializedQuery, IComparisonOperator } from "serialized-query";
 import { Model, IModelOptions } from "./model";
 import { epochWithMilliseconds } from "common-types";
 import { FireModel } from "./FireModel";
+// tslint:disable-next-line:no-implicit-dependencies
+import { RealTimeDB } from "abstracted-firebase";
 
 const DEFAULT_IF_NOT_FOUND = "__DO_NOT_USE__";
 
 export class List<T extends BaseSchema> extends FireModel<T> {
+  public static set defaultDb(db: RealTimeDB) {
+    FireModel.defaultDb = db;
+  }
+  public static get defaultDb() {
+    return FireModel.defaultDb;
+  }
   public static create<T extends BaseSchema>(
     schema: new () => T,
     options: IModelOptions = {}

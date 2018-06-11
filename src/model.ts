@@ -71,12 +71,13 @@ export const baseLogger: ILogger = {
 };
 
 export class Model<T extends BaseSchema> extends FireModel<T> {
-  public static set _defaultDb(db: RealTimeDB) {
-    FireModel._defaultDb = db;
+  public static set defaultDb(db: RealTimeDB) {
+    FireModel.defaultDb = db;
+  }
+  public static get defaultDb() {
+    return FireModel.defaultDb;
   }
   //#region PROPERTIES
-  public static defaultDb: import("abstracted-firebase").RealTimeDB = null;
-
   /** The base path in the database to store audit logs */
   public static auditBase = "logging/audit_logs";
 
