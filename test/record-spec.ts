@@ -1,17 +1,18 @@
 // tslint:disable:no-implicit-dependencies
 import { Model, Record } from "../src/index";
-import DB from "abstracted-admin";
+import { DB } from "abstracted-admin";
 import * as chai from "chai";
 const expect = chai.expect;
 import "reflect-metadata";
 import { Person } from "./testing/person";
+import { FireModel } from "../src/FireModel";
 
 describe("Record > ", () => {
   let db: DB;
-  beforeEach(() => {
+  beforeEach(async () => {
     db = new DB({ mocking: true });
-    Model.defaultDb = db;
-    db.resetMockDb();
+    await db.waitForConnection();
+    FireModel.defaultDb = db;
     const now = new Date().getTime();
     db.mock
       .addSchema("person", h => () => ({

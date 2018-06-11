@@ -1,10 +1,9 @@
 import { IDictionary, datetime, createError } from "common-types";
-import { RealTimeDB } from "abstracted-firebase";
 import { VerboseError } from "./VerboseError";
-import { BaseSchema, Record, List } from "./index";
+import { BaseSchema, Record, List } from ".";
 import { SchemaCallback } from "firemock";
 import * as pluralize from "pluralize";
-import { camelCase } from "lodash-es";
+import { camelCase } from "lodash";
 import { SerializedQuery } from "serialized-query";
 import { slashNotation } from "./util";
 import { key as fbk } from "firebase-key";
@@ -12,6 +11,9 @@ import {
   ISchemaRelationshipMetaProperties,
   ISchemaMetaProperties
 } from "./decorators/schema";
+import { FireModel } from "./FireModel";
+// tslint:disable-next-line:no-implicit-dependencies
+import { RealTimeDB } from "abstracted-firebase";
 
 export type ModelProperty<T> = keyof T | keyof IBaseModel;
 export type PartialModel<T> = { [P in keyof ModelProperty<T>]?: ModelProperty<T>[P] };
@@ -53,7 +55,7 @@ export interface IAuditRecord {
 
 export interface IModelOptions {
   logger?: ILogger;
-  db?: RealTimeDB;
+  db?: import("abstracted-firebase").RealTimeDB;
 }
 
 export const baseLogger: ILogger = {
@@ -68,9 +70,12 @@ export const baseLogger: ILogger = {
   error: (message: string) => console.error(`${this.modelName}/${this._key}: ${message}`)
 };
 
-export class Model<T extends BaseSchema> {
+export class Model<T extends BaseSchema> extends FireModel<T> {
+  public static set _defaultDb(db: RealTimeDB) {
+    FireModel._defaultDb = db;
+  }
   //#region PROPERTIES
-  public static defaultDb: RealTimeDB = null;
+  public static defaultDb: import("abstracted-firebase").RealTimeDB = null;
 
   /** The base path in the database to store audit logs */
   public static auditBase = "logging/audit_logs";
@@ -115,6 +120,7 @@ export class Model<T extends BaseSchema> {
   //#endregion
 
   constructor(private _schemaClass: new () => T, db: RealTimeDB, logger?: ILogger) {
+    super();
     this._db = db;
     if (!Model.defaultDb) {
       Model.defaultDb = db;
@@ -264,7 +270,7 @@ export class Model<T extends BaseSchema> {
     return ref;
   }
 
-  /** Push a new record onto a model's list using Firebase a push-ID */
+  /** Push a new record onto a model's list and returns a Firebase reference to this new record */
   public async push(newRecord: Partial<T>, auditInfo: IDictionary = {}) {
     const now = this.now();
     const id = fbk();
@@ -276,10 +282,20 @@ export class Model<T extends BaseSchema> {
       ...auditInfo,
       ...{ properties: Object.keys(newRecord) }
     };
+    console.log(newRecord, auditInfo);
 
-    return Record.get(this._schemaClass, id);
+    const response = await this.crud(
+      "push",
+      now,
+      slashNotation(this.dbPath, id),
+      newRecord,
+      auditInfo
+    );
+
+    return response;
   }
 
+  /** non-destructive update to a record's data */
   public async update(key: string, updates: Partial<T>, auditInfo: IDictionary = {}) {
     const now = this.now();
     auditInfo = {
@@ -381,8 +397,6 @@ export class Model<T extends BaseSchema> {
   ) {
     const isAuditable = this._schema.META.audit;
     if (isAuditable) {
-      console.log("auditing: ", op);
-
       await this.audit(op, when, key, auditInfo);
     }
 

@@ -1,12 +1,12 @@
-import { BaseSchema, ISchemaOptions, Record } from "./index";
+import { BaseSchema, ISchemaOptions, Record } from ".";
 import { SerializedQuery, IComparisonOperator } from "serialized-query";
 import { Model, IModelOptions } from "./model";
 import { epochWithMilliseconds } from "common-types";
-import { RealTimeDB } from "abstracted-firebase";
+import { FireModel } from "./FireModel";
 
 const DEFAULT_IF_NOT_FOUND = "__DO_NOT_USE__";
 
-export class List<T extends BaseSchema> {
+export class List<T extends BaseSchema> extends FireModel<T> {
   public static create<T extends BaseSchema>(
     schema: new () => T,
     options: IModelOptions = {}
@@ -116,7 +116,6 @@ export class List<T extends BaseSchema> {
 
     // const query = new SerializedQuery().orderByChild("lastUpdated").startAt(since);
     const query = new SerializedQuery<T>().orderByChild("lastUpdated").startAt(since);
-    console.log("QUERY", query);
     const list = await List.fromQuery(schema, query, options);
 
     return list;
@@ -162,13 +161,15 @@ export class List<T extends BaseSchema> {
     return list;
   }
 
-  constructor(private _model: Model<T>, private _data: T[] = []) {}
+  constructor(private _model: Model<T>, private _data: T[] = []) {
+    super();
+  }
 
   public get length(): number {
     return this._data.length;
   }
 
-  protected get db(): RealTimeDB {
+  protected get db(): import("abstracted-firebase").RealTimeDB {
     return this._model.db;
   }
 
@@ -237,7 +238,6 @@ export class List<T extends BaseSchema> {
     value: T[typeof prop],
     defaultIfNotFound = DEFAULT_IF_NOT_FOUND
   ): Record<T> {
-    console.log(this._data);
     const list = this.filterWhere(prop, value);
 
     if (list.length > 0) {

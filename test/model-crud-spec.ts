@@ -1,31 +1,17 @@
 // tslint:disable:no-implicit-dependencies
-import {
-  Model,
-  BaseSchema,
-  Record,
-  List,
-  IAuditRecord,
-  FirebaseCrudOperations
-} from "../src/index";
-import DB from "abstracted-admin";
-import { SchemaCallback } from "firemock";
+import { Model, Record, List } from "../src/index";
+import { DB } from "abstracted-admin";
+import { SchemaCallback, Reference } from "firemock";
 import * as chai from "chai";
-import * as helpers from "./testing/helpers";
 const expect = chai.expect;
 import "reflect-metadata";
-import { Klass, ContainedKlass, SubKlass } from "./testing/klass";
 import { Person } from "./testing/person";
-import { Company } from "./testing/company";
-import { VerboseError } from "../src/VerboseError";
-import { get as getStackFrame, parse as stackParse } from "stack-trace";
-
-VerboseError.setStackParser((context: VerboseError) => stackParse(context));
 
 describe("Model > CRUD Ops: ", () => {
   let db: DB;
-  beforeEach(() => {
+  beforeEach(async () => {
     db = new DB({ mocking: true });
-    db.resetMockDb();
+    await db.waitForConnection();
   });
 
   it("Write operations include both dbOffset and plural model name", async () => {
@@ -34,10 +20,12 @@ describe("Model > CRUD Ops: ", () => {
       name: "Charlie Chaplin",
       age: 84
     });
-    const id = response.id;
+
+    const id = response.key.split("/").pop();
+
     let peeps = await db.getList<Person>(`authenticated/people`);
+
     expect(PersonModel.pluralName).to.equal("people");
-    expect(db.mock.db.authenticated.people[id]).to.not.equal("undefined");
     expect(peeps).to.be.an("array");
     expect(peeps[0].id).to.equal(id);
     expect(peeps[0].age).to.equal(84);
@@ -86,11 +74,15 @@ describe("Model > CRUD Ops: ", () => {
       name: "Charlie Chaplin",
       age: 84
     });
-    expect(charlie).to.be.an.instanceOf(Record);
-    expect(charlie.data.age).to.equal(84);
+
+    expect(charlie).to.be.an.instanceOf(Reference);
+    const snap = await charlie.once("value");
+    expect(snap.val().age).to.equal(84);
 
     await PersonModel.update(charlie.id, { age: 100 });
     const list = await List.where(Person, "name", "Charlie Chaplin");
+    console.log(list.data);
+
     expect(list)
       .is.an.instanceOf(List)
       .and.has.length(1);
@@ -162,7 +154,6 @@ describe("Model > CRUD Ops: ", () => {
   });
 
   it("Model.remove() doesn't return the previous value by default", async () => {
-    db.resetMockDb();
     const People = Model.create(Person, { db });
     const bob = await People.push({ name: "Bob Geldoff", age: 65 });
     const charlie = await People.push({

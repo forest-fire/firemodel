@@ -12,7 +12,7 @@ import {
   schema,
   Record
 } from "../src/index";
-import DB from "abstracted-admin";
+import { DB } from "abstracted-admin";
 import { SchemaCallback } from "firemock";
 import * as chai from "chai";
 import * as helpers from "./testing/helpers";

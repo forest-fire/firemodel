@@ -1,16 +1,12 @@
 import "reflect-metadata";
-import {
-  BaseSchema,
-  ISchemaMetaProperties,
-  ISchemaRelationshipMetaProperties
-} from "../index";
+import { BaseSchema, ISchemaMetaProperties, ISchemaRelationshipMetaProperties } from "..";
 import {
   IDictionary,
   PropertyDecorator,
   ClassDecorator,
   ReflectionProperty
 } from "common-types";
-import { set, get } from "lodash-es";
+import { set, get } from "lodash";
 
 function push(target: IDictionary, path: string, value: ISchemaMetaProperties) {
   if (Array.isArray(get(target, path))) {
@@ -33,7 +29,7 @@ export const propertyDecorator = (
    */
   property?: string
 ) => (target: BaseSchema, key: string): void => {
-  const reflect = Reflect.getMetadata("design:type", target, key);
+  const reflect: IDictionary = Reflect.getMetadata("design:type", target, key) || {};
   const meta: ISchemaMetaProperties = {
     ...Reflect.getMetadata(key, target),
     ...{ type: reflect.name },

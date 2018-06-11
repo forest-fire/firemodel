@@ -1,13 +1,11 @@
-# Models
-
 ## Introduction
 
 A model is functionally the happy marriage between a defined `Schema` class and _database access_. Within this "marriage" you get a straightforward API surface for
 
 > Note: database access is provided by either:
 
-> * **abstracted-admin** - for nodejs projects which are allowed admin priv.
-> * **abstracted-client** - for frontend JS projects
+> - **abstracted-admin** - for nodejs projects which are allowed admin priv.
+> - **abstracted-client** - for frontend JS projects
 
 > Both of these projects fulfill the `IAbstractedFirebase` interface which the firemodel will use as the supported contract for database access.
 
@@ -103,10 +101,10 @@ So let's quickly review the types of events that Firebase provides:
 
 1.  **Value Events** - a _value_ event gives you back the entire tree of data at the given path everytime a change takes place. The path you listen to on a value event can be a single value, a Record, or a list of Record but typically its best to use value events for relatively "leaf nodes" which in the case of Firemodel would be a `Record` more than a `List`.
 2.  **Child Events** - _child_ events assume that the path being listened to is a `List` of records and then you can choose what things amoungst these children you care about:
-    * **child_added** - fires initially for each record in the query resultset but from then on only fires when a new `Record` is added
-    * **child_removed** - only fires when an existing `Record` is removed
-    * **child_changed** - fires whenever a child `Record` is changed (anywhere in the graph below the Record)
-    * **child_moved** - fires whenever a `Record` has changed in it's sort order
+    - **child_added** - fires initially for each record in the query resultset but from then on only fires when a new `Record` is added
+    - **child_removed** - only fires when an existing `Record` is removed
+    - **child_changed** - fires whenever a child `Record` is changed (anywhere in the graph below the Record)
+    - **child_moved** - fires whenever a `Record` has changed in it's sort order
 
 Subscribing to state change events in **Firemodel** is done through the `listenTo` and `listenToRecord` methods. For performance reasons, listening to an individual [`Record`](./record.md) will be done with a _value_ event, while listening to a [`List`](./list.md) will be a combination of the _child events_:
 
@@ -127,21 +125,21 @@ PersonModel.listenToRecord("1234", listener);
 
 The events which your listener will receive depend on whether you are listening to a specific RECORD or a LIST:
 
-* **LIST**
-  * `@firebase/CHILD_ADDED` - new record
-  * `@firebase/CHILD_REMOVED` - record removed
-  * `@firebase/CHILD_MOVED` - record in new order (from server perspective)
-  * `@firebase/CHILD_CHANGED` - record was modified but still exists
-  * `@firebase/MODEL_STATE_READY` - initial state of records has been received
-  * `@firebase/RELATIONSHIP_START_LISTENER` - relationship change has added need for listener
-  * `@firebase/RELATIONSHIP_END_LISTENER` - relationship change has removed need for listener
-  * `@firebase/MODEL_START_LISTENING`
-  * `@firebase/MODEL_END_LISTENING`
-* **RECORD**
-  * `@firebase/RECORD_CHANGED` - record added or updated
-  * `@firebase/RECORD_REMOVED` - record removed
-  * `@firebase/RECORD_START_LISTENING`
-  * `@firebase/RECORD_END_LISTENING`
+- **LIST**
+  - `@firebase/CHILD_ADDED` - new record
+  - `@firebase/CHILD_REMOVED` - record removed
+  - `@firebase/CHILD_MOVED` - record in new order (from server perspective)
+  - `@firebase/CHILD_CHANGED` - record was modified but still exists
+  - `@firebase/MODEL_STATE_READY` - initial state of records has been received
+  - `@firebase/RELATIONSHIP_START_LISTENER` - relationship change has added need for listener
+  - `@firebase/RELATIONSHIP_END_LISTENER` - relationship change has removed need for listener
+  - `@firebase/MODEL_START_LISTENING`
+  - `@firebase/MODEL_END_LISTENING`
+- **RECORD**
+  - `@firebase/RECORD_CHANGED` - record added or updated
+  - `@firebase/RECORD_REMOVED` - record removed
+  - `@firebase/RECORD_START_LISTENING`
+  - `@firebase/RECORD_END_LISTENING`
 
 #### Event Structure {#event-structure}
 
@@ -156,11 +154,11 @@ All events are typed using Typescript so will be much easier to work with as an 
 
 All events sent to listeners through the `listenTo` and `listenToRecord` registration methods have at least the following four properties:
 
-* `type` - the event name that is firing
+- `type` - the event name that is firing
   > **note:** all event types start with `@firemodel/` string
-* `model` - the schema/model which this event stream listening to
-* `query` - a serialized version of the query string used to start the listener
-* `payload` - the primary state change that is being conveyed by this event
+- `model` - the schema/model which this event stream listening to
+- `query` - a serialized version of the query string used to start the listener
+- `payload` - the primary state change that is being conveyed by this event
 
 For more specifics refer to the type definitions which are found in [`/src/events.ts`](https://github.com/forest-fire/firemodel/blob/master/src/event.ts).
 
@@ -184,7 +182,7 @@ const listener = (event: IFMEvent) => {
     case '@firemodel/RECORD_ADDED':
       console.log('MODEL ADDED');
     case '@firemodel/CHILD_REMOVED':
-      console.log('REMOVED');  
+      console.log('REMOVED');
 }
 const PersonModel = new Model<Person>(db);
 PersonModel.listenTo(listener);

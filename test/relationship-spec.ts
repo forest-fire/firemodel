@@ -1,6 +1,6 @@
 // tslint:disable:no-implicit-dependencies
 import { Model, Record } from "../src/index";
-import DB from "abstracted-admin";
+import { DB } from "abstracted-admin";
 import * as chai from "chai";
 const expect = chai.expect;
 import "reflect-metadata";
@@ -8,10 +8,10 @@ import { Person } from "./testing/person";
 
 describe("Relationship > ", () => {
   let db: DB;
-  beforeEach(() => {
+  beforeEach(async () => {
     db = new DB({ mocking: true });
+    await db.waitForConnection();
     Model.defaultDb = db;
-    db.resetMockDb();
   });
 
   it("using addHasMany() on a hasMany relationship works", async () => {

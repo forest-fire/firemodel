@@ -7,24 +7,18 @@ import {
   IAuditRecord,
   FirebaseCrudOperations
 } from "../src/index";
-import DB from "abstracted-admin";
-import { SchemaCallback } from "firemock";
+import { DB } from "abstracted-admin";
 import * as chai from "chai";
-import * as helpers from "./testing/helpers";
 const expect = chai.expect;
 import "reflect-metadata";
-import { Klass, ContainedKlass, SubKlass } from "./testing/klass";
 import { Person } from "./testing/person";
 import { Company } from "./testing/company";
-import { VerboseError } from "../src/VerboseError";
-import { get as getStackFrame, parse as stackParse } from "stack-trace";
-
-VerboseError.setStackParser((context: VerboseError) => stackParse(context));
 
 describe("Model > Auditing: ", () => {
   let db: DB;
-  beforeEach(() => {
+  beforeEach(async () => {
     db = new DB({ mocking: true });
+    await db.waitForConnection();
   });
 
   it("Audit records stored when schema has them configured on", async () => {

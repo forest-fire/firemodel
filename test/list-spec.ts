@@ -1,7 +1,6 @@
 // tslint:disable:no-implicit-dependencies
 import { Model, BaseSchema, Record, List } from "../src/index";
-import DB, { SerializedQuery } from "abstracted-admin";
-import SchemaHelper, { SchemaCallback } from "firemock";
+import { DB, SerializedQuery } from "abstracted-admin";
 import * as chai from "chai";
 import * as helpers from "./testing/helpers";
 const expect = chai.expect;
@@ -11,8 +10,9 @@ import { wait } from "common-types";
 
 describe("List class: ", () => {
   let db: DB;
-  beforeEach(() => {
+  beforeEach(async () => {
     db = new DB({ mocking: true });
+    await db.waitForConnection();
     Model.defaultDb = db;
   });
   it("can instantiate with new operator", () => {

@@ -1,9 +1,10 @@
 // tslint:disable-next-line:no-implicit-dependencies
 import { RealTimeDB } from "abstracted-firebase";
-import { BaseSchema, ISchemaOptions } from "./index";
+import { BaseSchema, ISchemaOptions } from ".";
 import { createError, fk, IDictionary } from "common-types";
 import { Model, ILogger } from "./model";
 import { key as fbk } from "firebase-key";
+import { FireModel } from "./FireModel";
 
 export interface IWriteOperation {
   id: string;
@@ -22,7 +23,7 @@ export interface IRecordOptions {
   id?: string;
 }
 
-export class Record<T extends BaseSchema> {
+export class Record<T extends BaseSchema> extends FireModel<T> {
   /**
    * create
    *
@@ -102,6 +103,7 @@ export class Record<T extends BaseSchema> {
   private _data?: Partial<T>;
 
   constructor(private _model: Model<T>, options: IRecordOptions = {}) {
+    super();
     this._data = new _model.schemaClass();
   }
 

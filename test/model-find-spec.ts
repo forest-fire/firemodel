@@ -1,21 +1,16 @@
 // tslint:disable:no-implicit-dependencies
 import { Model, Record, List } from "../src/index";
-import DB from "abstracted-admin";
-import { SchemaCallback } from "firemock";
+import { DB } from "abstracted-admin";
 import * as chai from "chai";
 const expect = chai.expect;
 import "reflect-metadata";
-import { Klass, ContainedKlass, SubKlass } from "./testing/klass";
 import { Person } from "./testing/person";
-import { VerboseError } from "../src/VerboseError";
-import { parse as stackParse } from "stack-trace";
-
-VerboseError.setStackParser((context: VerboseError) => stackParse(context));
 
 describe("Model > find API: ", () => {
   let db: DB;
-  beforeEach(() => {
+  beforeEach(async () => {
     db = new DB({ mocking: true });
+    await db.waitForConnection();
   });
 
   it("Model.findAll() with default equality operator works", async () => {

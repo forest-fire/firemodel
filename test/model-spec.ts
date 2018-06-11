@@ -1,31 +1,17 @@
 // tslint:disable:no-implicit-dependencies
-import {
-  Model,
-  BaseSchema,
-  Record,
-  List,
-  IAuditRecord,
-  FirebaseCrudOperations
-} from "../src/index";
-import DB from "abstracted-admin";
+import { Model, BaseSchema, Record, List } from "../src/index";
+import { DB } from "abstracted-admin";
 import * as chai from "chai";
-import * as helpers from "./testing/helpers";
 const expect = chai.expect;
 import "reflect-metadata";
-import { Klass, ContainedKlass, SubKlass } from "./testing/klass";
 import { Person } from "./testing/person";
-import { Company } from "./testing/company";
-import { VerboseError } from "../src/VerboseError";
-import { get as getStackFrame, parse as stackParse } from "stack-trace";
 import { ILogger } from "../src/model";
-
-VerboseError.setStackParser((context: VerboseError) => stackParse(context));
 
 describe("Model", () => {
   let db: DB;
-  beforeEach(() => {
+  beforeEach(async () => {
     db = new DB({ mocking: true });
-    db.resetMockDb();
+    await db.waitForConnection();
   });
 
   it("can be created with create() static method", () => {

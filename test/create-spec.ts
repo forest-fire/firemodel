@@ -1,6 +1,6 @@
 // tslint:disable:no-implicit-dependencies
 import { Model, BaseSchema, Record } from "../src/index";
-import DB from "abstracted-admin";
+import {DB} from "abstracted-admin";
 import { SchemaCallback } from "firemock";
 import * as chai from "chai";
 const expect = chai.expect;

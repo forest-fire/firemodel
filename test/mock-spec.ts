@@ -1,10 +1,8 @@
 // tslint:disable:no-implicit-dependencies
 import { Model, BaseSchema } from "../src/index";
-import DB from "abstracted-admin";
-import { RealTimeDB } from "abstracted-firebase";
+import { DB } from "abstracted-admin";
 import { SchemaCallback } from "firemock";
 import * as chai from "chai";
-import * as helpers from "./testing/helpers";
 const expect = chai.expect;
 
 const personMock: SchemaCallback<Person> = h => () => ({
