@@ -1,8 +1,9 @@
-import { Model } from "./model";
+import { Model } from "./Model";
 // tslint:disable-next-line:no-implicit-dependencies
 import { RealTimeDB } from "abstracted-firebase";
-import { ISchemaOptions } from ".";
-import pluralize = require("pluralize");
+import { ISchemaOptions } from "./index";
+// tslint:disable-next-line:no-var-requires
+const pluralize = require("pluralize");
 
 export class FireModel<T = Model> {
   //#region STATIC INTERFACE

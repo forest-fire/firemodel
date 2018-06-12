@@ -2,7 +2,7 @@
 import { RealTimeDB } from "abstracted-firebase";
 import { Model, ISchemaOptions } from ".";
 import { createError, fk, IDictionary } from "common-types";
-import { key as fbk } from "firebase-key";
+import { key as fbKey } from "firebase-key";
 import { FireModel } from "./FireModel";
 
 export interface IWriteOperation {
@@ -243,7 +243,7 @@ export class Record<T extends Model> extends FireModel<T> {
         `Invalid Operation: you can not push to property "${property}" before saving the record to the database`
       );
     }
-    const key = fbk();
+    const key = fbKey();
     const currentState = this.get(property) || {};
     const newState = { ...(currentState as any), [key]: value };
     // set state locally
@@ -407,7 +407,7 @@ export class Record<T extends Model> extends FireModel<T> {
       e.name = "InvalidSave";
       throw e;
     }
-    this.id = fbk();
+    this.id = fbKey();
 
     if (!this.db) {
       const e = new Error(

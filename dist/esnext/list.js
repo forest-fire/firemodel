@@ -1,6 +1,5 @@
-import { Record } from ".";
+import { Record } from "./index";
 import { SerializedQuery } from "serialized-query";
-import { OldModel } from "./old-model";
 import { FireModel } from "./FireModel";
 const DEFAULT_IF_NOT_FOUND = "__DO_NOT_USE__";
 export class List extends FireModel {
@@ -26,10 +25,9 @@ export class List extends FireModel {
      * @param query the serialized query; note that this LIST will override the path of the query
      * @param options model options
      */
-    static async fromQuery(schema, query, options = {}) {
-        const model = OldModel.create(schema, options);
-        query.setPath(model.dbPath);
-        const list = List.create(schema, options);
+    static async fromQuery(model, query, options = {}) {
+        const list = List.create(model, options);
+        query.setPath(list.dbPath);
         await list.load(query);
         return list;
     }

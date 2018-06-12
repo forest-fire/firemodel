@@ -1,5 +1,5 @@
 import { createError } from "common-types";
-import { key as fbk } from "firebase-key";
+import { key as fbKey } from "firebase-key";
 import { FireModel } from "./FireModel";
 export class Record extends FireModel {
     constructor(model, options = {}) {
@@ -167,7 +167,7 @@ export class Record extends FireModel {
         if (!this.existsOnDB) {
             throw createError("invalid-operation/not-on-db", `Invalid Operation: you can not push to property "${property}" before saving the record to the database`);
         }
-        const key = fbk();
+        const key = fbKey();
         const currentState = this.get(property) || {};
         const newState = Object.assign({}, currentState, { [key]: value });
         // set state locally
@@ -301,7 +301,7 @@ export class Record extends FireModel {
             e.name = "InvalidSave";
             throw e;
         }
-        this.id = fbk();
+        this.id = fbKey();
         if (!this.db) {
             const e = new Error(`Attempt to save Record failed as the Database has not been connected yet. Try settingFireModel first.`);
             e.name = "FiremodelError";
@@ -311,4 +311,4 @@ export class Record extends FireModel {
         return this;
     }
 }
-//# sourceMappingURL=record.js.map
+//# sourceMappingURL=Record.js.map

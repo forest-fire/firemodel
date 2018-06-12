@@ -1,7 +1,6 @@
 import { RealTimeDB } from "abstracted-firebase";
 import { Model } from ".";
 import { fk } from "common-types";
-import { ILogger } from "./old-model";
 import { FireModel } from "./FireModel";
 export interface IWriteOperation {
     id: string;
@@ -15,7 +14,7 @@ export interface IWriteOperation {
 }
 export interface IRecordOptions {
     db?: RealTimeDB;
-    logging?: ILogger;
+    logging?: any;
     id?: string;
 }
 export declare class Record<T extends Model> extends FireModel<T> {
@@ -119,7 +118,7 @@ export declare class Record<T extends Model> extends FireModel<T> {
     toJSON(): {
         dbPath: string;
         modelName: string;
-        pluralName: string;
+        pluralName: any;
         key: string;
         localPath: string;
         data: string;

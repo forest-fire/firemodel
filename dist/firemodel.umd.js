@@ -1,8 +1,8 @@
 (function (global, factory) {
-    typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('reflect-metadata'), require('lodash'), require('common-types'), require('pluralize'), require('serialized-query'), require('firebase-key')) :
-    typeof define === 'function' && define.amd ? define(['exports', 'reflect-metadata', 'lodash', 'common-types', 'pluralize', 'serialized-query', 'firebase-key'], factory) :
-    (factory((global.FireModel = {}),null,global.lodash,global.commonTypes,global.pluralize,global.serializedQuery,global.firebaseKey));
-}(this, (function (exports,reflectMetadata,lodash,commonTypes,pluralize,serializedQuery,firebaseKey) { 'use strict';
+    typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('reflect-metadata'), require('lodash'), require('common-types'), require('firebase-key'), require('serialized-query')) :
+    typeof define === 'function' && define.amd ? define(['exports', 'reflect-metadata', 'lodash', 'common-types', 'firebase-key', 'serialized-query'], factory) :
+    (factory((global.FireModel = {}),null,global.lodash,global['common-types'],global.fbKey,global['serialized-query']));
+}(this, (function (exports,reflectMetadata,lodash,commonTypes,firebaseKey,serializedQuery) { 'use strict';
 
     function push(target, path, value) {
         if (Array.isArray(lodash.get(target, path))) {
@@ -42,16 +42,6 @@
                 push(relationshipsBySchema, target.constructor.name, meta);
             }
         }
-        // Reflect.defineProperty(target, key, {
-        //   get: () => {
-        //     return this[key];
-        //   },
-        //   set: (value: any) => {
-        //     this[key] = value;
-        //   },
-        //   enumerable: true,
-        //   configurable: true
-        // });
     };
     /**
      * Give all properties from schema and base schema
@@ -61,7 +51,7 @@
     function getProperties(target) {
         return [
             ...propertiesBySchema[target.constructor.name],
-            ...propertiesBySchema.BaseSchema.map(s => (Object.assign({}, s, { isBaseSchema: true })))
+            ...propertiesBySchema.Model.map(s => (Object.assign({}, s, { isBaseSchema: true })))
         ];
     }
     function getRelationships(target) {
@@ -103,15 +93,15 @@
         return propertyDecorator({
             isRelationship: true,
             isProperty: false,
-            relType: 'hasMany'
-        }, 'property');
+            relType: "hasMany"
+        }, "property");
     }
     function ownedBy(schemaClass) {
         return propertyDecorator({
             isRelationship: true,
             isProperty: false,
-            relType: 'ownedBy'
-        }, 'property');
+            relType: "ownedBy"
+        }, "property");
     }
     function inverse(inverseProperty) {
         return propertyDecorator({ inverseProperty });
@@ -121,7 +111,7 @@
     function propertyMeta$1(context) {
         return (prop) => Reflect.getMetadata(prop, context);
     }
-    function schema(options) {
+    function model(options) {
         return (target) => {
             const original = target;
             // new constructor
@@ -132,7 +122,7 @@
                         return Object.assign({}, options, { property: propertyMeta$1(obj) }, { properties: getProperties(obj) }, { relationships: getRelationships(obj) }, { pushKeys: getPushKeys(obj) }, { audit: options.audit ? options.audit : false });
                     },
                     set() {
-                        throw new Error("The meta property can only be set with the @schema decorator!");
+                        throw new Error("The meta property can only be set with the @model decorator!");
                     },
                     configurable: false,
                     enumerable: false
@@ -164,7 +154,7 @@
         RelationshipCardinality["hasMany"] = "hasMany";
         RelationshipCardinality["belongsTo"] = "belongsTo";
     })(exports.RelationshipCardinality || (exports.RelationshipCardinality = {}));
-    class BaseSchema {
+    class Model {
         toString() {
             const obj = {};
             this.META.properties.map(p => {
@@ -176,383 +166,76 @@
     __decorate([
         property,
         __metadata("design:type", String)
-    ], BaseSchema.prototype, "id", void 0);
+    ], Model.prototype, "id", void 0);
     __decorate([
         property,
         __metadata("design:type", Number)
-    ], BaseSchema.prototype, "lastUpdated", void 0);
+    ], Model.prototype, "lastUpdated", void 0);
     __decorate([
         property,
         __metadata("design:type", Number)
-    ], BaseSchema.prototype, "createdAt", void 0);
+    ], Model.prototype, "createdAt", void 0);
 
-    let chalk;
-    class VerboseError extends Error {
-        /**
-         * If you want to use a library like stack-trace(node) or stacktrace-js(client) add in the "get"
-         * function that they provide
-         */
-        static setStackParser(fn) {
-            VerboseError.stackParser = fn;
+    // tslint:disable-next-line:no-var-requires
+    const pluralize = require("pluralize");
+    class FireModel {
+        static get defaultDb() {
+            return FireModel._defaultDb;
         }
-        static stackParser(err) {
-            return undefined;
+        static set defaultDb(db) {
+            this._defaultDb = db;
         }
-        constructor(err, ...args) {
-            super(...args);
-            this.code = err.code;
-            this.message = err.message;
-            this.module = err.module;
-            this.function = err.function;
-            if (VerboseError.useColor) {
-                // tslint:disable-next-line:no-implicit-dependencies
-                chalk = require("chalk");
-            }
-            const stackFrames = VerboseError.stackParser(this);
-            if (stackFrames) {
-                this.stackFrames = stackFrames.filter(frame => (frame.getFileName() || "").indexOf("common-types") === -1);
-                this.function = stackFrames[0].getMethodName();
-                this.stack =
-                    this.message +
-                        "\n\n" +
-                        this.stackFrames
-                            .map(frame => {
-                            const isNative = typeof frame.isNative === "function" ? frame.isNative() : frame.isNative;
-                            const colorize = (content) => VerboseError.useColor && isNative ? chalk.grey.italic(content) : content;
-                            const className = frame.getTypeName() ? frame.getTypeName() + " → " : "";
-                            const functionName = frame.getMethodName() || frame.getFunctionName() || "<anonymous>";
-                            const classAndFunction = VerboseError.useColor
-                                ? chalk.bold(`${className}${functionName}`)
-                                : `${className}${functionName}`;
-                            const fileName = (frame.getFileName() || "")
-                                .split("/")
-                                .slice(-1 * VerboseError.filePathDepth)
-                                .join("/");
-                            const details = isNative
-                                ? "( native function )"
-                                : `[ line ${frame.getLineNumber()}, col ${frame.getColumnNumber()} in ${fileName} ]`;
-                            return colorize(`\t at ${classAndFunction} ${details}`);
-                        })
-                            .join("\n");
-            }
-            else {
-                this.stack = this.stack
-                    .split("\n")
-                    .filter(line => line.indexOf("VerboseError") === -1)
-                    .join("\n");
-            }
-        }
-        toString() {
-            return this.message + this.stack;
-        }
-        toJSON() {
-            return JSON.stringify(this.toObject(), null, 2);
-        }
-        toObject() {
-            return {
-                code: this.code,
-                message: this.message,
-                module: this.module
-            };
-        }
-    }
-
-    function normalized(...args) {
-        return args
-            .filter(a => a)
-            .map(a => a.replace(/$[\.\/]/, "").replace(/[\.\/]^/, ""))
-            .map(a => a.replace(/\./g, "/"));
-    }
-    function slashNotation(...args) {
-        return normalized(...args).join("/");
-    }
-
-    const baseLogger = {
-        log: (message) => console.log(`${undefined.modelName}/${undefined._key}: ${message}`),
-        warn: (message) => console.warn(`${undefined.modelName}/${undefined._key}: ${message}`),
-        debug: (message) => {
-            const stage = process.env.STAGE || process.env.AWS_STAGE || process.env.ENV;
-            if (stage !== "prod") {
-                console.log(`${undefined.modelName}/${undefined._key}: ${message}`);
-            }
-        },
-        error: (message) => console.error(`${undefined.modelName}/${undefined._key}: ${message}`)
-    };
-    class Model$$1 {
         //#endregion
-        constructor(_schemaClass, db, logger) {
-            this._schemaClass = _schemaClass;
-            // tslint:disable-next-line:member-ordering
-            this._mockGenerator = h => () => {
-                return this._bespokeMockGenerator
-                    ? Object.assign({}, this._defaultGenerator(h)(), this._bespokeMockGenerator(h)()) : this._defaultGenerator(h)();
-            };
-            this._defaultGenerator = h => () => ({
-                createdAt: new Date(h.faker.date.past()).toISOString(),
-                lastUpdated: new Date().toISOString()
-            });
-            this._db = db;
-            if (!Model$$1.defaultDb) {
-                Model$$1.defaultDb = db;
-            }
-            this.logger = logger ? logger : baseLogger;
-            this._schema = new this.schemaClass();
-        }
-        static create(schema$$1, options = {}) {
-            const db = options.db || Model$$1.defaultDb;
-            const logger = options.logger || baseLogger;
-            const model = new Model$$1(schema$$1, db, logger);
-            return model;
-        }
-        /** the singular name of the model */
+        //#region PUBLIC INTERFACE
         get modelName() {
-            return lodash.camelCase(this._schema.constructor.name);
+            return this._model.constructor.name.toLowerCase();
         }
         get pluralName() {
-            return this._pluralName ? this._pluralName : pluralize.plural(this.modelName);
+            // TODO: add back the exception processing
+            return pluralize(this.modelName);
         }
-        set pluralName(name) {
-            this._pluralName = name;
-        }
-        set mockGenerator(cb) {
-            this._bespokeMockGenerator = cb;
-        }
-        //#region PUBLIC API
-        get schemaClass() {
-            return this._schemaClass;
-        }
-        /** Database access */
-        get db() {
-            return this._db;
-        }
-        get schema() {
-            return this._schema;
-        }
-        get dbPath() {
-            return [this._schema.META.dbOffset, this.pluralName].join(".");
-        }
-        get localPath() {
-            return [this._schema.META.localOffset, this.pluralName].join(".");
-        }
-        get relationships() {
-            return this._schema.META.relationships;
+        get META() {
+            return this._model.META;
         }
         get properties() {
-            return this._schema.META.properties;
+            return this._model.META.properties;
         }
-        get pushKeys() {
-            return this._schema.META ? this._schema.META.pushKeys : [];
+        get relationships() {
+            return this._model.META.relationships;
         }
-        // /**
-        //  * Add a new record of type T, optionally including the payload
-        //  *
-        //  * @param hash the values that you want this new object to be initialized as; note that if you include an "id" property it will assume this is from the DB, if you don't then it will immediately add it and create an id.
-        //  */
-        // public async newRecord(hash?: Partial<T>) {
-        //   console.log(this.schemaClass);
-        //   return hash
-        //     ? Record.add(this.schemaClass, hash as T, { db: this.db })
-        //     : Record.create(this.schemaClass, { db: this.db });
-        // }
-        /**
-         * Get an existing record from the  DB and return as a Record
-         *
-         * @param id the primary key for the record
-         */
-        async getRecord(id) {
-            const record = await Record.get(this._schemaClass, id);
-            return record;
-        }
-        /**
-         * Returns a list of ALL objects of the given schema type
-         */
-        async getAll(query) {
-            const list = new List$$1(this);
-            return query ? list.load(query) : list.load(this.dbPath);
-        }
-        /**
-         * Finds a single records within a list
-         *
-         * @param prop the property on the Schema which you are looking for a value in
-         * @param value the value you are looking for the property to equal; alternatively you can pass a tuple with a comparison operation and a value
-         */
-        async findRecord(prop, value) {
-            const query = this._findBuilder(prop, value, true);
-            const results = await this.db.getList(query);
-            if (results.length > 0) {
-                const first = results.pop();
-                const record = Record.get(this._schemaClass, first.id);
-                return record;
+        /** the connected real-time database */
+        get db() {
+            if (!this._db) {
+                this._db = FireModel.defaultDb;
             }
-            else {
-                throw commonTypes.createError("not-found", `Not Found: didn't find any "${this.pluralName}" which had "${prop}" set to "${value}"; note the path in the database which was searched was "${this.dbPath}".`);
-            }
-        }
-        async findAll(prop, value) {
-            const query = this._findBuilder(prop, value);
-            let results;
-            try {
-                results = await this.db.getList(query);
-            }
-            catch (e) {
-                console.log("Error attempting to findAll() in Model.", e);
-                throw commonTypes.createError("model/findAll", `\nFailed getting via getList() with query` + JSON.stringify(query, null, 2), e);
-            }
-            return new List$$1(this, results);
-        }
-        /** sets a record to the database */
-        async set(record, auditInfo = {}) {
-            if (!record.id) {
-                throw commonTypes.createError("set/no-id", `Attempt to set "${this.dbPath}" in database but record had no "id" property.`);
-            }
-            const now = this.now();
-            record = Object.assign({}, record, { lastUpdated: now });
-            auditInfo = Object.assign({}, auditInfo, { properties: Object.keys(record) });
-            const ref = await this.crud("set", now, slashNotation(this.dbPath, record.id), record, auditInfo);
-            return ref;
-        }
-        /** Push a new record onto a model's list using Firebase a push-ID */
-        async push(newRecord, auditInfo = {}) {
-            const now = this.now();
-            const id = firebaseKey.key();
-            newRecord = Object.assign({}, newRecord, { lastUpdated: now, createdAt: now });
-            auditInfo = Object.assign({}, auditInfo, { properties: Object.keys(newRecord) });
-            return Record.get(this._schemaClass, id);
-        }
-        async update(key, updates, auditInfo = {}) {
-            const now = this.now();
-            auditInfo = Object.assign({ auditInfo }, { updatedProperties: Object.keys(updates) });
-            updates = Object.assign({}, updates, { lastUpdated: now });
-            await this.crud("update", now, slashNotation(this.dbPath, key), updates, auditInfo);
-        }
-        /**
-         * Remove
-         *
-         * Remove a record from the database
-         *
-         * @param key         the specific record id (but can alternatively be the full path if it matches dbPath)
-         * @param returnValue optionally pass back the deleted record along removing from server
-         * @param auditInfo   any additional information to be passed to the audit record (if Model has turned on)
-         */
-        async remove(key, returnValue = false, auditInfo = {}) {
-            if (!key) {
-                const e = new Error(`Trying to call remove(id) on a ${this.modelName} Model class can not be done when ID is undefined!`);
-                e.name = "NotAllowed";
+            if (!this._db) {
+                const e = new Error(`Can't get DB as it has not been set yet for this instance and no default database exists [ ${this.modelName} ]!`);
+                e.name = "FireModel::NoDatabase";
                 throw e;
             }
-            const now = this.now();
-            let value;
-            if (returnValue) {
-                value = await this._db.getValue(slashNotation(this.dbPath, key));
-            }
-            await this.crud("remove", now, key.match(this.dbPath) ? key : slashNotation(this.dbPath, key), null, auditInfo);
-            return returnValue ? value : undefined;
+            return this._db;
         }
-        async getAuditTrail(filter = {}) {
-            const { since, last } = filter;
-            const path = `${Model$$1.auditBase}/${this.pluralName}`;
-            let query = serializedQuery.SerializedQuery.path(path);
-            if (since) {
-                const startAt = new Date(since).toISOString();
-                query = query.orderByChild("when").startAt(startAt);
-            }
-            if (last) {
-                query = query.limitToLast(last);
-            }
-            return this.db.getList(query);
-        }
-        //#endregion
-        //#region PRIVATE API
-        async audit(crud, when, key, info) {
-            const path = slashNotation(Model$$1.auditBase, this.pluralName);
-            return this.db.push(path, {
-                crud,
-                when,
-                key,
-                info
-            });
-        }
-        /**
-         * crud
-         *
-         * Standardized processing of all CRUD operations
-         *
-         * @param op The CRUD operation being performed
-         * @param key The record id which is being performed on
-         * @param value The new-value parameter (meaning varies on context)
-         * @param auditInfo the meta-fields for the audit trail
-         */
-        async crud(op, when, key, value, auditInfo) {
-            const isAuditable = this._schema.META.audit;
-            if (isAuditable) {
-                console.log("auditing: ", op);
-                await this.audit(op, when, key, auditInfo);
-            }
-            switch (op) {
-                case "set":
-                    return this.db.set(key, value);
-                case "update":
-                    return this.db.update(key, value);
-                case "push":
-                    // PUSH unlike SET returns a reference to the newly created record
-                    return this.db.set(key, value).then(() => this.db.ref(key));
-                case "remove":
-                    return this.db.remove(key);
-                default:
-                    throw new VerboseError({
-                        code: "unknown-operation",
-                        message: `The operation "${op}" is not known!`,
-                        module: "crud"
-                    });
-            }
-        }
-        _findBuilder(child, value, singular = false) {
-            let operation = "=";
-            if (value instanceof Array) {
-                operation = value[0];
-                value = value[1];
-            }
-            let query = serializedQuery.SerializedQuery.path(this.dbPath).orderByChild(child);
-            if (singular) {
-                query = query.limitToFirst(1);
-            }
-            switch (operation) {
-                case "=":
-                    return query.equalTo(value);
-                case ">":
-                    return query.startAt(value);
-                case "<":
-                    return query.endAt(value);
-                default:
-                    throw new VerboseError({
-                        code: "invalid-operation",
-                        message: `Invalid comparison operater "${operation}" used in find query`,
-                        module: "findXXX"
-                    });
-            }
-        }
-        //#region mocking
-        // tslint:disable-next-line:member-ordering
-        generate(quantity, override = {}) {
-            this.db.mock.queueSchema(this.modelName, quantity, override);
-            this.db.mock.generate();
-        }
-        //#endregion
-        now() {
-            return Date.now();
+        get pushKeys() {
+            return this._model.META.pushKeys;
         }
     }
-    //#region PROPERTIES
-    Model$$1.defaultDb = null;
-    /** The base path in the database to store audit logs */
-    Model$$1.auditBase = "logging/audit_logs";
+    //#region STATIC INTERFACE
+    FireModel._defaultDb = null;
 
-    class Record {
-        constructor(_model, options = {}) {
-            this._model = _model;
+    class Record extends FireModel {
+        constructor(model, options = {}) {
+            super();
             this._existsOnDB = false;
             this._writeOperations = [];
-            this._data = new _model.schemaClass();
+            this._modelConstructor = model;
+            this._model = new model();
+            this._data = new model();
+        }
+        static set defaultDb(db) {
+            FireModel.defaultDb = db;
+        }
+        static get defaultDb() {
+            return FireModel.defaultDb;
         }
         /**
          * create
@@ -560,8 +243,8 @@
          * creates a new -- and empty -- Record object; often used in
          * conjunction with the Record's initialize() method
          */
-        static create(schema, options = {}) {
-            const model = Model$$1.create(schema, options);
+        static create(model, options = {}) {
+            // const model = OldModel.create(schema, options);
             const record = new Record(model, options);
             return record;
         }
@@ -571,14 +254,14 @@
          * Adds a new record to the database
          *
          * @param schema the schema of the record
-         * @param newRecord the data for the new record
+         * @param payload the data for the new record
          * @param options
          */
-        static async add(schema, newRecord, options = {}) {
+        static async add(model, payload, options = {}) {
             let r;
             try {
-                r = Record.create(schema, options);
-                r._initialize(newRecord);
+                r = Record.create(model, options);
+                r._initialize(payload);
                 await r._save();
             }
             catch (e) {
@@ -597,13 +280,13 @@
          * Intent should be that this record already exists in the
          * database. If you want to add to the database then use add()
          */
-        static load(schema, record, options = {}) {
-            const r = Record.create(schema, options);
-            r._initialize(record);
-            return r;
+        static load(model, payload, options = {}) {
+            const rec = Record.create(model, options);
+            rec._initialize(payload);
+            return rec;
         }
-        static async get(schema, id, options = {}) {
-            const record = Record.create(schema, options);
+        static async get(model, id, options = {}) {
+            const record = Record.create(model, options);
             await record._getFromDB(id);
             return record;
         }
@@ -612,18 +295,6 @@
         }
         get isDirty() {
             return this._writeOperations.length > 0 ? true : false;
-        }
-        get META() {
-            return this._model.schema.META;
-        }
-        get db() {
-            return this._model.db;
-        }
-        get pluralName() {
-            return this._model.pluralName;
-        }
-        get pushKeys() {
-            return this._model.schema.META.pushKeys;
         }
         /**
          * returns the fully qualified name in the database to this record;
@@ -635,9 +306,6 @@
                 throw commonTypes.createError("record/invalid-path", `Invalid Record Path: you can not ask for the dbPath before setting an "id" property.`);
             }
             return [this.data.META.dbOffset, this.pluralName, this.data.id].join("/");
-        }
-        get modelName() {
-            return this.data.constructor.name.toLowerCase();
         }
         /** The Record's primary key */
         get id() {
@@ -764,7 +432,7 @@
                 await updater.execute();
             }
             catch (e) {
-                throw commonTypes.createError("UpdateProps", `An error occurred trying to update ${this._model.modelName}:${this.id}`, e);
+                throw commonTypes.createError("UpdateProps", `An error occurred trying to update ${this.modelName}:${this.id}`, e);
             }
         }
         /**
@@ -856,7 +524,7 @@
             }
             this.id = firebaseKey.key();
             if (!this.db) {
-                const e = new Error(`Attempt to save Record failed as the Database has not been connected yet. Try setting Model.defaultDb first.`);
+                const e = new Error(`Attempt to save Record failed as the Database has not been connected yet. Try settingFireModel first.`);
                 e.name = "FiremodelError";
                 throw e;
             }
@@ -866,14 +534,21 @@
     }
 
     const DEFAULT_IF_NOT_FOUND = "__DO_NOT_USE__";
-    class List$$1 {
-        constructor(_model, _data = []) {
-            this._model = _model;
+    class List$$1 extends FireModel {
+        constructor(model$$1, _data = []) {
+            super();
             this._data = _data;
+            this._modelConstructor = model$$1;
+            this._model = new model$$1();
         }
-        static create(schema$$1, options = {}) {
-            const model = Model$$1.create(schema$$1, options);
-            return new List$$1(model);
+        static set defaultDb(db) {
+            FireModel.defaultDb = db;
+        }
+        static get defaultDb() {
+            return FireModel.defaultDb;
+        }
+        static create(model$$1, options = {}) {
+            return new List$$1(model$$1);
         }
         /**
          * Creates a List<T> which is populated with the passed in query
@@ -882,10 +557,9 @@
          * @param query the serialized query; note that this LIST will override the path of the query
          * @param options model options
          */
-        static async fromQuery(schema$$1, query, options = {}) {
-            const model = Model$$1.create(schema$$1, options);
-            query.setPath(model.dbPath);
-            const list = List$$1.create(schema$$1, options);
+        static async fromQuery(model$$1, query, options = {}) {
+            const list = List$$1.create(model$$1, options);
+            query.setPath(list.dbPath);
             await list.load(query);
             return list;
         }
@@ -895,22 +569,22 @@
          * @param schema the schema type
          * @param options model options
          */
-        static async all(schema$$1, options = {}) {
+        static async all(model$$1, options = {}) {
             const query = new serializedQuery.SerializedQuery().orderByChild("lastUpdated");
-            const list = await List$$1.fromQuery(schema$$1, query, options);
+            const list = await List$$1.fromQuery(model$$1, query, options);
             return list;
         }
         /**
          * Loads the first X records of the Schema type where
          * ordering is provided by the "createdAt" property
          *
-         * @param schema the schema type
+         * @param model the model type
          * @param howMany the number of records to bring back
          * @param options model options
          */
-        static async first(schema$$1, howMany, options = {}) {
+        static async first(model$$1, howMany, options = {}) {
             const query = new serializedQuery.SerializedQuery().orderByChild("createdAt").limitToLast(howMany);
-            const list = await List$$1.fromQuery(schema$$1, query, options);
+            const list = await List$$1.fromQuery(model$$1, query, options);
             return list;
         }
         /**
@@ -918,14 +592,14 @@
          *
          * Get recent items of a given type/schema (based on lastUpdated)
          *
-         * @param schema the TYPE you are interested
+         * @param model the TYPE you are interested
          * @param howMany the quantity to of records to bring back
          * @param offset start at an offset position (useful for paging)
          * @param options
          */
-        static async recent(schema$$1, howMany, offset = 0, options = {}) {
+        static async recent(model$$1, howMany, offset = 0, options = {}) {
             const query = new serializedQuery.SerializedQuery().orderByChild("lastUpdated").limitToFirst(howMany);
-            const list = await List$$1.fromQuery(schema$$1, query, options);
+            const list = await List$$1.fromQuery(model$$1, query, options);
             return list;
         }
         /**
@@ -937,7 +611,7 @@
          * @param since  the datetime in miliseconds
          * @param options
          */
-        static async since(schema$$1, since, options = {}) {
+        static async since(model$$1, since, options = {}) {
             if (typeof since !== "number") {
                 const e = new Error(`Invalid "since" parameter; value must be number instead got a(n) ${typeof since} [ ${since} ]`);
                 e.name = "NotAllowed";
@@ -945,21 +619,20 @@
             }
             // const query = new SerializedQuery().orderByChild("lastUpdated").startAt(since);
             const query = new serializedQuery.SerializedQuery().orderByChild("lastUpdated").startAt(since);
-            console.log("QUERY", query);
-            const list = await List$$1.fromQuery(schema$$1, query, options);
+            const list = await List$$1.fromQuery(model$$1, query, options);
             return list;
         }
-        static async inactive(schema$$1, howMany, options = {}) {
+        static async inactive(model$$1, howMany, options = {}) {
             const query = new serializedQuery.SerializedQuery().orderByChild("lastUpdated").limitToLast(howMany);
-            const list = await List$$1.fromQuery(schema$$1, query, options);
+            const list = await List$$1.fromQuery(model$$1, query, options);
             return list;
         }
-        static async last(schema$$1, howMany, options = {}) {
+        static async last(model$$1, howMany, options = {}) {
             const query = new serializedQuery.SerializedQuery().orderByChild("createdAt").limitToFirst(howMany);
-            const list = await List$$1.fromQuery(schema$$1, query, options);
+            const list = await List$$1.fromQuery(model$$1, query, options);
             return list;
         }
-        static async where(schema$$1, property$$1, value, options = {}) {
+        static async where(model$$1, property$$1, value, options = {}) {
             let operation = "=";
             let val = value;
             if (Array.isArray(value)) {
@@ -967,38 +640,31 @@
                 operation = value[0];
             }
             const query = new serializedQuery.SerializedQuery().orderByChild(property$$1).where(operation, val);
-            const list = await List$$1.fromQuery(schema$$1, query, options);
+            const list = await List$$1.fromQuery(model$$1, query, options);
             return list;
         }
         get length() {
             return this._data.length;
         }
-        get db() {
-            return this._model.db;
-        }
-        get modelName() {
-            return this._model.modelName;
-        }
-        get pluralName() {
-            return this._model.pluralName;
-        }
         get dbPath() {
-            return [this.meta.dbOffset, this.pluralName].join("/");
+            return [this.META.dbOffset, this.pluralName].join("/");
         }
         get localPath() {
-            return [this.meta.localOffset, this.pluralName].join("/");
+            return [this.META.localOffset, this.pluralName].join("/");
         }
         get meta() {
-            return this._model.schema.META;
+            return this._model.META;
         }
         /** Returns another List with data filtered down by passed in filter function */
         filter(f) {
-            return new List$$1(this._model, this._data.filter(f));
+            const list = List$$1.create(this._modelConstructor);
+            list._data = this._data.filter(f);
+            return list;
         }
         /** Returns another List with data filtered down by passed in filter function */
         find(f, defaultIfNotFound = DEFAULT_IF_NOT_FOUND) {
             const filtered = this._data.filter(f);
-            const r = Record.create(this._model.schemaClass);
+            const r = Record.create(this._modelConstructor);
             if (filtered.length > 0) {
                 r._initialize(filtered[0]);
                 return r;
@@ -1016,7 +682,7 @@
         }
         filterWhere(prop, value) {
             const whereFilter = (item) => item[prop] === value;
-            return new List$$1(this._model, this._data.filter(whereFilter));
+            return new List$$1(this._modelConstructor, this._data.filter(whereFilter));
         }
         /**
          * findWhere
@@ -1026,10 +692,9 @@
          * it is stated
          */
         findWhere(prop, value, defaultIfNotFound = DEFAULT_IF_NOT_FOUND) {
-            console.log(this._data);
             const list = this.filterWhere(prop, value);
             if (list.length > 0) {
-                return Record.load(this._model.schemaClass, list._data[0]);
+                return Record.load(this._modelConstructor, list._data[0]);
             }
             else {
                 if (defaultIfNotFound !== DEFAULT_IF_NOT_FOUND) {
@@ -1064,11 +729,11 @@
                 if (defaultIfNotFound !== DEFAULT_IF_NOT_FOUND) {
                     return defaultIfNotFound;
                 }
-                const e = new Error(`Could not find "${id}" in list of ${this._model.pluralName}`);
+                const e = new Error(`Could not find "${id}" in list of ${this.pluralName}`);
                 e.name = "NotFound";
                 throw e;
             }
-            const r = new Record(this._model);
+            const r = Record.create(this._modelConstructor);
             r._initialize(find.data[0]);
             return r;
         }
@@ -1105,9 +770,8 @@
     exports.hasMany = hasMany;
     exports.ownedBy = ownedBy;
     exports.inverse = inverse;
-    exports.schema = schema;
-    exports.BaseSchema = BaseSchema;
-    exports.Model = Model$$1;
+    exports.model = model;
+    exports.Model = Model;
     exports.Record = Record;
     exports.List = List$$1;
 

@@ -16,7 +16,7 @@ export {
   ISchemaRelationshipMetaProperties
 } from "./decorators/schema";
 export { Model, RelationshipPolicy, RelationshipCardinality } from "./Model";
-export { Record } from "./record";
+export { Record } from "./Record";
 export { List } from "./list";
 
 export { fk, pk } from "common-types";

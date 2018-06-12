@@ -1,5 +1,5 @@
 import "reflect-metadata";
-import { Model, RelationshipPolicy } from "../Model";
+import { Model, RelationshipPolicy } from "../model";
 import { IDictionary, PropertyDecorator } from "common-types";
 import { propertyDecorator } from "./decorator";
 

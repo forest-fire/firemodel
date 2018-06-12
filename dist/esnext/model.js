@@ -40,4 +40,4 @@ __decorate([
     property,
     __metadata("design:type", Number)
 ], Model.prototype, "createdAt", void 0);
-//# sourceMappingURL=model.js.map
+//# sourceMappingURL=Model.js.map

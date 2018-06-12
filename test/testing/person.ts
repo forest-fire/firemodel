@@ -1,5 +1,4 @@
 import {
-  OldModel,
   Model,
   property,
   constrainedProperty,

@@ -1,3 +1,5 @@
+// tslint:disable-next-line:no-var-requires
+const pluralize = require("pluralize");
 export class FireModel {
     static get defaultDb() {
         return FireModel._defaultDb;
@@ -35,8 +37,6 @@ export class FireModel {
         }
         return this._db;
     }
-    //#endregion
-    //#region PROTECTED INTERFACE
     get pushKeys() {
         return this._model.META.pushKeys;
     }

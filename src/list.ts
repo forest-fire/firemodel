@@ -1,4 +1,4 @@
-import { Model, ISchemaOptions, Record } from ".";
+import { Model, ISchemaOptions, Record } from "./index";
 import { SerializedQuery, IComparisonOperator } from "serialized-query";
 
 import { epochWithMilliseconds } from "common-types";

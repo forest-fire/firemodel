@@ -1,9 +1,9 @@
-import { Model, ISchemaOptions, Record } from ".";
+import { Model, ISchemaOptions, Record } from "./index";
 import { SerializedQuery, IComparisonOperator } from "serialized-query";
-import { IModelOptions } from "./old-model";
 import { epochWithMilliseconds } from "common-types";
 import { FireModel } from "./FireModel";
 import { RealTimeDB } from "abstracted-firebase";
+import { IModelOptions } from "./model";
 export declare class List<T extends Model> extends FireModel<T> {
     private _data;
     static defaultDb: RealTimeDB;
@@ -15,7 +15,7 @@ export declare class List<T extends Model> extends FireModel<T> {
      * @param query the serialized query; note that this LIST will override the path of the query
      * @param options model options
      */
-    static fromQuery<T extends Model>(schema: new () => T, query: SerializedQuery, options?: IModelOptions): Promise<List<T>>;
+    static fromQuery<T extends Model>(model: new () => T, query: SerializedQuery, options?: IModelOptions): Promise<List<T>>;
     /**
      * Loads all the records of a given schema-type ordered by lastUpdated
      *

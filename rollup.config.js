@@ -11,14 +11,14 @@ export default {
       file: "dist/firemodel.umd.js",
       format: "umd",
       name: "FireModel",
-      sourcemap: true
-      // globals: {
-      //   "firebase-api-surface": "firebase-api-surface",
-      //   "typed-conversions": "convert",
-      //   "wait-in-parallel": "Parallel",
-      //   "common-types": "common-types",
-      //   "serialized-query": "serialized-query"
-      // }
+      sourcemap: true,
+      globals: {
+        lodash: "lodash",
+        "firebase-key": "fbKey",
+        "wait-in-parallel": "Parallel",
+        "common-types": "common-types",
+        "serialized-query": "serialized-query"
+      }
     }
   ]
 };

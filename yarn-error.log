@@ -8462,7 +8462,7 @@ Lockfile:
 
 Trace: 
   Error: Command failed.
-  Exit code: 2
+  Exit code: 1
   Command: sh
   Arguments: -c tslint src/**/*.ts && tsc -P tsconfig.esnext.json && rollup -c rollup.config.js
   Directory: /Users/ken/mine/forest-fire/firemodel
