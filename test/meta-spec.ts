@@ -1,18 +1,6 @@
 // tslint:disable:no-implicit-dependencies
-import {
-  Model,
-  BaseSchema,
-  property,
-  constrainedProperty,
-  constrain,
-  desc,
-  min,
-  max,
-  length,
-  schema,
-  Record
-} from "../src/index";
-import DB from "abstracted-admin";
+import { Record } from "../src/index";
+import { DB } from "abstracted-admin";
 import { SchemaCallback } from "firemock";
 import * as chai from "chai";
 import * as helpers from "./testing/helpers";
@@ -42,7 +30,7 @@ describe("schema() decorator: ", () => {
       expect(false, "setting meta property is not allowed!");
     } catch (e) {
       expect(e.message).to.equal(
-        "The meta property can only be set with the @schema decorator!"
+        "The meta property can only be set with the @model decorator!"
       );
     }
   });
@@ -78,10 +66,8 @@ describe("property decorator: ", () => {
     expect(Reflect.getMetadata("tags", myclass).pushKey).to.equal(true);
     expect(myclass.META.pushKeys).to.include("tags");
     expect(myclass.META.pushKeys).to.have.lengthOf(1);
-    const model = new Model<Klass>(Klass, new DB({ mocking: true }));
-    expect(model.pushKeys).to.include("tags");
-    const record = Record.create(Klass);
-    expect(record.META.pushKeys).to.include("tags");
+    const myRecord = Record.create(Klass);
+    expect(myRecord.pushKeys).to.include("tags");
   });
 
   it("@min(), @max(), @length(), and @desc() decorator-factories work", () => {
@@ -123,9 +109,10 @@ describe("relationship decorators: ", () => {
     expect(ids).to.include("employerId");
   });
   it("@relationships show up on Model", async () => {
-    const PersonModel = new Model<Person>(Person, new DB({ mocking: true }));
-    expect(PersonModel.relationships.map(p => p.property)).to.include("fatherId");
-    expect(PersonModel.relationships.map(p => p.property)).to.include("children");
+    const PersonRecord = Record.create(Person, { db: new DB({ mocking: true }) });
+
+    expect(PersonRecord.META.relationships.map(p => p.property)).to.include("fatherId");
+    expect(PersonRecord.META.relationships.map(p => p.property)).to.include("children");
   });
 
   it("@properties show up on Schema's properties array", async () => {
@@ -142,9 +129,9 @@ describe("relationship decorators: ", () => {
   });
 
   it("@properties show up on Model", async () => {
-    const PersonModel = new Model<Person>(Person, new DB({ mocking: true }));
-    expect(PersonModel.properties.map(p => p.property)).to.include("name");
-    expect(PersonModel.properties.map(p => p.property)).to.include("lastUpdated");
+    const PersonRecord = Record.create(Person, { db: new DB({ mocking: true }) });
+    expect(PersonRecord.META.properties.map(p => p.property)).to.include("name");
+    expect(PersonRecord.META.properties.map(p => p.property)).to.include("lastUpdated");
   });
 
   it("inverse() sets correct meta props", async () => {

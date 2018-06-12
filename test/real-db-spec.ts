@@ -1,17 +1,18 @@
 // tslint:disable:no-implicit-dependencies
-import { Model, Record, List } from "../src/index";
-import DB from "abstracted-admin";
+import { Record, List } from "../src";
+import { DB } from "abstracted-admin";
 import * as chai from "chai";
 const expect = chai.expect;
 import "reflect-metadata";
 import { Person } from "./testing/person";
 import * as helpers from "./testing/helpers";
+import { FireModel } from "../src/FireModel";
 helpers.setupEnv();
 const db = new DB();
-Model.defaultDb = db;
+FireModel.defaultDb = db;
 
 describe("Tests using REAL db →", () => {
-  it("List.since() works", async () => {
+  it.skip("List.since() works", async () => {
     try {
       await Record.add(Person, {
         name: "Carl Yazstrimski",

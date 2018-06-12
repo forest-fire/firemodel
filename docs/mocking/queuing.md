@@ -22,7 +22,7 @@ This is maybe not that great an example yet but let's review what our takeaways 
 - The first step in mocking is ensuring FireModel is instructed to go against a mock database; you see that in the initialization of the `db` variable.
 - Just like setting up your mocks, the easiest way to get access to the mock is via `Model.mock([SchemaName], [db])`
 
-  > Note: you don't need to set the database each time you call this if you're just running a bunch of tests. It does need to be set initially either by `Model.defaultDb = db` or via a call to `Model.mock` where you pass in db.
+  > Note: you don't need to set the database each time you call this if you're just running a bunch of tests. It does need to be set initially either by FireModel = db` or via a call to `Model.mock` where you pass in db.
 
 - The only required parameter for queuing is the _quantity_ of records you want to deploy to the mock database.
 

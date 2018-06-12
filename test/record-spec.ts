@@ -1,17 +1,18 @@
 // tslint:disable:no-implicit-dependencies
-import { Model, Record } from "../src/index";
-import DB from "abstracted-admin";
+import { Record } from "../src";
+import { DB } from "abstracted-admin";
 import * as chai from "chai";
 const expect = chai.expect;
 import "reflect-metadata";
 import { Person } from "./testing/person";
+import { FireModel } from "../src/FireModel";
 
 describe("Record > ", () => {
   let db: DB;
-  beforeEach(() => {
+  beforeEach(async () => {
     db = new DB({ mocking: true });
-    Model.defaultDb = db;
-    db.resetMockDb();
+    await db.waitForConnection();
+    FireModel.defaultDb = db;
     const now = new Date().getTime();
     db.mock
       .addSchema("person", h => () => ({
@@ -22,6 +23,11 @@ describe("Record > ", () => {
       }))
       .pathPrefix("authenticated");
     db.mock.queueSchema("person", 10).generate();
+  });
+
+  it("can instantiate with new operator", async () => {
+    const person = new Record(Person);
+    expect(person.modelName).to.equal("person");
   });
 
   it("Record's add() factory adds record to database", async () => {

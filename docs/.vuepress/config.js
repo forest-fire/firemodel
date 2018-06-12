@@ -7,6 +7,10 @@ module.exports = {
     editLinks: true,
     nav: [
       {
+        text: "Getting Started",
+        link: "/getting-started/"
+      },
+      {
         text: "Modeling",
         link: "/modeling/"
       },
@@ -20,15 +24,24 @@ module.exports = {
       }
     ],
     sidebar: {
-      "/modeling/": [
-        ["/modeling/", "Modeling Overview"],
+      "/getting-started/": [
         {
-          title: "Modeling Primitives",
+          title: "Getting Started",
+          children: ["/getting-started/", "configuring"]
+        }
+      ],
+      "/modeling/": [
+        {
+          title: "Modeling Basics",
+          children: ["/modeling/", "schemas", "model-class", "firebase-schemas"]
+        },
+        {
+          title: "Functional Primitives",
           collapsable: false,
           children: ["properties", "constraints", "relationships"]
         },
         {
-          title: "Other Sections",
+          title: "Other DOC Sections",
           collapsable: false,
           children: [
             ["/using/", "Using FireModel"],
@@ -49,7 +62,7 @@ module.exports = {
           children: ["auditing", "frontend-state-mgmt", "graphql"]
         },
         {
-          title: "Other Sections",
+          title: "Other DOC Sections",
           collapsable: false,
           children: [
             ["/modeling/", "Modeling in FireModel"],

@@ -45,7 +45,7 @@ function propertyMeta(context: object) {
   return (prop: string): ISchemaMetaProperties => Reflect.getMetadata(prop, context);
 }
 
-export function schema(options: ISchemaOptions): ClassDecorator {
+export function model(options: ISchemaOptions): ClassDecorator {
   return (target: any): void => {
     const original = target;
 
@@ -66,9 +66,7 @@ export function schema(options: ISchemaOptions): ClassDecorator {
           };
         },
         set() {
-          throw new Error(
-            "The meta property can only be set with the @schema decorator!"
-          );
+          throw new Error("The meta property can only be set with the @model decorator!");
         },
         configurable: false,
         enumerable: false

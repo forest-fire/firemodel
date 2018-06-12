@@ -1,9 +1,10 @@
 {
-    "typescript.tsdk": "node_modules/typescript/lib",
-    "files.exclude": {
-        "**/.git": true,
-        "**/.DS_Store": true,
-        "test/**/*.js": {"when": "$(basename).ts"},
-        "lib/*": true
-    }
+  "typescript.tsdk": "node_modules/typescript/lib",
+  "files.exclude": {
+    "**/.git": true,
+    "**/.DS_Store": true,
+    "test/**/*.js": { "when": "$(basename).ts" },
+    "lib/*": true,
+    "dist/*": true
+  }
 }

@@ -1,23 +1,22 @@
 // tslint:disable:no-implicit-dependencies
-import { Model, BaseSchema, Record, List } from "../src/index";
-import DB, { SerializedQuery } from "abstracted-admin";
-import SchemaHelper, { SchemaCallback } from "firemock";
+import { Record, List } from "../src/index";
+import { DB, SerializedQuery } from "abstracted-admin";
 import * as chai from "chai";
 import * as helpers from "./testing/helpers";
 const expect = chai.expect;
 import "reflect-metadata";
 import { Person } from "./testing/person";
-import { wait } from "common-types";
+import { FireModel } from "../src/FireModel";
 
 describe("List class: ", () => {
   let db: DB;
-  beforeEach(() => {
+  beforeEach(async () => {
     db = new DB({ mocking: true });
-    Model.defaultDb = db;
+    await db.waitForConnection();
+    FireModel.defaultDb = db;
   });
   it("can instantiate with new operator", () => {
-    const PersonModel = Model.create(Person, { db });
-    const list = new List<Person>(PersonModel);
+    const list = new List<Person>(Person);
     expect(list).to.be.instanceof(List);
     expect(list.length).to.equal(0);
     expect(list.modelName).to.equal("person");
@@ -42,7 +41,7 @@ describe("List class: ", () => {
       }))
       .pathPrefix("authenticated");
     db.mock.queueSchema("person", 25).generate();
-    const list = await List.all(Person);
+    const list = await List.all(Person, { db });
     expect(list).to.be.instanceof(List);
     expect(list.length).to.equal(25);
     expect(list.modelName).to.equal("person");
@@ -155,6 +154,8 @@ describe("List class: ", () => {
     db.mock.queueSchema("person", 30).generate();
     const firstPersonId = helpers.firstKey(db.mock.db.authenticated.people);
     const list = await List.all(Person);
+    console.log(list.data);
+
     const record = list.get(firstPersonId);
     expect(record).to.be.an("object");
     expect(record).to.be.an.instanceOf(Record);

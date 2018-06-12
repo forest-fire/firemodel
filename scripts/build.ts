@@ -1,7 +1,7 @@
 // tslint:disable:no-implicit-dependencies
 import chalk from "chalk";
-import { exec, asyncExec } from "async-shelljs";
-import rm from "rimraf";
+import { exec, asyncExec, rm } from "async-shelljs";
+// import rm from "rimraf";
 import * as process from "process";
 import "../test/testing/test-console";
 import { stdout } from "test-console";
@@ -40,10 +40,8 @@ async function getScope(): Promise<string> {
 
 async function clearLib() {
   return new Promise(resolve => {
-    rm("lib", () => {
-      console.log(chalk.dim("- cleared LIB directory of all previous files"));
-      resolve();
-    });
+    rm("lib");
+    console.log(chalk.dim("- cleared LIB directory of all previous files"));
   });
 }
 

@@ -1,6 +1,5 @@
 import {
   Model,
-  BaseSchema,
   property,
   constrainedProperty,
   constrain,
@@ -8,18 +7,18 @@ import {
   min,
   max,
   length,
-  schema,
+  model,
   fk,
   ownedBy,
   hasMany,
   inverse
-} from "../../src/index";
+} from "../../src";
 import { Company } from "./company";
 import { IDictionary } from "common-types";
 import { pushKey } from "../../src/decorators/property";
 
-@schema({ dbOffset: "authenticated" })
-export class Person extends BaseSchema {
+@model({ dbOffset: "authenticated" })
+export class Person extends Model {
   // prettier-ignore
   @property @length(20) public name: string;
   @property public age?: number;

@@ -7,7 +7,7 @@ There are a few ways that you might _read_ data from the database but the two mo
 Let's imagine a _schema_ which we've defined (see "modeling" section if you're already lost) to look like so:
 
 ```typescript
-@schema({ dbOffset: "authenticated" })
+@model({ dbOffset: "authenticated" })
 export class Person extends BaseSchema {
   // prettier-ignore
   @property @length(20) public name: string;
@@ -16,7 +16,7 @@ export class Person extends BaseSchema {
 }
 ```
 
-Ok great, so what we've done with the schema is we've defined the data structure we expect and with the `@schema` decorator we've also stated that in the backed the database will store "people" off of the `authenticated` path.
+Ok great, so what we've done with the schema is we've defined the data structure we expect and with the `@model` decorator we've also stated that in the backed the database will store "people" off of the `authenticated` path.
 
 So assuming you're already somewhat familiar with Firebase you might get a "person" with good old Firebase SDK:
 
