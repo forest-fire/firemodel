@@ -10,7 +10,6 @@
     "typescript"
   ],
   "files": [
-    "lib",
     "dist"
   ],
   "main": "dist/firemodel.cjs.js",
