@@ -25,6 +25,11 @@ describe("Record > ", () => {
     db.mock.queueSchema("person", 10).generate();
   });
 
+  it("can instantiate with new operator", async () => {
+    const person = new Record(Person);
+    expect(person.modelName).to.equal("person");
+  });
+
   it("Record's add() factory adds record to database", async () => {
     const r = await Record.add(Person, {
       name: "Bob",

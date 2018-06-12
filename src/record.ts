@@ -37,10 +37,10 @@ export class Record<T extends Model> extends FireModel<T> {
    * conjunction with the Record's initialize() method
    */
   public static create<T extends Model>(
-    schema: new () => T,
+    model: new () => T,
     options: IRecordOptions = {}
   ) {
-    const model = OldModel.create(schema, options);
+    // const model = OldModel.create(schema, options);
     const record = new Record<T>(model, options);
 
     return record;
@@ -52,18 +52,18 @@ export class Record<T extends Model> extends FireModel<T> {
    * Adds a new record to the database
    *
    * @param schema the schema of the record
-   * @param newRecord the data for the new record
+   * @param payload the data for the new record
    * @param options
    */
   public static async add<T extends Model>(
-    schema: new () => T,
-    newRecord: T,
+    model: new () => T,
+    payload: T,
     options: IRecordOptions = {}
   ) {
     let r;
     try {
-      r = Record.create(schema, options);
-      r._initialize(newRecord);
+      r = Record.create(model, options);
+      r._initialize(payload);
       await r._save();
     } catch (e) {
       const err = new Error(`Problem adding new Record: ${e.message}`);
@@ -84,22 +84,22 @@ export class Record<T extends Model> extends FireModel<T> {
    * database. If you want to add to the database then use add()
    */
   public static load<T extends Model>(
-    schema: new () => T,
-    record: T,
+    model: new () => T,
+    payload: T,
     options: IRecordOptions = {}
   ) {
-    const r = Record.create(schema, options);
-    r._initialize(record);
+    const rec = Record.create(model, options);
+    rec._initialize(payload);
 
-    return r;
+    return rec;
   }
 
   public static async get<T extends Model>(
-    schema: new () => T,
+    model: new () => T,
     id: string,
     options: IRecordOptions = {}
   ) {
-    const record = Record.create(schema, options);
+    const record = Record.create(model, options);
     await record._getFromDB(id);
     return record;
   }
@@ -108,9 +108,11 @@ export class Record<T extends Model> extends FireModel<T> {
   private _writeOperations: IWriteOperation[] = [];
   private _data?: Partial<T>;
 
-  constructor(private _model: OldModel<T>, options: IRecordOptions = {}) {
+  constructor(model: new () => T, options: IRecordOptions = {}) {
     super();
-    this._data = new _model.schemaClass();
+    this._modelConstructor = model;
+    this._model = new model();
+    this._data = new model();
   }
 
   public get data() {
@@ -119,22 +121,6 @@ export class Record<T extends Model> extends FireModel<T> {
 
   public get isDirty() {
     return this._writeOperations.length > 0 ? true : false;
-  }
-
-  public get META(): ISchemaOptions {
-    return this._model.schema.META;
-  }
-
-  protected get db() {
-    return this._model.db;
-  }
-
-  protected get pluralName() {
-    return this._model.pluralName;
-  }
-
-  protected get pushKeys() {
-    return this._model.schema.META.pushKeys;
   }
 
   /**
@@ -150,10 +136,6 @@ export class Record<T extends Model> extends FireModel<T> {
       );
     }
     return [this.data.META.dbOffset, this.pluralName, this.data.id].join("/");
-  }
-
-  public get modelName() {
-    return this.data.constructor.name.toLowerCase();
   }
 
   /** The Record's primary key */
