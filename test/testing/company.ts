@@ -1,4 +1,4 @@
-import { length, model, property, Model } from "../../src/index";
+import { length, model, property, Model } from "../../src";
 
 @model({ dbOffset: "authenticated", audit: true })
 export class Company extends Model {

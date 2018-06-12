@@ -1,11 +1,11 @@
-import { Model, ISchemaOptions, Record } from "./index";
+import { Model, ISchemaOptions, Record } from ".";
 import { SerializedQuery, IComparisonOperator } from "serialized-query";
 
 import { epochWithMilliseconds } from "common-types";
 import { FireModel } from "./FireModel";
 // tslint:disable-next-line:no-implicit-dependencies
 import { RealTimeDB } from "abstracted-firebase";
-import { IModelOptions } from "./model";
+import { IModelOptions } from "./Model";
 
 const DEFAULT_IF_NOT_FOUND = "__DO_NOT_USE__";
 

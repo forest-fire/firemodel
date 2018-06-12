@@ -1,7 +1,7 @@
 import { Model } from "./Model";
 // tslint:disable-next-line:no-implicit-dependencies
 import { RealTimeDB } from "abstracted-firebase";
-import { ISchemaOptions } from "./index";
+import { ISchemaOptions } from ".";
 // tslint:disable-next-line:no-var-requires
 const pluralize = require("pluralize");
 
