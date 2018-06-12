@@ -1,12 +1,13 @@
-import { BaseSchema, ISchemaOptions, Record } from "./index";
+import { Model, ISchemaOptions, Record } from "./index";
 import { SerializedQuery, IComparisonOperator } from "serialized-query";
-import { Model, IModelOptions } from "./model";
 import { epochWithMilliseconds } from "common-types";
+import { FireModel } from "./FireModel";
 import { RealTimeDB } from "abstracted-firebase";
-export declare class List<T extends BaseSchema> {
-    private _model;
+import { IModelOptions } from "./model";
+export declare class List<T extends Model> extends FireModel<T> {
     private _data;
-    static create<T extends BaseSchema>(schema: new () => T, options?: IModelOptions): List<T>;
+    static defaultDb: RealTimeDB;
+    static create<T extends Model>(model: new () => T, options?: IModelOptions): List<T>;
     /**
      * Creates a List<T> which is populated with the passed in query
      *
@@ -14,34 +15,34 @@ export declare class List<T extends BaseSchema> {
      * @param query the serialized query; note that this LIST will override the path of the query
      * @param options model options
      */
-    static fromQuery<T extends BaseSchema>(schema: new () => T, query: SerializedQuery, options?: IModelOptions): Promise<List<T>>;
+    static fromQuery<T extends Model>(model: new () => T, query: SerializedQuery, options?: IModelOptions): Promise<List<T>>;
     /**
      * Loads all the records of a given schema-type ordered by lastUpdated
      *
      * @param schema the schema type
      * @param options model options
      */
-    static all<T extends BaseSchema>(schema: new () => T, options?: IModelOptions): Promise<List<T>>;
+    static all<T extends Model>(model: new () => T, options?: IModelOptions): Promise<List<T>>;
     /**
      * Loads the first X records of the Schema type where
      * ordering is provided by the "createdAt" property
      *
-     * @param schema the schema type
+     * @param model the model type
      * @param howMany the number of records to bring back
      * @param options model options
      */
-    static first<T extends BaseSchema>(schema: new () => T, howMany: number, options?: IModelOptions): Promise<List<T>>;
+    static first<T extends Model>(model: new () => T, howMany: number, options?: IModelOptions): Promise<List<T>>;
     /**
      * recent
      *
      * Get recent items of a given type/schema (based on lastUpdated)
      *
-     * @param schema the TYPE you are interested
+     * @param model the TYPE you are interested
      * @param howMany the quantity to of records to bring back
      * @param offset start at an offset position (useful for paging)
      * @param options
      */
-    static recent<T extends BaseSchema>(schema: new () => T, howMany: number, offset?: number, options?: IModelOptions): Promise<List<T>>;
+    static recent<T extends Model>(model: new () => T, howMany: number, offset?: number, options?: IModelOptions): Promise<List<T>>;
     /**
      * since
      *
@@ -51,15 +52,12 @@ export declare class List<T extends BaseSchema> {
      * @param since  the datetime in miliseconds
      * @param options
      */
-    static since<T extends BaseSchema>(schema: new () => T, since: epochWithMilliseconds, options?: IModelOptions): Promise<List<T>>;
-    static inactive<T extends BaseSchema>(schema: new () => T, howMany: number, options?: IModelOptions): Promise<List<T>>;
-    static last<T extends BaseSchema>(schema: new () => T, howMany: number, options?: IModelOptions): Promise<List<T>>;
-    static where<T extends BaseSchema, K extends keyof T>(schema: new () => T, property: K, value: T[K] | [IComparisonOperator, T[K]], options?: IModelOptions): Promise<List<T>>;
-    constructor(_model: Model<T>, _data?: T[]);
+    static since<T extends Model>(model: new () => T, since: epochWithMilliseconds, options?: IModelOptions): Promise<List<T>>;
+    static inactive<T extends Model>(model: new () => T, howMany: number, options?: IModelOptions): Promise<List<T>>;
+    static last<T extends Model>(model: new () => T, howMany: number, options?: IModelOptions): Promise<List<T>>;
+    static where<T extends Model, K extends keyof T>(model: new () => T, property: K, value: T[K] | [IComparisonOperator, T[K]], options?: IModelOptions): Promise<List<T>>;
+    constructor(model: new () => T, _data?: T[]);
     readonly length: number;
-    protected readonly db: RealTimeDB;
-    readonly modelName: string;
-    readonly pluralName: string;
     readonly dbPath: string;
     readonly localPath: string;
     readonly meta: ISchemaOptions;

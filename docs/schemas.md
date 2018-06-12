@@ -40,7 +40,7 @@ const ageFn = (person: Person) => {
   return moment().diff(moment(person.birthday), 'years');
 }
 
-@schema({ dbPrefix: '/authenticated' })
+@model({ dbPrefix: '/authenticated' })
 export class Person extends BaseSchema {
   @property public name: string;
   @property public birthday: number;
@@ -82,7 +82,7 @@ A property doesn't need a lot of clarification ... it is just a defined part of 
 The simplist example would be something like:
 
 ```ts
-@schema()
+@model()
 export class Person extends BaseSchema {
   @property public name: string;
 }
@@ -100,7 +100,7 @@ const type = Reflect.getMetadata('name', person).type; // String
 In many cases, this simple example is enough to model your schema fully but sometimes it would be nice to decorate it more fully with meta-data. Let's say in this example we want to provide an `age` property but we'd like to contrain it only being a positive integer value. This can be achieved like so:
 
 ```ts
-@schema()
+@model()
 export class Person extends BaseSchema {
   @property @positive @integer public age: number;
 }
@@ -118,7 +118,7 @@ In this example we've used constraints that are very common and as a result we'v
 But if there's ever a need to add additional meta-information you can use whatever you like with the `contraint(prop, val)` decorator. For instance, using just this operator, here is the same definition as above:
 
 ```ts
-@schema()
+@model()
 export class Person extends BaseSchema {
   @property @contraint('min', 0) @contraint('isInteger', true) public age: number;
 }
@@ -141,7 +141,7 @@ Not implemented or documented yet
 Because a schema's information is typed we can approximate reasonable mocking information without any additional code. So as a default, nothing is required. However, it often pays to be a little more explicit about the MockGenerator function and you can enhance the auto-generated rules. If our Person schema is defined as:
 
 ```ts
-@schema()
+@model()
 export class Person extends BaseSchema {
   @property name: string;
   @property @positive @integer @max(100) age: number;

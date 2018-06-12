@@ -7,7 +7,7 @@ When you perform CRUD operations on a DB over time there is information loss. Th
 Whether this time-loss is important or not depends on the kind of information captured so in **FireModel** we allow you to state which of your Model's are to be "audited" for change:
 
 ```typescript
-@schema({ audit: true })
+@model({ audit: true })
 export class Company extends BaseSchema {
   @property public name: string;
   @property public employees?: number;

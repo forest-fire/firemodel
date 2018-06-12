@@ -16,7 +16,7 @@ Let's review the primary classes which Firemodel provides as this represents the
   A schema is a class which defines a data structure. This structure will be assigned to "data records" which conform to this schematic type. It is meant to be very minimal and its only concern is defining the data structure. The data structure can be comprised of _properties_, _relationships_, and _computed properties_. A simple example might look like: 
 
   ```ts
-  @schema()
+  @model()
   export class Person extends BaseSchema {
     @property public name: string;
     @property public age: number;

@@ -1,7 +1,7 @@
 import { RealTimeDB } from "abstracted-firebase";
-import { BaseSchema, ISchemaOptions } from "./index";
+import { Model } from ".";
 import { fk } from "common-types";
-import { Model, ILogger } from "./model";
+import { FireModel } from "./FireModel";
 export interface IWriteOperation {
     id: string;
     type: "set" | "pushKey" | "update";
@@ -14,28 +14,28 @@ export interface IWriteOperation {
 }
 export interface IRecordOptions {
     db?: RealTimeDB;
-    logging?: ILogger;
+    logging?: any;
     id?: string;
 }
-export declare class Record<T extends BaseSchema> {
-    private _model;
+export declare class Record<T extends Model> extends FireModel<T> {
+    static defaultDb: RealTimeDB;
     /**
      * create
      *
      * creates a new -- and empty -- Record object; often used in
      * conjunction with the Record's initialize() method
      */
-    static create<T extends BaseSchema>(schema: new () => T, options?: IRecordOptions): Record<T>;
+    static create<T extends Model>(model: new () => T, options?: IRecordOptions): Record<T>;
     /**
      * add
      *
      * Adds a new record to the database
      *
      * @param schema the schema of the record
-     * @param newRecord the data for the new record
+     * @param payload the data for the new record
      * @param options
      */
-    static add<T extends BaseSchema>(schema: new () => T, newRecord: T, options?: IRecordOptions): Promise<Record<T>>;
+    static add<T extends Model>(model: new () => T, payload: T, options?: IRecordOptions): Promise<Record<T>>;
     /**
      * load
      *
@@ -45,25 +45,20 @@ export declare class Record<T extends BaseSchema> {
      * Intent should be that this record already exists in the
      * database. If you want to add to the database then use add()
      */
-    static load<T extends BaseSchema>(schema: new () => T, record: T, options?: IRecordOptions): Record<T>;
-    static get<T extends BaseSchema>(schema: new () => T, id: string, options?: IRecordOptions): Promise<Record<T>>;
+    static load<T extends Model>(model: new () => T, payload: T, options?: IRecordOptions): Record<T>;
+    static get<T extends Model>(model: new () => T, id: string, options?: IRecordOptions): Promise<Record<T>>;
     private _existsOnDB;
     private _writeOperations;
     private _data?;
-    constructor(_model: Model<T>, options?: IRecordOptions);
+    constructor(model: new () => T, options?: IRecordOptions);
     readonly data: Readonly<T>;
     readonly isDirty: boolean;
-    readonly META: ISchemaOptions;
-    protected readonly db: RealTimeDB;
-    protected readonly pluralName: string;
-    protected readonly pushKeys: string[];
     /**
      * returns the fully qualified name in the database to this record;
      * this of course includes the record id so if that's not set yet calling
      * this getter will result in an error
      */
     readonly dbPath: string;
-    readonly modelName: string;
     /** The Record's primary key */
     id: string;
     /**
@@ -123,7 +118,7 @@ export declare class Record<T extends BaseSchema> {
     toJSON(): {
         dbPath: string;
         modelName: string;
-        pluralName: string;
+        pluralName: any;
         key: string;
         localPath: string;
         data: string;

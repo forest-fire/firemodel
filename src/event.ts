@@ -1,8 +1,7 @@
-import { Model } from ".";
 import { SerializedQuery } from "serialized-query";
 import { debounce } from "lodash";
-import { snapshotToHash } from "typed-conversions";
 import { rtdb } from "firebase-api-surface";
+import { Record } from "./Record";
 //#region generalized structures
 
 /** Enumeration of all Firemodel Actions that will be fired */
@@ -60,7 +59,7 @@ export interface IFMStartListening extends IFMAction {
  * @param dispatch The callback function which is called
  */
 export async function modelListener<T>(
-  model: Model<T>,
+  model: Record<T>,
   query: SerializedQuery<T>,
   dispatch = defaultDispatcher
 ) {
@@ -88,7 +87,7 @@ export async function modelListener<T>(
 
 const model_ready = (
   child_added: ChildEventCallback,
-  model: Model<any>,
+  model: Record<any>,
   dispatch = defaultDispatcher
 ) => {
   const started = new Date().getTime();
@@ -133,7 +132,7 @@ export function defaultDispatcher<T = IFMAction>(action: T): any {
 
 export const childEvent = <T>(
   eventType: rtdb.EventType,
-  model: Model<any>,
+  model: Record<any>,
   dispatch = defaultDispatcher
 ) => (snap: any, previous?: string) => {
   const action: IFMChildAction = {

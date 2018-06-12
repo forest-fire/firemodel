@@ -1,9 +1,8 @@
 // tslint:disable-next-line:no-implicit-dependencies
 import { RealTimeDB } from "abstracted-firebase";
-import { BaseSchema, ISchemaOptions } from ".";
+import { Model, ISchemaOptions } from ".";
 import { createError, fk, IDictionary } from "common-types";
-import { Model, ILogger } from "./model";
-import { key as fbk } from "firebase-key";
+import { key as fbKey } from "firebase-key";
 import { FireModel } from "./FireModel";
 
 export interface IWriteOperation {
@@ -19,11 +18,11 @@ export interface IWriteOperation {
 
 export interface IRecordOptions {
   db?: RealTimeDB;
-  logging?: ILogger;
+  logging?: any;
   id?: string;
 }
 
-export class Record<T extends BaseSchema> extends FireModel<T> {
+export class Record<T extends Model> extends FireModel<T> {
   public static set defaultDb(db: RealTimeDB) {
     FireModel.defaultDb = db;
   }
@@ -36,11 +35,11 @@ export class Record<T extends BaseSchema> extends FireModel<T> {
    * creates a new -- and empty -- Record object; often used in
    * conjunction with the Record's initialize() method
    */
-  public static create<T extends BaseSchema>(
-    schema: new () => T,
+  public static create<T extends Model>(
+    model: new () => T,
     options: IRecordOptions = {}
   ) {
-    const model = Model.create(schema, options);
+    // const model = OldModel.create(schema, options);
     const record = new Record<T>(model, options);
 
     return record;
@@ -52,18 +51,18 @@ export class Record<T extends BaseSchema> extends FireModel<T> {
    * Adds a new record to the database
    *
    * @param schema the schema of the record
-   * @param newRecord the data for the new record
+   * @param payload the data for the new record
    * @param options
    */
-  public static async add<T extends BaseSchema>(
-    schema: new () => T,
-    newRecord: T,
+  public static async add<T extends Model>(
+    model: new () => T,
+    payload: T,
     options: IRecordOptions = {}
   ) {
     let r;
     try {
-      r = Record.create(schema, options);
-      r._initialize(newRecord);
+      r = Record.create(model, options);
+      r._initialize(payload);
       await r._save();
     } catch (e) {
       const err = new Error(`Problem adding new Record: ${e.message}`);
@@ -83,23 +82,23 @@ export class Record<T extends BaseSchema> extends FireModel<T> {
    * Intent should be that this record already exists in the
    * database. If you want to add to the database then use add()
    */
-  public static load<T extends BaseSchema>(
-    schema: new () => T,
-    record: T,
+  public static load<T extends Model>(
+    model: new () => T,
+    payload: T,
     options: IRecordOptions = {}
   ) {
-    const r = Record.create(schema, options);
-    r._initialize(record);
+    const rec = Record.create(model, options);
+    rec._initialize(payload);
 
-    return r;
+    return rec;
   }
 
-  public static async get<T extends BaseSchema>(
-    schema: new () => T,
+  public static async get<T extends Model>(
+    model: new () => T,
     id: string,
     options: IRecordOptions = {}
   ) {
-    const record = Record.create(schema, options);
+    const record = Record.create(model, options);
     await record._getFromDB(id);
     return record;
   }
@@ -108,9 +107,11 @@ export class Record<T extends BaseSchema> extends FireModel<T> {
   private _writeOperations: IWriteOperation[] = [];
   private _data?: Partial<T>;
 
-  constructor(private _model: Model<T>, options: IRecordOptions = {}) {
+  constructor(model: new () => T, options: IRecordOptions = {}) {
     super();
-    this._data = new _model.schemaClass();
+    this._modelConstructor = model;
+    this._model = new model();
+    this._data = new model();
   }
 
   public get data() {
@@ -119,22 +120,6 @@ export class Record<T extends BaseSchema> extends FireModel<T> {
 
   public get isDirty() {
     return this._writeOperations.length > 0 ? true : false;
-  }
-
-  public get META(): ISchemaOptions {
-    return this._model.schema.META;
-  }
-
-  protected get db() {
-    return this._model.db;
-  }
-
-  protected get pluralName() {
-    return this._model.pluralName;
-  }
-
-  protected get pushKeys() {
-    return this._model.schema.META.pushKeys;
   }
 
   /**
@@ -150,10 +135,6 @@ export class Record<T extends BaseSchema> extends FireModel<T> {
       );
     }
     return [this.data.META.dbOffset, this.pluralName, this.data.id].join("/");
-  }
-
-  public get modelName() {
-    return this.data.constructor.name.toLowerCase();
   }
 
   /** The Record's primary key */
@@ -262,7 +243,7 @@ export class Record<T extends BaseSchema> extends FireModel<T> {
         `Invalid Operation: you can not push to property "${property}" before saving the record to the database`
       );
     }
-    const key = fbk();
+    const key = fbKey();
     const currentState = this.get(property) || {};
     const newState = { ...(currentState as any), [key]: value };
     // set state locally
@@ -308,7 +289,7 @@ export class Record<T extends BaseSchema> extends FireModel<T> {
     } catch (e) {
       throw createError(
         "UpdateProps",
-        `An error occurred trying to update ${this._model.modelName}:${this.id}`,
+        `An error occurred trying to update ${this.modelName}:${this.id}`,
         e
       );
     }
@@ -426,11 +407,11 @@ export class Record<T extends BaseSchema> extends FireModel<T> {
       e.name = "InvalidSave";
       throw e;
     }
-    this.id = fbk();
+    this.id = fbKey();
 
     if (!this.db) {
       const e = new Error(
-        `Attempt to save Record failed as the Database has not been connected yet. Try setting Model.defaultDb first.`
+        `Attempt to save Record failed as the Database has not been connected yet. Try settingFireModel first.`
       );
       e.name = "FiremodelError";
       throw e;

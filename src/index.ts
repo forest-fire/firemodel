@@ -10,15 +10,13 @@ export {
 } from "./decorators/property";
 export { hasMany, ownedBy, inverse } from "./decorators/relationship";
 export {
-  schema,
+  model,
   ISchemaOptions,
   ISchemaMetaProperties,
   ISchemaRelationshipMetaProperties
 } from "./decorators/schema";
-export { ILogger, IAuditRecord, FirebaseCrudOperations } from "./model";
-export { BaseSchema, RelationshipPolicy, RelationshipCardinality } from "./base-schema";
-export { Model } from "./model";
-export { Record } from "./record";
+export { Model, RelationshipPolicy, RelationshipCardinality } from "./Model";
+export { Record } from "./Record";
 export { List } from "./list";
 
 export { fk, pk } from "common-types";

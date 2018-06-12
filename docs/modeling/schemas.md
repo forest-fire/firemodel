@@ -3,7 +3,7 @@
 Schemas are the _things_ which we use to define the structure of entities. So imagine we have a **Person** who we want to represent in our application, we might define a schema as:
 
 ```typescript
-@schema()
+@model()
 export class Person extends BaseSchema {
   @property public name: string;
   @property public age: number;

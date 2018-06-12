@@ -1,5 +1,5 @@
-import { Model } from "./index";
 import { SerializedQuery } from "serialized-query";
+import { Record } from "./Record";
 /** Enumeration of all Firemodel Actions that will be fired */
 export declare enum FMActions {
     RECORD_ADDED = "@firemodel/RECORD_ADDED",
@@ -46,7 +46,7 @@ export interface IFMStartListening extends IFMAction {
  * @param ref The reference / serialized query which the streams will be setup on
  * @param dispatch The callback function which is called
  */
-export declare function modelListener<T>(model: Model<T>, query: SerializedQuery<T>, dispatch?: typeof defaultDispatcher): Promise<void>;
+export declare function modelListener<T>(model: Record<T>, query: SerializedQuery<T>, dispatch?: typeof defaultDispatcher): Promise<void>;
 export declare function recordListener<T>(): void;
 export declare function defaultDispatcher<T = IFMAction>(action: T): any;
-export declare const childEvent: <T>(eventType: import("serialized-query/node_modules/firebase-api-surface/lib/rtdb").EventType, model: Model<any>, dispatch?: typeof defaultDispatcher) => (snap: any, previous?: string) => void;
+export declare const childEvent: <T>(eventType: import("serialized-query/node_modules/firebase-api-surface/lib/rtdb").EventType, model: Record<any>, dispatch?: typeof defaultDispatcher) => (snap: any, previous?: string) => void;

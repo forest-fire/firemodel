@@ -2,7 +2,7 @@
 next: "/modeling/"
 ---
 
-# Configuring FireMock
+# Configuring FireModel
 
 ## Typescript
 

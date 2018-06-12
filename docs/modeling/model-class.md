@@ -1,4 +1,4 @@
-# The Model Class
+# Using your Schemas
 
 So back to the term "model". In Firemodel, a _model_ refers to the `Model` class and it's function al role is to wrap a `Schema` class to provide a basic API surface. Here's an example of how you might do this for the `Person` schema:
 

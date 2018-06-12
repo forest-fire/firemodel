@@ -1,5 +1,5 @@
 import "reflect-metadata";
-import { BaseSchema, ISchemaMetaProperties, ISchemaRelationshipMetaProperties } from "..";
+import { Model, ISchemaMetaProperties, ISchemaRelationshipMetaProperties } from "..";
 import {
   IDictionary,
   PropertyDecorator,
@@ -28,7 +28,7 @@ export const propertyDecorator = (
    * as property on meta specify the meta properties name here
    */
   property?: string
-) => (target: BaseSchema, key: string): void => {
+) => (target: Model, key: string): void => {
   const reflect: IDictionary = Reflect.getMetadata("design:type", target, key) || {};
   const meta: ISchemaMetaProperties = {
     ...Reflect.getMetadata(key, target),
@@ -59,17 +59,6 @@ export const propertyDecorator = (
       push(relationshipsBySchema, target.constructor.name, meta);
     }
   }
-
-  // Reflect.defineProperty(target, key, {
-  //   get: () => {
-  //     return this[key];
-  //   },
-  //   set: (value: any) => {
-  //     this[key] = value;
-  //   },
-  //   enumerable: true,
-  //   configurable: true
-  // });
 };
 
 /** lookup meta data for schema properties */
@@ -85,7 +74,7 @@ function propertyMeta(context: object) {
 export function getProperties(target: object) {
   return [
     ...propertiesBySchema[target.constructor.name],
-    ...propertiesBySchema.BaseSchema.map(s => ({
+    ...propertiesBySchema.Model.map(s => ({
       ...s,
       ...{ isBaseSchema: true }
     }))

@@ -1,5 +1,5 @@
 // tslint:disable:no-implicit-dependencies
-import { Model, Record } from "../src/index";
+import { Record } from "../src";
 import { DB } from "abstracted-admin";
 import * as chai from "chai";
 const expect = chai.expect;
@@ -23,6 +23,11 @@ describe("Record > ", () => {
       }))
       .pathPrefix("authenticated");
     db.mock.queueSchema("person", 10).generate();
+  });
+
+  it("can instantiate with new operator", async () => {
+    const person = new Record(Person);
+    expect(person.modelName).to.equal("person");
   });
 
   it("Record's add() factory adds record to database", async () => {

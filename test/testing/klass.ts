@@ -1,6 +1,5 @@
 import {
   Model,
-  BaseSchema,
   property,
   constrainedProperty,
   constrain,
@@ -8,7 +7,7 @@ import {
   min,
   max,
   length,
-  schema
+  model
 } from "../../src/index";
 import { IDictionary } from "common-types";
 import { pushKey } from "../../src/decorators/property";
@@ -16,7 +15,7 @@ import { pushKey } from "../../src/decorators/property";
 /* tslint:disable:max-classes-per-file */
 export type Callback = (m: string) => boolean;
 
-export class SubKlass extends BaseSchema {
+export class SubKlass extends Model {
   @property public sub: string = "subklass";
 }
 
@@ -27,7 +26,7 @@ export class ContainedKlass {
 }
 
 /** a schema class */
-@schema({ dbOffset: "authenticated", localOffset: "foobar" })
+@model({ dbOffset: "authenticated", localOffset: "foobar" })
 export class Klass extends SubKlass {
   @desc("who doesn't love a foobar?")
   @property

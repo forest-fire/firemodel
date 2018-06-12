@@ -34,4 +34,4 @@ export interface ISchemaMetaProperties extends IDictionary {
     /** what kind of relationship does this foreign key contain */
     relType?: ISchemaRelationshipType;
 }
-export declare function schema(options: ISchemaOptions): ClassDecorator;
+export declare function model(options: ISchemaOptions): ClassDecorator;
