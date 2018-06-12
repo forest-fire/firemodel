@@ -56,7 +56,7 @@ describe("Model > CRUD Ops: ", () => {
       .pathPrefix("authenticated");
     db.mock.queueSchema<Person>("person", 25);
     db.mock.generate();
-    const PersonModel = Model.create(Person, { db });
+    const PersonModel = Record.create(Person, { db });
     await PersonModel.push({
       name: "Charlie Chaplin",
       age: 84

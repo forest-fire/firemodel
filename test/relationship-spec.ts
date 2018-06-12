@@ -5,13 +5,14 @@ import * as chai from "chai";
 const expect = chai.expect;
 import "reflect-metadata";
 import { Person } from "./testing/person";
+import { FireModel } from "../src/FireModel";
 
 describe("Relationship > ", () => {
   let db: DB;
   beforeEach(async () => {
     db = new DB({ mocking: true });
     await db.waitForConnection();
-    FireModel = db;
+    FireModel.defaultDb = db;
   });
 
   it("using addHasMany() on a hasMany relationship works", async () => {

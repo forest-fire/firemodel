@@ -15,11 +15,8 @@ export class List<T extends Model> extends FireModel<T> {
   public static get defaultDb() {
     return FireModel.defaultDb;
   }
-  public static create<T extends Model>(
-    schema: new () => T,
-    options: IModelOptions = {}
-  ) {
-    const model = OldModel.create(schema, options);
+
+  public static create<T extends Model>(model: new () => T, options: IModelOptions = {}) {
     return new List<T>(model);
   }
 
@@ -50,11 +47,11 @@ export class List<T extends Model> extends FireModel<T> {
    * @param options model options
    */
   public static async all<T extends Model>(
-    schema: new () => T,
+    model: new () => T,
     options: IModelOptions = {}
   ): Promise<List<T>> {
     const query = new SerializedQuery().orderByChild("lastUpdated");
-    const list = await List.fromQuery<T>(schema, query, options);
+    const list = await List.fromQuery<T>(model, query, options);
 
     return list;
   }
@@ -63,17 +60,17 @@ export class List<T extends Model> extends FireModel<T> {
    * Loads the first X records of the Schema type where
    * ordering is provided by the "createdAt" property
    *
-   * @param schema the schema type
+   * @param model the model type
    * @param howMany the number of records to bring back
    * @param options model options
    */
   public static async first<T extends Model>(
-    schema: new () => T,
+    model: new () => T,
     howMany: number,
     options: IModelOptions = {}
   ): Promise<List<T>> {
     const query = new SerializedQuery().orderByChild("createdAt").limitToLast(howMany);
-    const list = await List.fromQuery(schema, query, options);
+    const list = await List.fromQuery(model, query, options);
 
     return list;
   }
@@ -83,19 +80,19 @@ export class List<T extends Model> extends FireModel<T> {
    *
    * Get recent items of a given type/schema (based on lastUpdated)
    *
-   * @param schema the TYPE you are interested
+   * @param model the TYPE you are interested
    * @param howMany the quantity to of records to bring back
    * @param offset start at an offset position (useful for paging)
    * @param options
    */
   public static async recent<T extends Model>(
-    schema: new () => T,
+    model: new () => T,
     howMany: number,
     offset: number = 0,
     options: IModelOptions = {}
   ): Promise<List<T>> {
     const query = new SerializedQuery().orderByChild("lastUpdated").limitToFirst(howMany);
-    const list = await List.fromQuery(schema, query, options);
+    const list = await List.fromQuery(model, query, options);
 
     return list;
   }
@@ -110,7 +107,7 @@ export class List<T extends Model> extends FireModel<T> {
    * @param options
    */
   public static async since<T extends Model>(
-    schema: new () => T,
+    model: new () => T,
     since: epochWithMilliseconds,
     options: IModelOptions = {}
   ): Promise<List<T>> {
@@ -124,35 +121,35 @@ export class List<T extends Model> extends FireModel<T> {
 
     // const query = new SerializedQuery().orderByChild("lastUpdated").startAt(since);
     const query = new SerializedQuery<T>().orderByChild("lastUpdated").startAt(since);
-    const list = await List.fromQuery(schema, query, options);
+    const list = await List.fromQuery(model, query, options);
 
     return list;
   }
 
   public static async inactive<T extends Model>(
-    schema: new () => T,
+    model: new () => T,
     howMany: number,
     options: IModelOptions = {}
   ): Promise<List<T>> {
     const query = new SerializedQuery().orderByChild("lastUpdated").limitToLast(howMany);
-    const list = await List.fromQuery(schema, query, options);
+    const list = await List.fromQuery(model, query, options);
 
     return list;
   }
 
   public static async last<T extends Model>(
-    schema: new () => T,
+    model: new () => T,
     howMany: number,
     options: IModelOptions = {}
   ): Promise<List<T>> {
     const query = new SerializedQuery().orderByChild("createdAt").limitToFirst(howMany);
-    const list = await List.fromQuery(schema, query, options);
+    const list = await List.fromQuery(model, query, options);
 
     return list;
   }
 
   public static async where<T extends Model, K extends keyof T>(
-    schema: new () => T,
+    model: new () => T,
     property: K,
     value: T[K] | [IComparisonOperator, T[K]],
     options: IModelOptions = {}
@@ -164,46 +161,38 @@ export class List<T extends Model> extends FireModel<T> {
       operation = value[0];
     }
     const query = new SerializedQuery().orderByChild(property).where(operation, val);
-    const list = await List.fromQuery(schema, query, options);
+    const list = await List.fromQuery(model, query, options);
 
     return list;
   }
 
-  constructor(private _model: OldModel<T>, private _data: T[] = []) {
+  constructor(model: new () => T, private _data: T[] = []) {
     super();
+    this._modelConstructor = model;
+    this._model = new model();
   }
 
   public get length(): number {
     return this._data.length;
   }
 
-  protected get db(): import("abstracted-firebase").RealTimeDB {
-    return this._model.db;
-  }
-
-  public get modelName() {
-    return this._model.modelName;
-  }
-
-  public get pluralName() {
-    return this._model.pluralName;
-  }
-
   public get dbPath() {
-    return [this.meta.dbOffset, this.pluralName].join("/");
+    return [this.META.dbOffset, this.pluralName].join("/");
   }
 
   public get localPath() {
-    return [this.meta.localOffset, this.pluralName].join("/");
+    return [this.META.localOffset, this.pluralName].join("/");
   }
 
   public get meta(): ISchemaOptions {
-    return this._model.schema.META;
+    return this._model.META;
   }
 
   /** Returns another List with data filtered down by passed in filter function */
   public filter(f: ListFilterFunction<T>) {
-    return new List(this._model, this._data.filter(f));
+    const list = List.create(this._modelConstructor);
+    list._data = this._data.filter(f);
+    return list;
   }
 
   /** Returns another List with data filtered down by passed in filter function */
@@ -212,7 +201,7 @@ export class List<T extends Model> extends FireModel<T> {
     defaultIfNotFound = DEFAULT_IF_NOT_FOUND
   ): Record<T> {
     const filtered = this._data.filter(f);
-    const r = Record.create(this._model.schemaClass);
+    const r = Record.create(this._modelConstructor);
     if (filtered.length > 0) {
       r._initialize(filtered[0]);
       return r;
@@ -231,7 +220,7 @@ export class List<T extends Model> extends FireModel<T> {
 
   public filterWhere<K extends keyof T>(prop: K, value: T[K]): List<T> {
     const whereFilter = (item: T) => item[prop] === value;
-    return new List(this._model, this._data.filter(whereFilter));
+    return new List(this._modelConstructor, this._data.filter(whereFilter));
   }
 
   /**
@@ -249,7 +238,7 @@ export class List<T extends Model> extends FireModel<T> {
     const list = this.filterWhere(prop, value);
 
     if (list.length > 0) {
-      return Record.load(this._model.schemaClass, list._data[0]);
+      return Record.load(this._modelConstructor, list._data[0]);
     } else {
       if (defaultIfNotFound !== DEFAULT_IF_NOT_FOUND) {
         return defaultIfNotFound as any;
@@ -289,12 +278,12 @@ export class List<T extends Model> extends FireModel<T> {
       if (defaultIfNotFound !== DEFAULT_IF_NOT_FOUND) {
         return defaultIfNotFound;
       }
-      const e = new Error(`Could not find "${id}" in list of ${this._model.pluralName}`);
+      const e = new Error(`Could not find "${id}" in list of ${this.pluralName}`);
       e.name = "NotFound";
       throw e;
     }
 
-    const r = new Record(this._model);
+    const r = Record.create(this._modelConstructor);
     r._initialize(find.data[0]);
     return r;
   }

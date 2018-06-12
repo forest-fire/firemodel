@@ -290,7 +290,7 @@ export class Record<T extends Model> extends FireModel<T> {
     } catch (e) {
       throw createError(
         "UpdateProps",
-        `An error occurred trying to update ${this._model.modelName}:${this.id}`,
+        `An error occurred trying to update ${this.modelName}:${this.id}`,
         e
       );
     }
