@@ -21,7 +21,8 @@ import { pushKey } from "../../src/decorators/property";
 export class Person extends Model {
   // prettier-ignore
   @property @length(20) public name: string;
-  @property public age?: number;
+  // prettier-ignore
+  @property @min(1) @max(100) public age?: number;
   @property public gender?: "male" | "female" | "other";
   @property public scratchpad?: IDictionary;
   // prettier-ignore

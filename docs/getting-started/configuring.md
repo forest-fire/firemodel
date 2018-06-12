@@ -4,7 +4,7 @@ next: "/modeling/"
 
 # Configuring FireModel
 
-## Typescript
+### Typescript
 
 While it may be possible to use this framework without Typescript, it's not intended for the broader JS audience. So, assuming you're using Typescript, you'll want to edit your `tsconfig.json` file with the following two lines:
 
