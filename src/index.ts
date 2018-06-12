@@ -15,9 +15,7 @@ export {
   ISchemaMetaProperties,
   ISchemaRelationshipMetaProperties
 } from "./decorators/schema";
-export { ILogger, IAuditRecord, FirebaseCrudOperations } from "./old-model";
 export { Model, RelationshipPolicy, RelationshipCardinality } from "./Model";
-export { OldModel } from "./old-model";
 export { Record } from "./record";
 export { List } from "./list";
 

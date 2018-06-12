@@ -1,5 +1,5 @@
 // tslint:disable:no-implicit-dependencies
-import { OldModel, Record } from "../src/index";
+import { Record } from "../src/index";
 import { DB } from "abstracted-admin";
 import { SchemaCallback } from "firemock";
 import * as chai from "chai";
@@ -66,10 +66,8 @@ describe("property decorator: ", () => {
     expect(Reflect.getMetadata("tags", myclass).pushKey).to.equal(true);
     expect(myclass.META.pushKeys).to.include("tags");
     expect(myclass.META.pushKeys).to.have.lengthOf(1);
-    const model = new OldModel<Klass>(Klass, new DB({ mocking: true }));
-    expect(model.pushKeys).to.include("tags");
-    const record = Record.create(Klass);
-    expect(record.META.pushKeys).to.include("tags");
+    const myRecord = Record.create(Klass);
+    expect(myRecord.pushKeys).to.include("tags");
   });
 
   it("@min(), @max(), @length(), and @desc() decorator-factories work", () => {

@@ -1,12 +1,20 @@
 import { createError } from "common-types";
-import { Model } from "./model";
 import { key as fbk } from "firebase-key";
-export class Record {
-    constructor(_model, options = {}) {
-        this._model = _model;
+import { FireModel } from "./FireModel";
+export class Record extends FireModel {
+    constructor(model, options = {}) {
+        super();
         this._existsOnDB = false;
         this._writeOperations = [];
-        this._data = new _model.schemaClass();
+        this._modelConstructor = model;
+        this._model = new model();
+        this._data = new model();
+    }
+    static set defaultDb(db) {
+        FireModel.defaultDb = db;
+    }
+    static get defaultDb() {
+        return FireModel.defaultDb;
     }
     /**
      * create
@@ -14,8 +22,8 @@ export class Record {
      * creates a new -- and empty -- Record object; often used in
      * conjunction with the Record's initialize() method
      */
-    static create(schema, options = {}) {
-        const model = Model.create(schema, options);
+    static create(model, options = {}) {
+        // const model = OldModel.create(schema, options);
         const record = new Record(model, options);
         return record;
     }
@@ -25,14 +33,14 @@ export class Record {
      * Adds a new record to the database
      *
      * @param schema the schema of the record
-     * @param newRecord the data for the new record
+     * @param payload the data for the new record
      * @param options
      */
-    static async add(schema, newRecord, options = {}) {
+    static async add(model, payload, options = {}) {
         let r;
         try {
-            r = Record.create(schema, options);
-            r._initialize(newRecord);
+            r = Record.create(model, options);
+            r._initialize(payload);
             await r._save();
         }
         catch (e) {
@@ -51,13 +59,13 @@ export class Record {
      * Intent should be that this record already exists in the
      * database. If you want to add to the database then use add()
      */
-    static load(schema, record, options = {}) {
-        const r = Record.create(schema, options);
-        r._initialize(record);
-        return r;
+    static load(model, payload, options = {}) {
+        const rec = Record.create(model, options);
+        rec._initialize(payload);
+        return rec;
     }
-    static async get(schema, id, options = {}) {
-        const record = Record.create(schema, options);
+    static async get(model, id, options = {}) {
+        const record = Record.create(model, options);
         await record._getFromDB(id);
         return record;
     }
@@ -66,18 +74,6 @@ export class Record {
     }
     get isDirty() {
         return this._writeOperations.length > 0 ? true : false;
-    }
-    get META() {
-        return this._model.schema.META;
-    }
-    get db() {
-        return this._model.db;
-    }
-    get pluralName() {
-        return this._model.pluralName;
-    }
-    get pushKeys() {
-        return this._model.schema.META.pushKeys;
     }
     /**
      * returns the fully qualified name in the database to this record;
@@ -89,9 +85,6 @@ export class Record {
             throw createError("record/invalid-path", `Invalid Record Path: you can not ask for the dbPath before setting an "id" property.`);
         }
         return [this.data.META.dbOffset, this.pluralName, this.data.id].join("/");
-    }
-    get modelName() {
-        return this.data.constructor.name.toLowerCase();
     }
     /** The Record's primary key */
     get id() {
@@ -218,7 +211,7 @@ export class Record {
             await updater.execute();
         }
         catch (e) {
-            throw createError("UpdateProps", `An error occurred trying to update ${this._model.modelName}:${this.id}`, e);
+            throw createError("UpdateProps", `An error occurred trying to update ${this.modelName}:${this.id}`, e);
         }
     }
     /**
@@ -310,7 +303,7 @@ export class Record {
         }
         this.id = fbk();
         if (!this.db) {
-            const e = new Error(`Attempt to save Record failed as the Database has not been connected yet. Try setting Model.defaultDb first.`);
+            const e = new Error(`Attempt to save Record failed as the Database has not been connected yet. Try settingFireModel first.`);
             e.name = "FiremodelError";
             throw e;
         }

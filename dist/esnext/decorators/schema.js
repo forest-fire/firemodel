@@ -4,7 +4,7 @@ import { getRelationships, getProperties, getPushKeys } from "./decorator";
 function propertyMeta(context) {
     return (prop) => Reflect.getMetadata(prop, context);
 }
-export function schema(options) {
+export function model(options) {
     return (target) => {
         const original = target;
         // new constructor
@@ -16,7 +16,7 @@ export function schema(options) {
                     return Object.assign({}, options, { property: propertyMeta(obj) }, { properties: getProperties(obj) }, { relationships: getRelationships(obj) }, { pushKeys: getPushKeys(obj) }, { audit: options.audit ? options.audit : false });
                 },
                 set() {
-                    throw new Error("The meta property can only be set with the @schema decorator!");
+                    throw new Error("The meta property can only be set with the @model decorator!");
                 },
                 configurable: false,
                 enumerable: false

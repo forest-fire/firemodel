@@ -2,7 +2,6 @@
 import { RealTimeDB } from "abstracted-firebase";
 import { Model, ISchemaOptions } from ".";
 import { createError, fk, IDictionary } from "common-types";
-import { OldModel, ILogger } from "./old-model";
 import { key as fbk } from "firebase-key";
 import { FireModel } from "./FireModel";
 
@@ -19,7 +18,7 @@ export interface IWriteOperation {
 
 export interface IRecordOptions {
   db?: RealTimeDB;
-  logging?: ILogger;
+  logging?: any;
   id?: string;
 }
 

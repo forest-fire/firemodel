@@ -3,13 +3,43 @@ export type NonProperties<T> = {
   [P in keyof T]: T[P] extends () => any ? never : P
 }[keyof T];
 export type Properties<T> = Pick<T, NonProperties<T>>;
-import { IDictionary, epochWithMilliseconds } from "common-types";
+import { IDictionary, epochWithMilliseconds, datetime } from "common-types";
 import { property } from "./decorators/property";
 import { ISchemaOptions, ISchemaMetaProperties } from "./decorators/schema";
 
+export interface IModelOptions {
+  logger?: ILogger;
+  db?: import("abstracted-firebase").RealTimeDB;
+}
 export interface IMetaData {
   attributes: IDictionary;
   relationships: IDictionary<IRelationship>;
+}
+
+export interface IAuditFilter {
+  /** audit entries since a given unix epoch timestamp */
+  since?: number;
+  /** the last X number of audit entries */
+  last?: number;
+}
+
+export type IComparisonOperator = "=" | ">" | "<";
+export type IConditionAndValue = [IComparisonOperator, boolean | string | number];
+export type FirebaseCrudOperations = "push" | "set" | "update" | "remove";
+
+export interface IAuditRecord {
+  crud: FirebaseCrudOperations;
+  when: datetime;
+  schema: string;
+  key: string;
+  info: IDictionary;
+}
+
+export interface ILogger {
+  log: (message: string) => void;
+  warn: (message: string) => void;
+  debug: (message: string) => void;
+  error: (message: string) => void;
 }
 
 export interface IRelationship {

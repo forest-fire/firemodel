@@ -1,14 +1,22 @@
-import { Record } from "./index";
+import { Record } from ".";
 import { SerializedQuery } from "serialized-query";
-import { Model } from "./model";
+import { OldModel } from "./old-model";
+import { FireModel } from "./FireModel";
 const DEFAULT_IF_NOT_FOUND = "__DO_NOT_USE__";
-export class List {
-    constructor(_model, _data = []) {
-        this._model = _model;
+export class List extends FireModel {
+    constructor(model, _data = []) {
+        super();
         this._data = _data;
+        this._modelConstructor = model;
+        this._model = new model();
     }
-    static create(schema, options = {}) {
-        const model = Model.create(schema, options);
+    static set defaultDb(db) {
+        FireModel.defaultDb = db;
+    }
+    static get defaultDb() {
+        return FireModel.defaultDb;
+    }
+    static create(model, options = {}) {
         return new List(model);
     }
     /**
@@ -19,7 +27,7 @@ export class List {
      * @param options model options
      */
     static async fromQuery(schema, query, options = {}) {
-        const model = Model.create(schema, options);
+        const model = OldModel.create(schema, options);
         query.setPath(model.dbPath);
         const list = List.create(schema, options);
         await list.load(query);
@@ -31,22 +39,22 @@ export class List {
      * @param schema the schema type
      * @param options model options
      */
-    static async all(schema, options = {}) {
+    static async all(model, options = {}) {
         const query = new SerializedQuery().orderByChild("lastUpdated");
-        const list = await List.fromQuery(schema, query, options);
+        const list = await List.fromQuery(model, query, options);
         return list;
     }
     /**
      * Loads the first X records of the Schema type where
      * ordering is provided by the "createdAt" property
      *
-     * @param schema the schema type
+     * @param model the model type
      * @param howMany the number of records to bring back
      * @param options model options
      */
-    static async first(schema, howMany, options = {}) {
+    static async first(model, howMany, options = {}) {
         const query = new SerializedQuery().orderByChild("createdAt").limitToLast(howMany);
-        const list = await List.fromQuery(schema, query, options);
+        const list = await List.fromQuery(model, query, options);
         return list;
     }
     /**
@@ -54,14 +62,14 @@ export class List {
      *
      * Get recent items of a given type/schema (based on lastUpdated)
      *
-     * @param schema the TYPE you are interested
+     * @param model the TYPE you are interested
      * @param howMany the quantity to of records to bring back
      * @param offset start at an offset position (useful for paging)
      * @param options
      */
-    static async recent(schema, howMany, offset = 0, options = {}) {
+    static async recent(model, howMany, offset = 0, options = {}) {
         const query = new SerializedQuery().orderByChild("lastUpdated").limitToFirst(howMany);
-        const list = await List.fromQuery(schema, query, options);
+        const list = await List.fromQuery(model, query, options);
         return list;
     }
     /**
@@ -73,7 +81,7 @@ export class List {
      * @param since  the datetime in miliseconds
      * @param options
      */
-    static async since(schema, since, options = {}) {
+    static async since(model, since, options = {}) {
         if (typeof since !== "number") {
             const e = new Error(`Invalid "since" parameter; value must be number instead got a(n) ${typeof since} [ ${since} ]`);
             e.name = "NotAllowed";
@@ -81,21 +89,20 @@ export class List {
         }
         // const query = new SerializedQuery().orderByChild("lastUpdated").startAt(since);
         const query = new SerializedQuery().orderByChild("lastUpdated").startAt(since);
-        console.log("QUERY", query);
-        const list = await List.fromQuery(schema, query, options);
+        const list = await List.fromQuery(model, query, options);
         return list;
     }
-    static async inactive(schema, howMany, options = {}) {
+    static async inactive(model, howMany, options = {}) {
         const query = new SerializedQuery().orderByChild("lastUpdated").limitToLast(howMany);
-        const list = await List.fromQuery(schema, query, options);
+        const list = await List.fromQuery(model, query, options);
         return list;
     }
-    static async last(schema, howMany, options = {}) {
+    static async last(model, howMany, options = {}) {
         const query = new SerializedQuery().orderByChild("createdAt").limitToFirst(howMany);
-        const list = await List.fromQuery(schema, query, options);
+        const list = await List.fromQuery(model, query, options);
         return list;
     }
-    static async where(schema, property, value, options = {}) {
+    static async where(model, property, value, options = {}) {
         let operation = "=";
         let val = value;
         if (Array.isArray(value)) {
@@ -103,38 +110,31 @@ export class List {
             operation = value[0];
         }
         const query = new SerializedQuery().orderByChild(property).where(operation, val);
-        const list = await List.fromQuery(schema, query, options);
+        const list = await List.fromQuery(model, query, options);
         return list;
     }
     get length() {
         return this._data.length;
     }
-    get db() {
-        return this._model.db;
-    }
-    get modelName() {
-        return this._model.modelName;
-    }
-    get pluralName() {
-        return this._model.pluralName;
-    }
     get dbPath() {
-        return [this.meta.dbOffset, this.pluralName].join("/");
+        return [this.META.dbOffset, this.pluralName].join("/");
     }
     get localPath() {
-        return [this.meta.localOffset, this.pluralName].join("/");
+        return [this.META.localOffset, this.pluralName].join("/");
     }
     get meta() {
-        return this._model.schema.META;
+        return this._model.META;
     }
     /** Returns another List with data filtered down by passed in filter function */
     filter(f) {
-        return new List(this._model, this._data.filter(f));
+        const list = List.create(this._modelConstructor);
+        list._data = this._data.filter(f);
+        return list;
     }
     /** Returns another List with data filtered down by passed in filter function */
     find(f, defaultIfNotFound = DEFAULT_IF_NOT_FOUND) {
         const filtered = this._data.filter(f);
-        const r = Record.create(this._model.schemaClass);
+        const r = Record.create(this._modelConstructor);
         if (filtered.length > 0) {
             r._initialize(filtered[0]);
             return r;
@@ -152,7 +152,7 @@ export class List {
     }
     filterWhere(prop, value) {
         const whereFilter = (item) => item[prop] === value;
-        return new List(this._model, this._data.filter(whereFilter));
+        return new List(this._modelConstructor, this._data.filter(whereFilter));
     }
     /**
      * findWhere
@@ -162,10 +162,9 @@ export class List {
      * it is stated
      */
     findWhere(prop, value, defaultIfNotFound = DEFAULT_IF_NOT_FOUND) {
-        console.log(this._data);
         const list = this.filterWhere(prop, value);
         if (list.length > 0) {
-            return Record.load(this._model.schemaClass, list._data[0]);
+            return Record.load(this._modelConstructor, list._data[0]);
         }
         else {
             if (defaultIfNotFound !== DEFAULT_IF_NOT_FOUND) {
@@ -200,11 +199,11 @@ export class List {
             if (defaultIfNotFound !== DEFAULT_IF_NOT_FOUND) {
                 return defaultIfNotFound;
             }
-            const e = new Error(`Could not find "${id}" in list of ${this._model.pluralName}`);
+            const e = new Error(`Could not find "${id}" in list of ${this.pluralName}`);
             e.name = "NotFound";
             throw e;
         }
-        const r = new Record(this._model);
+        const r = Record.create(this._modelConstructor);
         r._initialize(find.data[0]);
         return r;
     }

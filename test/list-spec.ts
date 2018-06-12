@@ -6,7 +6,6 @@ import * as helpers from "./testing/helpers";
 const expect = chai.expect;
 import "reflect-metadata";
 import { Person } from "./testing/person";
-import { wait } from "common-types";
 import { FireModel } from "../src/FireModel";
 
 describe("List class: ", () => {
@@ -42,7 +41,7 @@ describe("List class: ", () => {
       }))
       .pathPrefix("authenticated");
     db.mock.queueSchema("person", 25).generate();
-    const list = await List.all(Person);
+    const list = await List.all(Person, { db });
     expect(list).to.be.instanceof(List);
     expect(list.length).to.equal(25);
     expect(list.modelName).to.equal("person");

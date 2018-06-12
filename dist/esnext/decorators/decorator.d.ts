@@ -1,7 +1,7 @@
 import "reflect-metadata";
-import { BaseSchema, ISchemaMetaProperties, ISchemaRelationshipMetaProperties } from "../index";
+import { Model, ISchemaMetaProperties, ISchemaRelationshipMetaProperties } from "..";
 import { IDictionary } from "common-types";
-export declare const propertyDecorator: (nameValuePairs?: IDictionary<any>, property?: string) => (target: BaseSchema, key: string) => void;
+export declare const propertyDecorator: (nameValuePairs?: IDictionary<any>, property?: string) => (target: Model, key: string) => void;
 /**
  * Give all properties from schema and base schema
  *

@@ -38,16 +38,6 @@ property) => (target, key) => {
             push(relationshipsBySchema, target.constructor.name, meta);
         }
     }
-    // Reflect.defineProperty(target, key, {
-    //   get: () => {
-    //     return this[key];
-    //   },
-    //   set: (value: any) => {
-    //     this[key] = value;
-    //   },
-    //   enumerable: true,
-    //   configurable: true
-    // });
 };
 /** lookup meta data for schema properties */
 function propertyMeta(context) {
@@ -61,7 +51,7 @@ function propertyMeta(context) {
 export function getProperties(target) {
     return [
         ...propertiesBySchema[target.constructor.name],
-        ...propertiesBySchema.BaseSchema.map(s => (Object.assign({}, s, { isBaseSchema: true })))
+        ...propertiesBySchema.Model.map(s => (Object.assign({}, s, { isBaseSchema: true })))
     ];
 }
 export function getRelationships(target) {

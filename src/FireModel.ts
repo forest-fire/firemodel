@@ -68,12 +68,13 @@ export class FireModel<T = Model> {
     return this._db;
   }
 
+  public get pushKeys() {
+    return (this._model as Model).META.pushKeys;
+  }
+
   //#endregion
 
   //#region PROTECTED INTERFACE
-  protected get pushKeys() {
-    return (this._model as Model).META.pushKeys;
-  }
 
   //#endregion
 }

@@ -1,10 +1,11 @@
 import { Model, ISchemaOptions, Record } from ".";
 import { SerializedQuery, IComparisonOperator } from "serialized-query";
-import { OldModel, IModelOptions } from "./old-model";
+
 import { epochWithMilliseconds } from "common-types";
 import { FireModel } from "./FireModel";
 // tslint:disable-next-line:no-implicit-dependencies
 import { RealTimeDB } from "abstracted-firebase";
+import { IModelOptions } from "./model";
 
 const DEFAULT_IF_NOT_FOUND = "__DO_NOT_USE__";
 
@@ -28,13 +29,12 @@ export class List<T extends Model> extends FireModel<T> {
    * @param options model options
    */
   public static async fromQuery<T extends Model>(
-    schema: new () => T,
+    model: new () => T,
     query: SerializedQuery,
     options: IModelOptions = {}
   ): Promise<List<T>> {
-    const model = OldModel.create(schema, options);
-    query.setPath(model.dbPath);
-    const list = List.create(schema, options);
+    const list = List.create(model, options);
+    query.setPath(list.dbPath);
 
     await list.load(query);
     return list;
