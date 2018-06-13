@@ -20,6 +20,8 @@ export interface IRecordOptions {
   db?: RealTimeDB;
   logging?: any;
   id?: string;
+  /** if you're working off of a mocking database, there are situations where adding a record silently (aka., not triggering any listener events) is desirable and should be allowed */
+  silent?: boolean;
 }
 
 export class Record<T extends Model> extends FireModel<T> {
@@ -39,10 +41,16 @@ export class Record<T extends Model> extends FireModel<T> {
     model: new () => T,
     options: IRecordOptions = {}
   ) {
-    // const model = OldModel.create(schema, options);
-    const record = new Record<T>(model, options);
+    const r = new Record<T>(model, options);
+    if (options.silent && !r.db.isMockDb) {
+      const e = new Error(
+        `You can only add new records to the DB silently when using a Mock database!`
+      );
+      e.name = "FireModel::Forbidden";
+      throw e;
+    }
 
-    return record;
+    return r;
   }
 
   /**
@@ -172,7 +180,9 @@ export class Record<T extends Model> extends FireModel<T> {
         'Invalid Path: you can not ask for the dbPath before setting an "id" property.'
       );
     }
-    return [this.data.META.localOffset, this.pluralName, this.data.id].join("/");
+    return [this.data.META.localOffset, this.pluralName, this.data.id].join(
+      "/"
+    );
   }
 
   /**
@@ -229,7 +239,10 @@ export class Record<T extends Model> extends FireModel<T> {
    * Pushes new values onto properties on the record
    * which have been stated to be a "pushKey"
    */
-  public async pushKey<K extends keyof T>(property: K, value: T[K][keyof T[K]]) {
+  public async pushKey<K extends keyof T>(
+    property: K,
+    value: T[K][keyof T[K]]
+  ) {
     if (this.META.pushKeys.indexOf(property as any) === -1) {
       throw createError(
         "invalid-operation/not-pushkey",
@@ -316,7 +329,10 @@ export class Record<T extends Model> extends FireModel<T> {
       e.name = "InvalidRelationship";
       throw e;
     }
-    if (typeof this.data[property] === "object" && (this.data[property] as any)[ref]) {
+    if (
+      typeof this.data[property] === "object" &&
+      (this.data[property] as any)[ref]
+    ) {
       console.warn(
         `The fk of "${ref}" already exists in "${this.modelName}.${property}"!`
       );
@@ -394,7 +410,9 @@ export class Record<T extends Model> extends FireModel<T> {
       this._initialize(data);
     } else {
       throw new Error(
-        `Unknown Key: the key "${id}" was not found in Firebase at "${this.dbPath}".`
+        `Unknown Key: the key "${id}" was not found in Firebase at "${
+          this.dbPath
+        }".`
       );
     }
 
@@ -402,12 +420,9 @@ export class Record<T extends Model> extends FireModel<T> {
   }
 
   private async _save() {
-    if (this.id) {
-      const e = new Error(`Saving after ID is set is not allowed [ ${this.id} ]`);
-      e.name = "InvalidSave";
-      throw e;
+    if (!this.id) {
+      this.id = fbKey();
     }
-    this.id = fbKey();
 
     if (!this.db) {
       const e = new Error(

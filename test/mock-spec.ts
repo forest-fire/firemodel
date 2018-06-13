@@ -1,40 +1,112 @@
 // tslint:disable:no-implicit-dependencies
-import { Model } from "../src/index";
+import { Model, model, List, property } from "../src/index";
 import { DB } from "abstracted-admin";
-import { SchemaCallback } from "firemock";
 import * as chai from "chai";
+import { Mock } from "../src/Mock";
+import { FancyPerson } from "./testing/FancyPerson";
+import { Car } from "./testing/Car";
+import { Company } from "./testing/company";
 const expect = chai.expect;
 
-const personMock: SchemaCallback<Person> = h => () => ({
-  name: h.faker.name.firstName(),
-  age: h.faker.random.number({ min: 1, max: 100 })
-});
-
-export class Person extends Model {
-  public name: string;
-  public age: number;
+@model({})
+export class SimplePerson extends Model {
+  @property public name: string;
+  @property public age: number;
+  @property public phoneNumber: string;
 }
 
-// TODO: is this worthwhile functionality?
-
 describe("Mocking:", () => {
-  // it.skip("Setting a mockGenerator overrides default", async () => {
-  //   const db: DB = new DB({ mocking: true });
-  //   const person = new Person(db);
-  //   person.generate(10);
-  //   const people = await db.getList<Person>("/people");
+  let db: DB;
+  beforeEach(async () => {
+    db = new DB({ mocking: true });
+    await db.waitForConnection();
+    List.defaultDb = db;
+  });
+  it("the auto-mock works for named properties", async () => {
+    Mock(SimplePerson, db).generate(10);
+    const people = await List.all(SimplePerson);
 
-  //   expect(people).lengthOf(10);
-  //   expect(people[0]).to.have.property("id");
-  //   expect(people[0]).to.have.property("name");
-  //   expect(people[0]).to.have.property("age");
-  //   expect(people[0]).to.have.property("createdAt");
-  //   expect(people[0]).to.have.property("lastUpdated");
-  //   expect(people[0].age).to.be.a("number");
-  //   expect(people[0].createdAt).to.be.a("string");
-  // });
+    expect(people).to.have.lengthOf(10);
+    people.map(person => {
+      expect(person.age)
+        .to.be.a("number")
+        .greaterThan(0)
+        .lessThan(101);
+    });
+  });
 
-  it.skip("Bespoke mockGenerator can be generated");
-  it.skip("Default mockGenerator can get schema properties");
-  it.skip("Default mockGenerator can generate reasonable mock data");
+  it("giving a @mock named hint corrects the typing of a named prop", async () => {
+    Mock(FancyPerson, db).generate(10);
+    const people = await List.all(FancyPerson);
+    expect(people).to.have.lengthOf(10);
+    people.map(person => {
+      expect(person.otherPhone).to.be.a("string");
+      expect(/[\.\(-]/.test(person.otherPhone)).to.equal(true);
+    });
+  });
+
+  it("passing in a function to @mock produces expected results", async () => {
+    Mock(FancyPerson, db).generate(10);
+    const people = await List.all(FancyPerson);
+    expect(people).to.have.lengthOf(10);
+    people.map(person => {
+      expect(person.foobar).to.be.a("string");
+      expect(person.foobar).to.contain("hello");
+    });
+  });
+
+  it("using createRelationshipLinks() sets fake links to all relns", async () => {
+    Mock(FancyPerson, db)
+      .createRelationshipLinks()
+      .generate(10);
+    const people = await List.all(FancyPerson);
+    expect(people).to.have.lengthOf(10);
+    people.map(person => {
+      expect(person.employer).to.be.a("string");
+      expect(person.cars)
+        .to.be.an("array")
+        .and.to.be.length(2);
+    });
+  });
+
+  it("using createRelationshipLinks() sets fake links to all relns", async () => {
+    Mock(FancyPerson, db)
+      .followRelationshipLinks()
+      .generate(10);
+    const people = await List.all(FancyPerson);
+    const cars = await List.all(Car);
+    const company = await List.all(Company);
+    expect(people).to.have.lengthOf(10);
+    expect(cars.length).to.equal(20);
+    expect(company.length).to.equal(10);
+    people.map(person => {
+      expect(person.employer).to.be.a("string");
+      expect(company.findById(person.employer)).to.be.an("object");
+      expect(company.findById(person.employer).data.employees)
+        .to.be.a("number")
+        .and.be.greaterThan(0);
+      expect(person.cars)
+        .to.be.an("array")
+        .and.to.be.length(2);
+      expect(cars.findById(person.cars[0])).to.be.an("object");
+      expect(cars.findById(person.cars[1])).to.be.an("object");
+      expect(cars.findById(person.cars[0]).data.model).to.be.a("string");
+      expect(cars.findById(person.cars[1]).data.modelYear).to.be.a("number");
+    });
+  });
+
+  it("using a specific config for createRelationshipLinks works as expected", async () => {
+    Mock(FancyPerson, db)
+      .followRelationshipLinks({
+        cars: [3, 5]
+      })
+      .generate(25);
+    const people = await List.all(FancyPerson);
+
+    people.map(person => {
+      expect(person.cars.length)
+        .to.be.greaterThan(2)
+        .and.lessThan(6);
+    });
+  });
 });

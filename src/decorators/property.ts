@@ -26,6 +26,12 @@ export function min(value: number) {
   return propertyDecorator({ min: value });
 }
 
+export type MockFunction = (context: import("firemock").MockHelper) => any;
+
+export function mock(value: string | MockFunction) {
+  return propertyDecorator({ mockType: value });
+}
+
 export function max(value: number) {
   return propertyDecorator({ max: value });
 }

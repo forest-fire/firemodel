@@ -37,7 +37,7 @@ module.exports = {
         },
         {
           title: "Functional Primitives",
-          collapsable: false,
+          collapsable: true,
           children: ["properties", "constraints", "relationships"]
         },
         {
@@ -71,11 +71,10 @@ module.exports = {
         }
       ],
       "/mocking/": [
-        ["/mocking/", "Overview and Scope"],
         {
           title: "Mocking",
           collapsable: false,
-          children: ["configure-mocking", "queuing"]
+          children: ["/mocking/", "configure-mocking", "extending", "relationships"]
         },
         {
           title: "Other Sections",

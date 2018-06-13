@@ -1,7 +1,7 @@
 import { SerializedQuery } from "serialized-query";
 import { debounce } from "lodash";
 import { rtdb } from "firebase-api-surface";
-import { Record } from "./record";
+import { Record } from "./Record";
 //#region generalized structures
 
 /** Enumeration of all Firemodel Actions that will be fired */

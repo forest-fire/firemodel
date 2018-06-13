@@ -1,14 +1,16 @@
-import { Record } from "./index";
+import { Record } from ".";
 import { SerializedQuery } from "serialized-query";
 import { FireModel } from "./FireModel";
 const DEFAULT_IF_NOT_FOUND = "__DO_NOT_USE__";
 export class List extends FireModel {
+    //#endregion
     constructor(model, _data = []) {
         super();
         this._data = _data;
         this._modelConstructor = model;
         this._model = new model();
     }
+    //#region STATIC Interfaces
     static set defaultDb(db) {
         FireModel.defaultDb = db;
     }
@@ -120,9 +122,6 @@ export class List extends FireModel {
     get localPath() {
         return [this.META.localOffset, this.pluralName].join("/");
     }
-    get meta() {
-        return this._model.META;
-    }
     /** Returns another List with data filtered down by passed in filter function */
     filter(f) {
         const list = List.create(this._modelConstructor);
@@ -225,4 +224,4 @@ export class List extends FireModel {
         return this;
     }
 }
-//# sourceMappingURL=list.js.map
+//# sourceMappingURL=List.js.map

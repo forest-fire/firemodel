@@ -4,8 +4,9 @@ export type NonProperties<T> = {
 }[keyof T];
 export type Properties<T> = Pick<T, NonProperties<T>>;
 import { IDictionary, epochWithMilliseconds, datetime } from "common-types";
-import { property } from "./decorators/property";
+import { property, mock } from "./decorators/property";
 import { ISchemaOptions, ISchemaMetaProperties } from "./decorators/schema";
+import { Mock } from "firemock";
 
 export interface IModelOptions {
   logger?: ILogger;
@@ -24,7 +25,10 @@ export interface IAuditFilter {
 }
 
 export type IComparisonOperator = "=" | ">" | "<";
-export type IConditionAndValue = [IComparisonOperator, boolean | string | number];
+export type IConditionAndValue = [
+  IComparisonOperator,
+  boolean | string | number
+];
 export type FirebaseCrudOperations = "push" | "set" | "update" | "remove";
 
 export interface IAuditRecord {
@@ -60,11 +64,15 @@ export abstract class Model {
   /** The primary-key for the record */
   @property public id?: string;
   /** The last time that a given record was updated */
-  @property public lastUpdated?: epochWithMilliseconds;
+  @property
+  @mock("dateRecentMiliseconds")
+  public lastUpdated?: epochWithMilliseconds;
   /** The datetime at which this record was first created */
-  @property public createdAt?: epochWithMilliseconds;
+  @property
+  @mock("datePastMiliseconds")
+  public createdAt?: epochWithMilliseconds;
   /** Metadata properties of the given schema */
-  public META?: Partial<ISchemaOptions>;
+  public META?: ISchemaOptions;
 
   public toString() {
     const obj: IDictionary = {};

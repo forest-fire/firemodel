@@ -10,6 +10,8 @@ import { IModelOptions } from "./Model";
 const DEFAULT_IF_NOT_FOUND = "__DO_NOT_USE__";
 
 export class List<T extends Model> extends FireModel<T> {
+  //#region STATIC Interfaces
+
   public static set defaultDb(db: RealTimeDB) {
     FireModel.defaultDb = db;
   }
@@ -17,7 +19,10 @@ export class List<T extends Model> extends FireModel<T> {
     return FireModel.defaultDb;
   }
 
-  public static create<T extends Model>(model: new () => T, options: IModelOptions = {}) {
+  public static create<T extends Model>(
+    model: new () => T,
+    options: IModelOptions = {}
+  ) {
     return new List<T>(model);
   }
 
@@ -69,7 +74,9 @@ export class List<T extends Model> extends FireModel<T> {
     howMany: number,
     options: IModelOptions = {}
   ): Promise<List<T>> {
-    const query = new SerializedQuery().orderByChild("createdAt").limitToLast(howMany);
+    const query = new SerializedQuery()
+      .orderByChild("createdAt")
+      .limitToLast(howMany);
     const list = await List.fromQuery(model, query, options);
 
     return list;
@@ -91,7 +98,9 @@ export class List<T extends Model> extends FireModel<T> {
     offset: number = 0,
     options: IModelOptions = {}
   ): Promise<List<T>> {
-    const query = new SerializedQuery().orderByChild("lastUpdated").limitToFirst(howMany);
+    const query = new SerializedQuery()
+      .orderByChild("lastUpdated")
+      .limitToFirst(howMany);
     const list = await List.fromQuery(model, query, options);
 
     return list;
@@ -120,7 +129,9 @@ export class List<T extends Model> extends FireModel<T> {
     }
 
     // const query = new SerializedQuery().orderByChild("lastUpdated").startAt(since);
-    const query = new SerializedQuery<T>().orderByChild("lastUpdated").startAt(since);
+    const query = new SerializedQuery<T>()
+      .orderByChild("lastUpdated")
+      .startAt(since);
     const list = await List.fromQuery(model, query, options);
 
     return list;
@@ -131,7 +142,9 @@ export class List<T extends Model> extends FireModel<T> {
     howMany: number,
     options: IModelOptions = {}
   ): Promise<List<T>> {
-    const query = new SerializedQuery().orderByChild("lastUpdated").limitToLast(howMany);
+    const query = new SerializedQuery()
+      .orderByChild("lastUpdated")
+      .limitToLast(howMany);
     const list = await List.fromQuery(model, query, options);
 
     return list;
@@ -142,7 +155,9 @@ export class List<T extends Model> extends FireModel<T> {
     howMany: number,
     options: IModelOptions = {}
   ): Promise<List<T>> {
-    const query = new SerializedQuery().orderByChild("createdAt").limitToFirst(howMany);
+    const query = new SerializedQuery()
+      .orderByChild("createdAt")
+      .limitToFirst(howMany);
     const list = await List.fromQuery(model, query, options);
 
     return list;
@@ -160,16 +175,28 @@ export class List<T extends Model> extends FireModel<T> {
       val = value[1];
       operation = value[0];
     }
-    const query = new SerializedQuery().orderByChild(property).where(operation, val);
+    const query = new SerializedQuery()
+      .orderByChild(property)
+      .where(operation, val);
     const list = await List.fromQuery(model, query, options);
 
     return list;
   }
 
-  constructor(model: new () => T, private _data: T[] = []) {
+  //#endregion
+
+  private _data: T[] = [];
+
+  constructor(model: new () => T, options: IModelOptions = {}) {
     super();
     this._modelConstructor = model;
     this._model = new model();
+    if (options.db) {
+      this._db = options.db;
+      if (!FireModel.defaultDb) {
+        FireModel.defaultDb = options.db;
+      }
+    }
   }
 
   public get length(): number {
@@ -182,10 +209,6 @@ export class List<T extends Model> extends FireModel<T> {
 
   public get localPath() {
     return [this.META.localOffset, this.pluralName].join("/");
-  }
-
-  public get meta(): ISchemaOptions {
-    return this._model.META;
   }
 
   /** Returns another List with data filtered down by passed in filter function */
@@ -210,7 +233,9 @@ export class List<T extends Model> extends FireModel<T> {
         return defaultIfNotFound as any;
       } else {
         const e = new Error(
-          `find(fn) did not find a value in the List [ length: ${this.data.length} ]`
+          `find(fn) did not find a value in the List [ length: ${
+            this.data.length
+          } ]`
         );
         e.name = "NotFound";
         throw e;
@@ -220,7 +245,9 @@ export class List<T extends Model> extends FireModel<T> {
 
   public filterWhere<K extends keyof T>(prop: K, value: T[K]): List<T> {
     const whereFilter = (item: T) => item[prop] === value;
-    return new List(this._modelConstructor, this._data.filter(whereFilter));
+    const list = new List(this._modelConstructor);
+    list._data = this.data.filter(whereFilter);
+    return list;
   }
 
   /**
@@ -272,13 +299,18 @@ export class List<T extends Model> extends FireModel<T> {
    * @param id the unique ID which is being looked for
    * @param defaultIfNotFound the default value returned if the ID is not found in the list
    */
-  public get(id: string, defaultIfNotFound: any = DEFAULT_IF_NOT_FOUND): Record<T> {
+  public findById(
+    id: string,
+    defaultIfNotFound: any = DEFAULT_IF_NOT_FOUND
+  ): Record<T> {
     const find = this.filter(f => f.id === id);
     if (find.length === 0) {
       if (defaultIfNotFound !== DEFAULT_IF_NOT_FOUND) {
         return defaultIfNotFound;
       }
-      const e = new Error(`Could not find "${id}" in list of ${this.pluralName}`);
+      const e = new Error(
+        `Could not find "${id}" in list of ${this.pluralName}`
+      );
       e.name = "NotFound";
       throw e;
     }
@@ -295,9 +327,11 @@ export class List<T extends Model> extends FireModel<T> {
    * @param defaultIfNotFound the default value returned if the ID is not found in the list
    */
   public getData(id: string, defaultIfNotFound: any = "__DO_NOT_USE__"): T {
-    const record = this.get(id, defaultIfNotFound);
+    const record = this.findById(id, defaultIfNotFound);
 
-    return record === defaultIfNotFound ? defaultIfNotFound : ((record as any).data as T);
+    return record === defaultIfNotFound
+      ? defaultIfNotFound
+      : ((record as any).data as T);
   }
 
   public async load(pathOrQuery: string | SerializedQuery<T>) {

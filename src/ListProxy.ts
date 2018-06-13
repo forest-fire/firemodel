@@ -1,4 +1,4 @@
-import { Record } from "./record";
+import { Record } from "./Record";
 import { IDictionary } from "common-types";
 import { ISchemaMetaProperties } from "./decorators/schema";
 import { Model } from "./Model";

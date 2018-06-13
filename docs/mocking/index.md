@@ -1,6 +1,4 @@
-# Mocking
-
-## Overview
+# Mocking Overview
 
 When I first started testing I remember thinking that mock testing must be hard. That was a good
 enough reason to avoid it like the plague for a few years but you can't outrun the plague. To my
@@ -20,7 +18,7 @@ This ensures that the underlying _firemock_ dependency doesn't make it into your
 
 Enjoy and start mocking (your code not me).
 
-## Scope
+### Scope Qualification
 
 A quick disclaimer ... before we claim that the mocking that comes "out of the box" via **FireMock** is the end-all-be-all to mock testing let me state clearly that it is not. There are great libraries like [TestDouble](https://github.com/testdouble/testdouble.js) and [Sinon](http://sinonjs.org/). These are more typical Mock libraries and help mocking all sorts of things. What FireMock is providing is simple way to mock your database interaction. It doesn't help you mock classes, objects, functions, etc. in your code.
 

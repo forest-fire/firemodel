@@ -1,9 +1,9 @@
-import { Model, ISchemaOptions, Record } from "./index";
+import { Model, Record } from ".";
 import { SerializedQuery, IComparisonOperator } from "serialized-query";
 import { epochWithMilliseconds } from "common-types";
 import { FireModel } from "./FireModel";
 import { RealTimeDB } from "abstracted-firebase";
-import { IModelOptions } from "./model";
+import { IModelOptions } from "./Model";
 export declare class List<T extends Model> extends FireModel<T> {
     private _data;
     static defaultDb: RealTimeDB;
@@ -60,7 +60,6 @@ export declare class List<T extends Model> extends FireModel<T> {
     readonly length: number;
     readonly dbPath: string;
     readonly localPath: string;
-    readonly meta: ISchemaOptions;
     /** Returns another List with data filtered down by passed in filter function */
     filter(f: ListFilterFunction<T>): List<T>;
     /** Returns another List with data filtered down by passed in filter function */

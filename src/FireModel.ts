@@ -5,7 +5,7 @@ import { ISchemaOptions } from ".";
 // tslint:disable-next-line:no-var-requires
 const pluralize = require("pluralize");
 
-export class FireModel<T = Model> {
+export class FireModel<T extends Model> {
   //#region STATIC INTERFACE
 
   private static _defaultDb: import("abstracted-firebase").RealTimeDB = null;
@@ -39,7 +39,7 @@ export class FireModel<T = Model> {
     return pluralize(this.modelName);
   }
 
-  public get META(): ISchemaOptions {
+  public get META(): ISchemaOptions<T> {
     return (this._model as Model).META;
   }
 

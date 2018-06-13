@@ -1,5 +1,5 @@
 Arguments: 
-  /usr/local/bin/node /usr/local/bin/yarn run build
+  /usr/local/bin/node /usr/local/bin/yarn add --dev @types/path.join
 
 PATH: 
   /usr/local/bin:/Users/ken/.yarn/bin:/usr/local/share/android-sdk/platform-tools:.:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/MacGPG2/bin:/Users/ken/.yarn/bin:/usr/local/share/android-sdk/platform-tools:.:/Users/ken/Library/Python/2.7/bin:/usr/local/sbin:/opt/local/bin:/opt/local/sbin:/opt/X11/bin:/Users/kensnyder/.rvm/bin:/Users/kensnyder/.ec2/bin:/Developer/usr/bin:/Users/kensnyder/pear/bin:/usr/local/share/npm/bin:/Applications/Couchbase Server.app/Contents/Resources/couchbase-core/bin:/Users/kensnyder/repos/mine/api/commandline/bin:/Users/ken/Library/Python/2.7/bin:/usr/local/sbin:/usr/local/bin:/opt/local/bin:/opt/local/sbin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/opt/X11/bin:/Users/kensnyder/.rvm/bin:/Users/kensnyder/.ec2/bin:/Developer/usr/bin:/Users/kensnyder/pear/bin:/usr/local/share/npm/bin:/Applications/Couchbase Server.app/Contents/Resources/couchbase-core/bin:/Users/kensnyder/repos/mine/api/commandline/bin
@@ -16,7 +16,7 @@ Platform:
 npm manifest: 
   {
     "name": "firemodel",
-    "version": "0.12.1",
+    "version": "0.13.0",
     "description": "Modeling, Access, and Mocking for Firebase Projects",
     "license": "MIT",
     "repository": "https://github.com/forest-fire/firemodel",
@@ -26,7 +26,6 @@ npm manifest:
       "typescript"
     ],
     "files": [
-      "lib",
       "dist"
     ],
     "main": "dist/firemodel.cjs.js",
@@ -53,13 +52,14 @@ npm manifest:
       "firebase-api-surface": "^0.8.3",
       "firebase-key": "^2.0.1",
       "lodash": "^4.17.10",
+      "path.join": "^1.0.0",
       "pluralize": "^7.0.0",
       "reflect-metadata": "^0.1.12",
       "serialized-query": "^0.3.8",
       "typed-conversions": "^0.8.3"
     },
     "peerDependencies": {
-      "firemock": "^0.17.5"
+      "firemock": "^0.17.6"
     },
     "devDependencies": {
       "@types/chai": "^4.1.2",
@@ -74,14 +74,14 @@ npm manifest:
       "@types/stack-trace": "^0.0.28",
       "abstracted-admin": "^0.10.2",
       "abstracted-client": "^0.10.0",
-      "abstracted-firebase": "^0.11.9",
+      "abstracted-firebase": "^0.11.10",
       "async-shelljs": "^0.1.2",
       "chai": "^4.1.2",
       "chalk": "^2.4.1",
       "chance": "^1.0.16",
       "coveralls": "^3.0.0",
       "faker": "^4.1.0",
-      "firemock": "^0.17.5",
+      "firemock": "^0.17.6",
       "js-yaml": "^3.12.0",
       "mocha": "^5.0.5",
       "nyc": "^11.6.0",
@@ -1500,9 +1500,9 @@ Lockfile:
       serialized-query "^0.3.8"
       typed-conversions "^0.8.3"
   
-  abstracted-firebase@^0.11.9:
-    version "0.11.9"
-    resolved "https://registry.yarnpkg.com/abstracted-firebase/-/abstracted-firebase-0.11.9.tgz#ee73d85180963eb61172cf078246b7eaf17ef0aa"
+  abstracted-firebase@^0.11.10, abstracted-firebase@^0.11.9:
+    version "0.11.10"
+    resolved "https://registry.yarnpkg.com/abstracted-firebase/-/abstracted-firebase-0.11.10.tgz#af5f62b0e363d671ccda9cb8e16bfbc724bc4a69"
     dependencies:
       common-types "^1.7.36"
       firebase-api-surface "^0.8.3"
@@ -1527,10 +1527,6 @@ Lockfile:
   acorn-es7-plugin@^1.0.12:
     version "1.1.7"
     resolved "https://registry.yarnpkg.com/acorn-es7-plugin/-/acorn-es7-plugin-1.1.7.tgz#f2ee1f3228a90eead1245f9ab1922eb2e71d336b"
-  
-  acorn@^4.0.0:
-    version "4.0.13"
-    resolved "https://registry.yarnpkg.com/acorn/-/acorn-4.0.13.tgz#105495ae5361d697bd195c825192e1ad7f253787"
   
   acorn@^5.0.0, acorn@^5.6.2:
     version "5.6.2"
@@ -2237,12 +2233,12 @@ Lockfile:
       lodash.uniq "^4.5.0"
   
   caniuse-db@^1.0.30000529, caniuse-db@^1.0.30000634, caniuse-db@^1.0.30000639:
-    version "1.0.30000851"
-    resolved "https://registry.yarnpkg.com/caniuse-db/-/caniuse-db-1.0.30000851.tgz#8a0d3ca4dde72068560acc98bacf75a359e8d3e3"
+    version "1.0.30000852"
+    resolved "https://registry.yarnpkg.com/caniuse-db/-/caniuse-db-1.0.30000852.tgz#c37a706048f8d81f87946a7c13f39ed636876659"
   
   caniuse-lite@^1.0.30000844, caniuse-lite@^1.0.30000851:
-    version "1.0.30000851"
-    resolved "https://registry.yarnpkg.com/caniuse-lite/-/caniuse-lite-1.0.30000851.tgz#3b498aebf9f92cf6cff4ab54d13b557c0b590533"
+    version "1.0.30000852"
+    resolved "https://registry.yarnpkg.com/caniuse-lite/-/caniuse-lite-1.0.30000852.tgz#8b7510cec030cac7842e52beca2bf292af65f935"
   
   capture-stack-trace@^1.0.0:
     version "1.0.0"
@@ -2431,12 +2427,16 @@ Lockfile:
       object-visit "^1.0.0"
   
   color-convert@^1.3.0, color-convert@^1.9.0:
-    version "1.9.1"
-    resolved "https://registry.yarnpkg.com/color-convert/-/color-convert-1.9.1.tgz#c1261107aeb2f294ebffec9ed9ecad529a6097ed"
+    version "1.9.2"
+    resolved "https://registry.yarnpkg.com/color-convert/-/color-convert-1.9.2.tgz#49881b8fba67df12a96bdf3f56c0aab9e7913147"
     dependencies:
-      color-name "^1.1.1"
+      color-name "1.1.1"
   
-  color-name@^1.0.0, color-name@^1.1.1:
+  color-name@1.1.1:
+    version "1.1.1"
+    resolved "https://registry.yarnpkg.com/color-name/-/color-name-1.1.1.tgz#4b1415304cf50028ea81643643bd82ea05803689"
+  
+  color-name@^1.0.0:
     version "1.1.3"
     resolved "https://registry.yarnpkg.com/color-name/-/color-name-1.1.3.tgz#a7d0558bd89c42f795dd42328f740831ca53bc25"
   
@@ -3086,9 +3086,9 @@ Lockfile:
       readable-stream "^2.0.0"
       stream-shift "^1.0.0"
   
-  eastasianwidth@^0.1.1:
-    version "0.1.1"
-    resolved "https://registry.yarnpkg.com/eastasianwidth/-/eastasianwidth-0.1.1.tgz#44d656de9da415694467335365fb3147b8572b7c"
+  eastasianwidth@^0.2.0:
+    version "0.2.0"
+    resolved "https://registry.yarnpkg.com/eastasianwidth/-/eastasianwidth-0.2.0.tgz#696ce2ec0aa0e6ea93a397ffcf24aa7840c827cb"
   
   ecc-jsbn@~0.1.1:
     version "0.1.1"
@@ -3126,19 +3126,19 @@ Lockfile:
     version "2.1.0"
     resolved "https://registry.yarnpkg.com/emojis-list/-/emojis-list-2.1.0.tgz#4daa4d9db00f9819880c79fa457ae5b09a1fd389"
   
-  empower-core@^0.6.2:
-    version "0.6.2"
-    resolved "https://registry.yarnpkg.com/empower-core/-/empower-core-0.6.2.tgz#5adef566088e31fba80ba0a36df47d7094169144"
+  empower-core@^1.2.0:
+    version "1.2.0"
+    resolved "https://registry.yarnpkg.com/empower-core/-/empower-core-1.2.0.tgz#ce3fb2484d5187fa29c23fba8344b0b2fdf5601c"
     dependencies:
       call-signature "0.0.2"
       core-js "^2.0.0"
   
   empower@^1.2.3:
-    version "1.2.3"
-    resolved "https://registry.yarnpkg.com/empower/-/empower-1.2.3.tgz#6f0da73447f4edd838fec5c60313a88ba5cb852b"
+    version "1.3.0"
+    resolved "https://registry.yarnpkg.com/empower/-/empower-1.3.0.tgz#6b05e77625e77dc44945c4328562c3020b01fa4b"
     dependencies:
       core-js "^2.0.0"
-      empower-core "^0.6.2"
+      empower-core "^1.2.0"
   
   encoding@^0.1.11:
     version "0.1.12"
@@ -3538,9 +3538,9 @@ Lockfile:
       "@firebase/polyfill" "0.3.3"
       "@firebase/storage" "0.2.3"
   
-  firemock@^0.17.5:
-    version "0.17.5"
-    resolved "https://registry.yarnpkg.com/firemock/-/firemock-0.17.5.tgz#de3b1e1684ea066326b6fd45b496c1cae29d901d"
+  firemock@^0.17.6:
+    version "0.17.8"
+    resolved "https://registry.yarnpkg.com/firemock/-/firemock-0.17.8.tgz#b764309f789140e12f126b03c54fc75012eb2364"
     dependencies:
       chance "^1.0.16"
       common-types "^1.7.36"
@@ -3915,8 +3915,8 @@ Lockfile:
       protobufjs "^5.0.0"
   
   grpc@^1.10.0:
-    version "1.12.2"
-    resolved "https://registry.yarnpkg.com/grpc/-/grpc-1.12.2.tgz#b9f853540825c6c716c30d06794d7d52d081d968"
+    version "1.12.3"
+    resolved "https://registry.yarnpkg.com/grpc/-/grpc-1.12.3.tgz#b38bf05f26477d42f8285794c0b1f8b8c0b6dec3"
     dependencies:
       lodash "^4.17.5"
       nan "^2.0.0"
@@ -4027,8 +4027,8 @@ Lockfile:
     resolved "https://registry.yarnpkg.com/hash-sum/-/hash-sum-1.0.2.tgz#33b40777754c6432573c120cc3808bbd10d47f04"
   
   hash.js@^1.0.0, hash.js@^1.0.3:
-    version "1.1.3"
-    resolved "https://registry.yarnpkg.com/hash.js/-/hash.js-1.1.3.tgz#340dedbe6290187151c1ea1d777a3448935df846"
+    version "1.1.4"
+    resolved "https://registry.yarnpkg.com/hash.js/-/hash.js-1.1.4.tgz#8b50e1f35d51bd01e5ed9ece4dbe3549ccfa0a3c"
     dependencies:
       inherits "^2.0.3"
       minimalistic-assert "^1.0.0"
@@ -5921,6 +5921,10 @@ Lockfile:
     dependencies:
       pify "^3.0.0"
   
+  path.join@^1.0.0:
+    version "1.0.0"
+    resolved "https://registry.yarnpkg.com/path.join/-/path.join-1.0.0.tgz#0b402092bd81128b2819e780570c49de3ddf19de"
+  
   pathval@^1.0.0:
     version "1.1.0"
     resolved "https://registry.yarnpkg.com/pathval/-/pathval-1.1.0.tgz#b942e6d4bde653005ef6b71361def8727d0645e0"
@@ -6271,25 +6275,25 @@ Lockfile:
       supports-color "^5.4.0"
   
   power-assert-context-formatter@^1.0.7:
-    version "1.1.1"
-    resolved "https://registry.yarnpkg.com/power-assert-context-formatter/-/power-assert-context-formatter-1.1.1.tgz#edba352d3ed8a603114d667265acce60d689ccdf"
+    version "1.2.0"
+    resolved "https://registry.yarnpkg.com/power-assert-context-formatter/-/power-assert-context-formatter-1.2.0.tgz#8fbe72692288ec5a7203cdf215c8b838a6061d2a"
     dependencies:
       core-js "^2.0.0"
-      power-assert-context-traversal "^1.1.1"
+      power-assert-context-traversal "^1.2.0"
   
   power-assert-context-reducer-ast@^1.0.7:
-    version "1.1.2"
-    resolved "https://registry.yarnpkg.com/power-assert-context-reducer-ast/-/power-assert-context-reducer-ast-1.1.2.tgz#484a99e26f4973ff8832e5c5cc756702e6094174"
+    version "1.2.0"
+    resolved "https://registry.yarnpkg.com/power-assert-context-reducer-ast/-/power-assert-context-reducer-ast-1.2.0.tgz#c7ca1c9e39a6fb717f7ac5fe9e76e192bf525df3"
     dependencies:
-      acorn "^4.0.0"
+      acorn "^5.0.0"
       acorn-es7-plugin "^1.0.12"
       core-js "^2.0.0"
       espurify "^1.6.0"
       estraverse "^4.2.0"
   
-  power-assert-context-traversal@^1.1.1:
-    version "1.1.1"
-    resolved "https://registry.yarnpkg.com/power-assert-context-traversal/-/power-assert-context-traversal-1.1.1.tgz#88cabca0d13b6359f07d3d3e8afa699264577ed9"
+  power-assert-context-traversal@^1.2.0:
+    version "1.2.0"
+    resolved "https://registry.yarnpkg.com/power-assert-context-traversal/-/power-assert-context-traversal-1.2.0.tgz#f6e71454baf640de5c1c9c270349f5c9ab0b2e94"
     dependencies:
       core-js "^2.0.0"
       estraverse "^4.1.0"
@@ -6307,19 +6311,19 @@ Lockfile:
       power-assert-renderer-file "^1.0.7"
   
   power-assert-renderer-assertion@^1.0.7:
-    version "1.1.1"
-    resolved "https://registry.yarnpkg.com/power-assert-renderer-assertion/-/power-assert-renderer-assertion-1.1.1.tgz#cbfc0e77e0086a8f96af3f1d8e67b9ee7e28ce98"
+    version "1.2.0"
+    resolved "https://registry.yarnpkg.com/power-assert-renderer-assertion/-/power-assert-renderer-assertion-1.2.0.tgz#3db6ffcda106b37bc1e06432ad0d748a682b147a"
     dependencies:
       power-assert-renderer-base "^1.1.1"
-      power-assert-util-string-width "^1.1.1"
+      power-assert-util-string-width "^1.2.0"
   
   power-assert-renderer-base@^1.1.1:
     version "1.1.1"
     resolved "https://registry.yarnpkg.com/power-assert-renderer-base/-/power-assert-renderer-base-1.1.1.tgz#96a650c6fd05ee1bc1f66b54ad61442c8b3f63eb"
   
   power-assert-renderer-comparison@^1.0.7:
-    version "1.1.1"
-    resolved "https://registry.yarnpkg.com/power-assert-renderer-comparison/-/power-assert-renderer-comparison-1.1.1.tgz#d7439d97d85156be4e30a00f2fb5a72514ce3c08"
+    version "1.2.0"
+    resolved "https://registry.yarnpkg.com/power-assert-renderer-comparison/-/power-assert-renderer-comparison-1.2.0.tgz#e4f88113225a69be8aa586ead05aef99462c0495"
     dependencies:
       core-js "^2.0.0"
       diff-match-patch "^1.0.0"
@@ -6328,25 +6332,25 @@ Lockfile:
       type-name "^2.0.1"
   
   power-assert-renderer-diagram@^1.0.7:
-    version "1.1.2"
-    resolved "https://registry.yarnpkg.com/power-assert-renderer-diagram/-/power-assert-renderer-diagram-1.1.2.tgz#655f8f711935a9b6d541b86327654717c637a986"
+    version "1.2.0"
+    resolved "https://registry.yarnpkg.com/power-assert-renderer-diagram/-/power-assert-renderer-diagram-1.2.0.tgz#37f66e8542e5677c5b58e6d72b01c0d9a30e2219"
     dependencies:
       core-js "^2.0.0"
       power-assert-renderer-base "^1.1.1"
-      power-assert-util-string-width "^1.1.1"
+      power-assert-util-string-width "^1.2.0"
       stringifier "^1.3.0"
   
   power-assert-renderer-file@^1.0.7:
-    version "1.1.1"
-    resolved "https://registry.yarnpkg.com/power-assert-renderer-file/-/power-assert-renderer-file-1.1.1.tgz#a37e2bbd178ccacd04e78dbb79c92fe34933c5e7"
+    version "1.2.0"
+    resolved "https://registry.yarnpkg.com/power-assert-renderer-file/-/power-assert-renderer-file-1.2.0.tgz#3f4bebd9e1455d75cf2ac541e7bb515a87d4ce4b"
     dependencies:
       power-assert-renderer-base "^1.1.1"
   
-  power-assert-util-string-width@^1.1.1:
-    version "1.1.1"
-    resolved "https://registry.yarnpkg.com/power-assert-util-string-width/-/power-assert-util-string-width-1.1.1.tgz#be659eb7937fdd2e6c9a77268daaf64bd5b7c592"
+  power-assert-util-string-width@^1.2.0:
+    version "1.2.0"
+    resolved "https://registry.yarnpkg.com/power-assert-util-string-width/-/power-assert-util-string-width-1.2.0.tgz#6e06d5e3581bb876c5d377c53109fffa95bd91a0"
     dependencies:
-      eastasianwidth "^0.1.1"
+      eastasianwidth "^0.2.0"
   
   power-assert@^1.4.4:
     version "1.5.0"
@@ -6883,8 +6887,8 @@ Lockfile:
       inherits "^2.0.1"
   
   rollup@^0.60.1:
-    version "0.60.1"
-    resolved "https://registry.yarnpkg.com/rollup/-/rollup-0.60.1.tgz#07cb66153f1541d5f7e82b8393b405c31647dae9"
+    version "0.60.2"
+    resolved "https://registry.yarnpkg.com/rollup/-/rollup-0.60.2.tgz#9635fea3c2f32095c35cda7bfc2816c675de2da4"
     dependencies:
       "@types/estree" "0.0.39"
       "@types/node" "*"
@@ -7548,8 +7552,8 @@ Lockfile:
     resolved "https://registry.yarnpkg.com/trim-right/-/trim-right-1.0.1.tgz#cb2e1203067e0c8de1f614094b9fe45704ea6003"
   
   ts-node@^6.1.0:
-    version "6.1.0"
-    resolved "https://registry.yarnpkg.com/ts-node/-/ts-node-6.1.0.tgz#a2c37a11fdb58e60eca887a1269b025cf4d2f8b8"
+    version "6.1.1"
+    resolved "https://registry.yarnpkg.com/ts-node/-/ts-node-6.1.1.tgz#19607140acb06150441fcdb61be11f73f7b6657e"
     dependencies:
       arrify "^1.0.0"
       diff "^3.1.0"
@@ -8461,17 +8465,14 @@ Lockfile:
     resolved "https://registry.yarnpkg.com/yn/-/yn-2.0.0.tgz#e5adabc8acf408f6385fc76495684c88e6af689a"
 
 Trace: 
-  Error: Command failed.
-  Exit code: 1
-  Command: sh
-  Arguments: -c tslint src/**/*.ts && tsc -P tsconfig.esnext.json && rollup -c rollup.config.js
-  Directory: /Users/ken/mine/forest-fire/firemodel
-  Output:
-  
-      at ProcessTermError.MessageError (/usr/local/lib/node_modules/yarn/lib/cli.js:186:110)
-      at new ProcessTermError (/usr/local/lib/node_modules/yarn/lib/cli.js:226:113)
-      at ChildProcess.<anonymous> (/usr/local/lib/node_modules/yarn/lib/cli.js:30281:17)
+  Error: https://registry.yarnpkg.com/@types%2fpath.join: Not found
+      at Request.params.callback [as _callback] (/usr/local/lib/node_modules/yarn/lib/cli.js:65019:18)
+      at Request.self.callback (/usr/local/lib/node_modules/yarn/lib/cli.js:132430:22)
       at emitTwo (events.js:126:13)
-      at ChildProcess.emit (events.js:214:7)
-      at maybeClose (internal/child_process.js:925:16)
-      at Process.ChildProcess._handle.onexit (internal/child_process.js:209:5)
+      at Request.emit (events.js:214:7)
+      at Request.<anonymous> (/usr/local/lib/node_modules/yarn/lib/cli.js:133413:10)
+      at emitOne (events.js:116:13)
+      at Request.emit (events.js:211:7)
+      at IncomingMessage.<anonymous> (/usr/local/lib/node_modules/yarn/lib/cli.js:133333:12)
+      at Object.onceWrapper (events.js:313:30)
+      at emitNone (events.js:111:20)

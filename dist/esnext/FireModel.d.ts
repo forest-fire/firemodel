@@ -1,6 +1,6 @@
 import { Model } from "./Model";
 import { RealTimeDB } from "abstracted-firebase";
-import { ISchemaOptions } from "./index";
+import { ISchemaOptions } from ".";
 export declare class FireModel<T = Model> {
     private static _defaultDb;
     static defaultDb: import("abstracted-firebase").RealTimeDB;

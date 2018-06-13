@@ -21,7 +21,7 @@ describe("List class: ", () => {
     expect(list.length).to.equal(0);
     expect(list.modelName).to.equal("person");
     expect(list.pluralName).to.equal("people");
-    expect(list.dbPath).to.equal(`${list.meta.dbOffset}/people`);
+    expect(list.dbPath).to.equal(`${list.META.dbOffset}/people`);
   });
 
   it("can instantiate with create() method", () => {
@@ -30,7 +30,7 @@ describe("List class: ", () => {
     expect(list.length).to.equal(0);
     expect(list.modelName).to.equal("person");
     expect(list.pluralName).to.equal("people");
-    expect(list.dbPath).to.equal(`${list.meta.dbOffset}/people`);
+    expect(list.dbPath).to.equal(`${list.META.dbOffset}/people`);
   });
 
   it("can instantiate with all() method", async () => {
@@ -46,7 +46,7 @@ describe("List class: ", () => {
     expect(list.length).to.equal(25);
     expect(list.modelName).to.equal("person");
     expect(list.pluralName).to.equal("people");
-    expect(list.dbPath).to.equal(`${list.meta.dbOffset}/people`);
+    expect(list.dbPath).to.equal(`${list.META.dbOffset}/people`);
   });
 
   it("can instantiate with from() method", async () => {
@@ -156,7 +156,7 @@ describe("List class: ", () => {
     const list = await List.all(Person);
     console.log(list.data);
 
-    const record = list.get(firstPersonId);
+    const record = list.findById(firstPersonId);
     expect(record).to.be.an("object");
     expect(record).to.be.an.instanceOf(Record);
     expect(record.data).to.be.an.instanceOf(Person);
@@ -193,7 +193,7 @@ describe("List class: ", () => {
     db.mock.queueSchema("person", 30).generate();
     const list = await List.all(Person);
     try {
-      const record = list.get("not-there");
+      const record = list.findById("not-there");
       throw new Error("Invalid ID should have thrown error");
     } catch (e) {
       expect(e.name).to.equal("NotFound");
@@ -212,7 +212,7 @@ describe("List class: ", () => {
     db.mock.queueSchema("person", 30).generate();
     const list = await List.all(Person);
     try {
-      const record = list.get("not-there", null);
+      const record = list.findById("not-there", null);
       expect(record).to.equal(null);
     } catch (e) {
       throw new Error("When default value is provided no error should be raised");
