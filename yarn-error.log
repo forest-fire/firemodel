@@ -1,5 +1,5 @@
 Arguments: 
-  /usr/local/bin/node /usr/local/bin/yarn add --dev @types/path.join
+  /usr/local/bin/node /usr/local/bin/yarn run build
 
 PATH: 
   /usr/local/bin:/Users/ken/.yarn/bin:/usr/local/share/android-sdk/platform-tools:.:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/MacGPG2/bin:/Users/ken/.yarn/bin:/usr/local/share/android-sdk/platform-tools:.:/Users/ken/Library/Python/2.7/bin:/usr/local/sbin:/opt/local/bin:/opt/local/sbin:/opt/X11/bin:/Users/kensnyder/.rvm/bin:/Users/kensnyder/.ec2/bin:/Developer/usr/bin:/Users/kensnyder/pear/bin:/usr/local/share/npm/bin:/Applications/Couchbase Server.app/Contents/Resources/couchbase-core/bin:/Users/kensnyder/repos/mine/api/commandline/bin:/Users/ken/Library/Python/2.7/bin:/usr/local/sbin:/usr/local/bin:/opt/local/bin:/opt/local/sbin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/opt/X11/bin:/Users/kensnyder/.rvm/bin:/Users/kensnyder/.ec2/bin:/Developer/usr/bin:/Users/kensnyder/pear/bin:/usr/local/share/npm/bin:/Applications/Couchbase Server.app/Contents/Resources/couchbase-core/bin:/Users/kensnyder/repos/mine/api/commandline/bin
@@ -16,7 +16,7 @@ Platform:
 npm manifest: 
   {
     "name": "firemodel",
-    "version": "0.13.0",
+    "version": "0.13.1",
     "description": "Modeling, Access, and Mocking for Firebase Projects",
     "license": "MIT",
     "repository": "https://github.com/forest-fire/firemodel",
@@ -1501,8 +1501,8 @@ Lockfile:
       typed-conversions "^0.8.3"
   
   abstracted-firebase@^0.11.10, abstracted-firebase@^0.11.9:
-    version "0.11.10"
-    resolved "https://registry.yarnpkg.com/abstracted-firebase/-/abstracted-firebase-0.11.10.tgz#af5f62b0e363d671ccda9cb8e16bfbc724bc4a69"
+    version "0.11.11"
+    resolved "https://registry.yarnpkg.com/abstracted-firebase/-/abstracted-firebase-0.11.11.tgz#01e10362b9616e4982d1570a7a0e31b2c385d367"
     dependencies:
       common-types "^1.7.36"
       firebase-api-surface "^0.8.3"
@@ -1559,8 +1559,8 @@ Lockfile:
       uri-js "^4.2.1"
   
   algoliasearch@^3.24.5:
-    version "3.27.1"
-    resolved "https://registry.yarnpkg.com/algoliasearch/-/algoliasearch-3.27.1.tgz#e1af42b97dbf44a2dd3a8c907be99c0c34e48414"
+    version "3.28.0"
+    resolved "https://registry.yarnpkg.com/algoliasearch/-/algoliasearch-3.28.0.tgz#12b6c8bda397eba805a7ff998ac87f6988411d2d"
     dependencies:
       agentkeepalive "^2.2.0"
       debug "^2.6.8"
@@ -2233,12 +2233,12 @@ Lockfile:
       lodash.uniq "^4.5.0"
   
   caniuse-db@^1.0.30000529, caniuse-db@^1.0.30000634, caniuse-db@^1.0.30000639:
-    version "1.0.30000852"
-    resolved "https://registry.yarnpkg.com/caniuse-db/-/caniuse-db-1.0.30000852.tgz#c37a706048f8d81f87946a7c13f39ed636876659"
+    version "1.0.30000853"
+    resolved "https://registry.yarnpkg.com/caniuse-db/-/caniuse-db-1.0.30000853.tgz#32901a7d6b93a87d59f08aaee47ea8ff6ec90fdf"
   
   caniuse-lite@^1.0.30000844, caniuse-lite@^1.0.30000851:
-    version "1.0.30000852"
-    resolved "https://registry.yarnpkg.com/caniuse-lite/-/caniuse-lite-1.0.30000852.tgz#8b7510cec030cac7842e52beca2bf292af65f935"
+    version "1.0.30000853"
+    resolved "https://registry.yarnpkg.com/caniuse-lite/-/caniuse-lite-1.0.30000853.tgz#505249fc78d60e20ad47af3c13706d6f9fd209fd"
   
   capture-stack-trace@^1.0.0:
     version "1.0.0"
@@ -6887,8 +6887,8 @@ Lockfile:
       inherits "^2.0.1"
   
   rollup@^0.60.1:
-    version "0.60.2"
-    resolved "https://registry.yarnpkg.com/rollup/-/rollup-0.60.2.tgz#9635fea3c2f32095c35cda7bfc2816c675de2da4"
+    version "0.60.4"
+    resolved "https://registry.yarnpkg.com/rollup/-/rollup-0.60.4.tgz#facbe8f675f679b005e6ca2911e772aacc0fecd1"
     dependencies:
       "@types/estree" "0.0.39"
       "@types/node" "*"
@@ -8465,14 +8465,17 @@ Lockfile:
     resolved "https://registry.yarnpkg.com/yn/-/yn-2.0.0.tgz#e5adabc8acf408f6385fc76495684c88e6af689a"
 
 Trace: 
-  Error: https://registry.yarnpkg.com/@types%2fpath.join: Not found
-      at Request.params.callback [as _callback] (/usr/local/lib/node_modules/yarn/lib/cli.js:65019:18)
-      at Request.self.callback (/usr/local/lib/node_modules/yarn/lib/cli.js:132430:22)
+  Error: Command failed.
+  Exit code: 1
+  Command: sh
+  Arguments: -c tslint src/**/*.ts && tsc -P tsconfig.esnext.json && rollup -c rollup.config.js
+  Directory: /Users/ken/mine/forest-fire/firemodel
+  Output:
+  
+      at ProcessTermError.MessageError (/usr/local/lib/node_modules/yarn/lib/cli.js:186:110)
+      at new ProcessTermError (/usr/local/lib/node_modules/yarn/lib/cli.js:226:113)
+      at ChildProcess.<anonymous> (/usr/local/lib/node_modules/yarn/lib/cli.js:30281:17)
       at emitTwo (events.js:126:13)
-      at Request.emit (events.js:214:7)
-      at Request.<anonymous> (/usr/local/lib/node_modules/yarn/lib/cli.js:133413:10)
-      at emitOne (events.js:116:13)
-      at Request.emit (events.js:211:7)
-      at IncomingMessage.<anonymous> (/usr/local/lib/node_modules/yarn/lib/cli.js:133333:12)
-      at Object.onceWrapper (events.js:313:30)
-      at emitNone (events.js:111:20)
+      at ChildProcess.emit (events.js:214:7)
+      at maybeClose (internal/child_process.js:925:16)
+      at Process.ChildProcess._handle.onexit (internal/child_process.js:209:5)

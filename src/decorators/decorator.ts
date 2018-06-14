@@ -1,5 +1,9 @@
 import "reflect-metadata";
-import { Model, ISchemaMetaProperties, ISchemaRelationshipMetaProperties } from "..";
+import {
+  Model,
+  ISchemaMetaProperties,
+  ISchemaRelationshipMetaProperties
+} from "..";
 import {
   IDictionary,
   PropertyDecorator,
@@ -8,7 +12,11 @@ import {
 } from "common-types";
 import { set, get } from "lodash";
 
-function push(target: IDictionary, path: string, value: ISchemaMetaProperties) {
+function push<T extends Model = Model>(
+  target: IDictionary,
+  path: string,
+  value: ISchemaMetaProperties<T>
+) {
   if (Array.isArray(get(target, path))) {
     get(target, path).push(value);
   } else {
@@ -21,7 +29,7 @@ const propertiesBySchema: IDictionary<ISchemaMetaProperties[]> = {};
 /** Relationships accumlated by propertyDecorators and grouped by schema */
 const relationshipsBySchema: IDictionary<ISchemaMetaProperties[]> = {};
 
-export const propertyDecorator = (
+export const propertyDecorator = <T extends Model>(
   nameValuePairs: IDictionary = {},
   /**
    * if you want to set the property being decorated's name
@@ -29,8 +37,9 @@ export const propertyDecorator = (
    */
   property?: string
 ) => (target: Model, key: string): void => {
-  const reflect: IDictionary = Reflect.getMetadata("design:type", target, key) || {};
-  const meta: ISchemaMetaProperties = {
+  const reflect: IDictionary =
+    Reflect.getMetadata("design:type", target, key) || {};
+  const meta: ISchemaMetaProperties<T> = {
     ...Reflect.getMetadata(key, target),
     ...{ type: reflect.name },
     ...nameValuePairs
@@ -62,8 +71,9 @@ export const propertyDecorator = (
 };
 
 /** lookup meta data for schema properties */
-function propertyMeta(context: object) {
-  return (prop: string): ISchemaMetaProperties => Reflect.getMetadata(prop, context);
+function propertyMeta<T extends Model = Model>(context: object) {
+  return (prop: string): ISchemaMetaProperties<T> =>
+    Reflect.getMetadata(prop, context);
 }
 
 /**
@@ -81,10 +91,10 @@ export function getProperties(target: object) {
   ];
 }
 
-export function getRelationships(target: object) {
-  return relationshipsBySchema[
-    target.constructor.name
-  ] as ISchemaRelationshipMetaProperties[];
+export function getRelationships<T>(target: object) {
+  return relationshipsBySchema[target.constructor.name] as Array<
+    ISchemaRelationshipMetaProperties<T>
+  >;
 }
 
 export function getPushKeys(target: object) {

@@ -6,10 +6,10 @@ export declare type ICardinalityConfig<T> = {
 };
 export interface IMockConfig<T> {
     relationshipBehavior: "ignore" | "link" | "follow";
-    cardinality?: IDictionary<ICardinalityConfig<T>>;
+    cardinality?: IDictionary<number | [number, number] | true>;
 }
-export declare function Mock<T extends Model>(modelConstructor: new () => T, db: RealTimeDB): Promise<{
-    generate(count: number, exceptions: IDictionary<any>): void;
-    createRelationshipLinks(cardinality?: ICardinalityConfig<T>): any;
-    followRelationshipLinks(cardinality?: ICardinalityConfig<T>): any;
-}>;
+export declare function Mock<T extends Model>(modelConstructor: new () => T, db: RealTimeDB): {
+    generate(count: number, exceptions?: IDictionary<any>): void;
+    createRelationshipLinks(cardinality?: IDictionary<number | true | [number, number]>): any;
+    followRelationshipLinks(cardinality?: IDictionary<number | true | [number, number]>): any;
+};

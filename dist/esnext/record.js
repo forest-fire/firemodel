@@ -23,9 +23,13 @@ export class Record extends FireModel {
      * conjunction with the Record's initialize() method
      */
     static create(model, options = {}) {
-        // const model = OldModel.create(schema, options);
-        const record = new Record(model, options);
-        return record;
+        const r = new Record(model, options);
+        if (options.silent && !r.db.isMockDb) {
+            const e = new Error(`You can only add new records to the DB silently when using a Mock database!`);
+            e.name = "FireModel::Forbidden";
+            throw e;
+        }
+        return r;
     }
     /**
      * add
@@ -227,7 +231,8 @@ export class Record extends FireModel {
             e.name = "InvalidRelationship";
             throw e;
         }
-        if (typeof this.data[property] === "object" && this.data[property][ref]) {
+        if (typeof this.data[property] === "object" &&
+            this.data[property][ref]) {
             console.warn(`The fk of "${ref}" already exists in "${this.modelName}.${property}"!`);
             return;
         }
@@ -296,12 +301,9 @@ export class Record extends FireModel {
         return this;
     }
     async _save() {
-        if (this.id) {
-            const e = new Error(`Saving after ID is set is not allowed [ ${this.id} ]`);
-            e.name = "InvalidSave";
-            throw e;
+        if (!this.id) {
+            this.id = fbKey();
         }
-        this.id = fbKey();
         if (!this.db) {
             const e = new Error(`Attempt to save Record failed as the Database has not been connected yet. Try settingFireModel first.`);
             e.name = "FiremodelError";

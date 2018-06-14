@@ -4,14 +4,16 @@ export function hasMany(schemaClass) {
     return propertyDecorator({
         isRelationship: true,
         isProperty: false,
-        relType: "hasMany"
+        relType: "hasMany",
+        fkConstructor: schemaClass
     }, "property");
 }
 export function ownedBy(schemaClass) {
     return propertyDecorator({
         isRelationship: true,
         isProperty: false,
-        relType: "ownedBy"
+        relType: "ownedBy",
+        fkConstructor: schemaClass
     }, "property");
 }
 export function inverse(inverseProperty) {

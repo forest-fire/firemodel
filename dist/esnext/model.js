@@ -7,7 +7,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-import { property } from "./decorators/property";
+import { property, mock } from "./decorators/property";
 export var RelationshipPolicy;
 (function (RelationshipPolicy) {
     RelationshipPolicy["keys"] = "keys";
@@ -34,10 +34,12 @@ __decorate([
 ], Model.prototype, "id", void 0);
 __decorate([
     property,
+    mock("dateRecentMiliseconds"),
     __metadata("design:type", Number)
 ], Model.prototype, "lastUpdated", void 0);
 __decorate([
     property,
+    mock("datePastMiliseconds"),
     __metadata("design:type", Number)
 ], Model.prototype, "createdAt", void 0);
 //# sourceMappingURL=Model.js.map

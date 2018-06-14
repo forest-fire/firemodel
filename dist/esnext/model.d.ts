@@ -55,6 +55,6 @@ export declare abstract class Model {
     /** The datetime at which this record was first created */
     createdAt?: epochWithMilliseconds;
     /** Metadata properties of the given schema */
-    META?: Partial<ISchemaOptions>;
+    META?: ISchemaOptions;
     toString(): string;
 }

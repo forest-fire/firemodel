@@ -1,7 +1,7 @@
 import { Model } from "./Model";
 import { RealTimeDB } from "abstracted-firebase";
 import { ISchemaOptions } from ".";
-export declare class FireModel<T = Model> {
+export declare class FireModel<T extends Model> {
     private static _defaultDb;
     static defaultDb: import("abstracted-firebase").RealTimeDB;
     /** the data structure/model that this class operates around */
@@ -10,9 +10,9 @@ export declare class FireModel<T = Model> {
     protected _db: RealTimeDB;
     readonly modelName: string;
     readonly pluralName: any;
-    readonly META: ISchemaOptions;
-    readonly properties: import("./decorators/schema").ISchemaMetaProperties[];
-    readonly relationships: import("./decorators/schema").ISchemaRelationshipMetaProperties[];
+    readonly META: ISchemaOptions<T>;
+    readonly properties: import("./decorators/schema").ISchemaMetaProperties<any>[];
+    readonly relationships: import("./decorators/schema").ISchemaRelationshipMetaProperties<any>[];
     /** the connected real-time database */
     readonly db: RealTimeDB;
     readonly pushKeys: string[];

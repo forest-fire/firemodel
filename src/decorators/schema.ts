@@ -21,7 +21,7 @@ export interface ISchemaOptions<T extends Model = any> {
   pushKeys?: string[];
 }
 
-export interface ISchemaRelationshipMetaProperties<T extends Model>
+export interface ISchemaRelationshipMetaProperties<T extends Model = Model>
   extends ISchemaMetaProperties<T> {
   isRelationship: true;
   isProperty: false;
@@ -30,7 +30,8 @@ export interface ISchemaRelationshipMetaProperties<T extends Model>
   /** The constructor for a model of the FK reference that this relationship maintains */
   fkConstructor: () => T;
 }
-export interface ISchemaMetaProperties<T extends Model> extends IDictionary {
+export interface ISchemaMetaProperties<T extends Model = Model>
+  extends IDictionary {
   /** the property name */
   property: Extract<keyof T, string>;
   /** the type of the property */
@@ -54,7 +55,7 @@ export interface ISchemaMetaProperties<T extends Model> extends IDictionary {
 }
 
 /** lookup meta data for schema properties */
-function propertyMeta<T extends Model>(context: object) {
+function propertyMeta<T extends Model = Model>(context: object) {
   return (prop: string): ISchemaMetaProperties<T> =>
     Reflect.getMetadata(prop, context);
 }

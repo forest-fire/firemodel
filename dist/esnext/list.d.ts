@@ -5,7 +5,6 @@ import { FireModel } from "./FireModel";
 import { RealTimeDB } from "abstracted-firebase";
 import { IModelOptions } from "./Model";
 export declare class List<T extends Model> extends FireModel<T> {
-    private _data;
     static defaultDb: RealTimeDB;
     static create<T extends Model>(model: new () => T, options?: IModelOptions): List<T>;
     /**
@@ -56,7 +55,8 @@ export declare class List<T extends Model> extends FireModel<T> {
     static inactive<T extends Model>(model: new () => T, howMany: number, options?: IModelOptions): Promise<List<T>>;
     static last<T extends Model>(model: new () => T, howMany: number, options?: IModelOptions): Promise<List<T>>;
     static where<T extends Model, K extends keyof T>(model: new () => T, property: K, value: T[K] | [IComparisonOperator, T[K]], options?: IModelOptions): Promise<List<T>>;
-    constructor(model: new () => T, _data?: T[]);
+    private _data;
+    constructor(model: new () => T, options?: IModelOptions);
     readonly length: number;
     readonly dbPath: string;
     readonly localPath: string;
@@ -85,7 +85,7 @@ export declare class List<T extends Model> extends FireModel<T> {
      * @param id the unique ID which is being looked for
      * @param defaultIfNotFound the default value returned if the ID is not found in the list
      */
-    get(id: string, defaultIfNotFound?: any): Record<T>;
+    findById(id: string, defaultIfNotFound?: any): Record<T>;
     /**
      * Returns the single instance of an object contained by the List container
      *

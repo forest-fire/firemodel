@@ -13,6 +13,9 @@ export function desc(value) {
 export function min(value) {
     return propertyDecorator({ min: value });
 }
+export function mock(value) {
+    return propertyDecorator({ mockType: value });
+}
 export function max(value) {
     return propertyDecorator({ max: value });
 }

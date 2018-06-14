@@ -16,6 +16,8 @@ export interface IRecordOptions {
     db?: RealTimeDB;
     logging?: any;
     id?: string;
+    /** if you're working off of a mocking database, there are situations where adding a record silently (aka., not triggering any listener events) is desirable and should be allowed */
+    silent?: boolean;
 }
 export declare class Record<T extends Model> extends FireModel<T> {
     static defaultDb: RealTimeDB;
