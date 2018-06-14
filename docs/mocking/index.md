@@ -1,5 +1,7 @@
 # Mocking Overview
 
+![](../images/Mime-800.jpg)
+
 When I first started testing I remember thinking that mock testing must be hard. That was a good
 enough reason to avoid it like the plague for a few years but you can't outrun the plague. To my
 surprise I realized that _mocking_ doesn't have to be hard.

@@ -1,121 +1,103 @@
-# Writing
+# Writing to Firebase
 
-## Background
+## Adding records
 
-The basic mechanics of writing to the database using the Firebase SDK consists of applying a `set`, `push`, `update` or `remove` to a Firebase reference. For instance, let's say you wanted to add a new user "Bob":
+Adding new records in **FireModel** can be done with _both_ the `Record` and `List` classes. Let's start with the `Record` class:
 
 ```typescript
-await db.ref(`authenticated/people`).push({
-  name: "Bob",
-  age: 66
+const newPerson = await Record.add(Person, {
+  name: "Howdy Doody",
+  age: 15
 });
 ```
 
-This will do the trick. Since you "pushed", Firebase will create an ID for you (referred to as a "pushkey" in Firebase parlance). If I wanted to state the ID/key myself I could use `set` instead:
+This is short and sweet and is likely the most common way of achieving the goal of adding a new record. Not only will this add the stated properties to Firebase but it will also add `lastUpdated` and `createdAt` properties as well as a Firebase created ID.
+
+
+In a slightly modified example, imagine that you want to add a new `Company` "ABC Corp" and you've decided that rather that using Firebase's push() method -- which is what happened above -- to auto-create an ID you want to use slugified names for the company's ID. No problem, you can just include the ID property as part of the record like so:
 
 ```typescript
-await db.ref(`authenticated/people/4567`).set({
-  name: "Bob",
-  age: 66
-});
+await Record.add(Company, { id: "abc-corp", name: "ABC Corp" });
 ```
 
-In general the "push" approach is considered better and people will think more highly of you when you use it (but who cares what they think right?) but let's not get into a Firebase SDK discussion. It's just being brought up here as a way of illustrating the way we're used to executing write or "destructive" actions on the database.
-
-### Multi-path Updates
-
-Before we entirely leave the "this is Firebase" section we need to bring up "multi-path updates (MPU)" which are a very powerful feature but rather poorly named. What are MPU's? They are a way to change multiple paths in the database as one atomic transaction. It is poorly named because of what is really happening isn't an "update" more than a "set".
-
-To achieve this feature in the SDK you'd do something like:
+However sometimes you may find yourself already working with a `List` in which case it may be better to do the following:
 
 ```typescript
-await db.ref(`authenticated/people`).update([
-  {"1234/name", "Joey"},
-  {"1234/age", 16},
-  {"456": {
-    name: "Colleen"
-  }}
-])
+const people = List.recent(People, 25);
+/** do some stuff */
+const newPerson: Record<Person> = await people.add({
+  name: "Howdy Doody",
+  age: 15  
+})
 ```
 
-In the case of the `1234` key we are using this feature correctly and _setting_ discrete properties on the person record. If, for instance, person 1234 had previously had a property `favoriteColor` set to "blue" this would remain set. In contrast, the `456` key may be more destructive than you'd expect from an operation called "update". This will indeed set the name property `name` to "Colleen" but any other properties hanging off of this record will have been lost.
+> **Note:** all CRUD methods in **FireMock** are "contextual" and therefore there is no need to state the database path as this is already known
 
-## A Step Forward
+## Removing records
 
-As was mentioned in the "getting started" section, the underlying DB operations that **FireModel** uses are
-leveraging the **AbstractedFirebase** library. We won't spend much time on it but let's quickly review how we can do the above operations in either of the consumable libraries which wrap **AbstractedFirebase**.
+Removing records is also achievable through `Record` and `List`; and in fact there are two different ways to do it with `Record`. Let's start with the static initializer method:
 
 ```typescript
-const db = new DB();
-// set
-await db.set('authenticated/people/4567', { ... });
-// push
-const id = await db.push('authenticated/people', { ... });
-// non-destructive update
-await db.update('authenticated/people/4567', { ... });
-// remove
-await db.remove('authenticated/people/4567');
+const deletedPerson = await Record.remove(Person, "1234");
 ```
 
-Nothing terribly surprising or exciting. A bit more compact in form. The `push` operation returns the new "id" which you don't get in the SDK. But overall not very different until you get to the multi-path update (which should be thought of as a multi-path _set_).
-
-The first change is that if you use the `db.update(...)` method and pass in a MPU data structure you'll get an error suggesting the `multiPathSet()` method. The `multiPathSet` is appropriately named and offers a nicer syntax for implementing (IMHO).
-
-Let's replicate the MPU from above with this new syntax:
+This approach will first fetch the record from Firebase and add it to the `Record` class; it will then remove it from Firebase and return a record of what the value *had* been. Getting the record's old values at time of removal can be quite useful but there is a performance penalty so if you wish to just remove the record and _not_ get back the old value you can do this like so:
 
 ```typescript
-const mpu = db.multiPathSet("authenticated/people/4567");
-mpu.add({ path: "name", value: "Joey" });
-mpu.add({ path: "age", value: 16 });
-await mpu.execute();
+await Record.remove(Person, "1234", false);
 ```
 
-The interface follows the "fluent api" approach so you can compact all of these lines into a single line if you so desire but it is often quite powerful to build up the path over time in your code and then execute it when it's complete.
 
-## Contextual Writing
-
-We are now ready to talk about a more _contextual_ style of writing to the database that stems from **FireModel**'s schema awareness and opinionated base data structure. Let's use the simple non-destructive update of a person's name and age:
+Alternatively there will be cases where you've already gotten an instantiated `Record` object and your business logic determines that it should be removed you would do the following:
 
 ```typescript
-const joe = Record.get(Person, 4567);
-await joe.set("name", "Joey");
-await joe.set("age", 16);
+const person = await Record.get(Person, "1234");
+/** do some things */
+await person.remove();
 ```
 
-This achieves the goal but goes a step further. Each call to `set` not only sets the property on the database but also transparently updates the `lastUpdated` property that all schemas inherit from `BaseSchema`; this was done as a single atomic transaction. Further, the path to where "people" are stored in the database is not required as it's built into the schema definition. Nice.
-
-The above example is _good_ but we want you to be _excellent_. Above we sent two updates to the database -- and that might be what we wanted -- but in most cases we'd like to update "name" and "age" at the same time and this possible too:
+Finally, in the case where you have a `List` of data, you can do the following:
 
 ```typescript
-const joe = Record.get(Person, 4567);
-await joe.update({ name: "Joey", age: 16 });
+const people = await List.all(Person);
+await people.remove("1234");
 ```
 
-Here we get the both properties plus the `lastUpdated` update as a single non-destructive DB transaction.
+## Updating records
 
-Finally, if you liked the decomposed approach of building up a MPU that was illustrated in the "[A Step Forward](#a-step-forward)" section, you can do something quite similar with **FireModel** too:
+So after having covered "adding" and "removing" we'll now touch on the slightly more nuanced _updating_ of records. Why is updating more _nuanced_? Well updating is just kinda more complicated by it's very nature but Firebase adds its own little twist under the heading of "multi-path updates". 
+
+In the Firebase SDK the `update()` operation is a non destructive operation. So for instance if you had a person in the database under the "1234" ID and then did this:
 
 ```typescript
-const joe = Record.get(Person, 4567);
-const mpu = joe.multiPathSet();
-mpu.add({ path: "name", value: "Joey" });
-mpu.add({ path: "age", value: 16 });
-await mpu.execute();
+await ref('authenticated/people/1234').update({ favoriteColor: "blue" });
 ```
 
-In this example what we get, beyond the same named function in _abstracted-firebase_, is:
+It would add (or update) `favoriteColor` but not blow away the other properties like "name", "age", etc that also sit at the same path of `authenticated/people/1234`. This non-destructive behavior is useful but the SDK overloads the `update()` method with another very useful feature called "multi-path updates" which _are_ destructive. 
 
-- The default/root path to the record -- in this case "authenticated/people" -- is not needed as the model already knows where to start.
-- The "lastUpdated" property gets updated automatically.
+In **FireModel** we've separated these two operations from a nomenclature perspective and behind the scenes what we're really doing is doing a bunch of sneaky "multi-path updates" so that when things are written to the database they are writting _atomically_ (aka, all as part of one transaction). 
 
-That's ok but it does get mildly cooler when you interact with the `List` class:
+Let's start with a basic operation ... say you have a `Person` record and you want to change `favoriteColor` color like the example above but you also wanted to add another "child" to your `children` relationship. You would write something like:
 
 ```typescript
-const people = List.all(Person);
-const mpu = people.multiPathSet();
-mpu.add({ path: "4567/name", value: "Joey" });
-mpu.add({ path: "1234/age", value: 16 });
-await mpu.execute();
+const jimmy = Record.get(Person, "1234");
+jimmy.set('favoriteColor', "blue");
+jimmy.addToRelationship('children', '4567');
+await jimmy.update();
 ```
 
-The benefits here are similar to with `Record` but the `List` understands that it contains many records and therefore the "lastUpdated" props it updates are done 1:M for the given records which the List has updated and not the others. This may not seem that cool but ... it is. Trust me. Remember, I am the ultimate arbiter of the truth (it's an important job but I still get 5 weeks vacation each year).
+This would then know to update the following paths under the covers: 
+
+```typescript
+[
+  "/authenticated/people/1234/favoriteColor": "blue",
+  "/authenticated/people/1234/children/4567": true,
+  "/authenticated/people/1234/lastUpdated": [now],
+  "/authenticated/people/4567/parents/1234": true,
+  "/authenticated/people/4567/lastUpdated": [now],
+]
+```
+
+![](../images/mic-drop.jpg)
+
+Hot damn! Let's get this party started. Next up ... _watching_ for change.

@@ -16,6 +16,6 @@ export class FancyPerson extends Model {
   @property @mock("phoneNumber") public otherPhone: string;
   // prettier-ignore
   @property @mock(bespokeMock) public foobar: string;
-  @ownedBy(Company) public employer: string;
+  @ownedBy(Company) public employer: fk;
   @hasMany(Car) public cars: fk[];
 }

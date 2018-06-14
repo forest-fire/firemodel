@@ -32,13 +32,15 @@ module.exports = {
       ],
       "/modeling/": [
         {
-          title: "Modeling Basics",
-          children: ["/modeling/", "schemas", "model-class", "firebase-schemas"]
-        },
-        {
-          title: "Functional Primitives",
-          collapsable: true,
-          children: ["properties", "constraints", "relationships"]
+          title: "Modeling in FireModel",
+          children: [
+            "/modeling/",
+            "first-model",
+            "model-constraints",
+            "property-constraints",
+            "relationships",
+            "the-model-class"
+          ]
         },
         {
           title: "Other DOC Sections",
@@ -50,16 +52,15 @@ module.exports = {
         }
       ],
       "/using/": [
-        ["/using/", "Getting Started"],
         {
           title: "Using FireModel",
-          collapsable: false,
-          children: ["reading", "writing", "listening"]
+          collapsable: true,
+          children: ["/using/", "reading", "writing", "watching"]
         },
         {
           title: "Advanced Topics",
-          collapsable: false,
-          children: ["auditing", "frontend-state-mgmt", "graphql"]
+          collapsable: true,
+          children: ["auditing", "frontend-state-mgmt", "graphql", "proxy-objects"]
         },
         {
           title: "Other DOC Sections",

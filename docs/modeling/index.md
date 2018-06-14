@@ -1,5 +1,9 @@
 # Overview
 
-Modeling is the act of describing the data structures/entities in your application or architecture. The term "model" is familiar to many and this is _useful_ as well as _detrimental_ in understanding what a `Model` is in **FireModel**.
+![](../images/data-model.png)
 
-Ok Mr. Fansy Pants, so what is a Model then? Good question but let's first bring in related word first ... "schema". Many would see these two terms overlaping and that's good as they fit into the same ecosystem for sure. In the case of **FireModel** it's probably best to start with Schema. So if I may have your permission ...
+Traditionally one of the benefits of dynamic languages like JavaScript was you could _fluidly_ build your data structures. This thinking also applied to no-SQL databases like Firebase which just ask that you send in JSON data. This fluidity has it's place in prototypes and demos but as you start to move in building full applications the idea of taking a position on your data model in an explicit way starts to make more sense. This is a big part of what **FireModel** is here to do.
+
+The basics of modeling with **FireModel** will center around the `Model` class and more importantly a small set of "decorators" which will provide the meta-information about your model that will feed not only your Firebase backend but also modern state management tools like Redux, Vuex, etc.
+
+

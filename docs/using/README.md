@@ -1,19 +1,20 @@
-# Getting Started
+# Start Using FireModel
 
-Hey the **usage** section seems important. After all, just _modeling_ would be a rather pointless exercise if we weren't going to actually USE these damn models. Well I'm as excited as you probably are right now but we must take one first quick step before we dive in ...
+![](../images/data-stream-1000.jpg)
 
-To interact with the database **FireModel** leverages a simple abstraction of Firebase called [`abstracted-firebase`](https://abstracted-admin.com). This library can be useful all by itself but it is critical to using FireModel so we must install it ... well not it "directly" but insted install one of the two:
+Hey the **usage** section seems important. After all, just _modeling_ would be a rather pointless exercise if we weren't going to actually USE these damn models. Well I'm as excited as you are so let's dive in. 
 
-- `abstracted-admin` - for backend nodejs projects
-- `abstracted-client` - for your browser based projects
+In this section we are going to learn how to read, write, and "watch" the database. The primary tools we'll use to do this are the following objects:
 
-The two libraries above are really just wrappers around the core functionality implemented in `abstracted-firebase` but heyho ... these are details you don't really need. Just do as your told and install one of the above to your project:
+- `Record` - work with a specific record
+- `List` - work with a list/group of records (of the same Model-_type_)
+- `Watch` - add callbacks for notification of changes
 
-```shell
-# backend
-yarn add abstracted-admin
-# front
-yarn add abstrated-client
-```
+These objects are central to usage but for it is probably better we organize around functional usage instead:
 
-Ok, the fun is ready to start. Click "reading" or any of the other CRUD related links to dive in.
+- **reading**: one time reads from the database
+- **writing**: one time writes to the database
+- **watching**: event streams of changes coming from the database
+
+We'll bring in the appropriate objects in for each tasks.
+

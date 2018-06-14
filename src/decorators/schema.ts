@@ -9,15 +9,15 @@ export type ISchemaRelationshipType = "hasMany" | "ownedBy";
 export interface ISchemaOptions<T extends Model = any> {
   /** Optionally specify a root path to store this schema under */
   dbOffset?: string;
-  /** Optionally specify a root path where the local store will put this schema under */
+  /** Optionally specify a root path where the local store will put this schema */
   localOffset?: string;
   property?: (prop: keyof T) => ISchemaMetaProperties<T>;
   audit?: boolean;
-  /** A list of all properties along with associated meta-data for the given schema */
+  /** A list of all properties and associated meta-data for the given schema */
   properties?: Array<ISchemaMetaProperties<T>>;
-  /** A list of all relationships along with associated meta-data for the given schema */
+  /** A list of all relationships and associated meta-data for the given schema */
   relationships?: Array<ISchemaRelationshipMetaProperties<T>>;
-  /** A list of properties which should be pushed using  */
+  /** A list of properties which should be pushed using firebase push() */
   pushKeys?: string[];
 }
 

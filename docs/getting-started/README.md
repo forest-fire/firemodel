@@ -1,5 +1,7 @@
 # Installing NPM Modules
 
+![](../images/starting.jpg)
+
 ### FireModel and Data Access
 
 The first we need to do to get started is install the required NPM modules and clearly **FireModel** is one of them:
