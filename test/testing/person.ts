@@ -16,6 +16,7 @@ import {
 import { Company } from "./company";
 import { IDictionary } from "common-types";
 import { pushKey } from "../../src/decorators/property";
+import { FancyPerson } from "./FancyPerson";
 
 @model({ dbOffset: "authenticated" })
 export class Person extends Model {
@@ -32,6 +33,7 @@ export class Person extends Model {
   @ownedBy(Person) @inverse("children") public motherId?: fk;
   // prettier-ignore
   @ownedBy(Person) @inverse("children") public fatherId?: fk;
+  // prettier-ignore
   @hasMany(Person) public children?: IDictionary;
 
   @ownedBy(Company) public employerId?: fk;

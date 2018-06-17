@@ -4,8 +4,8 @@ import { ISchemaRelationshipType } from "../decorators/schema";
 import { IMultiPathUpdates } from "../FireModel";
 //#region generalized structures
 
-    export type Extractable<T, U> = T extends U ? any : never;
-    export type NotString<T> = string extends T ? never : any;
+export type Extractable<T, U> = T extends U ? any : never;
+export type NotString<T> = string extends T ? never : any;
 function promoteStringToFMEvents<
   K extends string & NotString<K> & Extractable<FMEvents, K>
 >(k: K): Extract<FMEvents, K> {
@@ -57,7 +57,7 @@ export interface IFMChangedPath {
 }
 
 export interface IFMRelationshipEvent<T extends Model = Model>
-  extends IFMRecordEvent<T> {
+  extends IFMRecordEventCore<T> {
   fk: string;
   fkModelName: string;
   fkHasInverse: boolean;

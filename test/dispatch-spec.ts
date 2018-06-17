@@ -11,9 +11,16 @@ import {
 } from "../src/state-mgmt";
 import { DB } from "abstracted-admin";
 import { wait } from "./testing/helpers";
+import { IVuexDispatch, VeuxWrapper } from "../src/VuexWrapper";
 const expect = chai.expect;
 
 describe("Dispatch →", () => {
+  let db: DB;
+  beforeEach(async () => {
+    db = new DB({ mocking: true });
+    await db.waitForConnection();
+    Record.defaultDb = db;
+  });
   it("_getPaths() decomposes the update into an array of discrete update paths", async () => {
     const person = Record.create(Person);
     (person as any)._data.id = "12345"; // cheating a bit here
@@ -62,11 +69,6 @@ describe("Dispatch →", () => {
   });
 
   it("set() immediately changes value on Record", async () => {
-    const db = new DB({ mocking: true });
-    await db.waitForConnection();
-
-    Record.defaultDb = db;
-
     const person = await Record.add(Person, {
       name: "Jane",
       age: 18
@@ -81,9 +83,6 @@ describe("Dispatch →", () => {
 
   it("waiting for set() fires the appropriate Redux event; and inProgress is set", async () => {
     const events: Array<IFMRecordEvent<Person>> = [];
-    const db = new DB({ mocking: true });
-    await db.waitForConnection();
-    Record.defaultDb = db;
     const person = await Record.add(Person, {
       name: "Jane",
       age: 18
@@ -91,6 +90,8 @@ describe("Dispatch →", () => {
     Record.dispatch = (e: IFMRecordEvent<Person>) => events.push(e);
 
     await person.set("name", "Carol");
+    console.log(events);
+
     expect(person.get("name")).to.equal("Carol"); // local change took place
     expect(person.isDirty).to.equal(false); // value already back to false
     expect(events.length).to.equal(2); // two phase commit
@@ -120,5 +121,27 @@ describe("Dispatch →", () => {
     expect(event.value).to.be.an("object");
     expect(event.value.name).to.equal("Carol");
     expect(event.value.age).to.equal(18);
+  });
+
+  it("VuexWrapper converts calling structure to what Vuex expects", async () => {
+    const events: Array<IFMRecordEvent<Person>> = [];
+    const types = new Set<string>();
+    const vueDispatch: IVuexDispatch = (type, payload: any) => {
+      types.add(type);
+      events.push({ ...payload, ...{ type } });
+    };
+    const person = await Record.add(Person, {
+      name: "Jane",
+      age: 18
+    });
+    Record.dispatch = VeuxWrapper(vueDispatch);
+    await person.update({
+      age: 12
+    });
+    await person.update({
+      age: 25
+    });
+    expect(events).to.have.lengthOf(4);
+    expect(types.size).to.equal(2);
   });
 });

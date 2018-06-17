@@ -59,7 +59,8 @@ export interface ISchemaMetaProperties<T extends Model = Model>
   /** what kind of relationship does this foreign key contain */
   relType?: ISchemaRelationshipType;
   /** if the property is a relationship ... a constructor for the FK's Model */
-  fkConstructor?: new () => T;
+  fkConstructor?: new () => any;
+  fkModelName: string;
 }
 
 /** lookup meta data for schema properties */

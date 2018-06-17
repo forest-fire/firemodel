@@ -7,6 +7,8 @@ import { arrayToHash } from "typed-conversions";
 import { ISchemaMetaProperties } from "./decorators/schema";
 import { fbKey } from ".";
 import { set } from "lodash";
+import { Person } from "../test/testing/person";
+import { FireModel } from "./FireModel";
 // tslint:disable-next-line:no-var-requires
 const pathJoin = require("path.join");
 
@@ -31,7 +33,8 @@ function defaultCardinality<T>(r: Record<T>) {
 function dbOffset<T extends Model>(record: Record<T>, payload: IDictionary<T>) {
   const output = {};
   const path = pathJoin(record.META.dbOffset || "", record.pluralName);
-  set(output, path, payload);
+
+  set(output, path.replace(/\//g, "."), payload);
   return output;
 }
 
@@ -168,6 +171,14 @@ function properties<T extends Model>(
   exceptions: IDictionary
 ) {
   return (instance: T): T => {
+    if (!instance.META) {
+      const e = new Error(
+        `The instance passed passed into properties does not have any META properties! [ ${typeof instance} ]`
+      );
+      e.name = "FireModel::MockError";
+      throw e;
+    }
+
     const props = instance.META.properties;
     props.map(prop => {
       (instance as any)[prop.property] = mockValue<T>(db, prop);
@@ -229,9 +240,11 @@ function followRelationships<T extends Model>(
     }
 
     instance = addRelationships(db, config, exceptions)(instance);
+
     relns.map(rel => {
-      const fkConstructor = rel.fkConstructor as any;
-      let foreignModel: Model = new fkConstructor();
+      const fkConstructor = rel.fkConstructor;
+      let foreignModel = new fkConstructor();
+
       const fks = getRelationshipIds<T>(instance, rel as any);
       fks.map(fk => {
         foreignModel = properties(db, { relationshipBehavior: "link" }, {})(
@@ -244,7 +257,8 @@ function followRelationships<T extends Model>(
             // TODO: look at after implementing relationship mgmt
           }
         }
-        Record.add(fkConstructor, foreignModel, { silent: true });
+
+        Record.add(fkConstructor, foreignModel);
       });
     });
 
@@ -280,6 +294,7 @@ export function Mock<T extends Model>(
         const model = new modelConstructor();
         records.push(follow(relns(props(model))));
       }
+
       db.mock.updateDB(dbOffset(record, arrayToHash(records)));
     },
     createRelationshipLinks(

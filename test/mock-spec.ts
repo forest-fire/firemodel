@@ -76,6 +76,8 @@ describe("Mocking:", () => {
     const people = await List.all(FancyPerson);
     const cars = await List.all(Car);
     const company = await List.all(Company);
+    console.log(cars.data);
+
     expect(people).to.have.lengthOf(10);
     expect(cars.length).to.equal(20);
     expect(company.length).to.equal(10);

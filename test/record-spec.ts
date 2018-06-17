@@ -1,11 +1,14 @@
 // tslint:disable:no-implicit-dependencies
-import { Record } from "../src";
+import { Record, List } from "../src";
 import { DB } from "abstracted-admin";
 import * as chai from "chai";
 const expect = chai.expect;
 import "reflect-metadata";
 import { Person } from "./testing/person";
 import { FireModel } from "../src/FireModel";
+import { IFMRecordEvent, FMEvents } from "../src/state-mgmt";
+import { Mock } from "../src/Mock";
+import { eventNames } from "cluster";
 
 describe("Record > ", () => {
   let db: DB;
@@ -13,16 +16,7 @@ describe("Record > ", () => {
     db = new DB({ mocking: true });
     await db.waitForConnection();
     FireModel.defaultDb = db;
-    const now = new Date().getTime();
-    db.mock
-      .addSchema("person", h => () => ({
-        name: h.faker.name.firstName(),
-        age: h.faker.random.number({ min: 1, max: 99 }),
-        lastUpdated: now,
-        createdAt: now
-      }))
-      .pathPrefix("authenticated");
-    db.mock.queueSchema("person", 10).generate();
+    FireModel.dispatch = null;
   });
 
   it("can instantiate with new operator", async () => {
@@ -32,16 +26,29 @@ describe("Record > ", () => {
 
   it("Record's add() factory adds record to database", async () => {
     const r = await Record.add(Person, {
-      name: "Bob",
+      name: "Bob Marley",
       age: 40
     });
     expect(r).to.be.instanceof(Record);
-    expect(r.get("name")).to.equal("Bob");
+    expect(r.get("name")).to.equal("Bob Marley");
     expect(r.id).to.exist.and.be.a("string");
   });
 
+  it(`Record's static add() fires client events`, async () => {
+    const events: IFMRecordEvent[] = [];
+    Record.dispatch = (payload: IFMRecordEvent) => events.push(payload);
+    const r = await Record.add(Person, {
+      name: "Bob",
+      age: 40
+    });
+    expect(events).to.have.lengthOf(2);
+    const eventTypes = new Set(events.map(e => e.type));
+    expect(eventTypes.has(FMEvents.RECORD_ADDED)).to.equal(true);
+    expect(eventTypes.has(FMEvents.RECORD_ADDED_LOCALLY)).to.equal(true);
+  });
+
   it("Record's load() populates state, does not add to db", async () => {
-    const r = Record.load(Person, {
+    const r = Record.createWith(Person, {
       name: "Bob",
       age: 40
     });
@@ -62,19 +69,6 @@ describe("Record > ", () => {
     } catch (e) {
       expect(r.id).to.equal(id);
       expect(e.name).to.equal("NotAllowed");
-    }
-  });
-
-  it("Record's add() factor disallows the addition of state which already has an ID", async () => {
-    try {
-      const r = await Record.add(Person, {
-        id: "invalid",
-        name: "Bob",
-        age: 40
-      });
-      throw new Error("Allowed addition when ID was part of payload!");
-    } catch (e) {
-      // do nothing
     }
   });
 
@@ -127,58 +121,7 @@ describe("Record > ", () => {
     expect(roger.data.tags["123"]).to.equal("cartoon");
   });
 
-  it("using updateProps() allows updating multiple props (incl lastUpdated) which are reflected on record immediately", async () => {
-    await db.set<Person>("/authenticated/people/8888", {
-      name: "Roger Rabbit",
-      age: 3,
-      tags: { 123: "cartoon" },
-      employerId: "disney",
-      lastUpdated: 12345
-    });
-    const roger = await Record.get(Person, "8888");
-    await roger.update({
-      name: "Bugs Bunny",
-      employerId: "rogue"
-    });
-    // IMMEDIATE CHANGE on RECORD
-    expect(roger.get("name")).to.equal("Bugs Bunny");
-    expect(roger.get("age")).to.equal(3);
-    expect(roger.get("employerId")).to.equal("rogue");
-    expect(roger.data.tags["123"]).to.equal("cartoon");
-    expect(roger.get("lastUpdated"))
-      .to.be.a("number")
-      .and.not.equal(12345);
-    // CHANGE REFLECTED on RELOAD from DB
-    const bugs = await Record.get(Person, "8888");
-    expect(bugs.get("name")).to.equal("Bugs Bunny");
-    expect(bugs.get("age")).to.equal(3);
-    expect(bugs.get("employerId")).to.equal("rogue");
-    expect(bugs.data.tags["123"]).to.equal("cartoon");
-    expect(bugs.get("lastUpdated")).to.equal(roger.get("lastUpdated"));
-  });
-
-  it("using update() allows non-destructive updates on object types", async () => {
-    await db.set<Person>("/authenticated/people/8888", {
-      name: "Roger Rabbit",
-      age: 3,
-      tags: { "123": "cartoon" },
-      employerId: "disney",
-      lastUpdated: 12345
-    });
-    const roger = await Record.get(Person, "8888");
-    await roger.update({
-      ["tags.456"]: "something else"
-    });
-    // IMMEDIATE CHANGE on RECORD
-    expect(roger.get("tags")).to.haveOwnProperty("123");
-    expect(roger.get("tags")).to.haveOwnProperty("456");
-    // CHANGE REFLECTED after pulling from DB
-    const bugs = await Record.get(Person, "8888");
-    expect(bugs.get("tags")).to.haveOwnProperty("123");
-    expect(bugs.get("tags")).to.haveOwnProperty("456");
-  });
-
-  it("using updateProps() allows non-destructive updates on object type when initial value is undefined", async () => {
+  it("using update() allows non-destructive updates on object type when initial value is undefined", async () => {
     await db.set<Person>("/authenticated/people/8888", {
       name: "Roger Rabbit",
       age: 3,
@@ -199,6 +142,30 @@ describe("Record > ", () => {
     expect(bugs.get("scratchpad")).to.haveOwnProperty("foo");
   });
 
+  it("using update triggers correct client-side events", async () => {
+    await db.set<Person>("/authenticated/people/8888", {
+      name: "Roger Rabbit",
+      age: 3,
+      employerId: "disney",
+      lastUpdated: 12345
+    });
+    const roger = await Record.get(Person, "8888");
+    const events: IFMRecordEvent[] = [];
+    FireModel.dispatch = (evt: IFMRecordEvent) => events.push(evt);
+    expect(roger.dispatchIsActive).to.equal(true);
+    await roger.update({
+      name: "Roger Rabbit, III",
+      age: 4
+    });
+    await roger.update({
+      age: 13
+    });
+    FireModel.dispatch = null;
+    expect(events).to.have.lengthOf(4);
+    expect(roger.get("name")).to.equal("Roger Rabbit, III");
+    expect(roger.get("age")).to.equal(13);
+  });
+
   it("calling dbPath() before the ID is known provides useful error", async () => {
     const record = Record.create(Person, { db });
 
@@ -211,21 +178,47 @@ describe("Record > ", () => {
     }
   });
 
-  it("State of Model's Schema class is not changed due to record information coming in", async () => {
-    const record = Record.create(Person, { db });
-    const record2 = Record.create(Person, { db });
-    expect(record.data).to.not.equal(record2.data);
-    expect(record.get("age")).to.equal(undefined);
-    expect(record2.get("age")).to.equal(undefined);
-    record._initialize({
-      name: "Bob",
-      age: 12
-    });
-    expect(record.get("age")).to.equal(12);
-    const record3 = Record.create(Person, { db });
-    expect(record3.get("age")).to.equal(undefined);
-    expect(record2.get("age")).to.equal(undefined);
-    expect(record.get("name")).to.equal("Bob");
-    expect(record2.get("name")).to.equal(undefined);
+  it("calling remove() removes from DB and notifies FE state-mgmt", async () => {
+    await Mock(Person, db)
+      .createRelationshipLinks()
+      .generate(10);
+    const peeps = await List.all(Person);
+    expect(peeps.length).to.equal(10);
+    const person = Record.createWith(Person, peeps.data[0]);
+    const id = person.id;
+    const events: IFMRecordEvent[] = [];
+    FireModel.dispatch = (evt: IFMRecordEvent) => events.push(evt);
+    await person.remove();
+    expect(events).to.have.lengthOf(2);
+    const eventTypes = new Set(events.map(e => e.type));
+    expect(eventTypes.has(FMEvents.RECORD_REMOVED_LOCALLY)).is.equal(true);
+    expect(eventTypes.has(FMEvents.RECORD_REMOVED)).is.equal(true);
+
+    const peeps2 = await List.all(Person);
+    expect(peeps2).to.have.lengthOf(9);
+    const ids = peeps2.map(p => p.id);
+    expect(ids.includes(id)).to.equal(false);
+  });
+
+  it("calling static remove() removes from DB, notifies FE state-mgmt", async () => {
+    await Mock(Person, db)
+      .createRelationshipLinks()
+      .generate(10);
+    const peeps = await List.all(Person);
+    const id = peeps.data[0].id;
+    expect(peeps.length).to.equal(10);
+    const events: IFMRecordEvent[] = [];
+    FireModel.dispatch = (evt: IFMRecordEvent) => events.push(evt);
+    const removed = await Record.remove(Person, id);
+    expect(removed.id).to.equal(id);
+    expect(events).to.have.lengthOf(2);
+    const eventTypes = new Set(events.map(e => e.type));
+    expect(eventTypes.has(FMEvents.RECORD_REMOVED_LOCALLY)).is.equal(true);
+    expect(eventTypes.has(FMEvents.RECORD_REMOVED)).is.equal(true);
+
+    const peeps2 = await List.all(Person);
+    expect(peeps2).to.have.lengthOf(9);
+    const ids = peeps2.map(p => p.id);
+    expect(ids.includes(id)).to.equal(false);
   });
 });

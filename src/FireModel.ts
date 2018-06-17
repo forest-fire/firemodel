@@ -10,11 +10,13 @@ import {
   FMEvents,
   NotString,
   Extractable,
-  IFMRelationshipEvent
+  IFMRelationshipEvent,
+  IFMEventName
 } from "./state-mgmt";
 import { IReduxDispatch } from "./VuexWrapper";
 // tslint:disable-next-line:no-var-requires
 const pluralize = require("pluralize");
+const defaultDispatch = (context: IDictionary) => "";
 
 export class FireModel<T extends Model> {
   //#region STATIC INTERFACE
@@ -26,7 +28,7 @@ export class FireModel<T extends Model> {
   private static _defaultDb: import("abstracted-firebase").RealTimeDB = null;
   private static _dispatchActive: boolean = false;
   /** the dispatch function used to interact with frontend frameworks */
-  private static _dispatch: IReduxDispatch = (context: IDictionary) => "";
+  private static _dispatch: IReduxDispatch = defaultDispatch;
 
   public static get defaultDb() {
     return FireModel._defaultDb;
@@ -37,8 +39,13 @@ export class FireModel<T extends Model> {
   }
 
   public static set dispatch(fn: IReduxDispatch) {
-    FireModel._dispatchActive = true;
-    FireModel._dispatch = fn;
+    if (!fn) {
+      FireModel._dispatchActive = false;
+      FireModel._dispatch = defaultDispatch;
+    } else {
+      FireModel._dispatchActive = true;
+      FireModel._dispatch = fn;
+    }
   }
 
   public static get dispatch() {
@@ -144,13 +151,17 @@ export class FireModel<T extends Model> {
     return payload as IFMRecordEvent<T>;
   }
 
-  protected _createRelationshipEvent<
-    K extends string & NotString<K> & Extractable<FMEvents, K>
-  >(record: Record<T>, type: K, relProp: keyof T, fk: string, paths?: any[]) {
+  protected _createRelationshipEvent<K extends IFMEventName<K>>(
+    record: Record<T>,
+    type: K,
+    relProp: keyof T,
+    fk: string,
+    paths?: any[]
+  ) {
     const fkConstruct = record.META.property(relProp).fkConstructor;
     const hasInverse = record.META.property(relProp).inverse;
     const fkRecord = Record.create(fkConstruct);
-    const payload: IFMRelationshipEvent<T> = {
+    const payload: any = {
       type,
       model: record.modelName,
       modelConstructor: record._modelConstructor,
@@ -182,5 +193,5 @@ export class FireModel<T extends Model> {
 
 export interface IMultiPathUpdates {
   path: string;
-  value: string;
+  value: any;
 }

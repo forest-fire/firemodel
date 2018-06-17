@@ -3,14 +3,9 @@ import { RealTimeDB } from "abstracted-firebase";
 import { Model, IModelMetaProperties } from ".";
 import { createError, fk, IDictionary } from "common-types";
 import { key as fbKey } from "firebase-key";
-import { FireModel } from "./FireModel";
+import { FireModel, IMultiPathUpdates } from "./FireModel";
 import { IReduxDispatch } from "./VuexWrapper";
-import {
-  FMEvents,
-  Extractable,
-  NotString,
-  IFMEventName
-} from "./state-mgmt/index";
+import { FMEvents, IFMEventName } from "./state-mgmt/index";
 
 export interface IWriteOperation {
   id: string;
@@ -86,7 +81,7 @@ export class Record<T extends Model> extends FireModel<T> {
       await r._save();
     } catch (e) {
       const err = new Error(`Problem adding new Record: ${e.message}`);
-      err.name = e.name !== "Error" ? e.name : "FiremodelError";
+      err.name = e.name !== "Error" ? e.name : "FireModel";
       throw e;
     }
 
@@ -102,7 +97,7 @@ export class Record<T extends Model> extends FireModel<T> {
    * Intent should be that this record already exists in the
    * database. If you want to add to the database then use add()
    */
-  public static load<T extends Model>(
+  public static createWith<T extends Model>(
     model: new () => T,
     payload: T,
     options: IRecordOptions = {}
@@ -123,8 +118,21 @@ export class Record<T extends Model> extends FireModel<T> {
     return record;
   }
 
+  public static async remove<T extends Model>(
+    model: new () => T,
+    id: string,
+    /** if there is a known current state of this model you can avoid a DB call to get it */
+    currentState?: Record<T>
+  ) {
+    // TODO: add lookup in local state to see if we can avoid DB call
+    const record = currentState ? currentState : await Record.get(model, id);
+    await record.remove();
+    return record;
+  }
+
   //#endregion
 
+  //#region OBJECT DEFINITION
   private _existsOnDB: boolean = false;
   private _writeOperations: IWriteOperation[] = [];
   private _data?: Partial<T>;
@@ -293,33 +301,6 @@ export class Record<T extends Model> extends FireModel<T> {
    * @param props a hash of name value pairs which represent the props being updated and their new values
    */
   public async update(props: Partial<T>) {
-    // More than one level deep not allowed
-    if (Object.keys(props).some((key: any) => /.*\..*\./.test(key))) {
-      const badKeys = Object.keys(props).filter((key: any) =>
-        /.*\..*\./.test(key)
-      );
-      const e = new Error(
-        `You have specified a property more than one level deep in a Model [ ${badKeys.join(
-          ", "
-        )} ]; this is not allowed!`
-      );
-      e.name = "FireModel::NotAllowed";
-      throw e;
-    }
-    // All deep property updates must be of an Object type
-    const deepProps = Object.keys(props).filter(p => /.*\./.test(p));
-    console.log(deepProps);
-
-    deepProps.map((p: any) => {
-      const root = p.split(".")[0];
-      if (this.META.property(root).type !== "Object") {
-        const e = new Error(
-          `The property "${p}" is not of type Object so therefore a deep update is not allowed!`
-        );
-        e.name = "FireModel::NotAllowed";
-        throw e;
-      }
-    });
     // can not update relationship properties
     if (
       Object.keys(props).some((key: any) => {
@@ -340,21 +321,43 @@ export class Record<T extends Model> extends FireModel<T> {
     }
 
     const lastUpdated = new Date().getTime();
-    const changed = {
+    const changed: any = {
       ...(props as IDictionary),
       lastUpdated
     };
-    this.isDirty = true;
-    const mps = this.db.multiPathSet(this.dbPath);
-    mps.add({ path: "lastUpdated/", value: lastUpdated });
-    Object.keys(changed).map((key: keyof typeof changed) => {
-      mps.add({ path: key, value: changed[key] });
-      this._data[key] = changed[key];
-    });
-    await mps.execute();
-    this.isDirty = false;
+    await this._updateProps(
+      FMEvents.RECORD_CHANGED_LOCALLY,
+      FMEvents.RECORD_CHANGED,
+      changed
+    );
+    if (this.META.audit) {
+      // TODO: implement for auditing
+    }
 
     return;
+  }
+
+  /**
+   * remove
+   *
+   * Removes the active record from the database and dispatches the change to
+   * FE State Mgmt.
+   */
+  public async remove() {
+    this.isDirty = true;
+    this.dispatch(
+      this._createRecordEvent(this, FMEvents.RECORD_REMOVED_LOCALLY, [
+        { path: this.dbPath, value: null }
+      ])
+    );
+    await this.db.remove(this.dbPath);
+    if (this.META.audit) {
+      // TODO: implement for auditing
+    }
+    this.isDirty = false;
+    this.dispatch(
+      this._createRecordEvent(this, FMEvents.RECORD_REMOVED, this.data)
+    );
   }
 
   /**
@@ -372,20 +375,18 @@ export class Record<T extends Model> extends FireModel<T> {
       throw e;
     }
     const lastUpdated = new Date().getTime();
-    const changed = {
+    const changed: any = {
       [prop]: value,
       lastUpdated
     };
-    this.isDirty = true;
-    this._data[prop] = value;
-    this._data.lastUpdated = lastUpdated;
     await this._updateProps(
       FMEvents.RECORD_CHANGED_LOCALLY,
       FMEvents.RECORD_CHANGED,
       changed
     );
-
-    this.isDirty = false;
+    if (this.META.audit) {
+      // TODO: implement for auditing
+    }
 
     return;
   }
@@ -460,8 +461,12 @@ export class Record<T extends Model> extends FireModel<T> {
   protected async _updateProps<K extends IFMEventName<K>>(
     actionTypeStart: K,
     actionTypeEnd: K,
-    changed: IDictionary
+    changed: Partial<T>
   ) {
+    this.isDirty = true;
+    Object.keys(changed).map((prop: Extract<string, keyof T>) => {
+      this._data[prop] = changed[prop];
+    });
     const paths = this._getPaths(changed);
 
     this.dispatch(this._createRecordEvent(this, actionTypeStart, paths));
@@ -469,12 +474,13 @@ export class Record<T extends Model> extends FireModel<T> {
     const mps = this.db.multiPathSet(this.dbPath);
     paths.map(path => mps.add(path));
     await mps.execute();
+    this.isDirty = false;
+    this._data.lastUpdated = new Date().getTime();
 
     // if this path is being watched we should avoid
     // sending a duplicative event
     if (!this.isBeingWatched) {
-      const rec = await Record.get(this._modelConstructor, this.id);
-      this.dispatch(this._createRecordEvent(this, actionTypeEnd, rec.data));
+      this.dispatch(this._createRecordEvent(this, actionTypeEnd, this.data));
     }
   }
 
@@ -510,7 +516,11 @@ export class Record<T extends Model> extends FireModel<T> {
     if (!this.id) {
       this.id = fbKey();
     }
-
+    const now = new Date().getTime();
+    if (!this.get("createdAt")) {
+      this._data.createdAt = now;
+    }
+    this._data.lastUpdated = now;
     if (!this.db) {
       const e = new Error(
         `Attempt to save Record failed as the Database has not been connected yet. Try settingFireModel first.`
@@ -518,9 +528,25 @@ export class Record<T extends Model> extends FireModel<T> {
       e.name = "FiremodelError";
       throw e;
     }
+    const paths: IMultiPathUpdates[] = [{ path: "/", value: this._data }];
+    this.isDirty = true;
+    this.dispatch(
+      this._createRecordEvent(this, FMEvents.RECORD_ADDED_LOCALLY, paths)
+    );
+    const mps = this.db.multiPathSet(this.dbPath);
+    paths.map(path => mps.add(path));
+    await mps.execute();
+    this.isDirty = false;
 
-    await this.db.set<T>(this.dbPath, this.data);
+    if (!FireModel.isBeingWatched(this.dbPath)) {
+      // TODO: is there any reason we'd need to load from server like with update?
+      this.dispatch(
+        this._createRecordEvent(this, FMEvents.RECORD_ADDED, this.data)
+      );
+    }
 
     return this;
   }
+
+  //#endregion
 }

@@ -270,7 +270,7 @@ export class List<T extends Model> extends FireModel<T> {
     const list = this.filterWhere(prop, value);
 
     if (list.length > 0) {
-      return Record.load(this._modelConstructor, list._data[0]);
+      return Record.createWith(this._modelConstructor, list._data[0]);
     } else {
       if (defaultIfNotFound !== DEFAULT_IF_NOT_FOUND) {
         return defaultIfNotFound as any;
@@ -299,7 +299,8 @@ export class List<T extends Model> extends FireModel<T> {
   }
 
   /**
-   * Returns the specified record Record object
+   * Returns the Record object with the given ID, errors if not found (name: NotFound)
+   * unless call signature includes "defaultIfNotFound"
    *
    * @param id the unique ID which is being looked for
    * @param defaultIfNotFound the default value returned if the ID is not found in the list
@@ -323,6 +324,32 @@ export class List<T extends Model> extends FireModel<T> {
     const r = Record.create(this._modelConstructor);
     r._initialize(find.data[0]);
     return r;
+  }
+
+  public async removeById(id: string, ignoreOnNotFound: boolean = false) {
+    const rec = this.findById(id, null);
+    if (!rec) {
+      if (!ignoreOnNotFound) {
+        const e = new Error(
+          `Could not remove "${id}" in list of ${
+            this.pluralName
+          } as the ID was not found!`
+        );
+        e.name = "NotFound";
+        throw e;
+      } else {
+        return;
+      }
+    }
+
+    const removed = await Record.remove(this._modelConstructor, id, rec);
+    this._data = this.filter(f => f.id !== id).data;
+  }
+
+  public async add(payload: T) {
+    const newRecord = await Record.add(this._modelConstructor, payload);
+    this._data.push(newRecord.data);
+    return newRecord;
   }
 
   /**

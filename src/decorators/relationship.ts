@@ -1,26 +1,31 @@
 import "reflect-metadata";
 import { PropertyDecorator } from "common-types";
 import { propertyDecorator } from "./decorator";
+import { Model, Record } from "../index";
 
-export function hasMany(schemaClass: new () => any) {
+export function hasMany(modelConstructor: new () => any) {
+  const rec = Record.create(modelConstructor);
   return propertyDecorator(
     {
       isRelationship: true,
       isProperty: false,
       relType: "hasMany",
-      fkConstructor: schemaClass
+      fkConstructor: modelConstructor,
+      fkModelName: rec.modelName
     },
     "property"
   ) as PropertyDecorator;
 }
 
-export function ownedBy(schemaClass: new () => any) {
+export function ownedBy(modelConstructor: new () => any) {
+  const rec = Record.create(modelConstructor);
   return propertyDecorator(
     {
       isRelationship: true,
       isProperty: false,
       relType: "ownedBy",
-      fkConstructor: schemaClass
+      fkConstructor: modelConstructor,
+      fkModelName: rec.modelName
     },
     "property"
   ) as PropertyDecorator;

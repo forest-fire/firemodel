@@ -7,6 +7,8 @@ const expect = chai.expect;
 import "reflect-metadata";
 import { Person } from "./testing/person";
 import { FireModel } from "../src/FireModel";
+import { Mock } from "../src/Mock";
+import { IFMRecordEvent, FMEvents } from "../src/state-mgmt";
 
 describe("List class: ", () => {
   let db: DB;
@@ -134,8 +136,12 @@ describe("List class: ", () => {
         lastUpdated: timestamp
       }))
       .pathPrefix("authenticated");
-    db.mock.queueSchema("person", 30, { lastUpdated: timestamp - 5000 }).generate();
-    db.mock.queueSchema("person", 8, { lastUpdated: timestamp + 1000 }).generate();
+    db.mock
+      .queueSchema("person", 30, { lastUpdated: timestamp - 5000 })
+      .generate();
+    db.mock
+      .queueSchema("person", 8, { lastUpdated: timestamp + 1000 })
+      .generate();
 
     const since = await List.since(Person, timestamp);
 
@@ -215,7 +221,9 @@ describe("List class: ", () => {
       const record = list.findById("not-there", null);
       expect(record).to.equal(null);
     } catch (e) {
-      throw new Error("When default value is provided no error should be raised");
+      throw new Error(
+        "When default value is provided no error should be raised"
+      );
     }
   });
   it("an instantiated List calling getData() with an invalid ID and default value returnes the default value", async () => {
@@ -233,7 +241,9 @@ describe("List class: ", () => {
       const record = list.getData("not-there", null);
       expect(record).to.equal(null);
     } catch (e) {
-      throw new Error("When default value is provided no error should be raised");
+      throw new Error(
+        "When default value is provided no error should be raised"
+      );
     }
   });
 
@@ -252,7 +262,9 @@ describe("List class: ", () => {
       const record = list.getData("not-there", null);
       expect(record).to.equal(null);
     } catch (e) {
-      throw new Error("When default value is provided no error should be raised");
+      throw new Error(
+        "When default value is provided no error should be raised"
+      );
     }
   });
 
@@ -317,6 +329,46 @@ describe("List class: ", () => {
       list.findWhere("id", firstPersonId).data.age
     );
     expect(list.find(byAge(12))).is.an("object");
-    expect(list.find(byAge(12)).data.age).is.equal(list.findWhere("age", 12).data.age);
+    expect(list.find(byAge(12)).data.age).is.equal(
+      list.findWhere("age", 12).data.age
+    );
+  });
+
+  it("using remove() able to change local state, db state, and state mgmt", async () => {
+    await Mock(Person, db).generate(10);
+    const events: Array<IFMRecordEvent<Person>> = [];
+    Record.dispatch = (evt: IFMRecordEvent<Person>) => events.push(evt);
+    const peeps = await List.all(Person);
+    const id = peeps.data[1].id;
+    const removed = await peeps.removeById(id);
+    expect(peeps).to.have.lengthOf(9);
+    expect(events).to.has.lengthOf(2);
+    const eventTypes = events.map(e => e.type);
+    expect(eventTypes).to.contain(FMEvents.RECORD_REMOVED);
+    expect(eventTypes).to.contain(FMEvents.RECORD_REMOVED_LOCALLY);
+
+    const peeps2 = await List.all(Person);
+    expect(peeps2).to.have.length(9);
+    const ids = new Set(peeps2.map(p => p.id));
+    expect(ids.has(id)).to.equal(false);
+  });
+
+  it("using add() changes local state, db state, and state mgmt", async () => {
+    await Mock(Person, db).generate(10);
+    const events: Array<IFMRecordEvent<Person>> = [];
+    Record.dispatch = (evt: IFMRecordEvent<Person>) => events.push(evt);
+    const peeps = await List.all(Person);
+    expect(peeps).to.have.lengthOf(10);
+    const newRec = await peeps.add({
+      name: "Christy Brinkley",
+      age: 50
+    });
+    expect(peeps).to.have.lengthOf(11);
+    const ids = new Set(peeps.map(p => p.id));
+    expect(ids.has(newRec.id)).to.equal(true);
+
+    const eventTypes = events.map(e => e.type);
+    expect(eventTypes).to.contain(FMEvents.RECORD_ADDED);
+    expect(eventTypes).to.contain(FMEvents.RECORD_ADDED_LOCALLY);
   });
 });
