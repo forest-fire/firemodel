@@ -11,7 +11,7 @@ export {
 export { hasMany, ownedBy, inverse } from "./decorators/relationship";
 export {
   model,
-  ISchemaOptions,
+  IModelMetaProperties,
   ISchemaMetaProperties,
   ISchemaRelationshipMetaProperties
 } from "./decorators/schema";

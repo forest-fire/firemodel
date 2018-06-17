@@ -1,7 +1,8 @@
 import { RealTimeDB } from "abstracted-firebase";
 import { Model } from ".";
-import { fk } from "common-types";
+import { fk, IDictionary } from "common-types";
 import { FireModel } from "./FireModel";
+import { IReduxDispatch } from "./VuexWrapper";
 export interface IWriteOperation {
     id: string;
     type: "set" | "pushKey" | "update";
@@ -21,6 +22,7 @@ export interface IRecordOptions {
 }
 export declare class Record<T extends Model> extends FireModel<T> {
     static defaultDb: RealTimeDB;
+    static dispatch: IReduxDispatch;
     /**
      * create
      *
@@ -110,6 +112,8 @@ export declare class Record<T extends Model> extends FireModel<T> {
      * @param value the new value to set to
      */
     set<K extends keyof T>(prop: K, value: T[K]): Promise<void>;
+    /** indicates whether this record is already being watched locally */
+    readonly isBeingWatched: boolean;
     /**
      * get a property value from the record
      *
@@ -125,6 +129,7 @@ export declare class Record<T extends Model> extends FireModel<T> {
         localPath: string;
         data: string;
     };
+    protected _updateProps(actionType: string, changed: IDictionary): Promise<void>;
     /**
      * Load data from a record in database
      */

@@ -8,7 +8,7 @@ import {
   max,
   length,
   model
-} from "../../src/index";
+} from "../../src";
 import { IDictionary } from "common-types";
 import { pushKey } from "../../src/decorators/property";
 

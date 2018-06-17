@@ -1,5 +1,5 @@
 // tslint:disable:no-implicit-dependencies
-import { Record } from "../src/index";
+import { Record } from "../src";
 import { DB } from "abstracted-admin";
 import { SchemaCallback } from "firemock";
 import * as chai from "chai";
@@ -30,7 +30,7 @@ describe("schema() decorator: ", () => {
       expect(false, "setting meta property is not allowed!");
     } catch (e) {
       expect(e.message).to.equal(
-        "The meta property can only be set with the @model decorator!"
+        "The META properties should only be set with the @model decorator at design time!"
       );
     }
   });
@@ -109,10 +109,16 @@ describe("relationship decorators: ", () => {
     expect(ids).to.include("employerId");
   });
   it("@relationships show up on Model", async () => {
-    const PersonRecord = Record.create(Person, { db: new DB({ mocking: true }) });
+    const PersonRecord = Record.create(Person, {
+      db: new DB({ mocking: true })
+    });
 
-    expect(PersonRecord.META.relationships.map(p => p.property)).to.include("fatherId");
-    expect(PersonRecord.META.relationships.map(p => p.property)).to.include("children");
+    expect(PersonRecord.META.relationships.map(p => p.property)).to.include(
+      "fatherId"
+    );
+    expect(PersonRecord.META.relationships.map(p => p.property)).to.include(
+      "children"
+    );
   });
 
   it("@properties show up on Schema's properties array", async () => {
@@ -129,14 +135,24 @@ describe("relationship decorators: ", () => {
   });
 
   it("@properties show up on Model", async () => {
-    const PersonRecord = Record.create(Person, { db: new DB({ mocking: true }) });
-    expect(PersonRecord.META.properties.map(p => p.property)).to.include("name");
-    expect(PersonRecord.META.properties.map(p => p.property)).to.include("lastUpdated");
+    const PersonRecord = Record.create(Person, {
+      db: new DB({ mocking: true })
+    });
+    expect(PersonRecord.META.properties.map(p => p.property)).to.include(
+      "name"
+    );
+    expect(PersonRecord.META.properties.map(p => p.property)).to.include(
+      "lastUpdated"
+    );
   });
 
   it("inverse() sets correct meta props", async () => {
     const person = new Person();
-    expect(person.META.property("motherId").inverseProperty).to.equal("children");
-    expect(person.META.property("fatherId").inverseProperty).to.equal("children");
+    expect(person.META.property("motherId").inverseProperty).to.equal(
+      "children"
+    );
+    expect(person.META.property("fatherId").inverseProperty).to.equal(
+      "children"
+    );
   });
 });

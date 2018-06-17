@@ -60,7 +60,12 @@ module.exports = {
         {
           title: "Advanced Topics",
           collapsable: true,
-          children: ["auditing", "frontend-state-mgmt", "graphql", "proxy-objects"]
+          children: [
+            "frontend-state-mgmt",
+            "auditing",
+            "graphql",
+            "proxy-objects"
+          ]
         },
         {
           title: "Other DOC Sections",
@@ -75,7 +80,12 @@ module.exports = {
         {
           title: "Mocking",
           collapsable: false,
-          children: ["/mocking/", "configure-mocking", "extending", "relationships"]
+          children: [
+            "/mocking/",
+            "configure-mocking",
+            "extending",
+            "relationships"
+          ]
         },
         {
           title: "Other Sections",

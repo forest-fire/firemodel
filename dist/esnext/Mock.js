@@ -1,6 +1,6 @@
 import { Record } from "./Record";
 import { arrayToHash } from "typed-conversions";
-import { fbKey } from "./index";
+import { fbKey } from ".";
 import { set } from "lodash";
 // tslint:disable-next-line:no-var-requires
 const pathJoin = require("path.join");

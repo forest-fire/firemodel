@@ -1,8 +1,8 @@
 (function (global, factory) {
-    typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('reflect-metadata'), require('lodash'), require('common-types'), require('firebase-key'), require('serialized-query')) :
-    typeof define === 'function' && define.amd ? define(['exports', 'reflect-metadata', 'lodash', 'common-types', 'firebase-key', 'serialized-query'], factory) :
-    (factory((global.FireModel = {}),null,global.lodash,global['common-types'],global.fbKey,global['serialized-query']));
-}(this, (function (exports,reflectMetadata,lodash,commonTypes,firebaseKey,serializedQuery) { 'use strict';
+    typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('reflect-metadata'), require('lodash'), require('common-types'), require('firebase-key'), require('.'), require('serialized-query')) :
+    typeof define === 'function' && define.amd ? define(['exports', 'reflect-metadata', 'lodash', 'common-types', 'firebase-key', '.', 'serialized-query'], factory) :
+    (factory((global.FireModel = {}),null,global.lodash,global['common-types'],global.fbKey,null,global['serialized-query']));
+}(this, (function (exports,reflectMetadata,lodash,commonTypes,firebaseKey,_,serializedQuery) { 'use strict';
 
     function push(target, path, value) {
         if (Array.isArray(lodash.get(target, path))) {
@@ -75,6 +75,9 @@
     function min(value) {
         return propertyDecorator({ min: value });
     }
+    function mock(value) {
+        return propertyDecorator({ mockType: value });
+    }
     function max(value) {
         return propertyDecorator({ max: value });
     }
@@ -93,14 +96,16 @@
         return propertyDecorator({
             isRelationship: true,
             isProperty: false,
-            relType: "hasMany"
+            relType: "hasMany",
+            fkConstructor: schemaClass
         }, "property");
     }
     function ownedBy(schemaClass) {
         return propertyDecorator({
             isRelationship: true,
             isProperty: false,
-            relType: "ownedBy"
+            relType: "ownedBy",
+            fkConstructor: schemaClass
         }, "property");
     }
     function inverse(inverseProperty) {
@@ -155,13 +160,6 @@
         RelationshipCardinality["belongsTo"] = "belongsTo";
     })(exports.RelationshipCardinality || (exports.RelationshipCardinality = {}));
     class Model {
-        toString() {
-            const obj = {};
-            this.META.properties.map(p => {
-                obj[p.property] = this[p.property];
-            });
-            return JSON.stringify(obj);
-        }
     }
     __decorate([
         property,
@@ -169,21 +167,35 @@
     ], Model.prototype, "id", void 0);
     __decorate([
         property,
+        mock("dateRecentMiliseconds"),
         __metadata("design:type", Number)
     ], Model.prototype, "lastUpdated", void 0);
     __decorate([
         property,
+        mock("datePastMiliseconds"),
         __metadata("design:type", Number)
     ], Model.prototype, "createdAt", void 0);
 
     // tslint:disable-next-line:no-var-requires
     const pluralize = require("pluralize");
     class FireModel {
+        //#region STATIC INTERFACE
+        static isBeingWatched(path) {
+            // TODO: implement this!
+            return false;
+        }
         static get defaultDb() {
             return FireModel._defaultDb;
         }
         static set defaultDb(db) {
             this._defaultDb = db;
+        }
+        static set dispatch(fn) {
+            FireModel._dispatchActive = true;
+            FireModel._dispatch = fn;
+        }
+        static get dispatch() {
+            return FireModel._dispatch;
         }
         //#endregion
         //#region PUBLIC INTERFACE
@@ -194,6 +206,12 @@
             // TODO: add back the exception processing
             return pluralize(this.modelName);
         }
+        get dbPath() {
+            return "dbPath was not overwritten!";
+        }
+        get localPath() {
+            return "dbPath was not overwritten!";
+        }
         get META() {
             return this._model.META;
         }
@@ -202,6 +220,12 @@
         }
         get relationships() {
             return this._model.META.relationships;
+        }
+        get dispatch() {
+            return FireModel.dispatch;
+        }
+        get dispatchIsActive() {
+            return FireModel._dispatchActive;
         }
         /** the connected real-time database */
         get db() {
@@ -218,24 +242,91 @@
         get pushKeys() {
             return this._model.META.pushKeys;
         }
+        //#endregion
+        //#region PROTECTED INTERFACE
+        /**
+         * Creates a Redux-styled event
+         */
+        _createRecordEvent(record, type, paths) {
+            const inProcess = paths.find(i => i.path === "META/inProcess");
+            const payload = {
+                type,
+                source: inProcess === true
+                    ? "client"
+                    : inProcess === false
+                        ? "client-response"
+                        : "unspecified",
+                model: record.modelName,
+                modelConstructor: record._modelConstructor,
+                dbPath: record.dbPath,
+                localPath: record.localPath,
+                key: record.id
+            };
+            if (paths) {
+                payload.paths = paths;
+            }
+            return payload;
+        }
+        _getPaths(changes) {
+            return Object.keys(changes).reduce((prev, next) => {
+                return prev.concat(...prev, ...[
+                    {
+                        [next]: changes[next]
+                    }
+                ]);
+            }, []);
+        }
     }
-    //#region STATIC INTERFACE
     FireModel._defaultDb = null;
+    FireModel._dispatchActive = false;
+
+    //#region generalized structures
+    /** Enumeration of all Firemodel Actions that will be fired */
+    var FMEvents;
+    (function (FMEvents) {
+        /** A record has been added to a given Model list being watched */
+        FMEvents["RECORD_ADDED"] = "@firemodel/RECORD_ADDED";
+        FMEvents["RECORD_CHANGED"] = "@firemodel/RECORD_CHANGED";
+        /** for client originated events touching relationships (as external events would come back as an event per model) */
+        FMEvents["RECORD_MOVED"] = "@firemodel/RECORD_MOVED";
+        /** A record has been removed from a given Model list being watched */
+        FMEvents["RECORD_REMOVED"] = "@firemodel/RECORD_REMOVED";
+        /** Watcher has established connection with Firebase */
+        FMEvents["WATCHER_STARTED"] = "@firemodel/WATCHER_STARTED";
+        /** Watcher has disconnected an event stream from Firebase */
+        FMEvents["WATCHER_STOPPED"] = "@firemodel/WATCHER_STOPPED";
+        /** Watcher has disconnected all event streams from Firebase */
+        FMEvents["WATCHER_STOPPED_ALL"] = "@firemodel/WATCHER_STOPPED_ALL";
+        /** A Record has added a relationship to another */
+        FMEvents["RELATIONSHIP_ADDED"] = "@firemodel/RELATIONSHIP_ADDED";
+        /** A Record has removed a relationship from another */
+        FMEvents["RELATIONSHIP_REMOVED"] = "@firemodel/RELATIONSHIP_REMOVED";
+        FMEvents["APP_CONNECTED"] = "@firemodel/APP_CONNECTED";
+        FMEvents["APP_DISCONNECTED"] = "@firemodel/APP_DISCONNECTED";
+    })(FMEvents || (FMEvents = {}));
+    //#endregion
+    //#region specific events
+    //#endregion
 
     class Record extends FireModel {
         constructor(model, options = {}) {
             super();
+            //#endregion
             this._existsOnDB = false;
             this._writeOperations = [];
             this._modelConstructor = model;
             this._model = new model();
             this._data = new model();
         }
+        //#region STATIC INTERFACE
         static set defaultDb(db) {
             FireModel.defaultDb = db;
         }
         static get defaultDb() {
             return FireModel.defaultDb;
+        }
+        static set dispatch(fn) {
+            FireModel.dispatch = fn;
         }
         /**
          * create
@@ -244,9 +335,13 @@
          * conjunction with the Record's initialize() method
          */
         static create(model, options = {}) {
-            // const model = OldModel.create(schema, options);
-            const record = new Record(model, options);
-            return record;
+            const r = new Record(model, options);
+            if (options.silent && !r.db.isMockDb) {
+                const e = new Error(`You can only add new records to the DB silently when using a Mock database!`);
+                e.name = "FireModel::Forbidden";
+                throw e;
+            }
+            return r;
         }
         /**
          * add
@@ -448,7 +543,8 @@
                 e.name = "InvalidRelationship";
                 throw e;
             }
-            if (typeof this.data[property] === "object" && this.data[property][ref]) {
+            if (typeof this.data[property] === "object" &&
+                this.data[property][ref]) {
                 console.warn(`The fk of "${ref}" already exists in "${this.modelName}.${property}"!`);
                 return;
             }
@@ -465,16 +561,24 @@
          * @param value the new value to set to
          */
         async set(prop, value) {
-            // TODO: add interaction points for client-side state management; goal
-            // is to have local state changed immediately but with meta data to indicate
-            // that we're waiting for backend confirmation.
+            const lastUpdated = new Date().getTime();
+            const changed = {
+                [prop]: value,
+                lastUpdated
+            };
             this._data[prop] = value;
+            this._data.lastUpdated = lastUpdated;
+            await this._updateProps(FMEvents.RECORD_CHANGED, changed);
             await this.db
                 .multiPathSet(this.dbPath)
                 .add({ path: `${prop}/`, value })
                 .add({ path: "lastUpdated/", value: new Date().getTime() })
                 .execute();
             return;
+        }
+        /** indicates whether this record is already being watched locally */
+        get isBeingWatched() {
+            return FireModel.isBeingWatched(this.dbPath);
         }
         /**
          * get a property value from the record
@@ -497,6 +601,23 @@
                 data: this.data.toString()
             };
         }
+        async _updateProps(actionType, changed) {
+            const paths = this._getPaths(changed);
+            this.dispatch(this._createRecordEvent(this, actionType, [
+                ...paths,
+                { path: "META/inProcess", value: true }
+            ]));
+            const mps = this.db.multiPathSet(this.dbPath);
+            paths.map(path => mps.add(path));
+            await mps.execute();
+            // if this path is being watched we should avoid
+            // sending a duplicative event
+            if (!this.isBeingWatched) {
+                this.dispatch(this._createRecordEvent(this, actionType, [
+                    { path: "META/inProcess", value: false }
+                ]));
+            }
+        }
         /**
          * Load data from a record in database
          */
@@ -517,12 +638,9 @@
             return this;
         }
         async _save() {
-            if (this.id) {
-                const e = new Error(`Saving after ID is set is not allowed [ ${this.id} ]`);
-                e.name = "InvalidSave";
-                throw e;
+            if (!this.id) {
+                this.id = firebaseKey.key();
             }
-            this.id = firebaseKey.key();
             if (!this.db) {
                 const e = new Error(`Attempt to save Record failed as the Database has not been connected yet. Try settingFireModel first.`);
                 e.name = "FiremodelError";
@@ -534,21 +652,32 @@
     }
 
     const DEFAULT_IF_NOT_FOUND = "__DO_NOT_USE__";
-    class List$$1 extends FireModel {
-        constructor(model$$1, _data = []) {
+    class List extends FireModel {
+        constructor(model, options = {}) {
             super();
-            this._data = _data;
-            this._modelConstructor = model$$1;
-            this._model = new model$$1();
+            //#endregion
+            this._data = [];
+            this._modelConstructor = model;
+            this._model = new model();
+            if (options.db) {
+                this._db = options.db;
+                if (!FireModel.defaultDb) {
+                    FireModel.defaultDb = options.db;
+                }
+            }
         }
+        //#region STATIC Interfaces
         static set defaultDb(db) {
             FireModel.defaultDb = db;
         }
         static get defaultDb() {
             return FireModel.defaultDb;
         }
-        static create(model$$1, options = {}) {
-            return new List$$1(model$$1);
+        static set dispatch(fn) {
+            FireModel.dispatch = fn;
+        }
+        static create(model, options = {}) {
+            return new List(model);
         }
         /**
          * Creates a List<T> which is populated with the passed in query
@@ -557,8 +686,8 @@
          * @param query the serialized query; note that this LIST will override the path of the query
          * @param options model options
          */
-        static async fromQuery(model$$1, query, options = {}) {
-            const list = List$$1.create(model$$1, options);
+        static async fromQuery(model, query, options = {}) {
+            const list = List.create(model, options);
             query.setPath(list.dbPath);
             await list.load(query);
             return list;
@@ -569,9 +698,9 @@
          * @param schema the schema type
          * @param options model options
          */
-        static async all(model$$1, options = {}) {
+        static async all(model, options = {}) {
             const query = new serializedQuery.SerializedQuery().orderByChild("lastUpdated");
-            const list = await List$$1.fromQuery(model$$1, query, options);
+            const list = await List.fromQuery(model, query, options);
             return list;
         }
         /**
@@ -582,9 +711,11 @@
          * @param howMany the number of records to bring back
          * @param options model options
          */
-        static async first(model$$1, howMany, options = {}) {
-            const query = new serializedQuery.SerializedQuery().orderByChild("createdAt").limitToLast(howMany);
-            const list = await List$$1.fromQuery(model$$1, query, options);
+        static async first(model, howMany, options = {}) {
+            const query = new serializedQuery.SerializedQuery()
+                .orderByChild("createdAt")
+                .limitToLast(howMany);
+            const list = await List.fromQuery(model, query, options);
             return list;
         }
         /**
@@ -597,9 +728,11 @@
          * @param offset start at an offset position (useful for paging)
          * @param options
          */
-        static async recent(model$$1, howMany, offset = 0, options = {}) {
-            const query = new serializedQuery.SerializedQuery().orderByChild("lastUpdated").limitToFirst(howMany);
-            const list = await List$$1.fromQuery(model$$1, query, options);
+        static async recent(model, howMany, offset = 0, options = {}) {
+            const query = new serializedQuery.SerializedQuery()
+                .orderByChild("lastUpdated")
+                .limitToFirst(howMany);
+            const list = await List.fromQuery(model, query, options);
             return list;
         }
         /**
@@ -611,36 +744,44 @@
          * @param since  the datetime in miliseconds
          * @param options
          */
-        static async since(model$$1, since, options = {}) {
+        static async since(model, since, options = {}) {
             if (typeof since !== "number") {
                 const e = new Error(`Invalid "since" parameter; value must be number instead got a(n) ${typeof since} [ ${since} ]`);
                 e.name = "NotAllowed";
                 throw e;
             }
             // const query = new SerializedQuery().orderByChild("lastUpdated").startAt(since);
-            const query = new serializedQuery.SerializedQuery().orderByChild("lastUpdated").startAt(since);
-            const list = await List$$1.fromQuery(model$$1, query, options);
+            const query = new serializedQuery.SerializedQuery()
+                .orderByChild("lastUpdated")
+                .startAt(since);
+            const list = await List.fromQuery(model, query, options);
             return list;
         }
-        static async inactive(model$$1, howMany, options = {}) {
-            const query = new serializedQuery.SerializedQuery().orderByChild("lastUpdated").limitToLast(howMany);
-            const list = await List$$1.fromQuery(model$$1, query, options);
+        static async inactive(model, howMany, options = {}) {
+            const query = new serializedQuery.SerializedQuery()
+                .orderByChild("lastUpdated")
+                .limitToLast(howMany);
+            const list = await List.fromQuery(model, query, options);
             return list;
         }
-        static async last(model$$1, howMany, options = {}) {
-            const query = new serializedQuery.SerializedQuery().orderByChild("createdAt").limitToFirst(howMany);
-            const list = await List$$1.fromQuery(model$$1, query, options);
+        static async last(model, howMany, options = {}) {
+            const query = new serializedQuery.SerializedQuery()
+                .orderByChild("createdAt")
+                .limitToFirst(howMany);
+            const list = await List.fromQuery(model, query, options);
             return list;
         }
-        static async where(model$$1, property$$1, value, options = {}) {
+        static async where(model, property, value, options = {}) {
             let operation = "=";
             let val = value;
             if (Array.isArray(value)) {
                 val = value[1];
                 operation = value[0];
             }
-            const query = new serializedQuery.SerializedQuery().orderByChild(property$$1).where(operation, val);
-            const list = await List$$1.fromQuery(model$$1, query, options);
+            const query = new serializedQuery.SerializedQuery()
+                .orderByChild(property)
+                .where(operation, val);
+            const list = await List.fromQuery(model, query, options);
             return list;
         }
         get length() {
@@ -652,19 +793,16 @@
         get localPath() {
             return [this.META.localOffset, this.pluralName].join("/");
         }
-        get meta() {
-            return this._model.META;
-        }
         /** Returns another List with data filtered down by passed in filter function */
         filter(f) {
-            const list = List$$1.create(this._modelConstructor);
+            const list = List.create(this._modelConstructor);
             list._data = this._data.filter(f);
             return list;
         }
         /** Returns another List with data filtered down by passed in filter function */
         find(f, defaultIfNotFound = DEFAULT_IF_NOT_FOUND) {
             const filtered = this._data.filter(f);
-            const r = Record.create(this._modelConstructor);
+            const r = _.Record.create(this._modelConstructor);
             if (filtered.length > 0) {
                 r._initialize(filtered[0]);
                 return r;
@@ -682,7 +820,9 @@
         }
         filterWhere(prop, value) {
             const whereFilter = (item) => item[prop] === value;
-            return new List$$1(this._modelConstructor, this._data.filter(whereFilter));
+            const list = new List(this._modelConstructor);
+            list._data = this.data.filter(whereFilter);
+            return list;
         }
         /**
          * findWhere
@@ -694,7 +834,7 @@
         findWhere(prop, value, defaultIfNotFound = DEFAULT_IF_NOT_FOUND) {
             const list = this.filterWhere(prop, value);
             if (list.length > 0) {
-                return Record.load(this._modelConstructor, list._data[0]);
+                return _.Record.load(this._modelConstructor, list._data[0]);
             }
             else {
                 if (defaultIfNotFound !== DEFAULT_IF_NOT_FOUND) {
@@ -723,7 +863,7 @@
          * @param id the unique ID which is being looked for
          * @param defaultIfNotFound the default value returned if the ID is not found in the list
          */
-        get(id, defaultIfNotFound = DEFAULT_IF_NOT_FOUND) {
+        findById(id, defaultIfNotFound = DEFAULT_IF_NOT_FOUND) {
             const find = this.filter(f => f.id === id);
             if (find.length === 0) {
                 if (defaultIfNotFound !== DEFAULT_IF_NOT_FOUND) {
@@ -733,7 +873,7 @@
                 e.name = "NotFound";
                 throw e;
             }
-            const r = Record.create(this._modelConstructor);
+            const r = _.Record.create(this._modelConstructor);
             r._initialize(find.data[0]);
             return r;
         }
@@ -744,8 +884,10 @@
          * @param defaultIfNotFound the default value returned if the ID is not found in the list
          */
         getData(id, defaultIfNotFound = "__DO_NOT_USE__") {
-            const record = this.get(id, defaultIfNotFound);
-            return record === defaultIfNotFound ? defaultIfNotFound : record.data;
+            const record = this.findById(id, defaultIfNotFound);
+            return record === defaultIfNotFound
+                ? defaultIfNotFound
+                : record.data;
         }
         async load(pathOrQuery) {
             if (!this.db) {
@@ -773,7 +915,7 @@
     exports.model = model;
     exports.Model = Model;
     exports.Record = Record;
-    exports.List = List$$1;
+    exports.List = List;
 
     Object.defineProperty(exports, '__esModule', { value: true });
 

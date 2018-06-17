@@ -4,7 +4,8 @@
     "**/.git": true,
     "**/.DS_Store": true,
     "test/**/*.js": { "when": "$(basename).ts" },
-    "lib/*": true
+    "lib/*": true,
+    "dist/**/*": true
   },
   "[markdown]": {
     "togglequotes.chars": ["\"", "'", "`"],

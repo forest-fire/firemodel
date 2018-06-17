@@ -1,20 +1,26 @@
 import { createError } from "common-types";
 import { key as fbKey } from "firebase-key";
 import { FireModel } from "./FireModel";
+import { FMEvents } from "./state-mgmt/index";
 export class Record extends FireModel {
     constructor(model, options = {}) {
         super();
+        //#endregion
         this._existsOnDB = false;
         this._writeOperations = [];
         this._modelConstructor = model;
         this._model = new model();
         this._data = new model();
     }
+    //#region STATIC INTERFACE
     static set defaultDb(db) {
         FireModel.defaultDb = db;
     }
     static get defaultDb() {
         return FireModel.defaultDb;
+    }
+    static set dispatch(fn) {
+        FireModel.dispatch = fn;
     }
     /**
      * create
@@ -249,16 +255,24 @@ export class Record extends FireModel {
      * @param value the new value to set to
      */
     async set(prop, value) {
-        // TODO: add interaction points for client-side state management; goal
-        // is to have local state changed immediately but with meta data to indicate
-        // that we're waiting for backend confirmation.
+        const lastUpdated = new Date().getTime();
+        const changed = {
+            [prop]: value,
+            lastUpdated
+        };
         this._data[prop] = value;
+        this._data.lastUpdated = lastUpdated;
+        await this._updateProps(FMEvents.RECORD_CHANGED, changed);
         await this.db
             .multiPathSet(this.dbPath)
             .add({ path: `${prop}/`, value })
             .add({ path: "lastUpdated/", value: new Date().getTime() })
             .execute();
         return;
+    }
+    /** indicates whether this record is already being watched locally */
+    get isBeingWatched() {
+        return FireModel.isBeingWatched(this.dbPath);
     }
     /**
      * get a property value from the record
@@ -280,6 +294,23 @@ export class Record extends FireModel {
             localPath: this.localPath,
             data: this.data.toString()
         };
+    }
+    async _updateProps(actionType, changed) {
+        const paths = this._getPaths(changed);
+        this.dispatch(this._createRecordEvent(this, actionType, [
+            ...paths,
+            { path: "META/inProcess", value: true }
+        ]));
+        const mps = this.db.multiPathSet(this.dbPath);
+        paths.map(path => mps.add(path));
+        await mps.execute();
+        // if this path is being watched we should avoid
+        // sending a duplicative event
+        if (!this.isBeingWatched) {
+            this.dispatch(this._createRecordEvent(this, actionType, [
+                { path: "META/inProcess", value: false }
+            ]));
+        }
     }
     /**
      * Load data from a record in database

@@ -2,31 +2,14 @@ import { SerializedQuery } from "serialized-query";
 import { debounce } from "lodash";
 import { rtdb } from "firebase-api-surface";
 import { Record } from "./Record";
+import { FMEvents } from "./state-mgmt";
 //#region generalized structures
-
-/** Enumeration of all Firemodel Actions that will be fired */
-export enum FMActions {
-  RECORD_ADDED = "@firemodel/RECORD_ADDED",
-  RECORD_CHANGED = "@firemodel/RECORD_CHANGED",
-  RECORD_MOVED = "@firemodel/RECORD_MOVED",
-  RECORD_REMOVED = "@firemodel/RECORD_REMOVED",
-  /** Model has requested listening service */
-  MODEL_START_LISTENING = "@firemodel/MODEL_START_LISTENING",
-  /** Model has received initial state from **child_added** events */
-  MODEL_STATE_READY = "@firemodel/MODEL_STATE_READY",
-  /**
-   * the time at which a _listened to_ model engages with one of it's relationships;
-   * the timing of this will be dependant on the meta-data assoc with reln (aka,
-   * lazy, reference, etc. )
-   */
-  RELATIONSHIP_ESTABLISHED = "@firemodel/RELATIONSHIP_ESTABLISHED"
-}
 
 export type ChildEventCallback = (snap: any, previous?: string) => void;
 export type Dispatcher = (args: any[]) => void;
 
 export interface IFMAction {
-  type: FMActions;
+  type: FMEvents;
   payload: any;
   model: string;
   [key: string]: any;
@@ -79,7 +62,9 @@ export async function modelListener<T>(
   const child_removed = childEvent<T>("child_removed", model, dispatch);
   const child_changed = childEvent<T>("child_changed", model, dispatch);
 
-  query.deserialize().on("child_added", model_ready(child_added, model, dispatch));
+  query
+    .deserialize()
+    .on("child_added", model_ready(child_added, model, dispatch));
   query.deserialize().on("child_moved", child_moved);
   query.deserialize().on("child_removed", child_removed);
   query.deserialize().on("child_changed", child_changed);

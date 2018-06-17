@@ -136,7 +136,7 @@ describe("Record > ", () => {
       lastUpdated: 12345
     });
     const roger = await Record.get(Person, "8888");
-    await roger.updateProps({
+    await roger.update({
       name: "Bugs Bunny",
       employerId: "rogue"
     });
@@ -157,7 +157,7 @@ describe("Record > ", () => {
     expect(bugs.get("lastUpdated")).to.equal(roger.get("lastUpdated"));
   });
 
-  it("using updateProps() allows non-destructive updates on object types", async () => {
+  it("using update() allows non-destructive updates on object types", async () => {
     await db.set<Person>("/authenticated/people/8888", {
       name: "Roger Rabbit",
       age: 3,
@@ -166,8 +166,8 @@ describe("Record > ", () => {
       lastUpdated: 12345
     });
     const roger = await Record.get(Person, "8888");
-    await roger.updateProps({
-      tags: { "456": "something else" }
+    await roger.update({
+      ["tags.456"]: "something else"
     });
     // IMMEDIATE CHANGE on RECORD
     expect(roger.get("tags")).to.haveOwnProperty("123");
@@ -186,7 +186,7 @@ describe("Record > ", () => {
       lastUpdated: 12345
     });
     const roger = await Record.get(Person, "8888");
-    await roger.updateProps({
+    await roger.update({
       tags: { "456": "something else" },
       scratchpad: { foo: "bar" }
     });

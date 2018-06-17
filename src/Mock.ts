@@ -5,7 +5,7 @@ import { RealTimeDB } from "abstracted-firebase";
 import { Record } from "./Record";
 import { arrayToHash } from "typed-conversions";
 import { ISchemaMetaProperties } from "./decorators/schema";
-import { fbKey } from "./index";
+import { fbKey } from ".";
 import { set } from "lodash";
 // tslint:disable-next-line:no-var-requires
 const pathJoin = require("path.join");

@@ -1,12 +1,16 @@
 import "reflect-metadata";
-import { IDictionary, ClassDecorator } from "common-types";
+import {
+  IDictionary,
+  ClassDecorator,
+  IStepFunctionBaseLogicalOperand
+} from "common-types";
 import { getRelationships, getProperties, getPushKeys } from "./decorator";
 import { Model } from "../Model";
 /* tslint:disable:only-arrow-functions */
 
 export type ISchemaRelationshipType = "hasMany" | "ownedBy";
 
-export interface ISchemaOptions<T extends Model = any> {
+export interface IModelMetaProperties<T extends Model = any> {
   /** Optionally specify a root path to store this schema under */
   dbOffset?: string;
   /** Optionally specify a root path where the local store will put this schema */
@@ -19,6 +23,8 @@ export interface ISchemaOptions<T extends Model = any> {
   relationships?: Array<ISchemaRelationshipMetaProperties<T>>;
   /** A list of properties which should be pushed using firebase push() */
   pushKeys?: string[];
+  /** indicates whether this property has been changed on client but not yet accepted by server */
+  isDirty?: boolean;
 }
 
 export interface ISchemaRelationshipMetaProperties<T extends Model = Model>
@@ -28,7 +34,7 @@ export interface ISchemaRelationshipMetaProperties<T extends Model = Model>
   /** the general cardinality type of the relationship (aka, hasMany, ownedBy) */
   relType: ISchemaRelationshipType;
   /** The constructor for a model of the FK reference that this relationship maintains */
-  fkConstructor: () => T;
+  fkConstructor: new () => T;
 }
 export interface ISchemaMetaProperties<T extends Model = Model>
   extends IDictionary {
@@ -52,6 +58,8 @@ export interface ISchemaMetaProperties<T extends Model = Model>
   pushKey?: boolean;
   /** what kind of relationship does this foreign key contain */
   relType?: ISchemaRelationshipType;
+  /** if the property is a relationship ... a constructor for the FK's Model */
+  fkConstructor?: new () => T;
 }
 
 /** lookup meta data for schema properties */
@@ -60,7 +68,8 @@ function propertyMeta<T extends Model = Model>(context: object) {
     Reflect.getMetadata(prop, context);
 }
 
-export function model(options: ISchemaOptions): ClassDecorator {
+export function model(options: IModelMetaProperties): ClassDecorator {
+  let isDirty: boolean = false;
   return (target: any): void => {
     const original = target;
 
@@ -70,20 +79,25 @@ export function model(options: ISchemaOptions): ClassDecorator {
       const obj = Reflect.construct(original, args);
 
       Reflect.defineProperty(obj, "META", {
-        get(): ISchemaOptions {
+        get(): IModelMetaProperties {
           return {
             ...options,
             ...{ property: propertyMeta(obj) },
             ...{ properties: getProperties(obj) },
             ...{ relationships: getRelationships(obj) },
             ...{ pushKeys: getPushKeys(obj) },
-            ...{ audit: options.audit ? options.audit : false }
+            ...{ audit: options.audit ? options.audit : false },
+            ...{ isDirty }
           };
         },
-        set() {
-          throw new Error(
-            "The meta property can only be set with the @model decorator!"
-          );
+        set(prop: IDictionary) {
+          if (typeof prop === "object" && prop.isDirty !== undefined) {
+            isDirty = prop.isDirty;
+          } else {
+            throw new Error(
+              "The META properties should only be set with the @model decorator at design time!"
+            );
+          }
         },
         configurable: false,
         enumerable: false

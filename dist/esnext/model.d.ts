@@ -47,6 +47,7 @@ export declare enum RelationshipCardinality {
     hasMany = "hasMany",
     belongsTo = "belongsTo"
 }
+export declare type FMModelConstructor<T> = new () => T;
 export declare abstract class Model {
     /** The primary-key for the record */
     id?: string;
@@ -56,5 +57,4 @@ export declare abstract class Model {
     createdAt?: epochWithMilliseconds;
     /** Metadata properties of the given schema */
     META?: ISchemaOptions;
-    toString(): string;
 }

@@ -1,5 +1,5 @@
 // tslint:disable:no-implicit-dependencies
-import { Model, model, List, property } from "../src/index";
+import { Model, model, List, property } from "../src";
 import { DB } from "abstracted-admin";
 import * as chai from "chai";
 import { Mock } from "../src/Mock";

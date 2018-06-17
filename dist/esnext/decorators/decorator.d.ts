@@ -9,4 +9,4 @@ export declare const propertyDecorator: <T extends Model>(nameValuePairs?: IDict
  */
 export declare function getProperties(target: object): ISchemaMetaProperties<Model>[];
 export declare function getRelationships<T>(target: object): ISchemaRelationshipMetaProperties<T>[];
-export declare function getPushKeys(target: object): ("toString" | "META" | "id" | "lastUpdated" | "createdAt")[];
+export declare function getPushKeys(target: object): ("META" | "id" | "lastUpdated" | "createdAt")[];

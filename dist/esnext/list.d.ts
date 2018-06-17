@@ -4,8 +4,10 @@ import { epochWithMilliseconds } from "common-types";
 import { FireModel } from "./FireModel";
 import { RealTimeDB } from "abstracted-firebase";
 import { IModelOptions } from "./Model";
+import { IReduxDispatch } from "./VuexWrapper";
 export declare class List<T extends Model> extends FireModel<T> {
     static defaultDb: RealTimeDB;
+    static dispatch: IReduxDispatch;
     static create<T extends Model>(model: new () => T, options?: IModelOptions): List<T>;
     /**
      * Creates a List<T> which is populated with the passed in query

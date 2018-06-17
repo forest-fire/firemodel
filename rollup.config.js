@@ -19,6 +19,11 @@ export default {
         "common-types": "common-types",
         "serialized-query": "serialized-query"
       }
+    },
+    {
+      file: "dist/firemodel.es2015.js",
+      format: "es",
+      sourcemap: true
     }
   ]
 };

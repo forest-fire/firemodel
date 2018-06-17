@@ -1,9 +1,16 @@
 // tslint:disable-next-line:no-implicit-dependencies
 import { RealTimeDB } from "abstracted-firebase";
-import { Model, ISchemaOptions } from ".";
+import { Model, IModelMetaProperties } from ".";
 import { createError, fk, IDictionary } from "common-types";
 import { key as fbKey } from "firebase-key";
 import { FireModel } from "./FireModel";
+import { IReduxDispatch } from "./VuexWrapper";
+import {
+  FMEvents,
+  Extractable,
+  NotString,
+  IFMEventName
+} from "./state-mgmt/index";
 
 export interface IWriteOperation {
   id: string;
@@ -25,11 +32,16 @@ export interface IRecordOptions {
 }
 
 export class Record<T extends Model> extends FireModel<T> {
+  //#region STATIC INTERFACE
   public static set defaultDb(db: RealTimeDB) {
     FireModel.defaultDb = db;
   }
   public static get defaultDb() {
     return FireModel.defaultDb;
+  }
+
+  public static set dispatch(fn: IReduxDispatch) {
+    FireModel.dispatch = fn;
   }
   /**
    * create
@@ -111,6 +123,8 @@ export class Record<T extends Model> extends FireModel<T> {
     return record;
   }
 
+  //#endregion
+
   private _existsOnDB: boolean = false;
   private _writeOperations: IWriteOperation[] = [];
   private _data?: Partial<T>;
@@ -127,7 +141,14 @@ export class Record<T extends Model> extends FireModel<T> {
   }
 
   public get isDirty() {
-    return this._writeOperations.length > 0 ? true : false;
+    return this.META.isDirty ? true : false;
+  }
+
+  /**
+   * set the dirty flag of the model
+   */
+  public set isDirty(value: boolean) {
+    this._data.META = { isDirty: value };
   }
 
   /**
@@ -225,16 +246,6 @@ export class Record<T extends Model> extends FireModel<T> {
     return this.data && this.data.id ? true : false;
   }
 
-  public async update(hash: Partial<T>) {
-    if (!this.data.id || !this._existsOnDB) {
-      throw new Error(
-        `Invalid Operation: you can not update a record which doesn't have an "id" or which has never been saved to the database`
-      );
-    }
-
-    return this.db.update<T>(this.dbPath, hash);
-  }
-
   /**
    * Pushes new values onto properties on the record
    * which have been stated to be a "pushKey"
@@ -276,36 +287,107 @@ export class Record<T extends Model> extends FireModel<T> {
 
   /**
    * Updates a set of properties on a given model atomically (aka, all at once); will automatically
-   * include the "lastUpdated" property.
+   * include the "lastUpdated" property. Does NOT allow relationships to be included,
+   * this should be done separately.
    *
    * @param props a hash of name value pairs which represent the props being updated and their new values
    */
-  public async updateProps(props: Partial<T>) {
-    const updater = this.db.multiPathSet(this.dbPath);
-    Object.keys(props).map((key: Extract<keyof T, string>) => {
-      if (typeof props[key] === "object") {
-        const existingState = this.get(key);
-        props[key] = { ...(existingState as any), ...(props[key] as any) };
-      } else {
-        if (key !== "lastUpdated") {
-          updater.add({ path: key, value: props[key] });
-        }
-      }
-      this.set(key, props[key]);
-    });
-    const now = new Date().getTime();
-    updater.add({ path: "lastUpdated", value: now });
-    this._data.lastUpdated = now;
-
-    try {
-      await updater.execute();
-    } catch (e) {
-      throw createError(
-        "UpdateProps",
-        `An error occurred trying to update ${this.modelName}:${this.id}`,
-        e
+  public async update(props: Partial<T>) {
+    // More than one level deep not allowed
+    if (Object.keys(props).some((key: any) => /.*\..*\./.test(key))) {
+      const badKeys = Object.keys(props).filter((key: any) =>
+        /.*\..*\./.test(key)
       );
+      const e = new Error(
+        `You have specified a property more than one level deep in a Model [ ${badKeys.join(
+          ", "
+        )} ]; this is not allowed!`
+      );
+      e.name = "FireModel::NotAllowed";
+      throw e;
     }
+    // All deep property updates must be of an Object type
+    const deepProps = Object.keys(props).filter(p => /.*\./.test(p));
+    console.log(deepProps);
+
+    deepProps.map((p: any) => {
+      const root = p.split(".")[0];
+      if (this.META.property(root).type !== "Object") {
+        const e = new Error(
+          `The property "${p}" is not of type Object so therefore a deep update is not allowed!`
+        );
+        e.name = "FireModel::NotAllowed";
+        throw e;
+      }
+    });
+    // can not update relationship properties
+    if (
+      Object.keys(props).some((key: any) => {
+        const root = key.split(".")[0];
+        return this.META.property(root).isRelationship;
+      })
+    ) {
+      const relProps = Object.keys(props).filter(
+        (p: any) => this.META.property(p).isRelationship
+      );
+      const e = new Error(
+        `You called update on a hash which has relationships included in it. Please only use "update" for updating properties. The relationships you were attempting to update were: ${relProps.join(
+          ", "
+        )}.`
+      );
+      e.name = "FireModel::NotAllowed";
+      throw e;
+    }
+
+    const lastUpdated = new Date().getTime();
+    const changed = {
+      ...(props as IDictionary),
+      lastUpdated
+    };
+    this.isDirty = true;
+    const mps = this.db.multiPathSet(this.dbPath);
+    mps.add({ path: "lastUpdated/", value: lastUpdated });
+    Object.keys(changed).map((key: keyof typeof changed) => {
+      mps.add({ path: key, value: changed[key] });
+      this._data[key] = changed[key];
+    });
+    await mps.execute();
+    this.isDirty = false;
+
+    return;
+  }
+
+  /**
+   * Changes the local state of a property on the record
+   *
+   * @param prop the property on the record to be changed
+   * @param value the new value to set to
+   */
+  public async set<K extends keyof T>(prop: K, value: T[K]) {
+    if (this.META.property(prop).isRelationship) {
+      const e = new Error(
+        `You can not "set" the property "${prop}" because it is configured as a relationship!`
+      );
+      e.name = "FireModel::NotAllowed";
+      throw e;
+    }
+    const lastUpdated = new Date().getTime();
+    const changed = {
+      [prop]: value,
+      lastUpdated
+    };
+    this.isDirty = true;
+    this._data[prop] = value;
+    this._data.lastUpdated = lastUpdated;
+    await this._updateProps(
+      FMEvents.RECORD_CHANGED_LOCALLY,
+      FMEvents.RECORD_CHANGED,
+      changed
+    );
+
+    this.isDirty = false;
+
+    return;
   }
 
   /**
@@ -346,25 +428,9 @@ export class Record<T extends Model> extends FireModel<T> {
       .execute();
   }
 
-  /**
-   * Changes the local state of a property on the record
-   *
-   * @param prop the property on the record to be changed
-   * @param value the new value to set to
-   */
-  public async set<K extends keyof T>(prop: K, value: T[K]) {
-    // TODO: add interaction points for client-side state management; goal
-    // is to have local state changed immediately but with meta data to indicate
-    // that we're waiting for backend confirmation.
-    this._data[prop] = value;
-
-    await this.db
-      .multiPathSet(this.dbPath)
-      .add({ path: `${prop}/`, value })
-      .add({ path: "lastUpdated/", value: new Date().getTime() })
-      .execute();
-
-    return;
+  /** indicates whether this record is already being watched locally */
+  public get isBeingWatched() {
+    return FireModel.isBeingWatched(this.dbPath);
   }
 
   /**
@@ -389,6 +455,27 @@ export class Record<T extends Model> extends FireModel<T> {
       localPath: this.localPath,
       data: this.data.toString()
     };
+  }
+
+  protected async _updateProps<K extends IFMEventName<K>>(
+    actionTypeStart: K,
+    actionTypeEnd: K,
+    changed: IDictionary
+  ) {
+    const paths = this._getPaths(changed);
+
+    this.dispatch(this._createRecordEvent(this, actionTypeStart, paths));
+
+    const mps = this.db.multiPathSet(this.dbPath);
+    paths.map(path => mps.add(path));
+    await mps.execute();
+
+    // if this path is being watched we should avoid
+    // sending a duplicative event
+    if (!this.isBeingWatched) {
+      const rec = await Record.get(this._modelConstructor, this.id);
+      this.dispatch(this._createRecordEvent(this, actionTypeEnd, rec.data));
+    }
   }
 
   /**

@@ -1,4 +1,4 @@
-import { Model, ISchemaOptions, Record } from ".";
+import { Model, IModelMetaProperties, Record } from ".";
 import { SerializedQuery, IComparisonOperator } from "serialized-query";
 
 import { epochWithMilliseconds } from "common-types";
@@ -6,6 +6,7 @@ import { FireModel } from "./FireModel";
 // tslint:disable-next-line:no-implicit-dependencies
 import { RealTimeDB } from "abstracted-firebase";
 import { IModelOptions } from "./Model";
+import { IReduxDispatch } from "./VuexWrapper";
 
 const DEFAULT_IF_NOT_FOUND = "__DO_NOT_USE__";
 
@@ -17,6 +18,10 @@ export class List<T extends Model> extends FireModel<T> {
   }
   public static get defaultDb() {
     return FireModel.defaultDb;
+  }
+
+  public static set dispatch(fn: IReduxDispatch) {
+    FireModel.dispatch = fn;
   }
 
   public static create<T extends Model>(

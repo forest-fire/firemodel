@@ -20,13 +20,6 @@ export var RelationshipCardinality;
     RelationshipCardinality["belongsTo"] = "belongsTo";
 })(RelationshipCardinality || (RelationshipCardinality = {}));
 export class Model {
-    toString() {
-        const obj = {};
-        this.META.properties.map(p => {
-            obj[p.property] = this[p.property];
-        });
-        return JSON.stringify(obj);
-    }
 }
 __decorate([
     property,

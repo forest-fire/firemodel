@@ -5,8 +5,7 @@ export type NonProperties<T> = {
 export type Properties<T> = Pick<T, NonProperties<T>>;
 import { IDictionary, epochWithMilliseconds, datetime } from "common-types";
 import { property, mock } from "./decorators/property";
-import { ISchemaOptions, ISchemaMetaProperties } from "./decorators/schema";
-import { Mock } from "firemock";
+import { IModelMetaProperties } from "./decorators/schema";
 
 export interface IModelOptions {
   logger?: ILogger;
@@ -60,6 +59,8 @@ export enum RelationshipCardinality {
   belongsTo = "belongsTo"
 }
 
+export type FMModelConstructor<T> = new () => T;
+
 export abstract class Model {
   /** The primary-key for the record */
   @property public id?: string;
@@ -72,13 +73,5 @@ export abstract class Model {
   @mock("datePastMiliseconds")
   public createdAt?: epochWithMilliseconds;
   /** Metadata properties of the given schema */
-  public META?: ISchemaOptions;
-
-  public toString() {
-    const obj: IDictionary = {};
-    this.META.properties.map(p => {
-      obj[p.property] = (this as any)[p.property];
-    });
-    return JSON.stringify(obj);
-  }
+  public META?: IModelMetaProperties;
 }

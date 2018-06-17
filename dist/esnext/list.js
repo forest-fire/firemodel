@@ -23,6 +23,9 @@ export class List extends FireModel {
     static get defaultDb() {
         return FireModel.defaultDb;
     }
+    static set dispatch(fn) {
+        FireModel.dispatch = fn;
+    }
     static create(model, options = {}) {
         return new List(model);
     }

@@ -1,7 +1,7 @@
 // tslint:disable:no-implicit-dependencies
 import * as chai from "chai";
-import { CreateListProxy } from "../src/CreateListProxy";
-import { ArrayOfRecords } from "../src/ArrayOfRecords";
+// import { CreateListProxy } from "../src/CreateListProxy";
+// import { ArrayOfRecords } from "../src/ArrayOfRecords";
 import { Person } from "./testing/person";
 import { DB } from "abstracted-admin";
 import { ListProxy } from "../src/ListProxy";
