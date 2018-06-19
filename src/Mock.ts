@@ -5,7 +5,7 @@ import { RealTimeDB } from "abstracted-firebase";
 import { Record } from "./Record";
 import { arrayToHash } from "typed-conversions";
 import { ISchemaMetaProperties } from "./decorators/schema";
-import { fbKey } from ".";
+import { fbKey } from "./index";
 import { set } from "lodash";
 import { Person } from "../test/testing/person";
 import { FireModel } from "./FireModel";

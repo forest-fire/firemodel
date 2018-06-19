@@ -1,11 +1,13 @@
 // tslint:disable-next-line:no-implicit-dependencies
 import { RealTimeDB } from "abstracted-firebase";
-import { Model, IModelMetaProperties } from ".";
+import { Model } from "./index";
 import { createError, fk, IDictionary } from "common-types";
 import { key as fbKey } from "firebase-key";
 import { FireModel, IMultiPathUpdates } from "./FireModel";
 import { IReduxDispatch } from "./VuexWrapper";
 import { FMEvents, IFMEventName } from "./state-mgmt/index";
+// tslint:disable-next-line:no-var-requires
+const pathJoin = require("path.join");
 
 export interface IWriteOperation {
   id: string;
@@ -139,6 +141,13 @@ export class Record<T extends Model> extends FireModel<T> {
 
   constructor(model: new () => T, options: IRecordOptions = {}) {
     super();
+    if (!model) {
+      const e = new Error(
+        `You can not construct a Record instance without passing in a Model's constructor! `
+      );
+      e.name = "FireModel::Forbidden";
+      throw e;
+    }
     this._modelConstructor = model;
     this._model = new model();
     this._data = new model();
@@ -392,41 +401,82 @@ export class Record<T extends Model> extends FireModel<T> {
   }
 
   /**
-   * Adds another fk to a hasMany relationship
+   * Adds another fk (or multiple) to a hasMany relationship
    *
    * @param property the property which is acting as a foreign key (array)
-   * @param ref reference to ID of related entity
+   * @param refs FK reference (or array of FKs) that should be added to reln
    * @param optionalValue the default behaviour is to add the value TRUE but you can optionally add some additional piece of information here instead.
    */
-  public async addHasMany(
+  public async addToRelationship(
     property: Extract<keyof T, string>,
-    ref: Extract<fk, string>,
+    refs: Extract<fk, string> | Array<Extract<fk, string>>,
     optionalValue: any = true
   ) {
+    console.log("property: ", property);
+
     if (this.META.property(property).relType !== "hasMany") {
       const e = new Error(
-        `The property "${property}" does NOT have a "hasMany" relationship on ${
+        `FireModel::addToRelationship() - can not use property "${property}" on ${
           this.modelName
-        }`
+        } with addToRelationship() because it is not a hasMany relationship`
       );
-      e.name = "InvalidRelationship";
+      e.name = "FireModel::WrongRelationshipType";
       throw e;
     }
-    if (
-      typeof this.data[property] === "object" &&
-      (this.data[property] as any)[ref]
-    ) {
-      console.warn(
-        `The fk of "${ref}" already exists in "${this.modelName}.${property}"!`
-      );
-      return;
-    }
 
-    await this.db
-      .multiPathSet(this.dbPath)
-      .add({ path: `${property}/${ref}/`, value: optionalValue })
-      .add({ path: "lastUpdated", value: new Date().getTime() })
-      .execute();
+    if (!Array.isArray(refs)) {
+      refs = [refs];
+    }
+    const paths: IMultiPathUpdates[] = [];
+    const now = new Date().getTime();
+    const mps = this.db.multiPathSet("/");
+    const inverse = this.META.property(property).inverse;
+
+    const fkRecord = Record.create(this.META.property(property).fkConstructor);
+
+    refs.map(ref => {
+      const pathToThisFkReln = pathJoin(this.dbPath, property, ref);
+      const fkIsHasMany = inverse
+        ? fkRecord.META.property(inverse).relType === "hasMany"
+        : false;
+      const pathToInverseFkReln = inverse
+        ? pathJoin(fkRecord.dbOffset, ref, inverse)
+        : null;
+
+      mps.add({ path: pathToThisFkReln, value: optionalValue });
+      if (pathToInverseFkReln) {
+        mps.add({
+          path: fkIsHasMany
+            ? pathJoin(pathToThisFkReln, this.id)
+            : pathToThisFkReln,
+          value: fkIsHasMany ? true : this.id
+        });
+      }
+      if (
+        typeof this.data[property] === "object" &&
+        (this.data[property] as any)[ref]
+      ) {
+        console.warn(
+          `The fk of "${ref}" already exists in "${
+            this.modelName
+          }.${property}"!`
+        );
+        return;
+      }
+    });
+    mps.add({ path: pathJoin(this.dbPath, "lastUpdated"), value: now });
+
+    this.dispatch(
+      this._createRecordEvent(
+        this,
+        FMEvents.RELATIONSHIP_ADDED_LOCALLY,
+        mps.payload
+      )
+    );
+    await mps.execute();
+    this.dispatch(
+      this._createRecordEvent(this, FMEvents.RELATIONSHIP_ADDED, this.data)
+    );
   }
 
   /** indicates whether this record is already being watched locally */

@@ -85,10 +85,10 @@ describe("relationship decorators: ", () => {
   it("ownedBy() sets correct meta props", async () => {
     const person = new Person();
     const keys: string[] = Reflect.getMetadataKeys(person);
-    expect(keys).to.include.members(["fatherId", "motherId"]);
-    expect(person.META.property("fatherId").isRelationship).to.equal(true);
-    expect(person.META.property("fatherId").relType).to.be.equal("ownedBy");
-    expect(person.META.property("motherId").relType).to.be.equal("ownedBy");
+    expect(keys).to.include.members(["father", "mother"]);
+    expect(person.META.property("father").isRelationship).to.equal(true);
+    expect(person.META.property("father").relType).to.be.equal("ownedBy");
+    expect(person.META.property("mother").relType).to.be.equal("ownedBy");
   });
 
   it("hasMany() sets correct meta props", async () => {
@@ -103,8 +103,8 @@ describe("relationship decorators: ", () => {
     const person = new Person();
     const ids = person.META.relationships.map(r => r.property);
     expect(person.META.relationships.length).to.equal(4);
-    expect(ids).to.include("fatherId");
-    expect(ids).to.include("motherId");
+    expect(ids).to.include("father");
+    expect(ids).to.include("mother");
     expect(ids).to.include("children");
     expect(ids).to.include("employerId");
   });
@@ -114,7 +114,7 @@ describe("relationship decorators: ", () => {
     });
 
     expect(PersonRecord.META.relationships.map(p => p.property)).to.include(
-      "fatherId"
+      "father"
     );
     expect(PersonRecord.META.relationships.map(p => p.property)).to.include(
       "children"
@@ -148,11 +148,7 @@ describe("relationship decorators: ", () => {
 
   it("inverse() sets correct meta props", async () => {
     const person = new Person();
-    expect(person.META.property("motherId").inverseProperty).to.equal(
-      "children"
-    );
-    expect(person.META.property("fatherId").inverseProperty).to.equal(
-      "children"
-    );
+    expect(person.META.property("mother").inverseProperty).to.equal("children");
+    expect(person.META.property("father").inverseProperty).to.equal("children");
   });
 });

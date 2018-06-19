@@ -6,7 +6,8 @@ export {
   min,
   max,
   length,
-  desc
+  desc,
+  mock
 } from "./decorators/property";
 export { hasMany, ownedBy, inverse } from "./decorators/relationship";
 export {

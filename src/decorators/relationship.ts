@@ -1,17 +1,19 @@
 import "reflect-metadata";
-import { PropertyDecorator } from "common-types";
 import { propertyDecorator } from "./decorator";
-import { Model, Record } from "../index";
+import { Record } from "../Record";
 
 export function hasMany(modelConstructor: new () => any) {
   const rec = Record.create(modelConstructor);
+  console.log(rec.modelName);
+  console.log(rec.META);
+
   return propertyDecorator(
     {
       isRelationship: true,
       isProperty: false,
       relType: "hasMany",
       fkConstructor: modelConstructor,
-      fkModelName: rec.modelName
+      fkModelName: rec ? rec.modelName : null
     },
     "property"
   ) as PropertyDecorator;
@@ -19,6 +21,8 @@ export function hasMany(modelConstructor: new () => any) {
 
 export function ownedBy(modelConstructor: new () => any) {
   const rec = Record.create(modelConstructor);
+  console.log(rec.modelName);
+
   return propertyDecorator(
     {
       isRelationship: true,

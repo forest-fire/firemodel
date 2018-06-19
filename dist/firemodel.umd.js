@@ -1,923 +1,1070 @@
 (function (global, factory) {
-    typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('reflect-metadata'), require('lodash'), require('common-types'), require('firebase-key'), require('.'), require('serialized-query')) :
-    typeof define === 'function' && define.amd ? define(['exports', 'reflect-metadata', 'lodash', 'common-types', 'firebase-key', '.', 'serialized-query'], factory) :
-    (factory((global.FireModel = {}),null,global.lodash,global['common-types'],global.fbKey,null,global['serialized-query']));
-}(this, (function (exports,reflectMetadata,lodash,commonTypes,firebaseKey,_,serializedQuery) { 'use strict';
+  typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('reflect-metadata'), require('lodash'), require('common-types'), require('firebase-key'), require('serialized-query')) :
+  typeof define === 'function' && define.amd ? define(['exports', 'reflect-metadata', 'lodash', 'common-types', 'firebase-key', 'serialized-query'], factory) :
+  (factory((global.FireModel = {}),null,global.lodash,global['common-types'],global.fbKey,global['serialized-query']));
+}(this, (function (exports,reflectMetadata,lodash,commonTypes,firebaseKey,serializedQuery) { 'use strict';
 
-    function push(target, path, value) {
-        if (Array.isArray(lodash.get(target, path))) {
-            lodash.get(target, path).push(value);
-        }
-        else {
-            lodash.set(target, path, [value]);
-        }
-    }
-    /** Properties accumlated by propertyDecorators and grouped by schema */
-    const propertiesBySchema = {};
-    /** Relationships accumlated by propertyDecorators and grouped by schema */
-    const relationshipsBySchema = {};
-    const propertyDecorator = (nameValuePairs = {}, 
-    /**
-     * if you want to set the property being decorated's name
-     * as property on meta specify the meta properties name here
-     */
-    property) => (target, key) => {
-        const reflect = Reflect.getMetadata("design:type", target, key) || {};
-        const meta = Object.assign({}, Reflect.getMetadata(key, target), { type: reflect.name }, nameValuePairs);
-        Reflect.defineMetadata(key, meta, target);
-        const _val = undefined[key];
-        if (nameValuePairs.isProperty) {
-            if (property) {
-                push(propertiesBySchema, target.constructor.name, Object.assign({}, meta, { [property]: key }));
-            }
-            else {
-                push(propertiesBySchema, target.constructor.name, meta);
-            }
-        }
-        if (nameValuePairs.isRelationship) {
-            if (property) {
-                push(relationshipsBySchema, target.constructor.name, Object.assign({}, meta, { [property]: key }));
-            }
-            else {
-                push(relationshipsBySchema, target.constructor.name, meta);
-            }
-        }
-    };
-    /**
-     * Give all properties from schema and base schema
-     *
-     * @param target the schema object which is being looked up
-     */
-    function getProperties(target) {
-        return [
-            ...propertiesBySchema[target.constructor.name],
-            ...propertiesBySchema.Model.map(s => (Object.assign({}, s, { isBaseSchema: true })))
-        ];
-    }
-    function getRelationships(target) {
-        return relationshipsBySchema[target.constructor.name];
-    }
-    function getPushKeys(target) {
-        const props = getProperties(target);
-        return props.filter(p => p.pushKey).map(p => p.property);
-    }
+  function push(target, path, value) {
+      if (Array.isArray(lodash.get(target, path))) {
+          lodash.get(target, path).push(value);
+      }
+      else {
+          lodash.set(target, path, [value]);
+      }
+  }
+  /** Properties accumlated by propertyDecorators and grouped by schema */
+  const propertiesBySchema = {};
+  /** Relationships accumlated by propertyDecorators and grouped by schema */
+  const relationshipsBySchema = {};
+  const propertyDecorator = (nameValuePairs = {}, 
+  /**
+   * if you want to set the property being decorated's name
+   * as property on meta specify the meta properties name here
+   */
+  property) => (target, key) => {
+      const reflect = Reflect.getMetadata("design:type", target, key) || {};
+      const meta = Object.assign({}, Reflect.getMetadata(key, target), { type: reflect.name }, nameValuePairs);
+      Reflect.defineMetadata(key, meta, target);
+      // const _val: any = this[key];
+      if (nameValuePairs.isProperty) {
+          if (property) {
+              push(propertiesBySchema, target.constructor.name, Object.assign({}, meta, { [property]: key }));
+          }
+          else {
+              push(propertiesBySchema, target.constructor.name, meta);
+          }
+      }
+      if (nameValuePairs.isRelationship) {
+          if (property) {
+              push(relationshipsBySchema, target.constructor.name, Object.assign({}, meta, { [property]: key }));
+          }
+          else {
+              push(relationshipsBySchema, target.constructor.name, meta);
+          }
+      }
+  };
+  /**
+   * Give all properties from schema and base schema
+   *
+   * @param target the schema object which is being looked up
+   */
+  function getProperties(target) {
+      return [
+          ...propertiesBySchema[target.constructor.name],
+          ...propertiesBySchema.Model.map(s => (Object.assign({}, s, { isBaseSchema: true })))
+      ];
+  }
+  function getRelationships(target) {
+      return relationshipsBySchema[target.constructor.name];
+  }
+  function getPushKeys(target) {
+      const props = getProperties(target);
+      return props.filter(p => p.pushKey).map(p => p.property);
+  }
 
-    function constrainedProperty(options = {}) {
-        return propertyDecorator(Object.assign({}, options, { isRelationship: false, isProperty: true }), "property");
-    }
-    /** allows the introduction of a new constraint to the metadata of a property */
-    function constrain(prop, value) {
-        return propertyDecorator({ [prop]: value });
-    }
-    function desc(value) {
-        return propertyDecorator({ desc: value });
-    }
-    function min(value) {
-        return propertyDecorator({ min: value });
-    }
-    function mock(value) {
-        return propertyDecorator({ mockType: value });
-    }
-    function max(value) {
-        return propertyDecorator({ max: value });
-    }
-    function length(value) {
-        return propertyDecorator({ length: value });
-    }
-    const property = propertyDecorator({
-        isRelationship: false,
-        isProperty: true
-    }, "property");
-    const pushKey = propertyDecorator({
-        pushKey: true
-    }, "property");
+  function constrainedProperty(options = {}) {
+      return propertyDecorator(Object.assign({}, options, { isRelationship: false, isProperty: true }), "property");
+  }
+  /** allows the introduction of a new constraint to the metadata of a property */
+  function constrain(prop, value) {
+      return propertyDecorator({ [prop]: value });
+  }
+  function desc(value) {
+      return propertyDecorator({ desc: value });
+  }
+  function min(value) {
+      return propertyDecorator({ min: value });
+  }
+  function mock(value) {
+      return propertyDecorator({ mockType: value });
+  }
+  function max(value) {
+      return propertyDecorator({ max: value });
+  }
+  function length(value) {
+      return propertyDecorator({ length: value });
+  }
+  const property = propertyDecorator({
+      isRelationship: false,
+      isProperty: true
+  }, "property");
+  const pushKey = propertyDecorator({
+      pushKey: true
+  }, "property");
 
-    function hasMany(schemaClass) {
-        return propertyDecorator({
-            isRelationship: true,
-            isProperty: false,
-            relType: "hasMany",
-            fkConstructor: schemaClass
-        }, "property");
-    }
-    function ownedBy(schemaClass) {
-        return propertyDecorator({
-            isRelationship: true,
-            isProperty: false,
-            relType: "ownedBy",
-            fkConstructor: schemaClass
-        }, "property");
-    }
-    function inverse(inverseProperty) {
-        return propertyDecorator({ inverseProperty });
-    }
+  // tslint:disable-next-line:no-var-requires
+  const pluralize = require("pluralize");
+  const defaultDispatch = (context) => "";
+  class FireModel {
+      //#region STATIC INTERFACE
+      static isBeingWatched(path) {
+          // TODO: implement this!
+          return false;
+      }
+      static get defaultDb() {
+          return FireModel._defaultDb;
+      }
+      static set defaultDb(db) {
+          this._defaultDb = db;
+      }
+      static set dispatch(fn) {
+          if (!fn) {
+              FireModel._dispatchActive = false;
+              FireModel._dispatch = defaultDispatch;
+          }
+          else {
+              FireModel._dispatchActive = true;
+              FireModel._dispatch = fn;
+          }
+      }
+      static get dispatch() {
+          return FireModel._dispatch;
+      }
+      //#endregion
+      //#region PUBLIC INTERFACE
+      get modelName() {
+          return this._model.constructor.name.toLowerCase();
+      }
+      get pluralName() {
+          // TODO: add back the exception processing
+          return pluralize(this.modelName);
+      }
+      get dbPath() {
+          return "dbPath was not overwritten!";
+      }
+      get localPath() {
+          return "dbPath was not overwritten!";
+      }
+      get META() {
+          return this._model.META;
+      }
+      get properties() {
+          return this._model.META.properties;
+      }
+      get relationships() {
+          return this._model.META.relationships;
+      }
+      get dispatch() {
+          return FireModel.dispatch;
+      }
+      get dispatchIsActive() {
+          return FireModel._dispatchActive;
+      }
+      /** the connected real-time database */
+      get db() {
+          if (!this._db) {
+              this._db = FireModel.defaultDb;
+          }
+          if (!this._db) {
+              const e = new Error(`Can't get DB as it has not been set yet for this instance and no default database exists [ ${this.modelName} ]!`);
+              e.name = "FireModel::NoDatabase";
+              throw e;
+          }
+          return this._db;
+      }
+      get pushKeys() {
+          return this._model.META.pushKeys;
+      }
+      //#endregion
+      //#region PROTECTED INTERFACE
+      /**
+       * Creates a Redux-styled event
+       */
+      _createRecordEvent(record, type, pathsOrValue) {
+          const payload = {
+              type,
+              model: record.modelName,
+              modelConstructor: record._modelConstructor,
+              dbPath: record.dbPath,
+              localPath: record.localPath,
+              key: record.id
+          };
+          if (Array.isArray(pathsOrValue)) {
+              payload.paths = pathsOrValue;
+          }
+          else {
+              payload.value = pathsOrValue;
+          }
+          return payload;
+      }
+      _createRelationshipEvent(record, type, relProp, fk, paths) {
+          const fkConstruct = record.META.property(relProp).fkConstructor;
+          const hasInverse = record.META.property(relProp).inverse;
+          const fkRecord = Record.create(fkConstruct);
+          const payload = {
+              type,
+              model: record.modelName,
+              modelConstructor: record._modelConstructor,
+              dbPath: record.dbPath,
+              localPath: record.localPath,
+              key: record.id,
+              paths,
+              fk,
+              fkModelName: fkRecord.modelName,
+              fkHasInverse: hasInverse
+          };
+          return payload;
+      }
+      _getPaths(changes) {
+          return Object.keys(changes).reduce((prev, current) => {
+              const path = current;
+              const value = changes[current];
+              return [].concat(prev, [{ path, value }]);
+          }, []);
+      }
+  }
+  FireModel._defaultDb = null;
+  FireModel._dispatchActive = false;
+  /** the dispatch function used to interact with frontend frameworks */
+  FireModel._dispatch = defaultDispatch;
 
-    /** lookup meta data for schema properties */
-    function propertyMeta$1(context) {
-        return (prop) => Reflect.getMetadata(prop, context);
-    }
-    function model(options) {
-        return (target) => {
-            const original = target;
-            // new constructor
-            const f = function (...args) {
-                const obj = Reflect.construct(original, args);
-                Reflect.defineProperty(obj, "META", {
-                    get() {
-                        return Object.assign({}, options, { property: propertyMeta$1(obj) }, { properties: getProperties(obj) }, { relationships: getRelationships(obj) }, { pushKeys: getPushKeys(obj) }, { audit: options.audit ? options.audit : false });
-                    },
-                    set() {
-                        throw new Error("The meta property can only be set with the @model decorator!");
-                    },
-                    configurable: false,
-                    enumerable: false
-                });
-                return obj;
-            };
-            // copy prototype so intanceof operator still works
-            f.prototype = original.prototype;
-            // return new constructor (will override original)
-            return f;
-        };
-    }
+  /** Enumeration of all Firemodel Actions that will be fired */
+  var FMEvents;
+  (function (FMEvents) {
+      /** A record has been added locally */
+      FMEvents["RECORD_ADDED_LOCALLY"] = "@firemodel/RECORD_ADDED_LOCALLY";
+      /** A record has been added to a given Model list being watched */
+      FMEvents["RECORD_ADDED"] = "@firemodel/RECORD_ADDED";
+      /** A record has been updated locally */
+      FMEvents["RECORD_CHANGED_LOCALLY"] = "@firemodel/RECORD_CHANGED_LOCALLY";
+      /** A record has been updated on Firebase */
+      FMEvents["RECORD_CHANGED"] = "@firemodel/RECORD_CHANGED";
+      /** for client originated events touching relationships (as external events would come back as an event per model) */
+      FMEvents["RECORD_MOVED"] = "@firemodel/RECORD_MOVED";
+      /** A record has been removed from a given Model list being watched */
+      FMEvents["RECORD_REMOVED_LOCALLY"] = "@firemodel/RECORD_REMOVED_LOCALLY";
+      /** A record has been removed from a given Model list being watched */
+      FMEvents["RECORD_REMOVED"] = "@firemodel/RECORD_REMOVED";
+      /** Watcher has established connection with Firebase */
+      FMEvents["WATCHER_STARTED"] = "@firemodel/WATCHER_STARTED";
+      /** Watcher has disconnected an event stream from Firebase */
+      FMEvents["WATCHER_STOPPED"] = "@firemodel/WATCHER_STOPPED";
+      /** Watcher has disconnected all event streams from Firebase */
+      FMEvents["WATCHER_STOPPED_ALL"] = "@firemodel/WATCHER_STOPPED_ALL";
+      /** A Record has added a relationship to another */
+      FMEvents["RELATIONSHIP_ADDED"] = "@firemodel/RELATIONSHIP_ADDED";
+      FMEvents["RELATIONSHIP_ADDED_LOCALLY"] = "@firemodel/RELATIONSHIP_ADDED";
+      /** A Record has removed a relationship from another */
+      FMEvents["RELATIONSHIP_REMOVED"] = "@firemodel/RELATIONSHIP_REMOVED";
+      FMEvents["APP_CONNECTED"] = "@firemodel/APP_CONNECTED";
+      FMEvents["APP_DISCONNECTED"] = "@firemodel/APP_DISCONNECTED";
+  })(FMEvents || (FMEvents = {}));
+  //#endregion
+  //#region specific events
+  //#endregion
 
-    var __decorate = (undefined && undefined.__decorate) || function (decorators, target, key, desc$$1) {
-        var c = arguments.length, r = c < 3 ? target : desc$$1 === null ? desc$$1 = Object.getOwnPropertyDescriptor(target, key) : desc$$1, d;
-        if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc$$1);
-        else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-        return c > 3 && r && Object.defineProperty(target, key, r), r;
-    };
-    var __metadata = (undefined && undefined.__metadata) || function (k, v) {
-        if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-    };
-    (function (RelationshipPolicy) {
-        RelationshipPolicy["keys"] = "keys";
-        RelationshipPolicy["lazy"] = "lazy";
-        RelationshipPolicy["inline"] = "inline";
-    })(exports.RelationshipPolicy || (exports.RelationshipPolicy = {}));
-    (function (RelationshipCardinality) {
-        RelationshipCardinality["hasMany"] = "hasMany";
-        RelationshipCardinality["belongsTo"] = "belongsTo";
-    })(exports.RelationshipCardinality || (exports.RelationshipCardinality = {}));
-    class Model {
-    }
-    __decorate([
-        property,
-        __metadata("design:type", String)
-    ], Model.prototype, "id", void 0);
-    __decorate([
-        property,
-        mock("dateRecentMiliseconds"),
-        __metadata("design:type", Number)
-    ], Model.prototype, "lastUpdated", void 0);
-    __decorate([
-        property,
-        mock("datePastMiliseconds"),
-        __metadata("design:type", Number)
-    ], Model.prototype, "createdAt", void 0);
+  // tslint:disable-next-line:no-var-requires
+  const pathJoin = require("path.join");
+  class Record extends FireModel {
+      constructor(model, options = {}) {
+          super();
+          //#endregion
+          //#region OBJECT DEFINITION
+          this._existsOnDB = false;
+          this._writeOperations = [];
+          if (!model) {
+              const e = new Error(`You can not construct a Record instance without passing in a Model's constructor! `);
+              e.name = "FireModel::Forbidden";
+              throw e;
+          }
+          this._modelConstructor = model;
+          this._model = new model();
+          this._data = new model();
+      }
+      //#region STATIC INTERFACE
+      static set defaultDb(db) {
+          FireModel.defaultDb = db;
+      }
+      static get defaultDb() {
+          return FireModel.defaultDb;
+      }
+      static set dispatch(fn) {
+          FireModel.dispatch = fn;
+      }
+      /**
+       * create
+       *
+       * creates a new -- and empty -- Record object; often used in
+       * conjunction with the Record's initialize() method
+       */
+      static create(model, options = {}) {
+          const r = new Record(model, options);
+          if (options.silent && !r.db.isMockDb) {
+              const e = new Error(`You can only add new records to the DB silently when using a Mock database!`);
+              e.name = "FireModel::Forbidden";
+              throw e;
+          }
+          return r;
+      }
+      /**
+       * add
+       *
+       * Adds a new record to the database
+       *
+       * @param schema the schema of the record
+       * @param payload the data for the new record
+       * @param options
+       */
+      static async add(model, payload, options = {}) {
+          let r;
+          try {
+              r = Record.create(model, options);
+              r._initialize(payload);
+              await r._save();
+          }
+          catch (e) {
+              const err = new Error(`Problem adding new Record: ${e.message}`);
+              err.name = e.name !== "Error" ? e.name : "FireModel";
+              throw e;
+          }
+          return r;
+      }
+      /**
+       * load
+       *
+       * static method to create a Record when you want to load the
+       * state of the record with something you already have.
+       *
+       * Intent should be that this record already exists in the
+       * database. If you want to add to the database then use add()
+       */
+      static createWith(model, payload, options = {}) {
+          const rec = Record.create(model, options);
+          rec._initialize(payload);
+          return rec;
+      }
+      static async get(model, id, options = {}) {
+          const record = Record.create(model, options);
+          await record._getFromDB(id);
+          return record;
+      }
+      static async remove(model, id, 
+      /** if there is a known current state of this model you can avoid a DB call to get it */
+      currentState) {
+          // TODO: add lookup in local state to see if we can avoid DB call
+          const record = currentState ? currentState : await Record.get(model, id);
+          await record.remove();
+          return record;
+      }
+      get data() {
+          return this._data;
+      }
+      get isDirty() {
+          return this.META.isDirty ? true : false;
+      }
+      /**
+       * set the dirty flag of the model
+       */
+      set isDirty(value) {
+          this._data.META = { isDirty: value };
+      }
+      /**
+       * returns the fully qualified name in the database to this record;
+       * this of course includes the record id so if that's not set yet calling
+       * this getter will result in an error
+       */
+      get dbPath() {
+          if (!this.data.id) {
+              throw commonTypes.createError("record/invalid-path", `Invalid Record Path: you can not ask for the dbPath before setting an "id" property.`);
+          }
+          return [this.data.META.dbOffset, this.pluralName, this.data.id].join("/");
+      }
+      /** The Record's primary key */
+      get id() {
+          return this.data.id;
+      }
+      set id(val) {
+          if (this.data.id) {
+              const e = new Error(`You may not re-set the ID of a record [ ${this.data.id} → ${val} ].`);
+              e.name = "NotAllowed";
+              throw e;
+          }
+          this._data.id = val;
+      }
+      /**
+       * returns the record's database offset without including the ID of the record;
+       * among other things this can be useful prior to establishing an ID for a record
+       */
+      get dbOffset() {
+          return this.data.META.dbOffset;
+      }
+      /**
+       * returns the record's location in the frontend state management framework;
+       * depends on appropriate configuration of model to be accurate.
+       */
+      get localPath() {
+          if (!this.data.id) {
+              throw new Error('Invalid Path: you can not ask for the dbPath before setting an "id" property.');
+          }
+          return [this.data.META.localOffset, this.pluralName, this.data.id].join("/");
+      }
+      /**
+       * Allows an empty Record to be initialized to a known state.
+       * This is not intended to allow for mass property manipulation other
+       * than at time of initialization
+       *
+       * @param data the initial state you want to start with
+       */
+      _initialize(data) {
+          Object.keys(data).map(key => {
+              this._data[key] = data[key];
+          });
+          const relationships = this.META.relationships;
+          const ownedByRels = (relationships || [])
+              .filter(r => r.relType === "ownedBy")
+              .map(r => r.property);
+          const hasManyRels = (relationships || [])
+              .filter(r => r.relType === "hasMany")
+              .map(r => r.property);
+          // default hasMany to empty hash
+          hasManyRels.map((p) => {
+              if (!this._data[p]) {
+                  this._data[p] = {};
+              }
+          });
+          const now = new Date().getTime();
+          if (!this._data.lastUpdated) {
+              this._data.lastUpdated = now;
+          }
+          if (!this._data.createdAt) {
+              this._data.createdAt = now;
+          }
+      }
+      get existsOnDB() {
+          return this.data && this.data.id ? true : false;
+      }
+      /**
+       * Pushes new values onto properties on the record
+       * which have been stated to be a "pushKey"
+       */
+      async pushKey(property, value) {
+          if (this.META.pushKeys.indexOf(property) === -1) {
+              throw commonTypes.createError("invalid-operation/not-pushkey", `Invalid Operation: you can not push to property "${property}" as it has not been declared a pushKey property in the schema`);
+          }
+          if (!this.existsOnDB) {
+              throw commonTypes.createError("invalid-operation/not-on-db", `Invalid Operation: you can not push to property "${property}" before saving the record to the database`);
+          }
+          const key = firebaseKey.key();
+          const currentState = this.get(property) || {};
+          const newState = Object.assign({}, currentState, { [key]: value });
+          // set state locally
+          this.set(property, newState);
+          // push updates to db
+          const write = this.db.multiPathSet(`${this.dbPath}/`);
+          write.add({ path: `lastUpdated`, value: new Date().getTime() });
+          write.add({ path: `${property}/${key}`, value });
+          try {
+              await write.execute();
+          }
+          catch (e) {
+              throw commonTypes.createError("multi-path/write-error", "", e);
+          }
+          return key;
+      }
+      /**
+       * Updates a set of properties on a given model atomically (aka, all at once); will automatically
+       * include the "lastUpdated" property. Does NOT allow relationships to be included,
+       * this should be done separately.
+       *
+       * @param props a hash of name value pairs which represent the props being updated and their new values
+       */
+      async update(props) {
+          // can not update relationship properties
+          if (Object.keys(props).some((key) => {
+              const root = key.split(".")[0];
+              return this.META.property(root).isRelationship;
+          })) {
+              const relProps = Object.keys(props).filter((p) => this.META.property(p).isRelationship);
+              const e = new Error(`You called update on a hash which has relationships included in it. Please only use "update" for updating properties. The relationships you were attempting to update were: ${relProps.join(", ")}.`);
+              e.name = "FireModel::NotAllowed";
+              throw e;
+          }
+          const lastUpdated = new Date().getTime();
+          const changed = Object.assign({}, props, { lastUpdated });
+          await this._updateProps(FMEvents.RECORD_CHANGED_LOCALLY, FMEvents.RECORD_CHANGED, changed);
+          if (this.META.audit) ;
+          return;
+      }
+      /**
+       * remove
+       *
+       * Removes the active record from the database and dispatches the change to
+       * FE State Mgmt.
+       */
+      async remove() {
+          this.isDirty = true;
+          this.dispatch(this._createRecordEvent(this, FMEvents.RECORD_REMOVED_LOCALLY, [
+              { path: this.dbPath, value: null }
+          ]));
+          await this.db.remove(this.dbPath);
+          if (this.META.audit) ;
+          this.isDirty = false;
+          this.dispatch(this._createRecordEvent(this, FMEvents.RECORD_REMOVED, this.data));
+      }
+      /**
+       * Changes the local state of a property on the record
+       *
+       * @param prop the property on the record to be changed
+       * @param value the new value to set to
+       */
+      async set(prop, value) {
+          if (this.META.property(prop).isRelationship) {
+              const e = new Error(`You can not "set" the property "${prop}" because it is configured as a relationship!`);
+              e.name = "FireModel::NotAllowed";
+              throw e;
+          }
+          const lastUpdated = new Date().getTime();
+          const changed = {
+              [prop]: value,
+              lastUpdated
+          };
+          await this._updateProps(FMEvents.RECORD_CHANGED_LOCALLY, FMEvents.RECORD_CHANGED, changed);
+          if (this.META.audit) ;
+          return;
+      }
+      /**
+       * Adds another fk (or multiple) to a hasMany relationship
+       *
+       * @param property the property which is acting as a foreign key (array)
+       * @param refs FK reference (or array of FKs) that should be added to reln
+       * @param optionalValue the default behaviour is to add the value TRUE but you can optionally add some additional piece of information here instead.
+       */
+      async addToRelationship(property, refs, optionalValue = true) {
+          console.log("property: ", property);
+          if (this.META.property(property).relType !== "hasMany") {
+              const e = new Error(`FireModel::addToRelationship() - can not use property "${property}" on ${this.modelName} with addToRelationship() because it is not a hasMany relationship`);
+              e.name = "FireModel::WrongRelationshipType";
+              throw e;
+          }
+          if (!Array.isArray(refs)) {
+              refs = [refs];
+          }
+          const now = new Date().getTime();
+          const mps = this.db.multiPathSet("/");
+          const inverse = this.META.property(property).inverse;
+          const fkRecord = Record.create(this.META.property(property).fkConstructor);
+          refs.map(ref => {
+              const pathToThisFkReln = pathJoin(this.dbPath, property, ref);
+              const fkIsHasMany = inverse
+                  ? fkRecord.META.property(inverse).relType === "hasMany"
+                  : false;
+              const pathToInverseFkReln = inverse
+                  ? pathJoin(fkRecord.dbOffset, ref, inverse)
+                  : null;
+              mps.add({ path: pathToThisFkReln, value: optionalValue });
+              if (pathToInverseFkReln) {
+                  mps.add({
+                      path: fkIsHasMany
+                          ? pathJoin(pathToThisFkReln, this.id)
+                          : pathToThisFkReln,
+                      value: fkIsHasMany ? true : this.id
+                  });
+              }
+              if (typeof this.data[property] === "object" &&
+                  this.data[property][ref]) {
+                  console.warn(`The fk of "${ref}" already exists in "${this.modelName}.${property}"!`);
+                  return;
+              }
+          });
+          mps.add({ path: pathJoin(this.dbPath, "lastUpdated"), value: now });
+          this.dispatch(this._createRecordEvent(this, FMEvents.RELATIONSHIP_ADDED_LOCALLY, mps.payload));
+          await mps.execute();
+          this.dispatch(this._createRecordEvent(this, FMEvents.RELATIONSHIP_ADDED, this.data));
+      }
+      /** indicates whether this record is already being watched locally */
+      get isBeingWatched() {
+          return FireModel.isBeingWatched(this.dbPath);
+      }
+      /**
+       * get a property value from the record
+       *
+       * @param prop the property being retrieved
+       */
+      get(prop) {
+          return this.data[prop];
+      }
+      toString() {
+          return `Record::${this.modelName}@${this.id || "undefined"}`;
+      }
+      toJSON() {
+          return {
+              dbPath: this.dbPath,
+              modelName: this.modelName,
+              pluralName: this.pluralName,
+              key: this.id,
+              localPath: this.localPath,
+              data: this.data.toString()
+          };
+      }
+      async _updateProps(actionTypeStart, actionTypeEnd, changed) {
+          this.isDirty = true;
+          Object.keys(changed).map((prop) => {
+              this._data[prop] = changed[prop];
+          });
+          const paths = this._getPaths(changed);
+          this.dispatch(this._createRecordEvent(this, actionTypeStart, paths));
+          const mps = this.db.multiPathSet(this.dbPath);
+          paths.map(path => mps.add(path));
+          await mps.execute();
+          this.isDirty = false;
+          this._data.lastUpdated = new Date().getTime();
+          // if this path is being watched we should avoid
+          // sending a duplicative event
+          if (!this.isBeingWatched) {
+              this.dispatch(this._createRecordEvent(this, actionTypeEnd, this.data));
+          }
+      }
+      /**
+       * Load data from a record in database
+       */
+      async _getFromDB(id) {
+          if (!this.db) {
+              const e = new Error(`The attempt to load data into a Record requires that the DB property be initialized first!`);
+              e.name = "NoDatabase";
+              throw e;
+          }
+          this._data.id = id;
+          const data = await this.db.getRecord(this.dbPath);
+          if (data && data.id) {
+              this._initialize(data);
+          }
+          else {
+              throw new Error(`Unknown Key: the key "${id}" was not found in Firebase at "${this.dbPath}".`);
+          }
+          return this;
+      }
+      async _save() {
+          if (!this.id) {
+              this.id = firebaseKey.key();
+          }
+          const now = new Date().getTime();
+          if (!this.get("createdAt")) {
+              this._data.createdAt = now;
+          }
+          this._data.lastUpdated = now;
+          if (!this.db) {
+              const e = new Error(`Attempt to save Record failed as the Database has not been connected yet. Try settingFireModel first.`);
+              e.name = "FiremodelError";
+              throw e;
+          }
+          const paths = [{ path: "/", value: this._data }];
+          this.isDirty = true;
+          this.dispatch(this._createRecordEvent(this, FMEvents.RECORD_ADDED_LOCALLY, paths));
+          const mps = this.db.multiPathSet(this.dbPath);
+          paths.map(path => mps.add(path));
+          await mps.execute();
+          this.isDirty = false;
+          if (!FireModel.isBeingWatched(this.dbPath)) {
+              // TODO: is there any reason we'd need to load from server like with update?
+              this.dispatch(this._createRecordEvent(this, FMEvents.RECORD_ADDED, this.data));
+          }
+          return this;
+      }
+  }
 
-    // tslint:disable-next-line:no-var-requires
-    const pluralize = require("pluralize");
-    class FireModel {
-        //#region STATIC INTERFACE
-        static isBeingWatched(path) {
-            // TODO: implement this!
-            return false;
-        }
-        static get defaultDb() {
-            return FireModel._defaultDb;
-        }
-        static set defaultDb(db) {
-            this._defaultDb = db;
-        }
-        static set dispatch(fn) {
-            FireModel._dispatchActive = true;
-            FireModel._dispatch = fn;
-        }
-        static get dispatch() {
-            return FireModel._dispatch;
-        }
-        //#endregion
-        //#region PUBLIC INTERFACE
-        get modelName() {
-            return this._model.constructor.name.toLowerCase();
-        }
-        get pluralName() {
-            // TODO: add back the exception processing
-            return pluralize(this.modelName);
-        }
-        get dbPath() {
-            return "dbPath was not overwritten!";
-        }
-        get localPath() {
-            return "dbPath was not overwritten!";
-        }
-        get META() {
-            return this._model.META;
-        }
-        get properties() {
-            return this._model.META.properties;
-        }
-        get relationships() {
-            return this._model.META.relationships;
-        }
-        get dispatch() {
-            return FireModel.dispatch;
-        }
-        get dispatchIsActive() {
-            return FireModel._dispatchActive;
-        }
-        /** the connected real-time database */
-        get db() {
-            if (!this._db) {
-                this._db = FireModel.defaultDb;
-            }
-            if (!this._db) {
-                const e = new Error(`Can't get DB as it has not been set yet for this instance and no default database exists [ ${this.modelName} ]!`);
-                e.name = "FireModel::NoDatabase";
-                throw e;
-            }
-            return this._db;
-        }
-        get pushKeys() {
-            return this._model.META.pushKeys;
-        }
-        //#endregion
-        //#region PROTECTED INTERFACE
-        /**
-         * Creates a Redux-styled event
-         */
-        _createRecordEvent(record, type, paths) {
-            const inProcess = paths.find(i => i.path === "META/inProcess");
-            const payload = {
-                type,
-                source: inProcess === true
-                    ? "client"
-                    : inProcess === false
-                        ? "client-response"
-                        : "unspecified",
-                model: record.modelName,
-                modelConstructor: record._modelConstructor,
-                dbPath: record.dbPath,
-                localPath: record.localPath,
-                key: record.id
-            };
-            if (paths) {
-                payload.paths = paths;
-            }
-            return payload;
-        }
-        _getPaths(changes) {
-            return Object.keys(changes).reduce((prev, next) => {
-                return prev.concat(...prev, ...[
-                    {
-                        [next]: changes[next]
-                    }
-                ]);
-            }, []);
-        }
-    }
-    FireModel._defaultDb = null;
-    FireModel._dispatchActive = false;
+  function hasMany(modelConstructor) {
+      const rec = Record.create(modelConstructor);
+      console.log(rec.modelName);
+      console.log(rec.META);
+      return propertyDecorator({
+          isRelationship: true,
+          isProperty: false,
+          relType: "hasMany",
+          fkConstructor: modelConstructor,
+          fkModelName: rec ? rec.modelName : null
+      }, "property");
+  }
+  function ownedBy(modelConstructor) {
+      const rec = Record.create(modelConstructor);
+      console.log(rec.modelName);
+      return propertyDecorator({
+          isRelationship: true,
+          isProperty: false,
+          relType: "ownedBy",
+          fkConstructor: modelConstructor,
+          fkModelName: rec.modelName
+      }, "property");
+  }
+  function inverse(inverseProperty) {
+      return propertyDecorator({ inverseProperty });
+  }
 
-    //#region generalized structures
-    /** Enumeration of all Firemodel Actions that will be fired */
-    var FMEvents;
-    (function (FMEvents) {
-        /** A record has been added to a given Model list being watched */
-        FMEvents["RECORD_ADDED"] = "@firemodel/RECORD_ADDED";
-        FMEvents["RECORD_CHANGED"] = "@firemodel/RECORD_CHANGED";
-        /** for client originated events touching relationships (as external events would come back as an event per model) */
-        FMEvents["RECORD_MOVED"] = "@firemodel/RECORD_MOVED";
-        /** A record has been removed from a given Model list being watched */
-        FMEvents["RECORD_REMOVED"] = "@firemodel/RECORD_REMOVED";
-        /** Watcher has established connection with Firebase */
-        FMEvents["WATCHER_STARTED"] = "@firemodel/WATCHER_STARTED";
-        /** Watcher has disconnected an event stream from Firebase */
-        FMEvents["WATCHER_STOPPED"] = "@firemodel/WATCHER_STOPPED";
-        /** Watcher has disconnected all event streams from Firebase */
-        FMEvents["WATCHER_STOPPED_ALL"] = "@firemodel/WATCHER_STOPPED_ALL";
-        /** A Record has added a relationship to another */
-        FMEvents["RELATIONSHIP_ADDED"] = "@firemodel/RELATIONSHIP_ADDED";
-        /** A Record has removed a relationship from another */
-        FMEvents["RELATIONSHIP_REMOVED"] = "@firemodel/RELATIONSHIP_REMOVED";
-        FMEvents["APP_CONNECTED"] = "@firemodel/APP_CONNECTED";
-        FMEvents["APP_DISCONNECTED"] = "@firemodel/APP_DISCONNECTED";
-    })(FMEvents || (FMEvents = {}));
-    //#endregion
-    //#region specific events
-    //#endregion
+  /** lookup meta data for schema properties */
+  function propertyMeta$1(context) {
+      return (prop) => Reflect.getMetadata(prop, context);
+  }
+  function model(options) {
+      let isDirty = false;
+      return (target) => {
+          const original = target;
+          // new constructor
+          const f = function (...args) {
+              const obj = Reflect.construct(original, args);
+              Reflect.defineProperty(obj, "META", {
+                  get() {
+                      return Object.assign({}, options, { property: propertyMeta$1(obj) }, { properties: getProperties(obj) }, { relationships: getRelationships(obj) }, { pushKeys: getPushKeys(obj) }, { audit: options.audit ? options.audit : false }, { isDirty });
+                  },
+                  set(prop) {
+                      if (typeof prop === "object" && prop.isDirty !== undefined) {
+                          isDirty = prop.isDirty;
+                      }
+                      else {
+                          throw new Error("The META properties should only be set with the @model decorator at design time!");
+                      }
+                  },
+                  configurable: false,
+                  enumerable: false
+              });
+              return obj;
+          };
+          // copy prototype so intanceof operator still works
+          f.prototype = original.prototype;
+          // return new constructor (will override original)
+          return f;
+      };
+  }
 
-    class Record extends FireModel {
-        constructor(model, options = {}) {
-            super();
-            //#endregion
-            this._existsOnDB = false;
-            this._writeOperations = [];
-            this._modelConstructor = model;
-            this._model = new model();
-            this._data = new model();
-        }
-        //#region STATIC INTERFACE
-        static set defaultDb(db) {
-            FireModel.defaultDb = db;
-        }
-        static get defaultDb() {
-            return FireModel.defaultDb;
-        }
-        static set dispatch(fn) {
-            FireModel.dispatch = fn;
-        }
-        /**
-         * create
-         *
-         * creates a new -- and empty -- Record object; often used in
-         * conjunction with the Record's initialize() method
-         */
-        static create(model, options = {}) {
-            const r = new Record(model, options);
-            if (options.silent && !r.db.isMockDb) {
-                const e = new Error(`You can only add new records to the DB silently when using a Mock database!`);
-                e.name = "FireModel::Forbidden";
-                throw e;
-            }
-            return r;
-        }
-        /**
-         * add
-         *
-         * Adds a new record to the database
-         *
-         * @param schema the schema of the record
-         * @param payload the data for the new record
-         * @param options
-         */
-        static async add(model, payload, options = {}) {
-            let r;
-            try {
-                r = Record.create(model, options);
-                r._initialize(payload);
-                await r._save();
-            }
-            catch (e) {
-                const err = new Error(`Problem adding new Record: ${e.message}`);
-                err.name = e.name !== "Error" ? e.name : "FiremodelError";
-                throw e;
-            }
-            return r;
-        }
-        /**
-         * load
-         *
-         * static method to create a Record when you want to load the
-         * state of the record with something you already have.
-         *
-         * Intent should be that this record already exists in the
-         * database. If you want to add to the database then use add()
-         */
-        static load(model, payload, options = {}) {
-            const rec = Record.create(model, options);
-            rec._initialize(payload);
-            return rec;
-        }
-        static async get(model, id, options = {}) {
-            const record = Record.create(model, options);
-            await record._getFromDB(id);
-            return record;
-        }
-        get data() {
-            return this._data;
-        }
-        get isDirty() {
-            return this._writeOperations.length > 0 ? true : false;
-        }
-        /**
-         * returns the fully qualified name in the database to this record;
-         * this of course includes the record id so if that's not set yet calling
-         * this getter will result in an error
-         */
-        get dbPath() {
-            if (!this.data.id) {
-                throw commonTypes.createError("record/invalid-path", `Invalid Record Path: you can not ask for the dbPath before setting an "id" property.`);
-            }
-            return [this.data.META.dbOffset, this.pluralName, this.data.id].join("/");
-        }
-        /** The Record's primary key */
-        get id() {
-            return this.data.id;
-        }
-        set id(val) {
-            if (this.data.id) {
-                const e = new Error(`You may not re-set the ID of a record [ ${this.data.id} → ${val} ].`);
-                e.name = "NotAllowed";
-                throw e;
-            }
-            this._data.id = val;
-        }
-        /**
-         * returns the record's database offset without including the ID of the record;
-         * among other things this can be useful prior to establishing an ID for a record
-         */
-        get dbOffset() {
-            return this.data.META.dbOffset;
-        }
-        /**
-         * returns the record's location in the frontend state management framework;
-         * depends on appropriate configuration of model to be accurate.
-         */
-        get localPath() {
-            if (!this.data.id) {
-                throw new Error('Invalid Path: you can not ask for the dbPath before setting an "id" property.');
-            }
-            return [this.data.META.localOffset, this.pluralName, this.data.id].join("/");
-        }
-        /**
-         * Allows an empty Record to be initialized to a known state.
-         * This is not intended to allow for mass property manipulation other
-         * than at time of initialization
-         *
-         * @param data the initial state you want to start with
-         */
-        _initialize(data) {
-            Object.keys(data).map(key => {
-                this._data[key] = data[key];
-            });
-            const relationships = this.META.relationships;
-            const ownedByRels = (relationships || [])
-                .filter(r => r.relType === "ownedBy")
-                .map(r => r.property);
-            const hasManyRels = (relationships || [])
-                .filter(r => r.relType === "hasMany")
-                .map(r => r.property);
-            // default hasMany to empty hash
-            hasManyRels.map((p) => {
-                if (!this._data[p]) {
-                    this._data[p] = {};
-                }
-            });
-            const now = new Date().getTime();
-            if (!this._data.lastUpdated) {
-                this._data.lastUpdated = now;
-            }
-            if (!this._data.createdAt) {
-                this._data.createdAt = now;
-            }
-        }
-        get existsOnDB() {
-            return this.data && this.data.id ? true : false;
-        }
-        async update(hash) {
-            if (!this.data.id || !this._existsOnDB) {
-                throw new Error(`Invalid Operation: you can not update a record which doesn't have an "id" or which has never been saved to the database`);
-            }
-            return this.db.update(this.dbPath, hash);
-        }
-        /**
-         * Pushes new values onto properties on the record
-         * which have been stated to be a "pushKey"
-         */
-        async pushKey(property, value) {
-            if (this.META.pushKeys.indexOf(property) === -1) {
-                throw commonTypes.createError("invalid-operation/not-pushkey", `Invalid Operation: you can not push to property "${property}" as it has not been declared a pushKey property in the schema`);
-            }
-            if (!this.existsOnDB) {
-                throw commonTypes.createError("invalid-operation/not-on-db", `Invalid Operation: you can not push to property "${property}" before saving the record to the database`);
-            }
-            const key = firebaseKey.key();
-            const currentState = this.get(property) || {};
-            const newState = Object.assign({}, currentState, { [key]: value });
-            // set state locally
-            this.set(property, newState);
-            // push updates to db
-            const write = this.db.multiPathSet(`${this.dbPath}/`);
-            write.add({ path: `lastUpdated`, value: new Date().getTime() });
-            write.add({ path: `${property}/${key}`, value });
-            try {
-                await write.execute();
-            }
-            catch (e) {
-                throw commonTypes.createError("multi-path/write-error", "", e);
-            }
-            return key;
-        }
-        /**
-         * Updates a set of properties on a given model atomically (aka, all at once); will automatically
-         * include the "lastUpdated" property.
-         *
-         * @param props a hash of name value pairs which represent the props being updated and their new values
-         */
-        async updateProps(props) {
-            const updater = this.db.multiPathSet(this.dbPath);
-            Object.keys(props).map((key) => {
-                if (typeof props[key] === "object") {
-                    const existingState = this.get(key);
-                    props[key] = Object.assign({}, existingState, props[key]);
-                }
-                else {
-                    if (key !== "lastUpdated") {
-                        updater.add({ path: key, value: props[key] });
-                    }
-                }
-                this.set(key, props[key]);
-            });
-            const now = new Date().getTime();
-            updater.add({ path: "lastUpdated", value: now });
-            this._data.lastUpdated = now;
-            try {
-                await updater.execute();
-            }
-            catch (e) {
-                throw commonTypes.createError("UpdateProps", `An error occurred trying to update ${this.modelName}:${this.id}`, e);
-            }
-        }
-        /**
-         * Adds another fk to a hasMany relationship
-         *
-         * @param property the property which is acting as a foreign key (array)
-         * @param ref reference to ID of related entity
-         * @param optionalValue the default behaviour is to add the value TRUE but you can optionally add some additional piece of information here instead.
-         */
-        async addHasMany(property, ref, optionalValue = true) {
-            if (this.META.property(property).relType !== "hasMany") {
-                const e = new Error(`The property "${property}" does NOT have a "hasMany" relationship on ${this.modelName}`);
-                e.name = "InvalidRelationship";
-                throw e;
-            }
-            if (typeof this.data[property] === "object" &&
-                this.data[property][ref]) {
-                console.warn(`The fk of "${ref}" already exists in "${this.modelName}.${property}"!`);
-                return;
-            }
-            await this.db
-                .multiPathSet(this.dbPath)
-                .add({ path: `${property}/${ref}/`, value: optionalValue })
-                .add({ path: "lastUpdated", value: new Date().getTime() })
-                .execute();
-        }
-        /**
-         * Changes the local state of a property on the record
-         *
-         * @param prop the property on the record to be changed
-         * @param value the new value to set to
-         */
-        async set(prop, value) {
-            const lastUpdated = new Date().getTime();
-            const changed = {
-                [prop]: value,
-                lastUpdated
-            };
-            this._data[prop] = value;
-            this._data.lastUpdated = lastUpdated;
-            await this._updateProps(FMEvents.RECORD_CHANGED, changed);
-            await this.db
-                .multiPathSet(this.dbPath)
-                .add({ path: `${prop}/`, value })
-                .add({ path: "lastUpdated/", value: new Date().getTime() })
-                .execute();
-            return;
-        }
-        /** indicates whether this record is already being watched locally */
-        get isBeingWatched() {
-            return FireModel.isBeingWatched(this.dbPath);
-        }
-        /**
-         * get a property value from the record
-         *
-         * @param prop the property being retrieved
-         */
-        get(prop) {
-            return this.data[prop];
-        }
-        toString() {
-            return `Record::${this.modelName}@${this.id || "undefined"}`;
-        }
-        toJSON() {
-            return {
-                dbPath: this.dbPath,
-                modelName: this.modelName,
-                pluralName: this.pluralName,
-                key: this.id,
-                localPath: this.localPath,
-                data: this.data.toString()
-            };
-        }
-        async _updateProps(actionType, changed) {
-            const paths = this._getPaths(changed);
-            this.dispatch(this._createRecordEvent(this, actionType, [
-                ...paths,
-                { path: "META/inProcess", value: true }
-            ]));
-            const mps = this.db.multiPathSet(this.dbPath);
-            paths.map(path => mps.add(path));
-            await mps.execute();
-            // if this path is being watched we should avoid
-            // sending a duplicative event
-            if (!this.isBeingWatched) {
-                this.dispatch(this._createRecordEvent(this, actionType, [
-                    { path: "META/inProcess", value: false }
-                ]));
-            }
-        }
-        /**
-         * Load data from a record in database
-         */
-        async _getFromDB(id) {
-            if (!this.db) {
-                const e = new Error(`The attempt to load data into a Record requires that the DB property be initialized first!`);
-                e.name = "NoDatabase";
-                throw e;
-            }
-            this._data.id = id;
-            const data = await this.db.getRecord(this.dbPath);
-            if (data && data.id) {
-                this._initialize(data);
-            }
-            else {
-                throw new Error(`Unknown Key: the key "${id}" was not found in Firebase at "${this.dbPath}".`);
-            }
-            return this;
-        }
-        async _save() {
-            if (!this.id) {
-                this.id = firebaseKey.key();
-            }
-            if (!this.db) {
-                const e = new Error(`Attempt to save Record failed as the Database has not been connected yet. Try settingFireModel first.`);
-                e.name = "FiremodelError";
-                throw e;
-            }
-            await this.db.set(this.dbPath, this.data);
-            return this;
-        }
-    }
+  /*! *****************************************************************************
+  Copyright (c) Microsoft Corporation. All rights reserved.
+  Licensed under the Apache License, Version 2.0 (the "License"); you may not use
+  this file except in compliance with the License. You may obtain a copy of the
+  License at http://www.apache.org/licenses/LICENSE-2.0
 
-    const DEFAULT_IF_NOT_FOUND = "__DO_NOT_USE__";
-    class List extends FireModel {
-        constructor(model, options = {}) {
-            super();
-            //#endregion
-            this._data = [];
-            this._modelConstructor = model;
-            this._model = new model();
-            if (options.db) {
-                this._db = options.db;
-                if (!FireModel.defaultDb) {
-                    FireModel.defaultDb = options.db;
-                }
-            }
-        }
-        //#region STATIC Interfaces
-        static set defaultDb(db) {
-            FireModel.defaultDb = db;
-        }
-        static get defaultDb() {
-            return FireModel.defaultDb;
-        }
-        static set dispatch(fn) {
-            FireModel.dispatch = fn;
-        }
-        static create(model, options = {}) {
-            return new List(model);
-        }
-        /**
-         * Creates a List<T> which is populated with the passed in query
-         *
-         * @param schema the schema type
-         * @param query the serialized query; note that this LIST will override the path of the query
-         * @param options model options
-         */
-        static async fromQuery(model, query, options = {}) {
-            const list = List.create(model, options);
-            query.setPath(list.dbPath);
-            await list.load(query);
-            return list;
-        }
-        /**
-         * Loads all the records of a given schema-type ordered by lastUpdated
-         *
-         * @param schema the schema type
-         * @param options model options
-         */
-        static async all(model, options = {}) {
-            const query = new serializedQuery.SerializedQuery().orderByChild("lastUpdated");
-            const list = await List.fromQuery(model, query, options);
-            return list;
-        }
-        /**
-         * Loads the first X records of the Schema type where
-         * ordering is provided by the "createdAt" property
-         *
-         * @param model the model type
-         * @param howMany the number of records to bring back
-         * @param options model options
-         */
-        static async first(model, howMany, options = {}) {
-            const query = new serializedQuery.SerializedQuery()
-                .orderByChild("createdAt")
-                .limitToLast(howMany);
-            const list = await List.fromQuery(model, query, options);
-            return list;
-        }
-        /**
-         * recent
-         *
-         * Get recent items of a given type/schema (based on lastUpdated)
-         *
-         * @param model the TYPE you are interested
-         * @param howMany the quantity to of records to bring back
-         * @param offset start at an offset position (useful for paging)
-         * @param options
-         */
-        static async recent(model, howMany, offset = 0, options = {}) {
-            const query = new serializedQuery.SerializedQuery()
-                .orderByChild("lastUpdated")
-                .limitToFirst(howMany);
-            const list = await List.fromQuery(model, query, options);
-            return list;
-        }
-        /**
-         * since
-         *
-         * Bring back all records that have changed since a given date
-         *
-         * @param schema the TYPE you are interested
-         * @param since  the datetime in miliseconds
-         * @param options
-         */
-        static async since(model, since, options = {}) {
-            if (typeof since !== "number") {
-                const e = new Error(`Invalid "since" parameter; value must be number instead got a(n) ${typeof since} [ ${since} ]`);
-                e.name = "NotAllowed";
-                throw e;
-            }
-            // const query = new SerializedQuery().orderByChild("lastUpdated").startAt(since);
-            const query = new serializedQuery.SerializedQuery()
-                .orderByChild("lastUpdated")
-                .startAt(since);
-            const list = await List.fromQuery(model, query, options);
-            return list;
-        }
-        static async inactive(model, howMany, options = {}) {
-            const query = new serializedQuery.SerializedQuery()
-                .orderByChild("lastUpdated")
-                .limitToLast(howMany);
-            const list = await List.fromQuery(model, query, options);
-            return list;
-        }
-        static async last(model, howMany, options = {}) {
-            const query = new serializedQuery.SerializedQuery()
-                .orderByChild("createdAt")
-                .limitToFirst(howMany);
-            const list = await List.fromQuery(model, query, options);
-            return list;
-        }
-        static async where(model, property, value, options = {}) {
-            let operation = "=";
-            let val = value;
-            if (Array.isArray(value)) {
-                val = value[1];
-                operation = value[0];
-            }
-            const query = new serializedQuery.SerializedQuery()
-                .orderByChild(property)
-                .where(operation, val);
-            const list = await List.fromQuery(model, query, options);
-            return list;
-        }
-        get length() {
-            return this._data.length;
-        }
-        get dbPath() {
-            return [this.META.dbOffset, this.pluralName].join("/");
-        }
-        get localPath() {
-            return [this.META.localOffset, this.pluralName].join("/");
-        }
-        /** Returns another List with data filtered down by passed in filter function */
-        filter(f) {
-            const list = List.create(this._modelConstructor);
-            list._data = this._data.filter(f);
-            return list;
-        }
-        /** Returns another List with data filtered down by passed in filter function */
-        find(f, defaultIfNotFound = DEFAULT_IF_NOT_FOUND) {
-            const filtered = this._data.filter(f);
-            const r = _.Record.create(this._modelConstructor);
-            if (filtered.length > 0) {
-                r._initialize(filtered[0]);
-                return r;
-            }
-            else {
-                if (defaultIfNotFound !== DEFAULT_IF_NOT_FOUND) {
-                    return defaultIfNotFound;
-                }
-                else {
-                    const e = new Error(`find(fn) did not find a value in the List [ length: ${this.data.length} ]`);
-                    e.name = "NotFound";
-                    throw e;
-                }
-            }
-        }
-        filterWhere(prop, value) {
-            const whereFilter = (item) => item[prop] === value;
-            const list = new List(this._modelConstructor);
-            list._data = this.data.filter(whereFilter);
-            return list;
-        }
-        /**
-         * findWhere
-         *
-         * returns the first record in the list where the property equals the
-         * specified value. If no value is found then an error is thrown unless
-         * it is stated
-         */
-        findWhere(prop, value, defaultIfNotFound = DEFAULT_IF_NOT_FOUND) {
-            const list = this.filterWhere(prop, value);
-            if (list.length > 0) {
-                return _.Record.load(this._modelConstructor, list._data[0]);
-            }
-            else {
-                if (defaultIfNotFound !== DEFAULT_IF_NOT_FOUND) {
-                    return defaultIfNotFound;
-                }
-                else {
-                    const e = new Error(`findWhere(${prop}, ${value}) was not found in the List [ length: ${this.data.length} ]`);
-                    e.name = "NotFound";
-                    throw e;
-                }
-            }
-        }
-        /**
-         * provides a map over the data structured managed by the List; there will be no mutations to the
-         * data managed by the list
-         */
-        map(f) {
-            return this.data.map(f);
-        }
-        get data() {
-            return this._data;
-        }
-        /**
-         * Returns the specified record Record object
-         *
-         * @param id the unique ID which is being looked for
-         * @param defaultIfNotFound the default value returned if the ID is not found in the list
-         */
-        findById(id, defaultIfNotFound = DEFAULT_IF_NOT_FOUND) {
-            const find = this.filter(f => f.id === id);
-            if (find.length === 0) {
-                if (defaultIfNotFound !== DEFAULT_IF_NOT_FOUND) {
-                    return defaultIfNotFound;
-                }
-                const e = new Error(`Could not find "${id}" in list of ${this.pluralName}`);
-                e.name = "NotFound";
-                throw e;
-            }
-            const r = _.Record.create(this._modelConstructor);
-            r._initialize(find.data[0]);
-            return r;
-        }
-        /**
-         * Returns the single instance of an object contained by the List container
-         *
-         * @param id the unique ID which is being looked for
-         * @param defaultIfNotFound the default value returned if the ID is not found in the list
-         */
-        getData(id, defaultIfNotFound = "__DO_NOT_USE__") {
-            const record = this.findById(id, defaultIfNotFound);
-            return record === defaultIfNotFound
-                ? defaultIfNotFound
-                : record.data;
-        }
-        async load(pathOrQuery) {
-            if (!this.db) {
-                const e = new Error(`The attempt to load data into a List requires that the DB property be initialized first!`);
-                e.name = "NoDatabase";
-                throw e;
-            }
-            this._data = await this.db.getList(pathOrQuery);
-            return this;
-        }
-    }
+  THIS CODE IS PROVIDED ON AN *AS IS* BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  KIND, EITHER EXPRESS OR IMPLIED, INCLUDING WITHOUT LIMITATION ANY IMPLIED
+  WARRANTIES OR CONDITIONS OF TITLE, FITNESS FOR A PARTICULAR PURPOSE,
+  MERCHANTABLITY OR NON-INFRINGEMENT.
 
-    exports.fbKey = firebaseKey.key;
-    exports.property = property;
-    exports.pushKey = pushKey;
-    exports.constrainedProperty = constrainedProperty;
-    exports.constrain = constrain;
-    exports.min = min;
-    exports.max = max;
-    exports.length = length;
-    exports.desc = desc;
-    exports.hasMany = hasMany;
-    exports.ownedBy = ownedBy;
-    exports.inverse = inverse;
-    exports.model = model;
-    exports.Model = Model;
-    exports.Record = Record;
-    exports.List = List;
+  See the Apache Version 2.0 License for specific language governing permissions
+  and limitations under the License.
+  ***************************************************************************** */
 
-    Object.defineProperty(exports, '__esModule', { value: true });
+  function __decorate(decorators, target, key, desc) {
+      var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+      if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+      else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+      return c > 3 && r && Object.defineProperty(target, key, r), r;
+  }
+
+  function __metadata(metadataKey, metadataValue) {
+      if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(metadataKey, metadataValue);
+  }
+
+  (function (RelationshipPolicy) {
+      RelationshipPolicy["keys"] = "keys";
+      RelationshipPolicy["lazy"] = "lazy";
+      RelationshipPolicy["inline"] = "inline";
+  })(exports.RelationshipPolicy || (exports.RelationshipPolicy = {}));
+  (function (RelationshipCardinality) {
+      RelationshipCardinality["hasMany"] = "hasMany";
+      RelationshipCardinality["belongsTo"] = "belongsTo";
+  })(exports.RelationshipCardinality || (exports.RelationshipCardinality = {}));
+  class Model {
+  }
+  __decorate([
+      property,
+      __metadata("design:type", String)
+  ], Model.prototype, "id", void 0);
+  __decorate([
+      property,
+      mock("dateRecentMiliseconds"),
+      __metadata("design:type", Number)
+  ], Model.prototype, "lastUpdated", void 0);
+  __decorate([
+      property,
+      mock("datePastMiliseconds"),
+      __metadata("design:type", Number)
+  ], Model.prototype, "createdAt", void 0);
+
+  const DEFAULT_IF_NOT_FOUND = "__DO_NOT_USE__";
+  class List$$1 extends FireModel {
+      constructor(model$$1, options = {}) {
+          super();
+          //#endregion
+          this._data = [];
+          this._modelConstructor = model$$1;
+          this._model = new model$$1();
+          if (options.db) {
+              this._db = options.db;
+              if (!FireModel.defaultDb) {
+                  FireModel.defaultDb = options.db;
+              }
+          }
+      }
+      //#region STATIC Interfaces
+      static set defaultDb(db) {
+          FireModel.defaultDb = db;
+      }
+      static get defaultDb() {
+          return FireModel.defaultDb;
+      }
+      static set dispatch(fn) {
+          FireModel.dispatch = fn;
+      }
+      static create(model$$1, options = {}) {
+          return new List$$1(model$$1);
+      }
+      /**
+       * Creates a List<T> which is populated with the passed in query
+       *
+       * @param schema the schema type
+       * @param query the serialized query; note that this LIST will override the path of the query
+       * @param options model options
+       */
+      static async fromQuery(model$$1, query, options = {}) {
+          const list = List$$1.create(model$$1, options);
+          query.setPath(list.dbPath);
+          await list.load(query);
+          return list;
+      }
+      /**
+       * Loads all the records of a given schema-type ordered by lastUpdated
+       *
+       * @param schema the schema type
+       * @param options model options
+       */
+      static async all(model$$1, options = {}) {
+          const query = new serializedQuery.SerializedQuery().orderByChild("lastUpdated");
+          const list = await List$$1.fromQuery(model$$1, query, options);
+          return list;
+      }
+      /**
+       * Loads the first X records of the Schema type where
+       * ordering is provided by the "createdAt" property
+       *
+       * @param model the model type
+       * @param howMany the number of records to bring back
+       * @param options model options
+       */
+      static async first(model$$1, howMany, options = {}) {
+          const query = new serializedQuery.SerializedQuery()
+              .orderByChild("createdAt")
+              .limitToLast(howMany);
+          const list = await List$$1.fromQuery(model$$1, query, options);
+          return list;
+      }
+      /**
+       * recent
+       *
+       * Get recent items of a given type/schema (based on lastUpdated)
+       *
+       * @param model the TYPE you are interested
+       * @param howMany the quantity to of records to bring back
+       * @param offset start at an offset position (useful for paging)
+       * @param options
+       */
+      static async recent(model$$1, howMany, offset = 0, options = {}) {
+          const query = new serializedQuery.SerializedQuery()
+              .orderByChild("lastUpdated")
+              .limitToFirst(howMany);
+          const list = await List$$1.fromQuery(model$$1, query, options);
+          return list;
+      }
+      /**
+       * since
+       *
+       * Bring back all records that have changed since a given date
+       *
+       * @param schema the TYPE you are interested
+       * @param since  the datetime in miliseconds
+       * @param options
+       */
+      static async since(model$$1, since, options = {}) {
+          if (typeof since !== "number") {
+              const e = new Error(`Invalid "since" parameter; value must be number instead got a(n) ${typeof since} [ ${since} ]`);
+              e.name = "NotAllowed";
+              throw e;
+          }
+          // const query = new SerializedQuery().orderByChild("lastUpdated").startAt(since);
+          const query = new serializedQuery.SerializedQuery()
+              .orderByChild("lastUpdated")
+              .startAt(since);
+          const list = await List$$1.fromQuery(model$$1, query, options);
+          return list;
+      }
+      static async inactive(model$$1, howMany, options = {}) {
+          const query = new serializedQuery.SerializedQuery()
+              .orderByChild("lastUpdated")
+              .limitToLast(howMany);
+          const list = await List$$1.fromQuery(model$$1, query, options);
+          return list;
+      }
+      static async last(model$$1, howMany, options = {}) {
+          const query = new serializedQuery.SerializedQuery()
+              .orderByChild("createdAt")
+              .limitToFirst(howMany);
+          const list = await List$$1.fromQuery(model$$1, query, options);
+          return list;
+      }
+      static async where(model$$1, property$$1, value, options = {}) {
+          let operation = "=";
+          let val = value;
+          if (Array.isArray(value)) {
+              val = value[1];
+              operation = value[0];
+          }
+          const query = new serializedQuery.SerializedQuery()
+              .orderByChild(property$$1)
+              .where(operation, val);
+          const list = await List$$1.fromQuery(model$$1, query, options);
+          return list;
+      }
+      get length() {
+          return this._data.length;
+      }
+      get dbPath() {
+          return [this.META.dbOffset, this.pluralName].join("/");
+      }
+      get localPath() {
+          return [this.META.localOffset, this.pluralName].join("/");
+      }
+      /** Returns another List with data filtered down by passed in filter function */
+      filter(f) {
+          const list = List$$1.create(this._modelConstructor);
+          list._data = this._data.filter(f);
+          return list;
+      }
+      /** Returns another List with data filtered down by passed in filter function */
+      find(f, defaultIfNotFound = DEFAULT_IF_NOT_FOUND) {
+          const filtered = this._data.filter(f);
+          const r = Record.create(this._modelConstructor);
+          if (filtered.length > 0) {
+              r._initialize(filtered[0]);
+              return r;
+          }
+          else {
+              if (defaultIfNotFound !== DEFAULT_IF_NOT_FOUND) {
+                  return defaultIfNotFound;
+              }
+              else {
+                  const e = new Error(`find(fn) did not find a value in the List [ length: ${this.data.length} ]`);
+                  e.name = "NotFound";
+                  throw e;
+              }
+          }
+      }
+      filterWhere(prop, value) {
+          const whereFilter = (item) => item[prop] === value;
+          const list = new List$$1(this._modelConstructor);
+          list._data = this.data.filter(whereFilter);
+          return list;
+      }
+      /**
+       * findWhere
+       *
+       * returns the first record in the list where the property equals the
+       * specified value. If no value is found then an error is thrown unless
+       * it is stated
+       */
+      findWhere(prop, value, defaultIfNotFound = DEFAULT_IF_NOT_FOUND) {
+          const list = this.filterWhere(prop, value);
+          if (list.length > 0) {
+              return Record.createWith(this._modelConstructor, list._data[0]);
+          }
+          else {
+              if (defaultIfNotFound !== DEFAULT_IF_NOT_FOUND) {
+                  return defaultIfNotFound;
+              }
+              else {
+                  const e = new Error(`findWhere(${prop}, ${value}) was not found in the List [ length: ${this.data.length} ]`);
+                  e.name = "NotFound";
+                  throw e;
+              }
+          }
+      }
+      /**
+       * provides a map over the data structured managed by the List; there will be no mutations to the
+       * data managed by the list
+       */
+      map(f) {
+          return this.data.map(f);
+      }
+      get data() {
+          return this._data;
+      }
+      /**
+       * Returns the Record object with the given ID, errors if not found (name: NotFound)
+       * unless call signature includes "defaultIfNotFound"
+       *
+       * @param id the unique ID which is being looked for
+       * @param defaultIfNotFound the default value returned if the ID is not found in the list
+       */
+      findById(id, defaultIfNotFound = DEFAULT_IF_NOT_FOUND) {
+          const find = this.filter(f => f.id === id);
+          if (find.length === 0) {
+              if (defaultIfNotFound !== DEFAULT_IF_NOT_FOUND) {
+                  return defaultIfNotFound;
+              }
+              const e = new Error(`Could not find "${id}" in list of ${this.pluralName}`);
+              e.name = "NotFound";
+              throw e;
+          }
+          const r = Record.create(this._modelConstructor);
+          r._initialize(find.data[0]);
+          return r;
+      }
+      async removeById(id, ignoreOnNotFound = false) {
+          const rec = this.findById(id, null);
+          if (!rec) {
+              if (!ignoreOnNotFound) {
+                  const e = new Error(`Could not remove "${id}" in list of ${this.pluralName} as the ID was not found!`);
+                  e.name = "NotFound";
+                  throw e;
+              }
+              else {
+                  return;
+              }
+          }
+          const removed = await Record.remove(this._modelConstructor, id, rec);
+          this._data = this.filter(f => f.id !== id).data;
+      }
+      async add(payload) {
+          const newRecord = await Record.add(this._modelConstructor, payload);
+          this._data.push(newRecord.data);
+          return newRecord;
+      }
+      /**
+       * Returns the single instance of an object contained by the List container
+       *
+       * @param id the unique ID which is being looked for
+       * @param defaultIfNotFound the default value returned if the ID is not found in the list
+       */
+      getData(id, defaultIfNotFound = "__DO_NOT_USE__") {
+          const record = this.findById(id, defaultIfNotFound);
+          return record === defaultIfNotFound
+              ? defaultIfNotFound
+              : record.data;
+      }
+      async load(pathOrQuery) {
+          if (!this.db) {
+              const e = new Error(`The attempt to load data into a List requires that the DB property be initialized first!`);
+              e.name = "NoDatabase";
+              throw e;
+          }
+          this._data = await this.db.getList(pathOrQuery);
+          return this;
+      }
+  }
+
+  exports.fbKey = firebaseKey.key;
+  exports.property = property;
+  exports.pushKey = pushKey;
+  exports.constrainedProperty = constrainedProperty;
+  exports.constrain = constrain;
+  exports.min = min;
+  exports.max = max;
+  exports.length = length;
+  exports.desc = desc;
+  exports.mock = mock;
+  exports.hasMany = hasMany;
+  exports.ownedBy = ownedBy;
+  exports.inverse = inverse;
+  exports.model = model;
+  exports.Model = Model;
+  exports.Record = Record;
+  exports.List = List$$1;
+
+  Object.defineProperty(exports, '__esModule', { value: true });
 
 })));
 //# sourceMappingURL=firemodel.umd.js.map

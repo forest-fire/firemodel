@@ -1,9 +1,6 @@
 import {
   Model,
   property,
-  constrainedProperty,
-  constrain,
-  desc,
   min,
   max,
   length,
@@ -16,7 +13,7 @@ import {
 import { Company } from "./company";
 import { IDictionary } from "common-types";
 import { pushKey } from "../../src/decorators/property";
-import { FancyPerson } from "./FancyPerson";
+import { Concert } from "./Concert";
 
 @model({ dbOffset: "authenticated" })
 export class Person extends Model {
@@ -28,13 +25,13 @@ export class Person extends Model {
   @property public scratchpad?: IDictionary;
   // prettier-ignore
   @property @pushKey public tags?: IDictionary<string>;
-
   // prettier-ignore
-  @ownedBy(Person) @inverse("children") public motherId?: fk;
+  @ownedBy(Person) @inverse("children") public mother?: fk;
   // prettier-ignore
-  @ownedBy(Person) @inverse("children") public fatherId?: fk;
+  @ownedBy(Person) @inverse("children") public father?: fk;
   // prettier-ignore
   @hasMany(Person) public children?: IDictionary;
-
+  // prettier-ignore
+  @hasMany(Concert) public concerts?: IDictionary;
   @ownedBy(Company) public employerId?: fk;
 }

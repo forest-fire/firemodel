@@ -40,6 +40,7 @@ export enum FMEvents {
 
   /** A Record has added a relationship to another */
   RELATIONSHIP_ADDED = "@firemodel/RELATIONSHIP_ADDED",
+  RELATIONSHIP_ADDED_LOCALLY = "@firemodel/RELATIONSHIP_ADDED",
   /** A Record has removed a relationship from another */
   RELATIONSHIP_REMOVED = "@firemodel/RELATIONSHIP_REMOVED",
 

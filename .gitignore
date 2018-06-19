@@ -7,3 +7,4 @@ lib_test
 serverless-package/
 docs/.vuepress/dist/*
 .git
+.rpt2_cache

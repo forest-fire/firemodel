@@ -1,6 +1,6 @@
 {
   "name": "firemodel",
-  "version": "0.13.1",
+  "version": "0.13.5",
   "description": "Modeling, Access, and Mocking for Firebase Projects",
   "license": "MIT",
   "repository": "https://github.com/forest-fire/firemodel",
@@ -13,9 +13,9 @@
     "dist"
   ],
   "main": "dist/firemodel.cjs.js",
-  "module": "lib/index.js",
-  "browser": "dist/firemodel.min.js",
-  "typings": "lib/index.d.ts",
+  "module": "dist/esnext/index.js",
+  "browser": "dist/firemodel.umd.js",
+  "typings": "dist/esnext/index.d.ts",
   "scripts": {
     "clean": "rimraf lib",
     "lint": "./node_modules/.bin/tslint --force --format verbose \"src/**/*.ts\"",
@@ -72,6 +72,7 @@
     "prettier": "^1.11.1",
     "rimraf": "^2.6.0",
     "rollup": "^0.60.1",
+    "rollup-plugin-typescript2": "^0.15.0",
     "test-console": "^1.1.0",
     "ts-node": "^6.1.0",
     "tslint": "^5.10.0",

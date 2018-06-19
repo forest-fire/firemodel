@@ -46,7 +46,7 @@ export const propertyDecorator = <T extends Model>(
   };
 
   Reflect.defineMetadata(key, meta, target);
-  const _val: any = this[key];
+  // const _val: any = this[key];
 
   if (nameValuePairs.isProperty) {
     if (property) {

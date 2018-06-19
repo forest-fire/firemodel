@@ -26,7 +26,7 @@ describe("List Proxy →", () => {
     expect(Array.isArray(proxy)).to.equal(true);
     expect(proxy.length).to.equal(2);
     expect(proxy.modelName).to.equal("person");
-    expect(proxy.relationships.map(i => i.property)).to.includes("fatherId");
+    expect(proxy.relationships.map(i => i.property)).to.includes("father");
     expect(proxy.relationships.length).to.equal(4);
     expect(proxy.property("age").type).to.equal("Number");
   });

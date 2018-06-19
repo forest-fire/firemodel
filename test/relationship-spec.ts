@@ -6,6 +6,9 @@ const expect = chai.expect;
 import "reflect-metadata";
 import { Person } from "./testing/person";
 import { FireModel } from "../src/FireModel";
+import { FancyPerson } from "./testing/FancyPerson";
+import { Car } from "./testing/Car";
+import { IFMRecordEvent, FMEvents } from "../src/state-mgmt";
 
 describe("Relationship > ", () => {
   let db: DB;
@@ -15,19 +18,37 @@ describe("Relationship > ", () => {
     FireModel.defaultDb = db;
   });
 
-  it("using addHasMany() on a hasMany relationship works", async () => {
+  it("using addToRelationship() on a hasMany relationship works", async () => {
+    const person = await Record.add(FancyPerson, {
+      name: "Bob",
+      age: 23
+    });
+    expect(person.id).to.exist.and.to.be.a("string");
+    const lastUpdated = person.data.lastUpdated;
+    const events: IFMRecordEvent[] = [];
+    Record.dispatch = (evt: IFMRecordEvent) => events.push(evt);
+    await person.addToRelationship("cars", "12345");
+    expect((person.data.cars as any)["12345"]).to.equal(true);
+    expect(events).to.have.lengthOf(2);
+    const eventTypes = new Set(events.map(e => e.type));
+    expect(eventTypes.has(FMEvents.RELATIONSHIP_ADDED)).to.equal(true);
+    expect(eventTypes.has(FMEvents.RELATIONSHIP_ADDED_LOCALLY)).to.equal(true);
+  });
+
+  it.only("using addToRelationship() on a hasMany relationship with an inverse of ownedBy", async () => {
     const person = await Record.add(Person, {
       name: "Bob",
       age: 23
     });
     expect(person.id).to.exist.and.to.be.a("string");
-    expect(person.data.children).to.be.an("object");
     const lastUpdated = person.data.lastUpdated;
-    expect(Object.keys(person.data.children)).to.have.lengthOf(0);
-    await person.addHasMany("children", "1234");
-    expect(person.data.children["1234"]).to.exist.and.equal(true);
-    await person.addHasMany("children", "foobar", "is just a bar");
-    expect(person.data.children.foobar).to.exist.and.equal("is just a bar");
-    expect(person.data.lastUpdated).to.exist.and.be.greaterThan(lastUpdated);
+    const events: IFMRecordEvent[] = [];
+    Record.dispatch = (evt: IFMRecordEvent) => events.push(evt);
+    await person.addToRelationship("concerts", "12345");
+    expect((person.data.concerts as any)["12345"]).to.equal(true);
+    expect(events).to.have.lengthOf(2);
+    const eventTypes = new Set(events.map(e => e.type));
+    expect(eventTypes.has(FMEvents.RELATIONSHIP_ADDED)).to.equal(true);
+    expect(eventTypes.has(FMEvents.RELATIONSHIP_ADDED_LOCALLY)).to.equal(true);
   });
 });

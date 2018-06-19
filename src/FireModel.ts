@@ -1,8 +1,7 @@
 import { Model } from "./Model";
 // tslint:disable-next-line:no-implicit-dependencies
 import { RealTimeDB } from "abstracted-firebase";
-import { IModelMetaProperties } from ".";
-import { List } from "./List";
+import { IModelMetaProperties } from "./index";
 import { Record } from "./Record";
 import { IDictionary } from "common-types";
 import {
