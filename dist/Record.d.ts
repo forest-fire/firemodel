@@ -1,5 +1,5 @@
 import { RealTimeDB } from "abstracted-firebase";
-import { Model } from "./index";
+import { Model } from "./Model";
 import { fk } from "common-types";
 import { FireModel } from "./FireModel";
 import { IReduxDispatch } from "./VuexWrapper";

@@ -10,5 +10,5 @@ export class Concert extends Model {
   @property public employees?: number;
   @property public founded?: string;
   // prettier-ignore
-  // @ownedBy(Person) public attendees: IDictionary<fk>;
+  @hasMany(Person) public attendees: IDictionary<fk>;
 }

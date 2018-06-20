@@ -1,6 +1,6 @@
 // tslint:disable-next-line:no-implicit-dependencies
 import { RealTimeDB } from "abstracted-firebase";
-import { Model } from "./index";
+import { Model } from "./Model";
 import { createError, fk, IDictionary } from "common-types";
 import { key as fbKey } from "firebase-key";
 import { FireModel, IMultiPathUpdates } from "./FireModel";

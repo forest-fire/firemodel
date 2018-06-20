@@ -1,9 +1,9 @@
-import { Model, Record } from ".";
+import { Model, IModelOptions } from "./Model";
+import { Record } from "./Record";
 import { SerializedQuery, IComparisonOperator } from "serialized-query";
 import { epochWithMilliseconds } from "common-types";
 import { FireModel } from "./FireModel";
 import { RealTimeDB } from "abstracted-firebase";
-import { IModelOptions } from "./Model";
 import { IReduxDispatch } from "./VuexWrapper";
 export declare class List<T extends Model> extends FireModel<T> {
     static defaultDb: RealTimeDB;

@@ -28,6 +28,13 @@ export default {
       sourcemap: true
     }
   ],
+  external: [
+    "firebase-key",
+    "reflect-metadata",
+    "serialized-query",
+    "lodash",
+    "common-types"
+  ],
   plugins: [
     typescript({
       tsconfig: "tsconfig.esnext.json"

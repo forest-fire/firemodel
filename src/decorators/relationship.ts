@@ -3,9 +3,13 @@ import { propertyDecorator } from "./decorator";
 import { Record } from "../Record";
 
 export function hasMany(modelConstructor: new () => any) {
+  // console.log(
+  //   "hasMany property decorator: ",
+  //   modelConstructor
+  //     ? "modelConstructor exists"
+  //     : "modelConstructor is missing!"
+  // );
   const rec = Record.create(modelConstructor);
-  console.log(rec.modelName);
-  console.log(rec.META);
 
   return propertyDecorator(
     {
@@ -20,8 +24,15 @@ export function hasMany(modelConstructor: new () => any) {
 }
 
 export function ownedBy(modelConstructor: new () => any) {
+  // console.log(
+  //   "ownedBy property decorator: ",
+  //   modelConstructor
+  //     ? "modelConstructor exists"
+  //     : "modelConstructor is missing!"
+  // );
+
   const rec = Record.create(modelConstructor);
-  console.log(rec.modelName);
+  // console.log(rec.modelName);
 
   return propertyDecorator(
     {

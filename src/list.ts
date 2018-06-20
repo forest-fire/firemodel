@@ -1,11 +1,11 @@
-import { Model, IModelMetaProperties, Record } from ".";
+import { Model, IModelOptions } from "./Model";
+import { Record } from "./Record";
 import { SerializedQuery, IComparisonOperator } from "serialized-query";
 
 import { epochWithMilliseconds } from "common-types";
 import { FireModel } from "./FireModel";
 // tslint:disable-next-line:no-implicit-dependencies
 import { RealTimeDB } from "abstracted-firebase";
-import { IModelOptions } from "./Model";
 import { IReduxDispatch } from "./VuexWrapper";
 
 const DEFAULT_IF_NOT_FOUND = "__DO_NOT_USE__";

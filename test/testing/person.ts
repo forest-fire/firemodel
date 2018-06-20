@@ -32,6 +32,6 @@ export class Person extends Model {
   // prettier-ignore
   @hasMany(Person) public children?: IDictionary;
   // prettier-ignore
-  @hasMany(Concert) public concerts?: IDictionary;
+  // @ownedBy(Concert) public concerts?: IDictionary;
   @ownedBy(Company) public employerId?: fk;
 }

@@ -7,8 +7,7 @@ import { arrayToHash } from "typed-conversions";
 import { ISchemaMetaProperties } from "./decorators/schema";
 import { fbKey } from "./index";
 import { set } from "lodash";
-import { Person } from "../test/testing/person";
-import { FireModel } from "./FireModel";
+import { MockHelper } from "firemock";
 // tslint:disable-next-line:no-var-requires
 const pathJoin = require("path.join");
 
@@ -38,7 +37,7 @@ function dbOffset<T extends Model>(record: Record<T>, payload: IDictionary<T>) {
   return output;
 }
 
-function fakeIt(helper: import("firemock").MockHelper, type: string) {
+function fakeIt(helper: MockHelper, type: string) {
   switch (type) {
     case "id":
       return fbKey();
