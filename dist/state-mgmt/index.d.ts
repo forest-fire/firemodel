@@ -27,11 +27,9 @@ export declare enum FMEvents {
     WATCHER_STOPPED = "@firemodel/WATCHER_STOPPED",
     /** Watcher has disconnected all event streams from Firebase */
     WATCHER_STOPPED_ALL = "@firemodel/WATCHER_STOPPED_ALL",
-    /** A Record has added a relationship to another */
-    RELATIONSHIP_ADDED = "@firemodel/RELATIONSHIP_ADDED",
-    RELATIONSHIP_ADDED_LOCALLY = "@firemodel/RELATIONSHIP_ADDED",
     /** A Record has removed a relationship from another */
     RELATIONSHIP_REMOVED = "@firemodel/RELATIONSHIP_REMOVED",
+    RELATIONSHIP_ADDED = "@firemodel/RELATIONSHIP_ADDED",
     APP_CONNECTED = "@firemodel/APP_CONNECTED",
     APP_DISCONNECTED = "@firemodel/APP_DISCONNECTED"
 }

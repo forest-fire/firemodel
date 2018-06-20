@@ -119,7 +119,7 @@ export declare class Record<T extends Model> extends FireModel<T> {
      */
     set<K extends keyof T>(prop: K, value: T[K]): Promise<void>;
     /**
-     * Adds another fk (or multiple) to a hasMany relationship
+     * Adds one or more fk's to a hasMany relationship
      *
      * @param property the property which is acting as a foreign key (array)
      * @param refs FK reference (or array of FKs) that should be added to reln

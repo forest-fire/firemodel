@@ -6,8 +6,7 @@ import { key as fbKey } from "firebase-key";
 import { FireModel, IMultiPathUpdates } from "./FireModel";
 import { IReduxDispatch } from "./VuexWrapper";
 import { FMEvents, IFMEventName } from "./state-mgmt/index";
-// tslint:disable-next-line:no-var-requires
-const pathJoin = require("path.join");
+import { pathJoin } from "./path";
 
 export interface IWriteOperation {
   id: string;
@@ -401,7 +400,7 @@ export class Record<T extends Model> extends FireModel<T> {
   }
 
   /**
-   * Adds another fk (or multiple) to a hasMany relationship
+   * Adds one or more fk's to a hasMany relationship
    *
    * @param property the property which is acting as a foreign key (array)
    * @param refs FK reference (or array of FKs) that should be added to reln
@@ -418,7 +417,9 @@ export class Record<T extends Model> extends FireModel<T> {
       const e = new Error(
         `FireModel::addToRelationship() - can not use property "${property}" on ${
           this.modelName
-        } with addToRelationship() because it is not a hasMany relationship`
+        } with addToRelationship() because it is not a hasMany relationship [ relType: ${
+          this.META.property(property).relType
+        }, inverse: ${this.META.property(property).inverse} ]`
       );
       e.name = "FireModel::WrongRelationshipType";
       throw e;
@@ -427,29 +428,35 @@ export class Record<T extends Model> extends FireModel<T> {
     if (!Array.isArray(refs)) {
       refs = [refs];
     }
-    const paths: IMultiPathUpdates[] = [];
     const now = new Date().getTime();
     const mps = this.db.multiPathSet("/");
-    const inverse = this.META.property(property).inverse;
-
+    const inverseProperty = this.META.property(property).inverseProperty;
     const fkRecord = Record.create(this.META.property(property).fkConstructor);
 
     refs.map(ref => {
       const pathToThisFkReln = pathJoin(this.dbPath, property, ref);
-      const fkIsHasMany = inverse
-        ? fkRecord.META.property(inverse).relType === "hasMany"
-        : false;
-      const pathToInverseFkReln = inverse
-        ? pathJoin(fkRecord.dbOffset, ref, inverse)
-        : null;
 
       mps.add({ path: pathToThisFkReln, value: optionalValue });
-      if (pathToInverseFkReln) {
+      // INVERSE RELATIONSHIP
+      if (inverseProperty) {
+        console.log(
+          `The inverse FK is ${inverseProperty} on ${fkRecord.modelName}`
+        );
+        console.log(
+          `The inverse FK META is: `,
+          fkRecord.META.relationship(inverseProperty)
+        );
+        const pathToInverseFkReln = inverseProperty
+          ? pathJoin(fkRecord.dbOffset, ref, inverseProperty)
+          : null;
+        const fkInverseIsHasManyReln = inverseProperty
+          ? fkRecord.META.relationship(inverseProperty).relType === "hasMany"
+          : false;
         mps.add({
-          path: fkIsHasMany
+          path: fkInverseIsHasManyReln
             ? pathJoin(pathToThisFkReln, this.id)
             : pathToThisFkReln,
-          value: fkIsHasMany ? true : this.id
+          value: fkInverseIsHasManyReln ? true : this.id
         });
       }
       if (
@@ -467,15 +474,11 @@ export class Record<T extends Model> extends FireModel<T> {
     mps.add({ path: pathJoin(this.dbPath, "lastUpdated"), value: now });
 
     this.dispatch(
-      this._createRecordEvent(
-        this,
-        FMEvents.RELATIONSHIP_ADDED_LOCALLY,
-        mps.payload
-      )
+      this._createRecordEvent(this, FMEvents.RECORD_ADDED_LOCALLY, mps.payload)
     );
     await mps.execute();
     this.dispatch(
-      this._createRecordEvent(this, FMEvents.RELATIONSHIP_ADDED, this.data)
+      this._createRecordEvent(this, FMEvents.RECORD_ADDED, this.data)
     );
   }
 

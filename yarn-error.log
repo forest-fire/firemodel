@@ -1,5 +1,5 @@
 Arguments: 
-  /usr/local/bin/node /usr/local/bin/yarn run build:tsc
+  /usr/local/bin/node /usr/local/bin/yarn run build
 
 PATH: 
   /usr/local/bin:/Users/ken/.yarn/bin:/usr/local/share/android-sdk/platform-tools:.:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/MacGPG2/bin:/Users/ken/.yarn/bin:/usr/local/share/android-sdk/platform-tools:.:/Users/ken/Library/Python/2.7/bin:/usr/local/sbin:/opt/local/bin:/opt/local/sbin:/opt/X11/bin:/Users/kensnyder/.rvm/bin:/Users/kensnyder/.ec2/bin:/Developer/usr/bin:/Users/kensnyder/pear/bin:/usr/local/share/npm/bin:/Applications/Couchbase Server.app/Contents/Resources/couchbase-core/bin:/Users/kensnyder/repos/mine/api/commandline/bin:/Users/ken/Library/Python/2.7/bin:/usr/local/sbin:/usr/local/bin:/opt/local/bin:/opt/local/sbin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/opt/X11/bin:/Users/kensnyder/.rvm/bin:/Users/kensnyder/.ec2/bin:/Developer/usr/bin:/Users/kensnyder/pear/bin:/usr/local/share/npm/bin:/Applications/Couchbase Server.app/Contents/Resources/couchbase-core/bin:/Users/kensnyder/repos/mine/api/commandline/bin
@@ -16,20 +16,20 @@ Platform:
 npm manifest: 
   {
     "name": "firemodel",
-    "version": "0.13.11",
+    "version": "0.13.30",
     "description": "Modeling, Access, and Mocking for Firebase Projects",
     "license": "MIT",
     "repository": "https://github.com/forest-fire/firemodel",
     "author": "Ken Snyder <ken@ken.net>",
     "keywords": [
-      "serverless",
-      "typescript"
+      "typescript",
+      "firebase"
     ],
     "files": [
       "dist"
     ],
     "main": "dist/firemodel.cjs.js",
-    "module": "dist/esnext/index.js",
+    "module": "dist/firemodel.es2015.js",
     "browser": "dist/firemodel.umd.js",
     "typings": "dist/index.d.ts",
     "scripts": {
@@ -51,8 +51,8 @@ npm manifest:
       "common-types": "^1.7.36",
       "firebase-api-surface": "^0.8.3",
       "firebase-key": "^2.0.1",
+      "iso-path-join": "^1.0.6",
       "lodash": "^4.17.10",
-      "path.join": "^1.0.0",
       "pluralize": "^7.0.0",
       "reflect-metadata": "^0.1.12",
       "serialized-query": "^0.3.8",
@@ -1488,10 +1488,10 @@ Lockfile:
       typed-conversions "^0.8.3"
   
   abstracted-client@^0.10.0:
-    version "0.10.0"
-    resolved "https://registry.yarnpkg.com/abstracted-client/-/abstracted-client-0.10.0.tgz#8fd417d81ac34b470b2c40eadcb20e5a292342ad"
+    version "0.10.5"
+    resolved "https://registry.yarnpkg.com/abstracted-client/-/abstracted-client-0.10.5.tgz#e0764838393b7fd53e6ee831e549a4e73ab219cb"
     dependencies:
-      abstracted-firebase "^0.11.9"
+      abstracted-firebase "^0.11.15"
       common-types "^1.7.36"
       events "^3.0.0"
       firebase "^5.0.4"
@@ -1502,16 +1502,16 @@ Lockfile:
       serialized-query "^0.3.8"
       typed-conversions "^0.8.3"
   
-  abstracted-firebase@^0.11.12, abstracted-firebase@^0.11.9:
-    version "0.11.12"
-    resolved "https://registry.yarnpkg.com/abstracted-firebase/-/abstracted-firebase-0.11.12.tgz#6b55f5fc34e5956b373f28e1a7c918e2cf7c5649"
+  abstracted-firebase@^0.11.12, abstracted-firebase@^0.11.15, abstracted-firebase@^0.11.9:
+    version "0.11.15"
+    resolved "https://registry.yarnpkg.com/abstracted-firebase/-/abstracted-firebase-0.11.15.tgz#4ec9ac0ab9cb4fb206038e7962540bea51b45ddf"
     dependencies:
       common-types "^1.7.36"
       firebase-api-surface "^0.8.3"
       lodash "^4.17.10"
       serialized-query "^0.3.8"
       typed-conversions "^0.8.3"
-      wait-in-parallel "^1.0.12"
+      wait-in-parallel "^1.1.4"
   
   accepts@^1.2.2:
     version "1.3.5"
@@ -4509,6 +4509,10 @@ Lockfile:
     version "2.0.0"
     resolved "https://registry.yarnpkg.com/isexe/-/isexe-2.0.0.tgz#e8fbf374dc556ff8947a10dcb0572d633f2cfa10"
   
+  iso-path-join@^1.0.6:
+    version "1.0.6"
+    resolved "https://registry.yarnpkg.com/iso-path-join/-/iso-path-join-1.0.6.tgz#6c8bf8a6854bbc853fa004f36b504cb5f5f90bcd"
+  
   isobject@^2.0.0:
     version "2.1.0"
     resolved "https://registry.yarnpkg.com/isobject/-/isobject-2.1.0.tgz#f065561096a3f1da2ef46272f815c840d87e0c89"
@@ -5931,10 +5935,6 @@ Lockfile:
     resolved "https://registry.yarnpkg.com/path-type/-/path-type-3.0.0.tgz#cef31dc8e0a1a3bb0d105c0cd97cf3bf47f4e36f"
     dependencies:
       pify "^3.0.0"
-  
-  path.join@^1.0.0:
-    version "1.0.0"
-    resolved "https://registry.yarnpkg.com/path.join/-/path.join-1.0.0.tgz#0b402092bd81128b2819e780570c49de3ddf19de"
   
   pathval@^1.0.0:
     version "1.1.0"
@@ -8058,9 +8058,9 @@ Lockfile:
       webpackbar "^2.6.1"
       workbox-build "^3.1.0"
   
-  wait-in-parallel@^1.0.12:
-    version "1.0.12"
-    resolved "https://registry.yarnpkg.com/wait-in-parallel/-/wait-in-parallel-1.0.12.tgz#4ba7d93df2b81452a50bce8bd39800de8a56344c"
+  wait-in-parallel@^1.0.12, wait-in-parallel@^1.1.4:
+    version "1.1.4"
+    resolved "https://registry.yarnpkg.com/wait-in-parallel/-/wait-in-parallel-1.1.4.tgz#b1bc523723f7ada590504b2a00f287e51d00927b"
     dependencies:
       "@types/inquirer" "^0.0.41"
       common-types "^1.7.21"
@@ -8492,14 +8492,16 @@ Lockfile:
     resolved "https://registry.yarnpkg.com/yn/-/yn-2.0.0.tgz#e5adabc8acf408f6385fc76495684c88e6af689a"
 
 Trace: 
-  Error: Command "build:tsc" not found.
-      at new MessageError (/usr/local/lib/node_modules/yarn/lib/cli.js:186:110)
-      at /usr/local/lib/node_modules/yarn/lib/cli.js:87307:17
-      at Generator.next (<anonymous>)
-      at step (/usr/local/lib/node_modules/yarn/lib/cli.js:98:30)
-      at /usr/local/lib/node_modules/yarn/lib/cli.js:116:14
-      at new Promise (<anonymous>)
-      at new F (/usr/local/lib/node_modules/yarn/lib/cli.js:23451:28)
-      at /usr/local/lib/node_modules/yarn/lib/cli.js:95:12
-      at runCommand (/usr/local/lib/node_modules/yarn/lib/cli.js:87312:22)
-      at Object.<anonymous> (/usr/local/lib/node_modules/yarn/lib/cli.js:87412:14)
+  Error: Command failed.
+  Exit code: 1
+  Command: sh
+  Arguments: -c tslint src/**/*.ts && rollup -c rollup.config.js
+  Directory: /Users/ken/mine/forest-fire/firemodel
+  Output:
+  
+      at ProcessTermError.MessageError (/usr/local/lib/node_modules/yarn/lib/cli.js:186:110)
+      at new ProcessTermError (/usr/local/lib/node_modules/yarn/lib/cli.js:226:113)
+      at ChildProcess.<anonymous> (/usr/local/lib/node_modules/yarn/lib/cli.js:30281:17)
+      at ChildProcess.emit (events.js:180:13)
+      at maybeClose (internal/child_process.js:936:16)
+      at Process.ChildProcess._handle.onexit (internal/child_process.js:220:5)

@@ -22,8 +22,8 @@ export declare class FireModel<T extends Model> {
     readonly dbPath: string;
     readonly localPath: string;
     readonly META: IModelMetaProperties<T>;
-    readonly properties: import("./decorators/schema").ISchemaMetaProperties<any>[];
-    readonly relationships: import("./decorators/schema").ISchemaRelationshipMetaProperties<any>[];
+    readonly properties: import("./decorators/schema").IModelPropertyMeta<any>[];
+    readonly relationships: import("./decorators/schema").IModelRelationshipMeta<any>[];
     readonly dispatch: IReduxDispatch;
     readonly dispatchIsActive: boolean;
     /** the connected real-time database */

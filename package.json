@@ -1,13 +1,13 @@
 {
   "name": "firemodel",
-  "version": "0.13.13",
+  "version": "0.13.33",
   "description": "Modeling, Access, and Mocking for Firebase Projects",
   "license": "MIT",
   "repository": "https://github.com/forest-fire/firemodel",
   "author": "Ken Snyder <ken@ken.net>",
   "keywords": [
-    "serverless",
-    "typescript"
+    "typescript",
+    "firebase"
   ],
   "files": [
     "dist"
@@ -32,11 +32,10 @@
     "docs:build": "vuepress build docs"
   },
   "dependencies": {
-    "common-types": "^1.7.36",
+    "common-types": "^1.8.0",
     "firebase-api-surface": "^0.8.3",
     "firebase-key": "^2.0.1",
     "lodash": "^4.17.10",
-    "path.join": "^1.0.0",
     "pluralize": "^7.0.0",
     "reflect-metadata": "^0.1.12",
     "serialized-query": "^0.3.8",

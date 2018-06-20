@@ -1,9 +1,10 @@
 import 'reflect-metadata';
 import { set, get } from 'lodash';
-import { createError } from 'common-types';
+import { createError, pathJoin } from 'common-types';
 import { key } from 'firebase-key';
 export { key as fbKey } from 'firebase-key';
 import { SerializedQuery } from 'serialized-query';
+import { RealTimeDB } from 'abstracted-firebase';
 import { arrayToHash } from 'typed-conversions';
 
 function push(target, path, value) {
@@ -14,10 +15,10 @@ function push(target, path, value) {
         set(target, path, [value]);
     }
 }
-/** Properties accumlated by propertyDecorators and grouped by schema */
-const propertiesBySchema = {};
-/** Relationships accumlated by propertyDecorators and grouped by schema */
-const relationshipsBySchema = {};
+/** Properties accumlated by propertyDecorators  */
+const propertiesByModel = {};
+/** Relationships accumlated by hasMany/ownedBy decorators */
+const relationshipsByModel = {};
 const propertyDecorator = (nameValuePairs = {}, 
 /**
  * if you want to set the property being decorated's name
@@ -27,37 +28,39 @@ property) => (target, key$$1) => {
     const reflect = Reflect.getMetadata("design:type", target, key$$1) || {};
     const meta = Object.assign({}, Reflect.getMetadata(key$$1, target), { type: reflect.name }, nameValuePairs);
     Reflect.defineMetadata(key$$1, meta, target);
-    // const _val: any = this[key];
     if (nameValuePairs.isProperty) {
         if (property) {
-            push(propertiesBySchema, target.constructor.name, Object.assign({}, meta, { [property]: key$$1 }));
+            push(propertiesByModel, target.constructor.name, Object.assign({}, meta, { [property]: key$$1 }));
         }
         else {
-            push(propertiesBySchema, target.constructor.name, meta);
+            push(propertiesByModel, target.constructor.name, meta);
         }
     }
     if (nameValuePairs.isRelationship) {
         if (property) {
-            push(relationshipsBySchema, target.constructor.name, Object.assign({}, meta, { [property]: key$$1 }));
+            push(relationshipsByModel, target.constructor.name, Object.assign({}, meta, { [property]: key$$1 }));
         }
         else {
-            push(relationshipsBySchema, target.constructor.name, meta);
+            push(relationshipsByModel, target.constructor.name, meta);
         }
     }
 };
 /**
- * Give all properties from schema and base schema
+ * Gets all the properties for a given model
  *
  * @param target the schema object which is being looked up
  */
 function getProperties(target) {
     return [
-        ...propertiesBySchema[target.constructor.name],
-        ...propertiesBySchema.Model.map(s => (Object.assign({}, s, { isBaseSchema: true })))
+        ...propertiesByModel[target.constructor.name],
+        ...propertiesByModel.Model.map(s => (Object.assign({}, s, { isBaseSchema: true })))
     ];
 }
+/**
+ * Gets all the relationships for a given model
+ */
 function getRelationships(target) {
-    return relationshipsBySchema[target.constructor.name];
+    return relationshipsByModel[target.constructor.name];
 }
 function getPushKeys(target) {
     const props = getProperties(target);
@@ -243,11 +246,9 @@ var FMEvents;
     FMEvents["WATCHER_STOPPED"] = "@firemodel/WATCHER_STOPPED";
     /** Watcher has disconnected all event streams from Firebase */
     FMEvents["WATCHER_STOPPED_ALL"] = "@firemodel/WATCHER_STOPPED_ALL";
-    /** A Record has added a relationship to another */
-    FMEvents["RELATIONSHIP_ADDED"] = "@firemodel/RELATIONSHIP_ADDED";
-    FMEvents["RELATIONSHIP_ADDED_LOCALLY"] = "@firemodel/RELATIONSHIP_ADDED";
     /** A Record has removed a relationship from another */
     FMEvents["RELATIONSHIP_REMOVED"] = "@firemodel/RELATIONSHIP_REMOVED";
+    FMEvents["RELATIONSHIP_ADDED"] = "@firemodel/RELATIONSHIP_ADDED";
     FMEvents["APP_CONNECTED"] = "@firemodel/APP_CONNECTED";
     FMEvents["APP_DISCONNECTED"] = "@firemodel/APP_DISCONNECTED";
 })(FMEvents || (FMEvents = {}));
@@ -255,8 +256,6 @@ var FMEvents;
 //#region specific events
 //#endregion
 
-// tslint:disable-next-line:no-var-requires
-const pathJoin = require("path.join");
 class Record extends FireModel {
     constructor(model, options = {}) {
         super();
@@ -525,7 +524,7 @@ class Record extends FireModel {
         return;
     }
     /**
-     * Adds another fk (or multiple) to a hasMany relationship
+     * Adds one or more fk's to a hasMany relationship
      *
      * @param property the property which is acting as a foreign key (array)
      * @param refs FK reference (or array of FKs) that should be added to reln
@@ -534,7 +533,7 @@ class Record extends FireModel {
     async addToRelationship(property, refs, optionalValue = true) {
         console.log("property: ", property);
         if (this.META.property(property).relType !== "hasMany") {
-            const e = new Error(`FireModel::addToRelationship() - can not use property "${property}" on ${this.modelName} with addToRelationship() because it is not a hasMany relationship`);
+            const e = new Error(`FireModel::addToRelationship() - can not use property "${property}" on ${this.modelName} with addToRelationship() because it is not a hasMany relationship [ relType: ${this.META.property(property).relType}, inverse: ${this.META.property(property).inverse} ]`);
             e.name = "FireModel::WrongRelationshipType";
             throw e;
         }
@@ -543,23 +542,26 @@ class Record extends FireModel {
         }
         const now = new Date().getTime();
         const mps = this.db.multiPathSet("/");
-        const inverse = this.META.property(property).inverse;
+        const inverseProperty = this.META.property(property).inverseProperty;
         const fkRecord = Record.create(this.META.property(property).fkConstructor);
         refs.map(ref => {
             const pathToThisFkReln = pathJoin(this.dbPath, property, ref);
-            const fkIsHasMany = inverse
-                ? fkRecord.META.property(inverse).relType === "hasMany"
-                : false;
-            const pathToInverseFkReln = inverse
-                ? pathJoin(fkRecord.dbOffset, ref, inverse)
-                : null;
             mps.add({ path: pathToThisFkReln, value: optionalValue });
-            if (pathToInverseFkReln) {
+            // INVERSE RELATIONSHIP
+            if (inverseProperty) {
+                console.log(`The inverse FK is ${inverseProperty} on ${fkRecord.modelName}`);
+                console.log(`The inverse FK META is: `, fkRecord.META.relationship(inverseProperty));
+                const pathToInverseFkReln = inverseProperty
+                    ? pathJoin(fkRecord.dbOffset, ref, inverseProperty)
+                    : null;
+                const fkInverseIsHasManyReln = inverseProperty
+                    ? fkRecord.META.relationship(inverseProperty).relType === "hasMany"
+                    : false;
                 mps.add({
-                    path: fkIsHasMany
+                    path: fkInverseIsHasManyReln
                         ? pathJoin(pathToThisFkReln, this.id)
                         : pathToThisFkReln,
-                    value: fkIsHasMany ? true : this.id
+                    value: fkInverseIsHasManyReln ? true : this.id
                 });
             }
             if (typeof this.data[property] === "object" &&
@@ -569,9 +571,9 @@ class Record extends FireModel {
             }
         });
         mps.add({ path: pathJoin(this.dbPath, "lastUpdated"), value: now });
-        this.dispatch(this._createRecordEvent(this, FMEvents.RELATIONSHIP_ADDED_LOCALLY, mps.payload));
+        this.dispatch(this._createRecordEvent(this, FMEvents.RECORD_ADDED_LOCALLY, mps.payload));
         await mps.execute();
-        this.dispatch(this._createRecordEvent(this, FMEvents.RELATIONSHIP_ADDED, this.data));
+        this.dispatch(this._createRecordEvent(this, FMEvents.RECORD_ADDED, this.data));
     }
     /** indicates whether this record is already being watched locally */
     get isBeingWatched() {
@@ -665,39 +667,39 @@ class Record extends FireModel {
 }
 
 function hasMany(modelConstructor) {
-    console.log("hasMany property decorator: ", modelConstructor
-        ? "modelConstructor exists"
-        : "modelConstructor is missing!");
     const rec = Record.create(modelConstructor);
-    return propertyDecorator({
+    const payload = {
         isRelationship: true,
         isProperty: false,
         relType: "hasMany",
         fkConstructor: modelConstructor,
         fkModelName: rec ? rec.modelName : null
-    }, "property");
+    };
+    console.log(`registering hasMany:`, payload, rec.META ? rec.META : "self-reference: ");
+    return propertyDecorator(payload, "property");
 }
 function ownedBy(modelConstructor) {
-    console.log("ownedBy property decorator: ", modelConstructor
-        ? "modelConstructor exists"
-        : "modelConstructor is missing!");
     const rec = Record.create(modelConstructor);
-    console.log(rec.modelName);
-    return propertyDecorator({
+    const payload = {
         isRelationship: true,
         isProperty: false,
         relType: "ownedBy",
         fkConstructor: modelConstructor,
         fkModelName: rec.modelName
-    }, "property");
+    };
+    console.log(`registering ownedBy: `, payload, rec.META);
+    return propertyDecorator(payload, "property");
 }
 function inverse(inverseProperty) {
     return propertyDecorator({ inverseProperty });
 }
 
 /** lookup meta data for schema properties */
-function propertyMeta$1(context) {
-    return (prop) => Reflect.getMetadata(prop, context);
+function getModelProperty(modelKlass) {
+    return (prop) => Reflect.getMetadata(prop, modelKlass);
+}
+function getModelRelationship(relationships) {
+    return (relnProp) => relationships.find(i => relnProp === i.property);
 }
 function model(options) {
     let isDirty = false;
@@ -708,7 +710,7 @@ function model(options) {
             const obj = Reflect.construct(original, args);
             Reflect.defineProperty(obj, "META", {
                 get() {
-                    return Object.assign({}, options, { property: propertyMeta$1(obj) }, { properties: getProperties(obj) }, { relationships: getRelationships(obj) }, { pushKeys: getPushKeys(obj) }, { audit: options.audit ? options.audit : false }, { isDirty });
+                    return Object.assign({}, options, { property: getModelProperty(obj) }, { properties: getProperties(obj) }, { relationship: getModelRelationship(getRelationships(obj)) }, { relationships: getRelationships(obj) }, { pushKeys: getPushKeys(obj) }, { audit: options.audit ? options.audit : false }, { isDirty });
                 },
                 set(prop) {
                     if (typeof prop === "object" && prop.isDirty !== undefined) {
@@ -1054,11 +1056,9 @@ class List extends FireModel {
     }
 }
 
-// tslint:disable-next-line:no-var-requires
-const pathJoin$1 = require("path.join");
 function dbOffset(record, payload) {
     const output = {};
-    const path = pathJoin$1(record.META.dbOffset || "", record.pluralName);
+    const path = pathJoin(record.META.dbOffset || "", record.pluralName);
     set(output, path.replace(/\//g, "."), payload);
     return output;
 }
@@ -1146,6 +1146,11 @@ function fakeIt(helper, type) {
     }
 }
 function mockValue(db, propMeta) {
+    if (!db || !(db instanceof RealTimeDB)) {
+        const e = new Error(`When trying to Mock the value of "${propMeta.property}" the database reference passed in not a valid instance of the RealTimeDB provided by either 'abstracted-client' or 'abstracted-server' [ ${typeof db} ].`);
+        e.name = "FireModel::NotReady";
+        throw e;
+    }
     const helper = db.mock.getMockHelper();
     const { type, mockType } = propMeta;
     if (mockType) {
@@ -1259,6 +1264,14 @@ function Mock$$1(modelConstructor, db) {
     const record = Record.create(modelConstructor);
     const config = { relationshipBehavior: "ignore" };
     const API = {
+        /**
+         * generate
+         *
+         * Populates the mock database with values for a given model passed in.
+         *
+         * @param count how many instances of the given Model do you want?
+         * @param exceptions do you want to fix a given set of properties to a static value?
+         */
         generate(count, exceptions) {
             const props = properties(db, config, exceptions);
             const relns = addRelationships(db, config, exceptions);
@@ -1270,10 +1283,25 @@ function Mock$$1(modelConstructor, db) {
             }
             db.mock.updateDB(dbOffset(record, arrayToHash(records)));
         },
+        /**
+         * createRelationshipLinks
+         *
+         * Creates FK links for all the relationships in the model you are generating.
+         *
+         * @param cardinality an optional param which allows you to have fine grained control over how many of each type of relationship should be added
+         */
         createRelationshipLinks(cardinality) {
             config.relationshipBehavior = "link";
             return API;
         },
+        /**
+         * followRelationshipLinks
+         *
+         * Creates FK links for all the relationships in the model you are generating; also generates
+         * mocks for all the FK links.
+         *
+         * @param cardinality an optional param which allows you to have fine grained control over how many of each type of relationship should be added
+         */
         followRelationshipLinks(cardinality) {
             // TODO: would like to move back to ICardinalityConfig<T> when I can figure out why Partial doesn't work
             config.relationshipBehavior = "follow";

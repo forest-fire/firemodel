@@ -4,7 +4,6 @@ import { DB } from "abstracted-client";
 import * as chai from "chai";
 const expect = chai.expect;
 import "reflect-metadata";
-import { Person } from "./testing/person";
 import { FireModel } from "../src/FireModel";
 import { FancyPerson } from "./testing/FancyPerson";
 import { IFMRecordEvent, FMEvents } from "../src/state-mgmt";

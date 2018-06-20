@@ -7,26 +7,30 @@ export interface IModelMetaProperties<T extends Model = any> {
     dbOffset?: string;
     /** Optionally specify a root path where the local store will put this schema */
     localOffset?: string;
-    property?: (prop: keyof T) => ISchemaMetaProperties<T>;
+    /** a function to lookup the meta properties of a given property */
+    property?: (prop: keyof T) => IModelPropertyMeta<T>;
+    /** a function to lookup the meta properties of a given relationship */
+    relationship?: (prop: keyof T) => IModelRelationshipMeta<T>;
     audit?: boolean;
     /** A list of all properties and associated meta-data for the given schema */
-    properties?: Array<ISchemaMetaProperties<T>>;
+    properties?: Array<IModelPropertyMeta<T>>;
     /** A list of all relationships and associated meta-data for the given schema */
-    relationships?: Array<ISchemaRelationshipMetaProperties<T>>;
+    relationships?: Array<IModelRelationshipMeta<T>>;
     /** A list of properties which should be pushed using firebase push() */
     pushKeys?: string[];
     /** indicates whether this property has been changed on client but not yet accepted by server */
     isDirty?: boolean;
 }
-export interface ISchemaRelationshipMetaProperties<T extends Model = Model> extends ISchemaMetaProperties<T> {
+export interface IModelRelationshipMeta<T extends Model = Model> extends IModelPropertyMeta<T> {
     isRelationship: true;
     isProperty: false;
     /** the general cardinality type of the relationship (aka, hasMany, ownedBy) */
     relType: ISchemaRelationshipType;
     /** The constructor for a model of the FK reference that this relationship maintains */
     fkConstructor: new () => T;
+    fkModelName: string;
 }
-export interface ISchemaMetaProperties<T extends Model = Model> extends IDictionary {
+export interface IModelPropertyMeta<T extends Model = Model> extends IDictionary {
     /** the property name */
     property: Extract<keyof T, string>;
     /** the type of the property */
@@ -49,6 +53,6 @@ export interface ISchemaMetaProperties<T extends Model = Model> extends IDiction
     relType?: ISchemaRelationshipType;
     /** if the property is a relationship ... a constructor for the FK's Model */
     fkConstructor?: new () => any;
-    fkModelName: string;
+    fkModelName?: string;
 }
 export declare function model(options: IModelMetaProperties): ClassDecorator;

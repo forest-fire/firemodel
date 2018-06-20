@@ -18,8 +18,8 @@ export default {
         lodash: "lodash",
         "firebase-key": "fbKey",
         "wait-in-parallel": "Parallel",
-        "common-types": "common-types",
-        "serialized-query": "serialized-query"
+        "common-types": "commonTypes",
+        "serialized-query": "serializedQuery"
       }
     },
     {
@@ -33,7 +33,9 @@ export default {
     "reflect-metadata",
     "serialized-query",
     "lodash",
-    "common-types"
+    "common-types",
+    "abstracted-firebase",
+    "typed-conversions"
   ],
   plugins: [
     typescript({

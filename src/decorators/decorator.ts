@@ -1,21 +1,12 @@
 import "reflect-metadata";
-import {
-  Model,
-  ISchemaMetaProperties,
-  ISchemaRelationshipMetaProperties
-} from "..";
-import {
-  IDictionary,
-  PropertyDecorator,
-  ClassDecorator,
-  ReflectionProperty
-} from "common-types";
+import { Model, IModelPropertyMeta, IModelRelationshipMeta } from "..";
+import { IDictionary } from "common-types";
 import { set, get } from "lodash";
 
 function push<T extends Model = Model>(
   target: IDictionary,
   path: string,
-  value: ISchemaMetaProperties<T>
+  value: IModelPropertyMeta<T>
 ) {
   if (Array.isArray(get(target, path))) {
     get(target, path).push(value);
@@ -24,10 +15,10 @@ function push<T extends Model = Model>(
   }
 }
 
-/** Properties accumlated by propertyDecorators and grouped by schema */
-const propertiesBySchema: IDictionary<ISchemaMetaProperties[]> = {};
-/** Relationships accumlated by propertyDecorators and grouped by schema */
-const relationshipsBySchema: IDictionary<ISchemaMetaProperties[]> = {};
+/** Properties accumlated by propertyDecorators  */
+const propertiesByModel: IDictionary<IModelPropertyMeta[]> = {};
+/** Relationships accumlated by hasMany/ownedBy decorators */
+const relationshipsByModel: IDictionary<IModelPropertyMeta[]> = {};
 
 export const propertyDecorator = <T extends Model>(
   nameValuePairs: IDictionary = {},
@@ -39,61 +30,63 @@ export const propertyDecorator = <T extends Model>(
 ) => (target: Model, key: string): void => {
   const reflect: IDictionary =
     Reflect.getMetadata("design:type", target, key) || {};
-  const meta: ISchemaMetaProperties<T> = {
+  const meta: IModelPropertyMeta<T> = {
     ...Reflect.getMetadata(key, target),
     ...{ type: reflect.name },
     ...nameValuePairs
   };
 
   Reflect.defineMetadata(key, meta, target);
-  // const _val: any = this[key];
 
   if (nameValuePairs.isProperty) {
     if (property) {
-      push(propertiesBySchema, target.constructor.name, {
+      push(propertiesByModel, target.constructor.name, {
         ...meta,
         [property]: key
       });
     } else {
-      push(propertiesBySchema, target.constructor.name, meta);
+      push(propertiesByModel, target.constructor.name, meta);
     }
   }
   if (nameValuePairs.isRelationship) {
     if (property) {
-      push(relationshipsBySchema, target.constructor.name, {
+      push(relationshipsByModel, target.constructor.name, {
         ...meta,
         [property]: key
       });
     } else {
-      push(relationshipsBySchema, target.constructor.name, meta);
+      push(relationshipsByModel, target.constructor.name, meta);
     }
   }
 };
 
 /** lookup meta data for schema properties */
 function propertyMeta<T extends Model = Model>(context: object) {
-  return (prop: string): ISchemaMetaProperties<T> =>
+  return (prop: string): IModelPropertyMeta<T> =>
     Reflect.getMetadata(prop, context);
 }
 
 /**
- * Give all properties from schema and base schema
+ * Gets all the properties for a given model
  *
  * @param target the schema object which is being looked up
  */
 export function getProperties(target: object) {
   return [
-    ...propertiesBySchema[target.constructor.name],
-    ...propertiesBySchema.Model.map(s => ({
+    ...propertiesByModel[target.constructor.name],
+    ...propertiesByModel.Model.map(s => ({
       ...s,
       ...{ isBaseSchema: true }
     }))
   ];
 }
 
+/**
+ * Gets all the relationships for a given model
+ */
 export function getRelationships<T>(target: object) {
-  return relationshipsBySchema[target.constructor.name] as Array<
-    ISchemaRelationshipMetaProperties<T>
+  return relationshipsByModel[target.constructor.name] as Array<
+    IModelRelationshipMeta<T>
   >;
 }
 

@@ -4,12 +4,11 @@ import { IDictionary } from "common-types";
 import { RealTimeDB } from "abstracted-firebase";
 import { Record } from "./Record";
 import { arrayToHash } from "typed-conversions";
-import { ISchemaMetaProperties } from "./decorators/schema";
+import { IModelPropertyMeta } from "./decorators/schema";
 import { fbKey } from "./index";
 import { set } from "lodash";
 import { MockHelper } from "firemock";
-// tslint:disable-next-line:no-var-requires
-const pathJoin = require("path.join");
+import { pathJoin } from "./path";
 
 export type ICardinalityConfig<T> = {
   [key in keyof T]: [number, number] | number | true
@@ -125,8 +124,17 @@ function fakeIt(helper: MockHelper, type: string) {
 
 function mockValue<T extends Model>(
   db: RealTimeDB,
-  propMeta: ISchemaMetaProperties<T>
+  propMeta: IModelPropertyMeta<T>
 ) {
+  if (!db || !(db instanceof RealTimeDB)) {
+    const e = new Error(
+      `When trying to Mock the value of "${
+        propMeta.property
+      }" the database reference passed in not a valid instance of the RealTimeDB provided by either 'abstracted-client' or 'abstracted-server' [ ${typeof db} ].`
+    );
+    e.name = "FireModel::NotReady";
+    throw e;
+  }
   const helper = db.mock.getMockHelper();
   const { type, mockType } = propMeta;
 
@@ -267,7 +275,7 @@ function followRelationships<T extends Model>(
 
 function getRelationshipIds<T>(
   instance: T,
-  rel: ISchemaMetaProperties<T>
+  rel: IModelPropertyMeta<T>
 ): string[] {
   if (rel.relType === "ownedBy") {
     return [instance[rel.property]] as any;
@@ -284,6 +292,14 @@ export function Mock<T extends Model>(
   const config: IMockConfig<T> = { relationshipBehavior: "ignore" };
 
   const API = {
+    /**
+     * generate
+     *
+     * Populates the mock database with values for a given model passed in.
+     *
+     * @param count how many instances of the given Model do you want?
+     * @param exceptions do you want to fix a given set of properties to a static value?
+     */
     generate(count: number, exceptions?: IDictionary) {
       const props = properties<T>(db, config, exceptions);
       const relns = addRelationships<T>(db, config, exceptions);
@@ -296,12 +312,27 @@ export function Mock<T extends Model>(
 
       db.mock.updateDB(dbOffset(record, arrayToHash(records)));
     },
+    /**
+     * createRelationshipLinks
+     *
+     * Creates FK links for all the relationships in the model you are generating.
+     *
+     * @param cardinality an optional param which allows you to have fine grained control over how many of each type of relationship should be added
+     */
     createRelationshipLinks(
       cardinality?: IDictionary<[number, number] | number | true>
     ) {
       config.relationshipBehavior = "link";
       return API;
     },
+    /**
+     * followRelationshipLinks
+     *
+     * Creates FK links for all the relationships in the model you are generating; also generates
+     * mocks for all the FK links.
+     *
+     * @param cardinality an optional param which allows you to have fine grained control over how many of each type of relationship should be added
+     */
     followRelationshipLinks(
       cardinality?: IDictionary<[number, number] | number | true>
     ) {

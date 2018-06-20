@@ -1,8 +1,7 @@
 import { IDictionary } from "common-types";
 import { FMEvents, IFMRecordEvent, IFMRelationshipEvent } from "./index";
 import { get, set } from "lodash";
-// tslint:disable-next-line:no-var-requires
-const pathJoin = require("path.join");
+import { pathJoin } from "../path";
 
 export const VuexMutations = <T = IDictionary>() => ({
   mutations: {

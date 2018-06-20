@@ -13,8 +13,8 @@ export { hasMany, ownedBy, inverse } from "./decorators/relationship";
 export {
   model,
   IModelMetaProperties,
-  ISchemaMetaProperties,
-  ISchemaRelationshipMetaProperties
+  IModelPropertyMeta,
+  IModelRelationshipMeta
 } from "./decorators/schema";
 export { Model, RelationshipPolicy, RelationshipCardinality } from "./Model";
 export { Record } from "./Record";

@@ -1,5 +1,5 @@
 import { Record } from "./Record";
-import { ISchemaMetaProperties } from "./decorators/schema";
+import { IModelPropertyMeta } from "./decorators/schema";
 import { Model } from "./Model";
 export declare class ListProxy<T> extends Array<T> {
     static create<T extends Model>(modelConstructor: new () => T, items?: T[]): ListProxy<T>;
@@ -8,9 +8,9 @@ export declare class ListProxy<T> extends Array<T> {
     readonly modelName: string;
     readonly pluralName: any;
     readonly pushKeys: {};
-    readonly properties: ISchemaMetaProperties<T>[];
-    readonly relationships: import("./decorators/schema").ISchemaRelationshipMetaProperties<T>[];
+    readonly properties: IModelPropertyMeta<T>[];
+    readonly relationships: import("./decorators/schema").IModelRelationshipMeta<T>[];
     readonly dbOffset: string;
     readonly isAudited: boolean;
-    property(prop: keyof T): ISchemaMetaProperties | null;
+    property(prop: keyof T): IModelPropertyMeta | null;
 }

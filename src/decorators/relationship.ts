@@ -3,47 +3,37 @@ import { propertyDecorator } from "./decorator";
 import { Record } from "../Record";
 
 export function hasMany(modelConstructor: new () => any) {
-  // console.log(
-  //   "hasMany property decorator: ",
-  //   modelConstructor
-  //     ? "modelConstructor exists"
-  //     : "modelConstructor is missing!"
-  // );
   const rec = Record.create(modelConstructor);
+  const payload = {
+    isRelationship: true,
+    isProperty: false,
+    relType: "hasMany",
+    fkConstructor: modelConstructor,
+    fkModelName: rec ? rec.modelName : null
+  };
 
-  return propertyDecorator(
-    {
-      isRelationship: true,
-      isProperty: false,
-      relType: "hasMany",
-      fkConstructor: modelConstructor,
-      fkModelName: rec ? rec.modelName : null
-    },
-    "property"
-  ) as PropertyDecorator;
+  console.log(
+    `registering hasMany:`,
+    payload,
+    rec.META ? rec.META : "self-reference: "
+  );
+
+  return propertyDecorator(payload, "property") as PropertyDecorator;
 }
 
 export function ownedBy(modelConstructor: new () => any) {
-  // console.log(
-  //   "ownedBy property decorator: ",
-  //   modelConstructor
-  //     ? "modelConstructor exists"
-  //     : "modelConstructor is missing!"
-  // );
-
   const rec = Record.create(modelConstructor);
-  // console.log(rec.modelName);
+  const payload = {
+    isRelationship: true,
+    isProperty: false,
+    relType: "ownedBy",
+    fkConstructor: modelConstructor,
+    fkModelName: rec.modelName
+  };
 
-  return propertyDecorator(
-    {
-      isRelationship: true,
-      isProperty: false,
-      relType: "ownedBy",
-      fkConstructor: modelConstructor,
-      fkModelName: rec.modelName
-    },
-    "property"
-  ) as PropertyDecorator;
+  console.log(`registering ownedBy: `, payload, rec.META);
+
+  return propertyDecorator(payload, "property") as PropertyDecorator;
 }
 
 export function inverse(inverseProperty: string) {

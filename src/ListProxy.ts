@@ -1,6 +1,6 @@
 import { Record } from "./Record";
 import { IDictionary } from "common-types";
-import { ISchemaMetaProperties } from "./decorators/schema";
+import { IModelPropertyMeta } from "./decorators/schema";
 import { Model } from "./Model";
 
 function construct<T>(target: ListProxy<T>, ...args: any[]): any {
@@ -15,7 +15,10 @@ type ListGetInceptor<T> = (
 ) => void;
 
 export class ListProxy<T> extends Array<T> {
-  public static create<T extends Model>(modelConstructor: new () => T, items?: T[]) {
+  public static create<T extends Model>(
+    modelConstructor: new () => T,
+    items?: T[]
+  ) {
     const record = Record.create(modelConstructor);
     const get: ListGetInceptor<T> = (target, prop, value, receiver) => {
       //
@@ -32,19 +35,27 @@ export class ListProxy<T> extends Array<T> {
   }
 
   public get modelName() {
-    return this.__record__ ? (this.__record__ as Record<T>).modelName : "unknown";
+    return this.__record__
+      ? (this.__record__ as Record<T>).modelName
+      : "unknown";
   }
   public get pluralName() {
-    return this.__record__ ? (this.__record__ as Record<T>).pluralName : "unknown";
+    return this.__record__
+      ? (this.__record__ as Record<T>).pluralName
+      : "unknown";
   }
   public get pushKeys() {
     return this.__record__ ? (this.__record__ as Record<T>).META.pushKeys : {};
   }
   public get properties() {
-    return this.__record__ ? (this.__record__ as Record<T>).META.properties : [];
+    return this.__record__
+      ? (this.__record__ as Record<T>).META.properties
+      : [];
   }
   public get relationships() {
-    return this.__record__ ? (this.__record__ as Record<T>).META.relationships : [];
+    return this.__record__
+      ? (this.__record__ as Record<T>).META.relationships
+      : [];
   }
   public get dbOffset() {
     return this.__record__
@@ -58,9 +69,11 @@ export class ListProxy<T> extends Array<T> {
         : false
       : false;
   }
-  public property(prop: keyof T): ISchemaMetaProperties | null {
+  public property(prop: keyof T): IModelPropertyMeta | null {
     if (!this.__record__) {
-      const e = new Error(`You can't check for meta properties of a non-Model!`);
+      const e = new Error(
+        `You can't check for meta properties of a non-Model!`
+      );
       e.name = "FireModel::Forbidden";
       throw e;
     }
