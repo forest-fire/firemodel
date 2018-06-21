@@ -2,7 +2,8 @@ import { Model } from "./Model";
 // tslint:disable-next-line:no-implicit-dependencies
 import { RealTimeDB } from "abstracted-firebase";
 import { IModelMetaProperties } from "./index";
-import { Record } from "./Record";
+// prettier-ignore
+type Record<T> = import("./Record").Record<T>;
 import { IDictionary } from "common-types";
 import {
   IFMRecordEvent,
@@ -24,7 +25,7 @@ export class FireModel<T extends Model> {
     // TODO: implement this!
     return false;
   }
-  private static _defaultDb: import("abstracted-firebase").RealTimeDB = null;
+  private static _defaultDb: RealTimeDB = null;
   private static _dispatchActive: boolean = false;
   /** the dispatch function used to interact with frontend frameworks */
   private static _dispatch: IReduxDispatch = defaultDispatch;
@@ -33,7 +34,7 @@ export class FireModel<T extends Model> {
     return FireModel._defaultDb;
   }
 
-  public static set defaultDb(db: import("abstracted-firebase").RealTimeDB) {
+  public static set defaultDb(db: RealTimeDB) {
     this._defaultDb = db;
   }
 
@@ -148,32 +149,6 @@ export class FireModel<T extends Model> {
     }
 
     return payload as IFMRecordEvent<T>;
-  }
-
-  protected _createRelationshipEvent<K extends IFMEventName<K>>(
-    record: Record<T>,
-    type: K,
-    relProp: keyof T,
-    fk: string,
-    paths?: any[]
-  ) {
-    const fkConstruct = record.META.property(relProp).fkConstructor;
-    const hasInverse = record.META.property(relProp).inverse;
-    const fkRecord = Record.create(fkConstruct);
-    const payload: any = {
-      type,
-      model: record.modelName,
-      modelConstructor: record._modelConstructor,
-      dbPath: record.dbPath,
-      localPath: record.localPath,
-      key: record.id,
-      paths,
-      fk,
-      fkModelName: fkRecord.modelName,
-      fkHasInverse: hasInverse
-    };
-
-    return payload;
   }
 
   protected _getPaths(changes: IDictionary): IMultiPathUpdates[] {

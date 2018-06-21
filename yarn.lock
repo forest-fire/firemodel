@@ -1033,8 +1033,8 @@
   resolved "https://registry.yarnpkg.com/@types/minimatch/-/minimatch-3.0.3.tgz#3dca0e3f33b200fc7d1139c0cd96c1268cadfd9d"
 
 "@types/mocha@^5.2.2":
-  version "5.2.2"
-  resolved "https://registry.yarnpkg.com/@types/mocha/-/mocha-5.2.2.tgz#202d2b8fe1364c5b617b439b26a54f0e75eac0a7"
+  version "5.2.3"
+  resolved "https://registry.yarnpkg.com/@types/mocha/-/mocha-5.2.3.tgz#11f3a5629d67cd444fa6c94536576244e6a52ea9"
 
 "@types/node@*":
   version "10.3.4"
@@ -1380,11 +1380,11 @@ abstracted-admin@^0.10.2:
     typed-conversions "^0.8.3"
 
 abstracted-client@^0.10.0:
-  version "0.10.7"
-  resolved "https://registry.yarnpkg.com/abstracted-client/-/abstracted-client-0.10.7.tgz#e5ddfe4aab4c1a27190c661a3f05091c596cb3ae"
+  version "0.10.8"
+  resolved "https://registry.yarnpkg.com/abstracted-client/-/abstracted-client-0.10.8.tgz#fde12457e023a09d5f527cf9e3d1c4fd4f981549"
   dependencies:
-    abstracted-firebase "^0.11.16"
-    common-types "^1.7.36"
+    abstracted-firebase "^0.11.17"
+    common-types "^1.8.0"
     events "^3.0.0"
     firebase "^5.0.4"
     firebase-api-surface "^0.8.3"
@@ -1394,11 +1394,11 @@ abstracted-client@^0.10.0:
     serialized-query "^0.3.8"
     typed-conversions "^0.8.3"
 
-abstracted-firebase@^0.11.12, abstracted-firebase@^0.11.16, abstracted-firebase@^0.11.9:
-  version "0.11.16"
-  resolved "https://registry.yarnpkg.com/abstracted-firebase/-/abstracted-firebase-0.11.16.tgz#165db2492fd9b196cf1ae260d97f43b568a174a4"
+abstracted-firebase@^0.11.12, abstracted-firebase@^0.11.17, abstracted-firebase@^0.11.9:
+  version "0.11.20"
+  resolved "https://registry.yarnpkg.com/abstracted-firebase/-/abstracted-firebase-0.11.20.tgz#4e9f449fef0bc8e6383eb7db6e753c29819ce420"
   dependencies:
-    common-types "^1.7.36"
+    common-types "^1.8.0"
     firebase-api-surface "^0.8.3"
     lodash "^4.17.10"
     serialized-query "^0.3.8"
@@ -2383,9 +2383,9 @@ common-tags@^1.4.0:
   version "1.8.0"
   resolved "https://registry.yarnpkg.com/common-tags/-/common-tags-1.8.0.tgz#8e3153e542d4a39e9b10554434afaaf98956a937"
 
-common-types@^1.1.0, common-types@^1.5.4, common-types@^1.6.30, common-types@^1.7.21, common-types@^1.7.36, common-types@^1.7.39:
-  version "1.7.39"
-  resolved "https://registry.yarnpkg.com/common-types/-/common-types-1.7.39.tgz#b0fbe9f523b7b4c3919fa7ad646ea12beaec369e"
+common-types@^1.1.0, common-types@^1.5.4, common-types@^1.6.30, common-types@^1.7.21, common-types@^1.7.36, common-types@^1.8.0, common-types@^1.8.2:
+  version "1.8.2"
+  resolved "https://registry.yarnpkg.com/common-types/-/common-types-1.8.2.tgz#e5bbe6468882243e9e917ec879c298306edb8921"
 
 commondir@^1.0.1:
   version "1.0.1"
@@ -3002,8 +3002,8 @@ ee-first@1.1.1:
   resolved "https://registry.yarnpkg.com/ee-first/-/ee-first-1.1.1.tgz#590c61156b0ae2f4f0255732a158b266bc56b21d"
 
 electron-to-chromium@^1.2.7, electron-to-chromium@^1.3.47:
-  version "1.3.48"
-  resolved "https://registry.yarnpkg.com/electron-to-chromium/-/electron-to-chromium-1.3.48.tgz#d3b0d8593814044e092ece2108fc3ac9aea4b900"
+  version "1.3.49"
+  resolved "https://registry.yarnpkg.com/electron-to-chromium/-/electron-to-chromium-1.3.49.tgz#651384b0d81f078a96639b2b36975141b7915004"
 
 elliptic@^6.0.0:
   version "6.4.0"
@@ -3437,9 +3437,9 @@ firebase@^5.0.4:
     "@firebase/polyfill" "0.3.3"
     "@firebase/storage" "0.2.3"
 
-firemock@^0.17.11:
-  version "0.17.11"
-  resolved "https://registry.yarnpkg.com/firemock/-/firemock-0.17.11.tgz#68f88986eab3e054ca34024018f9983ab2f292f3"
+firemock@^0.17.12:
+  version "0.17.12"
+  resolved "https://registry.yarnpkg.com/firemock/-/firemock-0.17.12.tgz#d41c2ac7b9541e90678998e91383d61abb00cc02"
   dependencies:
     chance "^1.0.16"
     common-types "^1.7.36"
@@ -4047,8 +4047,8 @@ ignore-walk@^3.0.1:
     minimatch "^3.0.4"
 
 ignore@^3.3.5:
-  version "3.3.8"
-  resolved "https://registry.yarnpkg.com/ignore/-/ignore-3.3.8.tgz#3f8e9c35d38708a3a7e0e9abb6c73e7ee7707b2b"
+  version "3.3.10"
+  resolved "https://registry.yarnpkg.com/ignore/-/ignore-3.3.10.tgz#0a97fb876986e8081c631160f8f9f389157f0043"
 
 immediate@^3.2.3:
   version "3.2.3"
@@ -7561,8 +7561,8 @@ typedarray@^0.0.6:
   resolved "https://registry.yarnpkg.com/typedarray/-/typedarray-0.0.6.tgz#867ac74e3864187b1d3d47d996a78ec5c8830777"
 
 typescript@^3.0.0-dev.20180605:
-  version "3.0.0-dev.20180619"
-  resolved "https://registry.yarnpkg.com/typescript/-/typescript-3.0.0-dev.20180619.tgz#d0a9d25dd47763ca9611d7d41de3fedea62efb04"
+  version "3.0.0-dev.20180621"
+  resolved "https://registry.yarnpkg.com/typescript/-/typescript-3.0.0-dev.20180621.tgz#a910b3cff52a3352a1a3fdbf748e160704eb6b82"
 
 uc.micro@^1.0.1, uc.micro@^1.0.5:
   version "1.0.5"

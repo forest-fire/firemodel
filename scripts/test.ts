@@ -46,14 +46,18 @@ async function lintSource() {
 async function mochaTests(stg: string, searchTerms: string[]) {
   process.env.AWS_STAGE = stg;
   process.env.TS_NODE_COMPILER_OPTIONS = '{ "noImplicitAny": false }';
-  await asyncExec(`mocha --exit --require ts-node/register ` + searchTerms.join(" "));
+  await asyncExec(
+    `mocha --exit --require ts-node/register ` + searchTerms.join(" ")
+  );
 }
 
 (async () => {
   const stage = await getExecutionStage();
   const searchTerms = process.argv.slice(2).filter(fn => fn[0] !== "-");
   const options = new Set(process.argv.slice(2).filter(fn => fn[0] === "-"));
-  const availableScripts = await find("./test").filter(f => f.match(/-spec\.ts/));
+  const availableScripts = await find("./test").filter(f =>
+    f.match(/-spec\.ts/)
+  );
   const scriptsToTest =
     searchTerms.length > 0
       ? availableScripts.filter(s => {
@@ -62,7 +66,9 @@ async function mochaTests(stg: string, searchTerms: string[]) {
       : availableScripts;
 
   if (options.has("-ls") || options.has("-l") || options.has("list")) {
-    console.log(chalk.yellow("- 🤓  The following test scripts are available:"));
+    console.log(
+      chalk.yellow("- 🤓  The following test scripts are available:")
+    );
     console.log("    - " + scriptNames(availableScripts).join("\n    - "));
 
     return;
@@ -84,7 +90,9 @@ async function mochaTests(stg: string, searchTerms: string[]) {
       );
     } else {
       console.log(
-        `- Continuing onto mocha tests because of ${chalk.bold("--ignoreLint")} flag 🦄`
+        `- Continuing onto mocha tests because of ${chalk.bold(
+          "--ignoreLint"
+        )} flag 🦄`
       );
     }
   }
@@ -102,7 +110,9 @@ async function mochaTests(stg: string, searchTerms: string[]) {
       chalk.yellow(
         `- Running ${chalk.bold(String(scriptsToTest.length))} of ${
           availableScripts.length
-        } test scripts: [ ${chalk.grey(scriptNames(scriptsToTest).join(", "))} ] 🏃`
+        } test scripts: [ ${chalk.grey(
+          scriptNames(scriptsToTest).join(", ")
+        )} ] 🏃`
       )
     );
   }
@@ -110,6 +120,6 @@ async function mochaTests(stg: string, searchTerms: string[]) {
     await mochaTests(stage, scriptsToTest);
     console.log(chalk.green("- Successful test run! 🚀\n"));
   } catch (e) {
-    console.log(chalk.red.bold(`- Error(s) in tests. 😖\n  ${e}\n`));
+    console.log(chalk.red.bold(`- Error(s) in tests. 😖\n `));
   }
 })();

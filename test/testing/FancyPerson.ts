@@ -5,17 +5,12 @@ import {
   ownedBy,
   fk,
   hasMany,
-  length,
   min,
-  max,
-  pushKey,
   inverse
 } from "../../src";
 import { mock } from "../../src/decorators/property";
 import { Company } from "./company";
 import { Car } from "./Car";
-import { IDictionary } from "common-types";
-import { Person } from "./person";
 
 function bespokeMock(context: import("firemock").MockHelper) {
   return context.faker.name.firstName() + ", hello to you";
@@ -32,5 +27,10 @@ export class FancyPerson extends Model {
   // prettier-ignore
   @property @mock(bespokeMock) public foobar?: string;
   @ownedBy(Company) public employer?: fk;
-  @hasMany(Car) public cars?: fk[];
+  // prettier-ignore
+  @hasMany(Car) @inverse("owner") public cars?: fk[];
+  // prettier-ignore
+  @hasMany(FancyPerson) @inverse("children") public parents?: fk[];
+  // prettier-ignore
+  @hasMany(FancyPerson) @inverse("parents") public children?: fk[];
 }

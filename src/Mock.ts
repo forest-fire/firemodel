@@ -9,6 +9,7 @@ import { fbKey } from "./index";
 import { set } from "lodash";
 import { MockHelper } from "firemock";
 import { pathJoin } from "./path";
+import { getModelMeta } from "./ModelMeta";
 
 export type ICardinalityConfig<T> = {
   [key in keyof T]: [number, number] | number | true
@@ -172,21 +173,19 @@ function mockValue<T extends Model>(
   }
 }
 
+/** adds mock values for all the properties on a given model */
 function properties<T extends Model>(
   db: RealTimeDB,
   config: IMockConfig<T>,
   exceptions: IDictionary
 ) {
   return (instance: T): T => {
-    if (!instance.META) {
-      const e = new Error(
-        `The instance passed passed into properties does not have any META properties! [ ${typeof instance} ]`
-      );
-      e.name = "FireModel::MockError";
-      throw e;
-    }
+    const modelName = instance.constructor.name.toLowerCase();
 
-    const props = instance.META.properties;
+    const props = instance.META
+      ? instance.META.properties
+      : getModelMeta(modelName).properties;
+
     props.map(prop => {
       (instance as any)[prop.property] = mockValue<T>(db, prop);
     });
@@ -235,33 +234,49 @@ function addRelationships<T extends Model>(
   };
 }
 
+/** adds models to mock DB which were pointed to by original model's FKs */
 function followRelationships<T extends Model>(
   db: RealTimeDB,
   config: IMockConfig<T>,
   exceptions: IDictionary
 ) {
   return (instance: T): T => {
-    const relns = instance.META.relationships;
+    const relns = instance.META
+      ? instance.META.relationships
+      : getModelMeta(instance.constructor.name.toLowerCase()).relationships;
     if (!relns || config.relationshipBehavior !== "follow") {
       return instance;
     }
 
+    // first add the FK's into instance
     instance = addRelationships(db, config, exceptions)(instance);
-
+    // then iterate through the relationships
     relns.map(rel => {
       const fkConstructor = rel.fkConstructor;
       let foreignModel = new fkConstructor();
+      const fkMeta: IModelPropertyMeta =
+        getModelMeta(rel.fkModelName) || foreignModel.META;
+      foreignModel = { ...foreignModel, ...{ META: fkMeta } };
 
       const fks = getRelationshipIds<T>(instance, rel as any);
       fks.map(fk => {
+        // Mock the foreign model
         foreignModel = properties(db, { relationshipBehavior: "link" }, {})(
           foreignModel
         );
+        // Associate the foreign model to the instance's FK
         foreignModel.id = fk;
-        if (rel.inverse) {
-          const inverseType = foreignModel.META.property(rel.inverse).relType;
+
+        // Follow up with the inverse, only if inverse's model is self-reflexive
+        if (
+          rel.inverseProperty &&
+          fkMeta.relationship(rel.inverseProperty).fkModelName ===
+            instance.constructor.name.toLowerCase()
+        ) {
+          const inverseType = fkMeta.relationship(rel.inverseProperty).relType;
+
           if (inverseType === "hasMany") {
-            // TODO: look at after implementing relationship mgmt
+            //
           }
         }
 

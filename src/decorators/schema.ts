@@ -2,6 +2,7 @@ import "reflect-metadata";
 import { IDictionary, ClassDecorator } from "common-types";
 import { getRelationships, getProperties, getPushKeys } from "./decorator";
 import { Model } from "../Model";
+import { addModelMeta } from "../ModelMeta";
 /* tslint:disable:only-arrow-functions */
 
 export type ISchemaRelationshipType = "hasMany" | "ownedBy";
@@ -83,21 +84,26 @@ export function model(options: IModelMetaProperties): ClassDecorator {
 
     // new constructor
     const f: any = function(...args: any[]) {
-      const meta = options;
       const obj = Reflect.construct(original, args);
+      const payload = {
+        ...options,
+        ...{ property: getModelProperty(obj) },
+        ...{ properties: getProperties(obj) },
+        ...{ relationship: getModelRelationship(getRelationships(obj)) },
+        ...{ relationships: getRelationships(obj) },
+        ...{ pushKeys: getPushKeys(obj) },
+        ...{ dbOffset: options.dbOffset ? options.dbOffset : "" },
+        ...{ audit: options.audit ? options.audit : false },
+        ...{ isDirty }
+      };
+      // console.log(
+      //   `MODEL CONSTRUCTION for ${obj.constructor.name.toLowerCase()}`
+      // );
+      addModelMeta(obj.constructor.name.toLowerCase(), payload);
 
       Reflect.defineProperty(obj, "META", {
         get(): IModelMetaProperties {
-          return {
-            ...options,
-            ...{ property: getModelProperty(obj) },
-            ...{ properties: getProperties(obj) },
-            ...{ relationship: getModelRelationship(getRelationships(obj)) },
-            ...{ relationships: getRelationships(obj) },
-            ...{ pushKeys: getPushKeys(obj) },
-            ...{ audit: options.audit ? options.audit : false },
-            ...{ isDirty }
-          };
+          return payload;
         },
         set(prop: IDictionary) {
           if (typeof prop === "object" && prop.isDirty !== undefined) {

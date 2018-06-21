@@ -69,14 +69,13 @@ describe("Mocking:", () => {
     });
   });
 
-  it("using createRelationshipLinks() sets fake links to all relns", async () => {
+  it("using followRelationshipLinks() sets links and adds those models", async () => {
     Mock(FancyPerson, db)
       .followRelationshipLinks()
       .generate(10);
     const people = await List.all(FancyPerson);
-    const cars = await List.all(Car);
     const company = await List.all(Company);
-    console.log(cars.data);
+    const cars = await List.all(Car);
 
     expect(people).to.have.lengthOf(10);
     expect(cars.length).to.equal(20);

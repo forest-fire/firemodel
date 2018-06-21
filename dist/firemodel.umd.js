@@ -189,24 +189,6 @@
           }
           return payload;
       }
-      _createRelationshipEvent(record, type, relProp, fk, paths) {
-          const fkConstruct = record.META.property(relProp).fkConstructor;
-          const hasInverse = record.META.property(relProp).inverse;
-          const fkRecord = Record.create(fkConstruct);
-          const payload = {
-              type,
-              model: record.modelName,
-              modelConstructor: record._modelConstructor,
-              dbPath: record.dbPath,
-              localPath: record.localPath,
-              key: record.id,
-              paths,
-              fk,
-              fkModelName: fkRecord.modelName,
-              fkHasInverse: hasInverse
-          };
-          return payload;
-      }
       _getPaths(changes) {
           return Object.keys(changes).reduce((prev, current) => {
               const path = current;
@@ -246,12 +228,58 @@
       /** A Record has removed a relationship from another */
       FMEvents["RELATIONSHIP_REMOVED"] = "@firemodel/RELATIONSHIP_REMOVED";
       FMEvents["RELATIONSHIP_ADDED"] = "@firemodel/RELATIONSHIP_ADDED";
+      FMEvents["RELATIONSHIP_ADDED_LOCALLY"] = "@firemodel/RELATIONSHIP_ADDED_LOCALLY";
       FMEvents["APP_CONNECTED"] = "@firemodel/APP_CONNECTED";
       FMEvents["APP_DISCONNECTED"] = "@firemodel/APP_DISCONNECTED";
   })(FMEvents || (FMEvents = {}));
   //#endregion
   //#region specific events
   //#endregion
+
+  const moreThanThreePeriods = /\.{3,}/g;
+  // polyfill Array.isArray if necessary
+  if (!Array.isArray) {
+      Array.isArray = (arg) => {
+          return Object.prototype.toString.call(arg) === "[object Array]";
+      };
+  }
+  const errorStr = "tried to join something other than a string or array, it was ignored in pathJoin's result";
+  /** An ISO-morphic path join that works everywhere */
+  function pathJoin(...args) {
+      return args
+          .reduce((prev, val) => {
+          if (typeof prev === "undefined") {
+              return;
+          }
+          return typeof val === "string" || typeof val === "number"
+              ? joinStringsWithSlash(prev, "" + val) // if string or number just keep as is
+              : Array.isArray(val)
+                  ? joinStringsWithSlash(prev, pathJoin.apply(null, val)) // handle array with recursion
+                  : (console.error ? console.error(errorStr) : console.log(errorStr)) ||
+                      "";
+      }, "")
+          .replace(moreThanThreePeriods, ".."); // join the resulting array together
+  }
+  function joinStringsWithSlash(str1, str2) {
+      const str1isEmpty = !str1.length;
+      const str1EndsInSlash = str1[str1.length - 1] === "/";
+      const str2StartsWithSlash = str2[0] === "/";
+      const res = (str1EndsInSlash && str2StartsWithSlash && str1 + str2.slice(1)) ||
+          (!str1EndsInSlash &&
+              !str2StartsWithSlash &&
+              !str1isEmpty &&
+              str1 + "/" + str2) ||
+          str1 + str2;
+      return res;
+  }
+
+  const meta = {};
+  function addModelMeta(modelName, props) {
+      meta[modelName] = props;
+  }
+  function getModelMeta(modelName) {
+      return meta[modelName] || {};
+  }
 
   class Record extends FireModel {
       constructor(model, options = {}) {
@@ -354,7 +382,10 @@
        * set the dirty flag of the model
        */
       set isDirty(value) {
-          this._data.META = { isDirty: value };
+          if (!this._data.META) {
+              this._data.META = { isDirty: value };
+          }
+          this._data.META.isDirty = value;
       }
       /**
        * returns the fully qualified name in the database to this record;
@@ -384,7 +415,9 @@
        * among other things this can be useful prior to establishing an ID for a record
        */
       get dbOffset() {
-          return this.data.META.dbOffset;
+          return this.data.META
+              ? this.data.META.dbOffset
+              : getModelMeta(this.modelName).dbOffset;
       }
       /**
        * returns the record's location in the frontend state management framework;
@@ -407,7 +440,10 @@
           Object.keys(data).map(key => {
               this._data[key] = data[key];
           });
-          const relationships = this.META.relationships;
+          const relationships = this.META
+              ? this.META.relationships
+              : getModelMeta(this._modelConstructor.constructor.name.toLowerCase())
+                  .relationships;
           const ownedByRels = (relationships || [])
               .filter(r => r.relType === "ownedBy")
               .map(r => r.property);
@@ -528,49 +564,43 @@
        * @param optionalValue the default behaviour is to add the value TRUE but you can optionally add some additional piece of information here instead.
        */
       async addToRelationship(property, refs, optionalValue = true) {
-          console.log("property: ", property);
-          if (this.META.property(property).relType !== "hasMany") {
-              const e = new Error(`FireModel::addToRelationship() - can not use property "${property}" on ${this.modelName} with addToRelationship() because it is not a hasMany relationship [ relType: ${this.META.property(property).relType}, inverse: ${this.META.property(property).inverse} ]`);
-              e.name = "FireModel::WrongRelationshipType";
-              throw e;
+          this._errorIfNotHasManyReln(property, "addToRelationship");
+          if (!Array.isArray(refs)) {
+              refs = [refs];
           }
+          const now = new Date().getTime();
+          const mps = this.db.multiPathSet("/");
+          refs.map(ref => {
+              this._relationshipMPS(mps, ref, property, optionalValue, now);
+          });
+          mps.add({ path: pathJoin(this.dbPath, "lastUpdated"), value: now });
+          this.dispatch(this._createRecordEvent(this, FMEvents.RELATIONSHIP_ADDED_LOCALLY, mps.payload));
+          await mps.execute();
+          this.dispatch(this._createRecordEvent(this, FMEvents.RELATIONSHIP_ADDED, this.data));
+      }
+      /**
+       * removeFromRelationship
+       *
+       * remove one or more IDs from a hasMany relationship
+       *
+       * @param property the property which is acting as a FK
+       * @param refs the IDs on the properties FK which should be removed
+       */
+      async removeFromRelationship(property, refs) {
+          this._errorIfNotHasManyReln(property, "removeFromRelationship");
           if (!Array.isArray(refs)) {
               refs = [refs];
           }
           const now = new Date().getTime();
           const mps = this.db.multiPathSet("/");
           const inverseProperty = this.META.property(property).inverseProperty;
-          const fkRecord = Record.create(this.META.property(property).fkConstructor);
+          mps.add({ path: pathJoin(this.dbPath, "lastUpdated"), value: now });
           refs.map(ref => {
-              const pathToThisFkReln = commonTypes.pathJoin(this.dbPath, property, ref);
-              mps.add({ path: pathToThisFkReln, value: optionalValue });
-              // INVERSE RELATIONSHIP
-              if (inverseProperty) {
-                  console.log(`The inverse FK is ${inverseProperty} on ${fkRecord.modelName}`);
-                  console.log(`The inverse FK META is: `, fkRecord.META.relationship(inverseProperty));
-                  const pathToInverseFkReln = inverseProperty
-                      ? commonTypes.pathJoin(fkRecord.dbOffset, ref, inverseProperty)
-                      : null;
-                  const fkInverseIsHasManyReln = inverseProperty
-                      ? fkRecord.META.relationship(inverseProperty).relType === "hasMany"
-                      : false;
-                  mps.add({
-                      path: fkInverseIsHasManyReln
-                          ? commonTypes.pathJoin(pathToThisFkReln, this.id)
-                          : pathToThisFkReln,
-                      value: fkInverseIsHasManyReln ? true : this.id
-                  });
-              }
-              if (typeof this.data[property] === "object" &&
-                  this.data[property][ref]) {
-                  console.warn(`The fk of "${ref}" already exists in "${this.modelName}.${property}"!`);
-                  return;
-              }
+              this._relationshipMPS(mps, ref, property, null, now);
           });
-          mps.add({ path: commonTypes.pathJoin(this.dbPath, "lastUpdated"), value: now });
-          this.dispatch(this._createRecordEvent(this, FMEvents.RECORD_ADDED_LOCALLY, mps.payload));
+          this.dispatch(this._createRecordEvent(this, FMEvents.RECORD_REMOVED_LOCALLY, mps.payload));
           await mps.execute();
-          this.dispatch(this._createRecordEvent(this, FMEvents.RECORD_ADDED, this.data));
+          this.dispatch(this._createRecordEvent(this, FMEvents.RELATIONSHIP_REMOVED, this.data));
       }
       /** indicates whether this record is already being watched locally */
       get isBeingWatched() {
@@ -596,6 +626,55 @@
               localPath: this.localPath,
               data: this.data.toString()
           };
+      }
+      _relationshipMPS(mps, ref, property, value, now) {
+          const pathToThisFkReln = pathJoin(this.dbPath, property, ref);
+          const inverseProperty = this.META.property(property).inverseProperty;
+          const fkRecord = Record.create(this.META.property(property).fkConstructor);
+          mps.add({ path: pathToThisFkReln, value });
+          // INVERSE RELATIONSHIP
+          if (inverseProperty) {
+              const fkMeta = getModelMeta(fkRecord.modelName);
+              const fkInverseHasRecipricalInverse = fkMeta.relationship(inverseProperty).inverseProperty === property;
+              if (!fkInverseHasRecipricalInverse) {
+                  console.warn(`The FK "${property}" on ${this.modelName} has an inverse property set of "${inverseProperty}" but on the reference model [ ${fkRecord.modelName} ] there is NOT a reciprocal inverse set! [ ${fkMeta.relationship(inverseProperty).inverseProperty
+                    ? fkMeta.relationship(inverseProperty).inverseProperty +
+                        " was set instead"
+                    : "no inverse set"} ]`);
+              }
+              const pathToInverseFkReln = inverseProperty
+                  ? pathJoin(fkMeta.dbOffset, fkRecord.pluralName, ref, inverseProperty)
+                  : null;
+              const fkInverseIsHasManyReln = inverseProperty
+                  ? fkMeta.relationship(inverseProperty).relType === "hasMany"
+                  : false;
+              mps.add({
+                  path: fkInverseIsHasManyReln
+                      ? pathJoin(pathToInverseFkReln, this.id)
+                      : pathToInverseFkReln,
+                  value: fkInverseIsHasManyReln
+                      ? value // can be null for removal
+                      : value === null
+                          ? null
+                          : this.id
+              });
+              mps.add({
+                  path: pathJoin(fkMeta.dbOffset, fkRecord.pluralName, ref, "lastUpdated"),
+                  value: now
+              });
+          }
+          if (typeof this.data[property] === "object" &&
+              this.data[property][ref]) {
+              console.warn(`The fk of "${ref}" already exists in "${this.modelName}.${property}"!`);
+              return;
+          }
+      }
+      _errorIfNotHasManyReln(property, fn) {
+          if (this.META.property(property).relType !== "hasMany") {
+              const e = new Error(`Can not use property "${property}" on ${this.modelName} with ${fn}() because it is not a hasMany relationship [ relType: ${this.META.property(property).relType}, inverse: ${this.META.property(property).inverse} ]. If you are working with a ownedBy relationship then you should instead use setRelationship() and clearRelationship()`);
+              e.name = "FireModel::WrongRelationshipType";
+              throw e;
+          }
       }
       async _updateProps(actionTypeStart, actionTypeEnd, changed) {
           this.isDirty = true;
@@ -656,7 +735,6 @@
           await mps.execute();
           this.isDirty = false;
           if (!FireModel.isBeingWatched(this.dbPath)) {
-              // TODO: is there any reason we'd need to load from server like with update?
               this.dispatch(this._createRecordEvent(this, FMEvents.RECORD_ADDED, this.data));
           }
           return this;
@@ -665,18 +743,27 @@
 
   function hasMany(modelConstructor) {
       const rec = Record.create(modelConstructor);
+      let meta = {};
+      if (rec.META) {
+          addModelMeta(rec.modelName, rec.META);
+          meta = rec.META;
+      }
       const payload = {
           isRelationship: true,
           isProperty: false,
           relType: "hasMany",
           fkConstructor: modelConstructor,
-          fkModelName: rec ? rec.modelName : null
+          fkModelName: rec.modelName
       };
-      console.log(`registering hasMany:`, payload, rec.META ? rec.META : "self-reference: ");
       return propertyDecorator(payload, "property");
   }
   function ownedBy(modelConstructor) {
       const rec = Record.create(modelConstructor);
+      let meta;
+      if (rec.META) {
+          addModelMeta(rec.modelName, rec.META);
+          meta = rec.META;
+      }
       const payload = {
           isRelationship: true,
           isProperty: false,
@@ -684,7 +771,6 @@
           fkConstructor: modelConstructor,
           fkModelName: rec.modelName
       };
-      console.log(`registering ownedBy: `, payload, rec.META);
       return propertyDecorator(payload, "property");
   }
   function inverse(inverseProperty) {
@@ -705,9 +791,14 @@
           // new constructor
           const f = function (...args) {
               const obj = Reflect.construct(original, args);
+              const payload = Object.assign({}, options, { property: getModelProperty(obj) }, { properties: getProperties(obj) }, { relationship: getModelRelationship(getRelationships(obj)) }, { relationships: getRelationships(obj) }, { pushKeys: getPushKeys(obj) }, { dbOffset: options.dbOffset ? options.dbOffset : "" }, { audit: options.audit ? options.audit : false }, { isDirty });
+              // console.log(
+              //   `MODEL CONSTRUCTION for ${obj.constructor.name.toLowerCase()}`
+              // );
+              addModelMeta(obj.constructor.name.toLowerCase(), payload);
               Reflect.defineProperty(obj, "META", {
                   get() {
-                      return Object.assign({}, options, { property: getModelProperty(obj) }, { properties: getProperties(obj) }, { relationship: getModelRelationship(getRelationships(obj)) }, { relationships: getRelationships(obj) }, { pushKeys: getPushKeys(obj) }, { audit: options.audit ? options.audit : false }, { isDirty });
+                      return payload;
                   },
                   set(prop) {
                       if (typeof prop === "object" && prop.isDirty !== undefined) {
@@ -1051,9 +1142,10 @@
       }
   }
 
+  // tslint:disable-next-line:no-implicit-dependencies
   function dbOffset(record, payload) {
       const output = {};
-      const path = commonTypes.pathJoin(record.META.dbOffset || "", record.pluralName);
+      const path = pathJoin(record.META.dbOffset || "", record.pluralName);
       lodash.set(output, path.replace(/\//g, "."), payload);
       return output;
   }
@@ -1179,14 +1271,13 @@
               : type);
       }
   }
+  /** adds mock values for all the properties on a given model */
   function properties(db, config, exceptions) {
       return (instance) => {
-          if (!instance.META) {
-              const e = new Error(`The instance passed passed into properties does not have any META properties! [ ${typeof instance} ]`);
-              e.name = "FireModel::MockError";
-              throw e;
-          }
-          const props = instance.META.properties;
+          const modelName = instance.constructor.name.toLowerCase();
+          const props = instance.META
+              ? instance.META.properties
+              : getModelMeta(modelName).properties;
           props.map(prop => {
               instance[prop.property] = mockValue(db, prop);
           });
@@ -1224,22 +1315,34 @@
           return instance;
       };
   }
+  /** adds models to mock DB which were pointed to by original model's FKs */
   function followRelationships(db, config, exceptions) {
       return (instance) => {
-          const relns = instance.META.relationships;
+          const relns = instance.META
+              ? instance.META.relationships
+              : getModelMeta(instance.constructor.name.toLowerCase()).relationships;
           if (!relns || config.relationshipBehavior !== "follow") {
               return instance;
           }
+          // first add the FK's into instance
           instance = addRelationships(db, config, exceptions)(instance);
+          // then iterate through the relationships
           relns.map(rel => {
               const fkConstructor = rel.fkConstructor;
               let foreignModel = new fkConstructor();
+              const fkMeta = getModelMeta(rel.fkModelName) || foreignModel.META;
+              foreignModel = Object.assign({}, foreignModel, { META: fkMeta });
               const fks = getRelationshipIds(instance, rel);
               fks.map(fk => {
+                  // Mock the foreign model
                   foreignModel = properties(db, { relationshipBehavior: "link" }, {})(foreignModel);
+                  // Associate the foreign model to the instance's FK
                   foreignModel.id = fk;
-                  if (rel.inverse) {
-                      const inverseType = foreignModel.META.property(rel.inverse).relType;
+                  // Follow up with the inverse, only if inverse's model is self-reflexive
+                  if (rel.inverseProperty &&
+                      fkMeta.relationship(rel.inverseProperty).fkModelName ===
+                          instance.constructor.name.toLowerCase()) {
+                      const inverseType = fkMeta.relationship(rel.inverseProperty).relType;
                   }
                   Record.add(fkConstructor, foreignModel);
               });

@@ -1,9 +1,9 @@
 import { Model } from "./Model";
 import { RealTimeDB } from "abstracted-firebase";
 import { IModelMetaProperties } from "./index";
-import { Record } from "./Record";
+declare type Record<T> = import("./Record").Record<T>;
 import { IDictionary } from "common-types";
-import { IFMRecordEvent, FMEvents, NotString, Extractable, IFMEventName } from "./state-mgmt";
+import { IFMRecordEvent, FMEvents, NotString, Extractable } from "./state-mgmt";
 import { IReduxDispatch } from "./VuexWrapper";
 export declare class FireModel<T extends Model> {
     static isBeingWatched(path: string): boolean;
@@ -11,7 +11,7 @@ export declare class FireModel<T extends Model> {
     private static _dispatchActive;
     /** the dispatch function used to interact with frontend frameworks */
     private static _dispatch;
-    static defaultDb: import("abstracted-firebase").RealTimeDB;
+    static defaultDb: RealTimeDB;
     static dispatch: IReduxDispatch;
     /** the data structure/model that this class operates around */
     protected _model: T;
@@ -33,10 +33,10 @@ export declare class FireModel<T extends Model> {
      * Creates a Redux-styled event
      */
     protected _createRecordEvent<K extends string & NotString<K> & Extractable<FMEvents, K>>(record: Record<T>, type: K, pathsOrValue: IMultiPathUpdates[] | T): IFMRecordEvent<T>;
-    protected _createRelationshipEvent<K extends IFMEventName<K>>(record: Record<T>, type: K, relProp: keyof T, fk: string, paths?: any[]): any;
     protected _getPaths(changes: IDictionary): IMultiPathUpdates[];
 }
 export interface IMultiPathUpdates {
     path: string;
     value: any;
 }
+export {};

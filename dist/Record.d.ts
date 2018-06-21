@@ -126,6 +126,15 @@ export declare class Record<T extends Model> extends FireModel<T> {
      * @param optionalValue the default behaviour is to add the value TRUE but you can optionally add some additional piece of information here instead.
      */
     addToRelationship(property: Extract<keyof T, string>, refs: Extract<fk, string> | Array<Extract<fk, string>>, optionalValue?: any): Promise<void>;
+    /**
+     * removeFromRelationship
+     *
+     * remove one or more IDs from a hasMany relationship
+     *
+     * @param property the property which is acting as a FK
+     * @param refs the IDs on the properties FK which should be removed
+     */
+    removeFromRelationship(property: Extract<keyof T, string>, refs: Extract<fk, string> | Array<Extract<fk, string>>): Promise<void>;
     /** indicates whether this record is already being watched locally */
     readonly isBeingWatched: boolean;
     /**
@@ -143,6 +152,8 @@ export declare class Record<T extends Model> extends FireModel<T> {
         localPath: string;
         data: string;
     };
+    protected _relationshipMPS(mps: any, ref: string, property: Extract<keyof T, string>, value: any, now: number): void;
+    protected _errorIfNotHasManyReln(property: Extract<keyof T, string>, fn: string): void;
     protected _updateProps<K extends IFMEventName<K>>(actionTypeStart: K, actionTypeEnd: K, changed: Partial<T>): Promise<void>;
     /**
      * Load data from a record in database

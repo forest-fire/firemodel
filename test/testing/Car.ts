@@ -7,7 +7,7 @@ function modelYear() {
   return 2018 - Math.floor(Math.random() * 10);
 }
 
-@model({})
+@model({ dbOffset: "car-offset" })
 export class Car extends Model {
   @property public model: string;
   @property public cost: number;
