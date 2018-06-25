@@ -76,7 +76,7 @@ export function getProperties(target: object) {
     ...propertiesByModel[target.constructor.name],
     ...propertiesByModel.Model.map(s => ({
       ...s,
-      ...{ isBaseSchema: true }
+      ...{ isModel: true }
     }))
   ];
 }

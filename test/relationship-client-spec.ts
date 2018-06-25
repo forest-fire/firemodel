@@ -7,6 +7,8 @@ import "reflect-metadata";
 import { FireModel } from "../src/FireModel";
 import { FancyPerson } from "./testing/FancyPerson";
 import { IFMRecordEvent, FMEvents } from "../src/state-mgmt";
+import { List } from "../src/List";
+import { Company } from "./testing/company";
 
 const addFatherAndChildren = async () => {
   const bob = await Record.add(FancyPerson, {
@@ -115,9 +117,41 @@ describe("Relationship > ", () => {
       age: 23
     });
     try {
-      bob.addToRelationship("employer", "4567");
+      await bob.addToRelationship("employer", "4567");
     } catch (e) {
       expect(e.name).to.equal("FireModel::WrongRelationshipType");
     }
+  });
+
+  it("using setRelationship() on an ownedBy prop sets relationship", async () => {
+    // TODO: add in an inverse relationship; currently getting very odd decorator behavior
+    const bob = await Record.add(FancyPerson, {
+      name: "Bob",
+      age: 23
+    });
+    const abc = await Record.add(Company, {
+      id: "e8899",
+      name: "ABC Inc"
+    });
+    await bob.setRelationship("employer", "e8899");
+
+    expect(bob.get("employer")).to.equal("e8899");
+    const people = await List.all(FancyPerson);
+    const bob2 = people.findById(bob.id);
+    expect(bob2.get("employer")).to.equal("e8899");
+    const company = await Record.get(Company, "e8899");
+  });
+
+  it("using clearRelationship() on an ownedBy prop sets relationship", async () => {
+    const bob = await Record.add(FancyPerson, {
+      name: "Bob",
+      age: 23
+    });
+    await bob.setRelationship("employer", "e8899");
+    expect(bob.get("employer")).to.equal("e8899");
+    await bob.clearRelationship("employer");
+    console.log(bob.data);
+
+    expect(bob.get("employer")).to.equal("e8899");
   });
 });

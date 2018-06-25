@@ -1,6 +1,6 @@
 // tslint:disable-next-line:no-implicit-dependencies
 import { RealTimeDB } from "abstracted-firebase";
-import { Model } from "./Model";
+import { Model, IModelOptions } from "./Model";
 import { createError, fk, IDictionary } from "common-types";
 import { key as fbKey } from "firebase-key";
 import { FireModel, IMultiPathUpdates } from "./FireModel";
@@ -8,6 +8,8 @@ import { IReduxDispatch } from "./VuexWrapper";
 import { FMEvents, IFMEventName } from "./state-mgmt/index";
 import { pathJoin } from "./path";
 import { getModelMeta } from "./ModelMeta";
+import { writeAudit, IAuditChange, IAuditOperations } from "./Audit";
+import { POINT_CONVERSION_COMPRESSED } from "constants";
 
 export interface IWriteOperation {
   id: string;
@@ -347,9 +349,6 @@ export class Record<T extends Model> extends FireModel<T> {
       FMEvents.RECORD_CHANGED,
       changed
     );
-    if (this.META.audit) {
-      // TODO: implement for auditing
-    }
 
     return;
   }
@@ -368,8 +367,8 @@ export class Record<T extends Model> extends FireModel<T> {
       ])
     );
     await this.db.remove(this.dbPath);
-    if (this.META.audit) {
-      // TODO: implement for auditing
+    if (this.META.audit === true) {
+      this._writeAudit("removed", []);
     }
     this.isDirty = false;
     this.dispatch(
@@ -421,6 +420,7 @@ export class Record<T extends Model> extends FireModel<T> {
     optionalValue: any = true
   ) {
     this._errorIfNotHasManyReln(property, "addToRelationship");
+
     if (!Array.isArray(refs)) {
       refs = [refs];
     }
@@ -472,13 +472,91 @@ export class Record<T extends Model> extends FireModel<T> {
     this.dispatch(
       this._createRecordEvent(
         this,
-        FMEvents.RECORD_REMOVED_LOCALLY,
+        FMEvents.RELATIONSHIP_REMOVED_LOCALLY,
         mps.payload
       )
     );
     await mps.execute();
     this.dispatch(
       this._createRecordEvent(this, FMEvents.RELATIONSHIP_REMOVED, this.data)
+    );
+  }
+
+  /**
+   * clearRelationship
+   *
+   * clears an existing FK on a ownedBy relationship
+   *
+   * @param property the property containing the ownedBy FK
+   */
+  public async clearRelationship(property: Extract<keyof T, string>) {
+    this._errorIfNotOwnedByReln(property, "clearRelationship");
+    if (!this.get(property)) {
+      console.warn(
+        `Call to clearRelationship(${property}) on model ${
+          this.modelName
+        } but there was no relationship set. This may be ok.`
+      );
+      return;
+    }
+    const mps = this.db.multiPathSet("/");
+
+    this._relationshipMPS(
+      mps,
+      this.get(property) as any,
+      property,
+      null,
+      new Date().getTime()
+    );
+    this.dispatch(
+      this._createRecordEvent(
+        this,
+        FMEvents.RELATIONSHIP_REMOVED_LOCALLY,
+        mps.payload
+      )
+    );
+    await mps.execute();
+    this.dispatch(
+      this._createRecordEvent(this, FMEvents.RELATIONSHIP_REMOVED, this.data)
+    );
+  }
+
+  /**
+   * setRelationship
+   *
+   * sets up an ownedBy FK relationship
+   *
+   * @param property the property containing the ownedBy FK
+   * @param ref the FK
+   */
+  public async setRelationship(
+    property: Extract<keyof T, string>,
+    ref: Extract<fk, string>,
+    optionalValue: any = true
+  ) {
+    this._errorIfNotOwnedByReln(property, "setRelationship");
+    const mps = this.db.multiPathSet("/");
+
+    this._relationshipMPS(
+      mps,
+      ref,
+      property,
+      optionalValue,
+      new Date().getTime()
+    );
+
+    this.dispatch(
+      this._createRecordEvent(
+        this,
+        FMEvents.RELATIONSHIP_ADDED_LOCALLY,
+        mps.payload
+      )
+    );
+
+    await mps.execute();
+
+    this.dispatch(
+      this._createRecordEvent(this, FMEvents.RELATIONSHIP_ADDED, this.data)
     );
   }
 
@@ -511,6 +589,39 @@ export class Record<T extends Model> extends FireModel<T> {
     };
   }
 
+  protected _writeAudit(
+    action: IAuditOperations,
+    changes?: IAuditChange[],
+    options: IModelOptions = {}
+  ) {
+    if (!changes || changes.length === 0) {
+      changes = [];
+      this.META.properties.map(p => {
+        if (this.data[p.property]) {
+          changes.push({
+            before: undefined,
+            after: this.data[p.property],
+            property: p.property,
+            action: "added"
+          });
+        }
+      });
+    }
+    writeAudit(this.id, this.pluralName, action, changes, {
+      ...options,
+      db: this.db
+    });
+  }
+
+  /**
+   * _relationshipMPS
+   *
+   * @param mps the multi-path selection object
+   * @param ref the FK reference
+   * @param property the property on the target record which contains FK(s)
+   * @param value the value to set this FK (null removes)
+   * @param now the current time in miliseconds
+   */
   protected _relationshipMPS(
     mps: any,
     ref: string,
@@ -518,11 +629,16 @@ export class Record<T extends Model> extends FireModel<T> {
     value: any,
     now: number
   ) {
-    const pathToThisFkReln = pathJoin(this.dbPath, property, ref);
+    const isHasMany = this.META.property(property).relType === "hasMany";
+    const pathToThisFkReln = pathJoin(
+      this.dbPath,
+      property,
+      isHasMany ? ref : ""
+    );
     const inverseProperty = this.META.property(property).inverseProperty;
     const fkRecord = Record.create(this.META.property(property).fkConstructor);
 
-    mps.add({ path: pathToThisFkReln, value });
+    mps.add({ path: pathToThisFkReln, value: isHasMany ? value : ref });
     // INVERSE RELATIONSHIP
     if (inverseProperty) {
       const fkMeta = getModelMeta(fkRecord.modelName);
@@ -580,6 +696,25 @@ export class Record<T extends Model> extends FireModel<T> {
     }
   }
 
+  protected _errorIfNotOwnedByReln(
+    property: Extract<keyof T, string>,
+    fn: string
+  ) {
+    if (this.META.property(property).relType !== "ownedBy") {
+      const e = new Error(
+        `Can not use property "${property}" on ${
+          this.modelName
+        } with ${fn}() because it is not a ownedBy relationship [ relType: ${
+          this.META.property(property).relType
+        }, inverse: ${
+          this.META.property(property).inverse
+        } ]. If you are working with a hasMany relationship then you should instead use addRelationship() and removeRelationship().`
+      );
+      e.name = "FireModel::WrongRelationshipType";
+      throw e;
+    }
+  }
+
   protected _errorIfNotHasManyReln(
     property: Extract<keyof T, string>,
     fn: string
@@ -592,7 +727,7 @@ export class Record<T extends Model> extends FireModel<T> {
           this.META.property(property).relType
         }, inverse: ${
           this.META.property(property).inverse
-        } ]. If you are working with a ownedBy relationship then you should instead use setRelationship() and clearRelationship()`
+        } ]. If you are working with a ownedBy relationship then you should instead use setRelationship() and clearRelationship().`
       );
       e.name = "FireModel::WrongRelationshipType";
       throw e;
@@ -605,7 +740,9 @@ export class Record<T extends Model> extends FireModel<T> {
     changed: Partial<T>
   ) {
     this.isDirty = true;
+    const priorValues: Partial<T> = {};
     Object.keys(changed).map((prop: Extract<string, keyof T>) => {
+      priorValues[prop] = this._data[prop];
       this._data[prop] = changed[prop];
     });
     const paths = this._getPaths(changed);
@@ -617,6 +754,34 @@ export class Record<T extends Model> extends FireModel<T> {
     await mps.execute();
     this.isDirty = false;
     this._data.lastUpdated = new Date().getTime();
+    if (this.META.audit === true) {
+      const action = Object.keys(priorValues).every(
+        (i: Extract<keyof T, string>) => !priorValues[i]
+      )
+        ? "added"
+        : "updated";
+      const changes = Object.keys(changed).reduce<IAuditChange[]>(
+        (prev: IAuditChange[], curr: Extract<keyof T, string>) => {
+          const after = changed[curr];
+          const before = priorValues[curr];
+          const propertyAction = !before
+            ? "added"
+            : !after
+              ? "removed"
+              : "updated";
+          const payload: IAuditChange = {
+            before,
+            after,
+            property: curr,
+            action: propertyAction
+          };
+          prev.push(payload);
+          return prev;
+        },
+        []
+      );
+      writeAudit(this.id, this.pluralName, action, changes, { db: this.db });
+    }
 
     // if this path is being watched we should avoid
     // sending a duplicative event
@@ -656,6 +821,9 @@ export class Record<T extends Model> extends FireModel<T> {
   private async _save() {
     if (!this.id) {
       this.id = fbKey();
+      if (this.META.audit === true) {
+        this._writeAudit("added", []);
+      }
     }
     const now = new Date().getTime();
     if (!this.get("createdAt")) {

@@ -16,7 +16,8 @@ export function hasMany(modelConstructor: new () => any) {
     isProperty: false,
     relType: "hasMany",
     fkConstructor: modelConstructor,
-    fkModelName: rec.modelName
+    fkModelName: rec.modelName,
+    fkPluralName: rec.pluralName
   };
 
   return propertyDecorator(payload, "property") as PropertyDecorator;

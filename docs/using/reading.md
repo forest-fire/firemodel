@@ -6,7 +6,7 @@ In our examples we will be working with a `Person` _model_ which we've defined a
 
 ```typescript
 @model({ dbOffset: "authenticated" })
-export class Person extends BaseSchema {
+export class Person extends Model {
   // prettier-ignore
   @property public name: string;
   @property public age?: number;

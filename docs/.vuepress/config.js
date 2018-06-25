@@ -43,7 +43,7 @@ module.exports = {
           ]
         },
         {
-          title: "Other DOC Sections",
+          title: "📓 Other Sections",
           collapsable: false,
           children: [
             ["/using/", "Using FireModel"],
@@ -55,7 +55,13 @@ module.exports = {
         {
           title: "Using FireModel",
           collapsable: true,
-          children: ["/using/", "reading", "writing", "watching"]
+          children: [
+            "/using/",
+            "reading",
+            "writing",
+            "watching",
+            "review-of-objects"
+          ]
         },
         {
           title: "Advanced Topics",
@@ -68,7 +74,7 @@ module.exports = {
           ]
         },
         {
-          title: "Other DOC Sections",
+          title: "📓 Other Sections",
           collapsable: false,
           children: [
             ["/modeling/", "Modeling in FireModel"],
@@ -88,7 +94,7 @@ module.exports = {
           ]
         },
         {
-          title: "Other Sections",
+          title: "📓 Other Sections",
           collapsable: false,
           children: [
             ["/modeling/", "Modeling in FireModel"],

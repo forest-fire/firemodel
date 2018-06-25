@@ -231,9 +231,13 @@ var FMEvents;
     FMEvents["WATCHER_STOPPED"] = "@firemodel/WATCHER_STOPPED";
     /** Watcher has disconnected all event streams from Firebase */
     FMEvents["WATCHER_STOPPED_ALL"] = "@firemodel/WATCHER_STOPPED_ALL";
-    /** A Record has removed a relationship from another */
+    /** Relationship(s) have removed */
     FMEvents["RELATIONSHIP_REMOVED"] = "@firemodel/RELATIONSHIP_REMOVED";
+    /** Relationship(s) have been removed locally */
+    FMEvents["RELATIONSHIP_REMOVED_LOCALLY"] = "@firemodel/RELATIONSHIP_REMOVED_LOCALLY";
+    /** Relationship(s) have added */
     FMEvents["RELATIONSHIP_ADDED"] = "@firemodel/RELATIONSHIP_ADDED";
+    /** Relationship(s) have been added locally */
     FMEvents["RELATIONSHIP_ADDED_LOCALLY"] = "@firemodel/RELATIONSHIP_ADDED_LOCALLY";
     FMEvents["APP_CONNECTED"] = "@firemodel/APP_CONNECTED";
     FMEvents["APP_DISCONNECTED"] = "@firemodel/APP_DISCONNECTED";
@@ -604,9 +608,44 @@ class Record extends FireModel {
         refs.map(ref => {
             this._relationshipMPS(mps, ref, property, null, now);
         });
-        this.dispatch(this._createRecordEvent(this, FMEvents.RECORD_REMOVED_LOCALLY, mps.payload));
+        this.dispatch(this._createRecordEvent(this, FMEvents.RELATIONSHIP_REMOVED_LOCALLY, mps.payload));
         await mps.execute();
         this.dispatch(this._createRecordEvent(this, FMEvents.RELATIONSHIP_REMOVED, this.data));
+    }
+    /**
+     * clearRelationship
+     *
+     * clears an existing FK on a ownedBy relationship
+     *
+     * @param property the property containing the ownedBy FK
+     */
+    async clearRelationship(property) {
+        this._errorIfNotOwnedByReln(property, "clearRelationship");
+        if (!this.get(property)) {
+            console.warn(`Call to clearRelationship(${property}) on model ${this.modelName} but there was no relationship set. This may be ok.`);
+            return;
+        }
+        const mps = this.db.multiPathSet("/");
+        this._relationshipMPS(mps, this.get(property), property, null, new Date().getTime());
+        this.dispatch(this._createRecordEvent(this, FMEvents.RELATIONSHIP_REMOVED_LOCALLY, mps.payload));
+        await mps.execute();
+        this.dispatch(this._createRecordEvent(this, FMEvents.RELATIONSHIP_REMOVED, this.data));
+    }
+    /**
+     * setRelationship
+     *
+     * sets up an ownedBy FK relationship
+     *
+     * @param property the property containing the ownedBy FK
+     * @param ref the FK
+     */
+    async setRelationship(property, ref, optionalValue = true) {
+        this._errorIfNotOwnedByReln(property, "setRelationship");
+        const mps = this.db.multiPathSet("/");
+        this._relationshipMPS(mps, ref, property, optionalValue, new Date().getTime());
+        this.dispatch(this._createRecordEvent(this, FMEvents.RELATIONSHIP_ADDED_LOCALLY, mps.payload));
+        await mps.execute();
+        this.dispatch(this._createRecordEvent(this, FMEvents.RELATIONSHIP_ADDED, this.data));
     }
     /** indicates whether this record is already being watched locally */
     get isBeingWatched() {
@@ -633,11 +672,21 @@ class Record extends FireModel {
             data: this.data.toString()
         };
     }
+    /**
+     * _relationshipMPS
+     *
+     * @param mps the multi-path selection object
+     * @param ref the FK reference
+     * @param property the property on the target record which contains FK(s)
+     * @param value the value to set this FK (null removes)
+     * @param now the current time in miliseconds
+     */
     _relationshipMPS(mps, ref, property, value, now) {
-        const pathToThisFkReln = pathJoin(this.dbPath, property, ref);
+        const isHasMany = this.META.property(property).relType === "hasMany";
+        const pathToThisFkReln = pathJoin(this.dbPath, property, isHasMany ? ref : "");
         const inverseProperty = this.META.property(property).inverseProperty;
         const fkRecord = Record.create(this.META.property(property).fkConstructor);
-        mps.add({ path: pathToThisFkReln, value });
+        mps.add({ path: pathToThisFkReln, value: isHasMany ? value : ref });
         // INVERSE RELATIONSHIP
         if (inverseProperty) {
             const fkMeta = getModelMeta(fkRecord.modelName);
@@ -675,9 +724,16 @@ class Record extends FireModel {
             return;
         }
     }
+    _errorIfNotOwnedByReln(property, fn) {
+        if (this.META.property(property).relType !== "ownedBy") {
+            const e = new Error(`Can not use property "${property}" on ${this.modelName} with ${fn}() because it is not a ownedBy relationship [ relType: ${this.META.property(property).relType}, inverse: ${this.META.property(property).inverse} ]. If you are working with a hasMany relationship then you should instead use addRelationship() and removeRelationship().`);
+            e.name = "FireModel::WrongRelationshipType";
+            throw e;
+        }
+    }
     _errorIfNotHasManyReln(property, fn) {
         if (this.META.property(property).relType !== "hasMany") {
-            const e = new Error(`Can not use property "${property}" on ${this.modelName} with ${fn}() because it is not a hasMany relationship [ relType: ${this.META.property(property).relType}, inverse: ${this.META.property(property).inverse} ]. If you are working with a ownedBy relationship then you should instead use setRelationship() and clearRelationship()`);
+            const e = new Error(`Can not use property "${property}" on ${this.modelName} with ${fn}() because it is not a hasMany relationship [ relType: ${this.META.property(property).relType}, inverse: ${this.META.property(property).inverse} ]. If you are working with a ownedBy relationship then you should instead use setRelationship() and clearRelationship().`);
             e.name = "FireModel::WrongRelationshipType";
             throw e;
         }
@@ -759,7 +815,8 @@ function hasMany(modelConstructor) {
         isProperty: false,
         relType: "hasMany",
         fkConstructor: modelConstructor,
-        fkModelName: rec.modelName
+        fkModelName: rec.modelName,
+        fkPluralName: rec.pluralName
     };
     return propertyDecorator(payload, "property");
 }
@@ -977,7 +1034,6 @@ class List extends FireModel {
             e.name = "NotAllowed";
             throw e;
         }
-        // const query = new SerializedQuery().orderByChild("lastUpdated").startAt(since);
         const query = new serializedQuery.SerializedQuery()
             .orderByChild("lastUpdated")
             .startAt(since);

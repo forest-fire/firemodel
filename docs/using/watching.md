@@ -14,18 +14,19 @@ So how do we express our interest in these events?
 const dispatch: IFMRecordEvent = (payload) => console.log(payload);
 
 // Listen for changes on a single record
-const hashId = await Watch
-  .record(Person, "1234")
+const hashId = Watch.record(Person, "1234")
   .dispatch(dispatch)
   .start();
 // Listen for changes on a list of records
-const hashId2 = await Watch
-  .list.since(Person, 134123543)
+const hashId2 = Watch.list(Person)
+  .since(134123543)
   .dispatch(dispatch)
   .start();
 ```
 
-With these watchers in place we will be called back on `dispatch()` whenever an event fires.
+With these watchers in place we will be called back on `dispatch()` whenever an event fires. 
+
+> **Note:** you _do not_ have to specify the dispatch on calls to `Watch` so long as your dispatch function has been set on `FireModel.dispatch`. 
 
 ### FireModel Events
 
@@ -102,5 +103,5 @@ Watch.stop();
 
 ## Upward and Onward
 
-We've talked about _what_ watching is and _how_ it works mechanistically but we've not really discussed a practical manner of using it. Don't worry kind reader, we'll get there next in the Advanced topic section under [Frontend State Management](./frontend-state-mgmt.html).
+We've talked about _what_ watching is and _how_ it works mechanistically but we've not really discussed a practical manner of using it. Don't worry kind reader, we'll get there next in the Advanced topic section under [Frontend State Management](./frontend-state-mgmt.html) ... but first a moment from our sponsors.
 

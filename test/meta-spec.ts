@@ -124,7 +124,7 @@ describe("relationship decorators: ", () => {
   it("@properties show up on Schema's properties array", async () => {
     const person = new Person();
     const ids = person.META.properties.map(r => r.property);
-    const base = person.META.properties.filter(f => f.isBaseSchema);
+    const base = person.META.properties.filter(f => f.isModel);
     expect(person.META.relationships.length).to.equal(4);
     expect(ids).to.include("name");
     expect(ids).to.include("age");

@@ -133,7 +133,6 @@ export class List<T extends Model> extends FireModel<T> {
       throw e;
     }
 
-    // const query = new SerializedQuery().orderByChild("lastUpdated").startAt(since);
     const query = new SerializedQuery<T>()
       .orderByChild("lastUpdated")
       .startAt(since);

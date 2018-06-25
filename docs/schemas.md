@@ -33,7 +33,7 @@ In order to use these features in Typescript you will need to change two variabl
 Now that we understand the basic aim of **Schemas** let's get more hands on. Here's a simple example of what we might find as a Schema definition:
 
 ```ts
-import { fk, BaseSchema, schema, property, belongsTo, hasMany } from 'firemodel';
+import { fk, Model, schema, property, belongsTo, hasMany } from 'firemodel';
 import { Company } from './company';
 
 const ageFn = (person: Person) => {
@@ -41,7 +41,7 @@ const ageFn = (person: Person) => {
 }
 
 @model({ dbPrefix: '/authenticated' })
-export class Person extends BaseSchema {
+export class Person extends Model {
   @property public name: string;
   @property public birthday: number;
   @belongsTo<Company>() employer: fk;
@@ -61,20 +61,20 @@ In the above example we see examples of all three of the key structural properti
     b. hasMany (aka, 1:M)
 3. Computed Properties
 
-In the coming sections we'll cover each of these but before we do let's quickly touch on the subclass **BaseSchema** that all schema's are expected to inherit from.
+In the coming sections we'll cover each of these but before we do let's quickly touch on the subclass **Model** that all schema's are expected to inherit from.
 
 
 
-### `BaseSchema` Definition
+### `Model` Definition
 
-All schema's should derive off of the "BaseSchema" class which provides the following properties to all schemas:
+All schema's should derive off of the "Model" class which provides the following properties to all schemas:
 
   - `id` - a string property to point to the specific "key" in the database; often this will be a Firebase pushkey but it can be any string based key
       > note: all firebase paths are strings so we aren't in any way limiting ourselves by imposing the "string" type
   - `lastUpdated` - a date representing the last change to a given record
   - `createdDate` - a date representing when a given record was first created
 
-In addition to these properties, the BaseSchema also adds a `META` property to the class which is where all meta-information added with the `schema` decorator will be stored.
+In addition to these properties, the Model also adds a `META` property to the class which is where all meta-information added with the `schema` decorator will be stored.
 ## Properties {#properties}
 
 A property doesn't need a lot of clarification ... it is just a defined part of the data structure -- which unlike a _relationship_ -- is encapsulated wholely inline to the schema.
@@ -83,7 +83,7 @@ The simplist example would be something like:
 
 ```ts
 @model()
-export class Person extends BaseSchema {
+export class Person extends Model {
   @property public name: string;
 }
 ```
@@ -101,7 +101,7 @@ In many cases, this simple example is enough to model your schema fully but some
 
 ```ts
 @model()
-export class Person extends BaseSchema {
+export class Person extends Model {
   @property @positive @integer public age: number;
 }
 ```
@@ -119,7 +119,7 @@ But if there's ever a need to add additional meta-information you can use whatev
 
 ```ts
 @model()
-export class Person extends BaseSchema {
+export class Person extends Model {
   @property @contraint('min', 0) @contraint('isInteger', true) public age: number;
 }
 ```
@@ -142,7 +142,7 @@ Because a schema's information is typed we can approximate reasonable mocking in
 
 ```ts
 @model()
-export class Person extends BaseSchema {
+export class Person extends Model {
   @property name: string;
   @property @positive @integer @max(100) age: number;
   @property isMale: boolean;

@@ -20,6 +20,7 @@ const defaultDispatch = (context: IDictionary) => "";
 
 export class FireModel<T extends Model> {
   //#region STATIC INTERFACE
+  public static auditLogs: string = "/auditing";
 
   public static isBeingWatched(path: string): boolean {
     // TODO: implement this!

@@ -16,7 +16,7 @@ export interface IModelMetaProperties<T extends Model = any> {
   property?: (prop: keyof T) => IModelPropertyMeta<T>;
   /** a function to lookup the meta properties of a given relationship */
   relationship?: (prop: keyof T) => IModelRelationshipMeta<T>;
-  audit?: boolean;
+  audit?: boolean | "server";
   /** A list of all properties and associated meta-data for the given schema */
   properties?: Array<IModelPropertyMeta<T>>;
   /** A list of all relationships and associated meta-data for the given schema */
@@ -85,6 +85,20 @@ export function model(options: IModelMetaProperties): ClassDecorator {
     // new constructor
     const f: any = function(...args: any[]) {
       const obj = Reflect.construct(original, args);
+      if (
+        !(
+          options.audit === true ||
+          options.audit === false ||
+          options.audit === "server"
+        )
+      ) {
+        console.warn(
+          `You set the audit property to "${
+            options.audit
+          }" which is invalid. Valid properties are true, false, and "server". The audit property will be set to false for now.`
+        );
+        options.audit = false;
+      }
       const payload = {
         ...options,
         ...{ property: getModelProperty(obj) },
@@ -96,9 +110,7 @@ export function model(options: IModelMetaProperties): ClassDecorator {
         ...{ audit: options.audit ? options.audit : false },
         ...{ isDirty }
       };
-      // console.log(
-      //   `MODEL CONSTRUCTION for ${obj.constructor.name.toLowerCase()}`
-      // );
+
       addModelMeta(obj.constructor.name.toLowerCase(), payload);
 
       Reflect.defineProperty(obj, "META", {

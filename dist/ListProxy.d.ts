@@ -9,7 +9,7 @@ export declare class ListProxy<T> extends Array<T> {
     readonly pluralName: any;
     readonly pushKeys: {};
     readonly properties: IModelPropertyMeta<T>[];
-    readonly relationships: import("./decorators/schema").IModelRelationshipMeta<T>[];
+    readonly relationships: import("../../../../../../Users/ken/mine/forest-fire/firemodel/src/decorators/schema").IModelRelationshipMeta<T>[];
     readonly dbOffset: string;
     readonly isAudited: boolean;
     property(prop: keyof T): IModelPropertyMeta | null;

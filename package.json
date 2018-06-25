@@ -38,9 +38,9 @@
     "lodash": "^4.17.10",
     "pluralize": "^7.0.0",
     "reflect-metadata": "^0.1.12",
-    "serialized-query": "^0.3.8",
+    "serialized-query": "^0.4.4",
     "typed-conversions": "^0.8.3",
-    "wait-in-parallel": "^1.0.12"
+    "wait-in-parallel": "^1.1.4"
   },
   "peerDependencies": {
     "firemock": "^0.17.12"
@@ -56,9 +56,9 @@
     "@types/pluralize": "^0.0.28",
     "@types/rimraf": "^0.0.28",
     "@types/stack-trace": "^0.0.28",
-    "abstracted-admin": "^0.10.2",
-    "abstracted-client": "^0.10.0",
-    "abstracted-firebase": "^0.11.12",
+    "abstracted-admin": "^0.12.2",
+    "abstracted-client": "^0.12.2",
+    "abstracted-firebase": "^0.12.4",
     "async-shelljs": "^0.1.2",
     "chai": "^4.1.2",
     "chalk": "^2.4.1",

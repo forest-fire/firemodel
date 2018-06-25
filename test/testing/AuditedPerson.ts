@@ -10,14 +10,13 @@ import {
 } from "../../src";
 import { mock } from "../../src/decorators/property";
 import { Company } from "./company";
-import { Car } from "./Car";
 
 function bespokeMock(context: import("firemock").MockHelper) {
   return context.faker.name.firstName() + ", hello to you";
 }
 
-@model({ dbOffset: "authenticated" })
-export class FancyPerson extends Model {
+@model({ dbOffset: "authenticated", audit: true })
+export class Person extends Model {
   @property public name: string;
   // prettier-ignore
   @property @min(0) public age?: number;
@@ -29,9 +28,7 @@ export class FancyPerson extends Model {
   // prettier-ignore
   @ownedBy(Company) public employer?: fk;
   // prettier-ignore
-  @hasMany(Car) @inverse("owner") public cars?: fk[];
+  @hasMany(Person) @inverse("children") public parents?: fk[];
   // prettier-ignore
-  @hasMany(FancyPerson) @inverse("children") public parents?: fk[];
-  // prettier-ignore
-  @hasMany(FancyPerson) @inverse("parents") public children?: fk[];
+  @hasMany(Person) @inverse("parents") public children?: fk[];
 }

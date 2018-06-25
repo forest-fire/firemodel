@@ -135,6 +135,23 @@ export declare class Record<T extends Model> extends FireModel<T> {
      * @param refs the IDs on the properties FK which should be removed
      */
     removeFromRelationship(property: Extract<keyof T, string>, refs: Extract<fk, string> | Array<Extract<fk, string>>): Promise<void>;
+    /**
+     * clearRelationship
+     *
+     * clears an existing FK on a ownedBy relationship
+     *
+     * @param property the property containing the ownedBy FK
+     */
+    clearRelationship(property: Extract<keyof T, string>): Promise<void>;
+    /**
+     * setRelationship
+     *
+     * sets up an ownedBy FK relationship
+     *
+     * @param property the property containing the ownedBy FK
+     * @param ref the FK
+     */
+    setRelationship(property: Extract<keyof T, string>, ref: Extract<fk, string>, optionalValue?: any): Promise<void>;
     /** indicates whether this record is already being watched locally */
     readonly isBeingWatched: boolean;
     /**
@@ -152,7 +169,17 @@ export declare class Record<T extends Model> extends FireModel<T> {
         localPath: string;
         data: string;
     };
+    /**
+     * _relationshipMPS
+     *
+     * @param mps the multi-path selection object
+     * @param ref the FK reference
+     * @param property the property on the target record which contains FK(s)
+     * @param value the value to set this FK (null removes)
+     * @param now the current time in miliseconds
+     */
     protected _relationshipMPS(mps: any, ref: string, property: Extract<keyof T, string>, value: any, now: number): void;
+    protected _errorIfNotOwnedByReln(property: Extract<keyof T, string>, fn: string): void;
     protected _errorIfNotHasManyReln(property: Extract<keyof T, string>, fn: string): void;
     protected _updateProps<K extends IFMEventName<K>>(actionTypeStart: K, actionTypeEnd: K, changed: Partial<T>): Promise<void>;
     /**

@@ -37,9 +37,13 @@ export enum FMEvents {
   WATCHER_STOPPED = "@firemodel/WATCHER_STOPPED",
   /** Watcher has disconnected all event streams from Firebase */
   WATCHER_STOPPED_ALL = "@firemodel/WATCHER_STOPPED_ALL",
-  /** A Record has removed a relationship from another */
+  /** Relationship(s) have removed */
   RELATIONSHIP_REMOVED = "@firemodel/RELATIONSHIP_REMOVED",
+  /** Relationship(s) have been removed locally */
+  RELATIONSHIP_REMOVED_LOCALLY = "@firemodel/RELATIONSHIP_REMOVED_LOCALLY",
+  /** Relationship(s) have added */
   RELATIONSHIP_ADDED = "@firemodel/RELATIONSHIP_ADDED",
+  /** Relationship(s) have been added locally */
   RELATIONSHIP_ADDED_LOCALLY = "@firemodel/RELATIONSHIP_ADDED_LOCALLY",
 
   APP_CONNECTED = "@firemodel/APP_CONNECTED",
@@ -59,7 +63,7 @@ export interface IFMRelationshipEvent<T extends Model = Model>
   extends IFMRecordEventCore<T> {
   fk: string;
   fkModelName: string;
-  fkHasInverse: boolean;
+  fkPluralName: string;
   fkConstructor?: FMModelConstructor<T>;
   fkRelType?: ISchemaRelationshipType;
   fkLocalPath?: string;

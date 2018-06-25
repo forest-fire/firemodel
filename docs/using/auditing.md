@@ -8,34 +8,84 @@ Whether this time-loss is important or not depends on the kind of information ca
 
 ```typescript
 @model({ audit: true })
-export class Company extends BaseSchema {
+export class Person extends Model {
   @property public name: string;
-  @property public employees?: number;
-  @property public founded?: string;
+  @property public favoriteColor?: string;
 }
 ```
 
-In this example by setting auditing _on_ any modifications to the Model will be tracked in Firebase. By default this path in your database will be `/auditing` but you can replace the "true" value with a differnt path if you prefer.
+In the example above we have instructued auditing to be turned on for the `Person` model; any modifications to the Model will be tracked in Firebase. 
 
-### Accessing the Audit Log
+## Auditing API surface
 
-Getting information out of the audit log is typically done via the `Record` or `List` classes. With a `Record` you would get the changes for just the record you have loaded, with a `List` it would be all changes which you have in your list (ordered by last updated).
+Let's work off of our `Person` from above and assume that we want to know the last 20 actions that have taken place on People on the system:
 
 ```typescript
-// Record
-const joe = Record.get(Person, "1234");
-const auditLog = await joe.getAuditLog();
-// List
-const people = List.all(Person);
-const auditLog = await people.getAuditLog();
+import { auditLog } from "FireModel";
+const log = await auditLog(Person).last(20);
 ```
 
-The audit log is modelled as `AuditLogItem[]`, where:
+and if I wanted the _next_ 20?
 
 ```typescript
-export class AuditLogItem extends Model {
+const log = await auditLog(Person).last(20, 20);
+```
+
+Ok so that's the basic pattern but you can similar inspection patterns to what you've already seen in `List` and `Watch`:
+
+```typescript
+// Global paging searches
+const log = await auditLog(Person).last(howMany, offset);
+const log = await auditLog(Person).first(howMany, offset);
+// Specialized paging searches
+const log = await auditLog(Person).byRecordId("-lcad87234").first(howMany, offset);
+const log = await auditLog(Person).action("removed").first(howMany, offset);
+// Time Filter searches
+const log = await auditLog(Person).since("2017-12-12");
+const log = await auditLog(Person).before("2017-12-25");
+const log = await auditLog(Person).between("2017-12-12", "2017-12-25");
+```
+ 
+
+## Convenience Functions
+
+While you've seen the direct API for accessing the audit logs there are also convenience methods hanging off of `Record` and `List`:
+
+```typescript
+const joe = Record.get(Person, "1234");
+// equivalent to auditLog(Person).byRecordId("1234").first(10)
+const auditLog = await joe.getAuditLog().first(10);  
+
+const people = List.all(Person);
+// equivalent to auditLog(Person).between("2017-12-12", "2017-12-25")
+const auditLog = await people.getAuditLog().between("2017-12-12", "2017-12-25");
+```
+
+
+
+## Details
+
+The audit logs which are being stored are kept in your database at the root path of `auditing` and then broken down by model type:
+
+
+```typescript
+{
+  auditing: {
+    [ MODEL ]: {
+      [ PUSHKEY ]: IAuditLogItem
+    }
+  }
+}
+```
+
+where `IAuditLogItem` is:
+
+
+```typescript
+export interface IAuditLogItem {
   id: string;
-  timestamp: epochWithMiliseconds;
+  recordId: string;
+  timestamp: epochWithMilliseconds;
   /** the record-level operation */
   action: AuditOperations;
   /** the changes to properties, typically not represented in a "removed" op */
@@ -54,6 +104,20 @@ export interface IAuditChange {
 export type AuditOperations = "added" | "updated" | "removed";
 ```
 
-## Advanced operations
+If you really need to change the root path for you audit logs you can by stating an alternative path by:
 
-TBD
+```typescript
+Firemodel.auditLogs = '/alternative/path'
+```
+
+
+## Limitations
+
+Bear in mind that while **FireModel** takes care of writing out the audit logs for you with the simple configuration mentioned above it does depend on your applicaiton to always use **FireModel** for your write operations. If you're wanting to protect against rouge clients then this solution will not be complete enough for you. 
+
+In this case it would make sense to look into writing a [Firebase Database Trigger](https://firebase.google.com/docs/functions/database-events) which will monitor all writes to your models endpoints. So long as this function writes audit logs in the same format as **FireModel**, you can preserve the audit logging read operations by configuring models with the `server` value as demonstrated below:
+
+```typescript
+@model({audit: 'server'})
+export class Person extends Model { ... }
+```
