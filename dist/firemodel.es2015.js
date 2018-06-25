@@ -1,9 +1,9 @@
 import 'reflect-metadata';
 import { set, get } from 'lodash';
+import { SerializedQuery } from 'serialized-query';
 import { createError } from 'common-types';
 import { key } from 'firebase-key';
 export { key as fbKey } from 'firebase-key';
-import { SerializedQuery } from 'serialized-query';
 import { RealTimeDB } from 'abstracted-firebase';
 import { arrayToHash } from 'typed-conversions';
 
@@ -53,7 +53,7 @@ property) => (target, key$$1) => {
 function getProperties(target) {
     return [
         ...propertiesByModel[target.constructor.name],
-        ...propertiesByModel.Model.map(s => (Object.assign({}, s, { isBaseSchema: true })))
+        ...propertiesByModel.Model.map(s => (Object.assign({}, s, { isModel: true })))
     ];
 }
 /**
@@ -101,7 +101,6 @@ const pushKey = propertyDecorator({
 const pluralize = require("pluralize");
 const defaultDispatch = (context) => "";
 class FireModel {
-    //#region STATIC INTERFACE
     static isBeingWatched(path) {
         // TODO: implement this!
         return false;
@@ -200,6 +199,8 @@ class FireModel {
         }, []);
     }
 }
+//#region STATIC INTERFACE
+FireModel.auditLogs = "/auditing";
 FireModel._defaultDb = null;
 FireModel._dispatchActive = false;
 /** the dispatch function used to interact with frontend frameworks */
@@ -286,6 +287,19 @@ function addModelMeta(modelName, props) {
 }
 function getModelMeta(modelName) {
     return meta[modelName] || {};
+}
+
+async function writeAudit(recordId, pluralName, action, changes, options = {}) {
+    const db = options.db || FireModel.defaultDb;
+    const timestamp = new Date().getTime();
+    const writePath = pathJoin(FireModel.auditLogs, pluralName);
+    await db.push(writePath, {
+        createdAt: new Date().getTime(),
+        recordId,
+        timestamp,
+        action,
+        changes
+    });
 }
 
 class Record extends FireModel {
@@ -523,7 +537,6 @@ class Record extends FireModel {
         const lastUpdated = new Date().getTime();
         const changed = Object.assign({}, props, { lastUpdated });
         await this._updateProps(FMEvents.RECORD_CHANGED_LOCALLY, FMEvents.RECORD_CHANGED, changed);
-        if (this.META.audit) ;
         return;
     }
     /**
@@ -538,7 +551,9 @@ class Record extends FireModel {
             { path: this.dbPath, value: null }
         ]));
         await this.db.remove(this.dbPath);
-        if (this.META.audit) ;
+        if (this.META.audit === true) {
+            this._writeAudit("removed", []);
+        }
         this.isDirty = false;
         this.dispatch(this._createRecordEvent(this, FMEvents.RECORD_REMOVED, this.data));
     }
@@ -669,6 +684,22 @@ class Record extends FireModel {
             data: this.data.toString()
         };
     }
+    _writeAudit(action, changes, options = {}) {
+        if (!changes || changes.length === 0) {
+            changes = [];
+            this.META.properties.map(p => {
+                if (this.data[p.property]) {
+                    changes.push({
+                        before: undefined,
+                        after: this.data[p.property],
+                        property: p.property,
+                        action: "added"
+                    });
+                }
+            });
+        }
+        writeAudit(this.id, this.pluralName, action, changes, Object.assign({}, options, { db: this.db }));
+    }
     /**
      * _relationshipMPS
      *
@@ -737,7 +768,9 @@ class Record extends FireModel {
     }
     async _updateProps(actionTypeStart, actionTypeEnd, changed) {
         this.isDirty = true;
+        const priorValues = {};
         Object.keys(changed).map((prop) => {
+            priorValues[prop] = this._data[prop];
             this._data[prop] = changed[prop];
         });
         const paths = this._getPaths(changed);
@@ -747,6 +780,29 @@ class Record extends FireModel {
         await mps.execute();
         this.isDirty = false;
         this._data.lastUpdated = new Date().getTime();
+        if (this.META.audit === true) {
+            const action = Object.keys(priorValues).every((i) => !priorValues[i])
+                ? "added"
+                : "updated";
+            const changes = Object.keys(changed).reduce((prev, curr) => {
+                const after = changed[curr];
+                const before = priorValues[curr];
+                const propertyAction = !before
+                    ? "added"
+                    : !after
+                        ? "removed"
+                        : "updated";
+                const payload = {
+                    before,
+                    after,
+                    property: curr,
+                    action: propertyAction
+                };
+                prev.push(payload);
+                return prev;
+            }, []);
+            writeAudit(this.id, this.pluralName, action, changes, { db: this.db });
+        }
         // if this path is being watched we should avoid
         // sending a duplicative event
         if (!this.isBeingWatched) {
@@ -775,6 +831,9 @@ class Record extends FireModel {
     async _save() {
         if (!this.id) {
             this.id = key();
+            if (this.META.audit === true) {
+                this._writeAudit("added", []);
+            }
         }
         const now = new Date().getTime();
         if (!this.get("createdAt")) {
@@ -851,10 +910,13 @@ function model(options) {
         // new constructor
         const f = function (...args) {
             const obj = Reflect.construct(original, args);
+            if (!(options.audit === true ||
+                options.audit === false ||
+                options.audit === "server")) {
+                console.warn(`You set the audit property to "${options.audit}" which is invalid. Valid properties are true, false, and "server". The audit property will be set to false for now.`);
+                options.audit = false;
+            }
             const payload = Object.assign({}, options, { property: getModelProperty(obj) }, { properties: getProperties(obj) }, { relationship: getModelRelationship(getRelationships(obj)) }, { relationships: getRelationships(obj) }, { pushKeys: getPushKeys(obj) }, { dbOffset: options.dbOffset ? options.dbOffset : "" }, { audit: options.audit ? options.audit : false }, { isDirty });
-            // console.log(
-            //   `MODEL CONSTRUCTION for ${obj.constructor.name.toLowerCase()}`
-            // );
             addModelMeta(obj.constructor.name.toLowerCase(), payload);
             Reflect.defineProperty(obj, "META", {
                 get() {

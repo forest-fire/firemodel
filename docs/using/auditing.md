@@ -18,32 +18,33 @@ In the example above we have instructued auditing to be turned on for the `Perso
 
 ## Auditing API surface
 
-Let's work off of our `Person` from above and assume that we want to know the last 20 actions that have taken place on People on the system:
+Let's work off of our `Person` example from above and assume that we want to know the last 20 actions that have taken place on people in the database:
+
+```typescript
+import { Audit } from "FireModel";
+const log = await Audit.list(Person).last(20);
+```
+
+and if instead you wanted the last 20 actions on a _particular_ person:
 
 ```typescript
 import { auditLog } from "FireModel";
-const log = await auditLog(Person).last(20);
+const log = await Audit.record(Person, "1234").last(20);
 ```
 
-and if I wanted the _next_ 20?
+
+Ok so that's the basic pattern, here's the full list of search parameters that can be applied to either `Audit.list` or `Audit.record`:
 
 ```typescript
-const log = await auditLog(Person).last(20, 20);
-```
-
-Ok so that's the basic pattern but you can similar inspection patterns to what you've already seen in `List` and `Watch`:
-
-```typescript
-// Global paging searches
-const log = await auditLog(Person).last(howMany, offset);
-const log = await auditLog(Person).first(howMany, offset);
-// Specialized paging searches
-const log = await auditLog(Person).byRecordId("-lcad87234").first(howMany, offset);
-const log = await auditLog(Person).action("removed").first(howMany, offset);
+// Paged Filters
+log = await Audit.list(Person).last(howMany, startAt);
+log = await Audit.list(Person).first(howMany, startAt);
+// Specialized Paged Filter
+log = await Audit.list(Person).action("removed").first(howMany, offset);
 // Time Filter searches
-const log = await auditLog(Person).since("2017-12-12");
-const log = await auditLog(Person).before("2017-12-25");
-const log = await auditLog(Person).between("2017-12-12", "2017-12-25");
+log = await Audit.list(Person).since("2017-12-12");
+log = await Audit.list(Person).before("2017-12-25");
+log = await Audit.list(Person).between("2017-12-12", "2017-12-25");
 ```
  
 

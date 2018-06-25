@@ -6,6 +6,7 @@ import { IDictionary } from "common-types";
 import { IFMRecordEvent, FMEvents, NotString, Extractable } from "./state-mgmt";
 import { IReduxDispatch } from "./VuexWrapper";
 export declare class FireModel<T extends Model> {
+    static auditLogs: string;
     static isBeingWatched(path: string): boolean;
     private static _defaultDb;
     private static _dispatchActive;

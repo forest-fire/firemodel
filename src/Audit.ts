@@ -3,8 +3,13 @@ import { epochWithMilliseconds, IDictionary } from "common-types";
 import { FireModel } from "./FireModel";
 import { Record } from "./Record";
 import { pathJoin } from "./path";
+// tslint:disable-next-line:no-implicit-dependencies
+import { RealTimeDB } from "abstracted-firebase";
+import { SerializedQuery } from "serialized-query";
+import { AuditList } from "./AuditList";
 
 export interface IAuditLogItem {
+  createdAt: epochWithMilliseconds;
   recordId: string;
   timestamp: epochWithMilliseconds;
   /** the record-level operation */
@@ -35,6 +40,7 @@ export async function writeAudit(
   const timestamp = new Date().getTime();
   const writePath = pathJoin(FireModel.auditLogs, pluralName);
   await db.push<IAuditLogItem>(writePath, {
+    createdAt: new Date().getTime(),
     recordId,
     timestamp,
     action,
@@ -42,4 +48,8 @@ export async function writeAudit(
   });
 }
 
-export class Audit<T extends Model = Model> {}
+export class Audit<T extends Model = Model> {
+  public static list<T>(modelKlass: new () => T, options: IModelOptions = {}) {
+    return new AuditList<T>(modelKlass, options);
+  }
+}

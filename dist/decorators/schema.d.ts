@@ -11,7 +11,7 @@ export interface IModelMetaProperties<T extends Model = any> {
     property?: (prop: keyof T) => IModelPropertyMeta<T>;
     /** a function to lookup the meta properties of a given relationship */
     relationship?: (prop: keyof T) => IModelRelationshipMeta<T>;
-    audit?: boolean;
+    audit?: boolean | "server";
     /** A list of all properties and associated meta-data for the given schema */
     properties?: Array<IModelPropertyMeta<T>>;
     /** A list of all relationships and associated meta-data for the given schema */

@@ -1,9 +1,10 @@
 import { RealTimeDB } from "abstracted-firebase";
-import { Model } from "./Model";
+import { Model, IModelOptions } from "./Model";
 import { fk } from "common-types";
 import { FireModel } from "./FireModel";
 import { IReduxDispatch } from "./VuexWrapper";
 import { IFMEventName } from "./state-mgmt/index";
+import { IAuditChange, IAuditOperations } from "./Audit";
 export interface IWriteOperation {
     id: string;
     type: "set" | "pushKey" | "update";
@@ -169,6 +170,7 @@ export declare class Record<T extends Model> extends FireModel<T> {
         localPath: string;
         data: string;
     };
+    protected _writeAudit(action: IAuditOperations, changes?: IAuditChange[], options?: IModelOptions): void;
     /**
      * _relationshipMPS
      *
