@@ -10,6 +10,7 @@ import { pathJoin } from "./path";
 import { getModelMeta } from "./ModelMeta";
 import { writeAudit, IAuditChange, IAuditOperations } from "./Audit";
 import { POINT_CONVERSION_COMPRESSED } from "constants";
+import { updateToAuditChanges } from "./util";
 
 export interface IWriteOperation {
   id: string;
@@ -780,7 +781,14 @@ export class Record<T extends Model> extends FireModel<T> {
         },
         []
       );
-      writeAudit(this.id, this.pluralName, action, changes, { db: this.db });
+
+      writeAudit(
+        this.id,
+        this.pluralName,
+        action,
+        updateToAuditChanges(changed, priorValues),
+        { db: this.db }
+      );
     }
 
     // if this path is being watched we should avoid

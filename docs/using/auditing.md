@@ -28,10 +28,8 @@ const log = await Audit.list(Person).last(20);
 and if instead you wanted the last 20 actions on a _particular_ person:
 
 ```typescript
-import { auditLog } from "FireModel";
 const log = await Audit.record(Person, "1234").last(20);
 ```
-
 
 Ok so that's the basic pattern, here's the full list of search parameters that can be applied to either `Audit.list` or `Audit.record`:
 
@@ -73,7 +71,17 @@ The audit logs which are being stored are kept in your database at the root path
 {
   auditing: {
     [ MODEL ]: {
-      [ PUSHKEY ]: IAuditLogItem
+      logs: {
+        [ PUSHKEY ]: IAuditLogItem
+      },
+      byId: {
+        [ recordId ]: {
+          all: { fk1: createdAt, fk2: createdAt, etc. };
+          added: fk;
+          updated: fk[];
+          removed: fk;
+        }
+      }
     }
   }
 }

@@ -7,6 +7,9 @@ import { pathJoin } from "./path";
 import { RealTimeDB } from "abstracted-firebase";
 import { SerializedQuery } from "serialized-query";
 import { AuditList } from "./AuditList";
+import { Parallel } from "wait-in-parallel";
+import { fbKey } from "./index";
+import { AuditRecord } from "./AuditRecord";
 
 export interface IAuditLogItem {
   createdAt: epochWithMilliseconds;
@@ -29,6 +32,12 @@ export interface IAuditChange {
 
 export type IAuditOperations = "added" | "updated" | "removed";
 
+export interface IAuditRecordReference {
+  id: string;
+  createdAt: number;
+  action: IAuditOperations;
+}
+
 export async function writeAudit(
   recordId: string,
   pluralName: string,
@@ -39,17 +48,43 @@ export async function writeAudit(
   const db = options.db || FireModel.defaultDb;
   const timestamp = new Date().getTime();
   const writePath = pathJoin(FireModel.auditLogs, pluralName);
-  await db.push<IAuditLogItem>(writePath, {
-    createdAt: new Date().getTime(),
-    recordId,
-    timestamp,
-    action,
-    changes
+  const p = new Parallel();
+  const createdAt = new Date().getTime();
+  const auditId = fbKey();
+  p.add(
+    "audit-log-item",
+    db.set<IAuditLogItem>(pathJoin(writePath, "all", auditId), {
+      createdAt,
+      recordId,
+      timestamp,
+      action,
+      changes
+    })
+  );
+
+  const mps = db.multiPathSet(pathJoin(writePath, "byId", recordId));
+  mps.add({ path: pathJoin("all", auditId), value: createdAt });
+
+  changes.map(change => {
+    mps.add({
+      path: pathJoin("props", change.property, auditId),
+      value: createdAt
+    });
   });
+  p.add("byId", mps.execute());
+
+  await p.isDone();
 }
 
 export class Audit<T extends Model = Model> {
   public static list<T>(modelKlass: new () => T, options: IModelOptions = {}) {
     return new AuditList<T>(modelKlass, options);
+  }
+  public static record<T>(
+    modelKlass: new () => T,
+    id: string,
+    options: IModelOptions = {}
+  ) {
+    return new AuditRecord<T>(modelKlass, id, options);
   }
 }

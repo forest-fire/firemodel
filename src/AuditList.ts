@@ -1,11 +1,14 @@
-import { Audit, IAuditLogItem } from "./Audit";
+import { IAuditLogItem } from "./Audit";
 import { epochWithMilliseconds } from "common-types";
 import { Model, IModelOptions } from "./Model";
 import { AuditBase } from "./AuditBase";
+import { pathJoin } from "./path";
+import { SerializedQuery } from "serialized-query";
 
 export class AuditList<T extends Model> extends AuditBase<T> {
   constructor(modelKlass: new () => T, options: IModelOptions = {}) {
     super(modelKlass, options);
+    this._query = new SerializedQuery(pathJoin(this.dbPath, "all"));
   }
 
   public async first(

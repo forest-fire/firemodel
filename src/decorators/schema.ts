@@ -85,6 +85,9 @@ export function model(options: IModelMetaProperties): ClassDecorator {
     // new constructor
     const f: any = function(...args: any[]) {
       const obj = Reflect.construct(original, args);
+      if (options.audit === undefined) {
+        options.audit = false;
+      }
       if (
         !(
           options.audit === true ||

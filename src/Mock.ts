@@ -10,6 +10,8 @@ import { set } from "lodash";
 import { MockHelper } from "firemock";
 import { pathJoin } from "./path";
 import { getModelMeta } from "./ModelMeta";
+import { writeAudit } from "./Audit";
+import { updateToAuditChanges } from "./util";
 
 export type ICardinalityConfig<T> = {
   [key in keyof T]: [number, number] | number | true
@@ -299,11 +301,26 @@ function getRelationshipIds<T>(
   }
 }
 
+function auditMocks<T extends Model>(record: Record<T>) {
+  return (instance: T) => {
+    if (record.META.audit === true) {
+      writeAudit(
+        instance.id,
+        record.pluralName,
+        "added",
+        updateToAuditChanges(instance, {})
+      );
+    }
+
+    return instance;
+  };
+}
+
 export function Mock<T extends Model>(
   modelConstructor: new () => T,
   db: RealTimeDB
 ) {
-  const record: Record<T> = Record.create(modelConstructor);
+  const record = Record.create(modelConstructor);
   const config: IMockConfig<T> = { relationshipBehavior: "ignore" };
 
   const API = {
@@ -319,10 +336,11 @@ export function Mock<T extends Model>(
       const props = properties<T>(db, config, exceptions);
       const relns = addRelationships<T>(db, config, exceptions);
       const follow = followRelationships<T>(db, config, exceptions);
+      const audit = auditMocks(record);
       const records: T[] = [];
       for (let i = 0; i < count; i++) {
         const model = new modelConstructor();
-        records.push(follow(relns(props(model))));
+        records.push(audit(follow(relns(props(model)))));
       }
 
       db.mock.updateDB(dbOffset(record, arrayToHash(records)));

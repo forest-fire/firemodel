@@ -29,6 +29,5 @@ export class AuditBase<T extends Model = Model> {
     this._modelKlass = modelKlass;
     this._record = Record.create(modelKlass);
     this._db = options.db || FireModel.defaultDb;
-    this._query = new SerializedQuery(this.dbPath);
   }
 }

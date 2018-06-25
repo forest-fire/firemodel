@@ -1365,11 +1365,11 @@ abbrev@1:
   version "1.1.1"
   resolved "https://registry.yarnpkg.com/abbrev/-/abbrev-1.1.1.tgz#f8f2c887ad10bf67f634f005b6987fed3179aac8"
 
-abstracted-admin@^0.12.2:
-  version "0.12.2"
-  resolved "https://registry.yarnpkg.com/abstracted-admin/-/abstracted-admin-0.12.2.tgz#ea71a37a88a719a74c14884795f437c3da4525e6"
+abstracted-admin@^0.12.3:
+  version "0.12.3"
+  resolved "https://registry.yarnpkg.com/abstracted-admin/-/abstracted-admin-0.12.3.tgz#d51150ba84dae7d72958f921d905e2b51a7c5c0e"
   dependencies:
-    abstracted-firebase "^0.12.2"
+    abstracted-firebase "^0.12.4"
     common-types "^1.8.2"
     firebase-admin "^5.12.1"
     firebase-api-surface "^0.8.3"
@@ -1377,32 +1377,32 @@ abstracted-admin@^0.12.2:
     lodash.last "^3.0.0"
     moment "^2.22.0"
     serialized-query "^0.4.3"
-    typed-conversions "^0.8.3"
+    typed-conversions "^0.8.8"
 
-abstracted-client@^0.12.2:
-  version "0.12.2"
-  resolved "https://registry.yarnpkg.com/abstracted-client/-/abstracted-client-0.12.2.tgz#6bd9f2cef94d80025c4a5dd9c3b990ff440c0141"
+abstracted-client@^0.12.3:
+  version "0.12.3"
+  resolved "https://registry.yarnpkg.com/abstracted-client/-/abstracted-client-0.12.3.tgz#01dc55e5a539339981095b8353c80a6f91792601"
   dependencies:
-    abstracted-firebase "^0.12.2"
+    abstracted-firebase "^0.12.5"
     common-types "^1.8.2"
     events "^3.0.0"
-    firebase "^5.0.4"
+    firebase "^5.1.0"
     firebase-api-surface "^0.8.3"
     lodash.first "^3.0.0"
     lodash.last "^3.0.0"
     moment "^2.20.1"
-    serialized-query "^0.4.3"
-    typed-conversions "^0.8.3"
+    serialized-query "^0.4.4"
+    typed-conversions "^0.8.8"
 
-abstracted-firebase@^0.12.2, abstracted-firebase@^0.12.4:
-  version "0.12.4"
-  resolved "https://registry.yarnpkg.com/abstracted-firebase/-/abstracted-firebase-0.12.4.tgz#29a31d128f6f214fa544b41aa696dccb5722657c"
+abstracted-firebase@^0.12.4, abstracted-firebase@^0.12.5:
+  version "0.12.5"
+  resolved "https://registry.yarnpkg.com/abstracted-firebase/-/abstracted-firebase-0.12.5.tgz#1d55c939870d4b3cdf5ecdb8c10c09cb5869b6eb"
   dependencies:
     common-types "^1.8.2"
     firebase-api-surface "^0.8.3"
     lodash "^4.17.10"
-    serialized-query "^0.4.3"
-    typed-conversions "^0.8.3"
+    serialized-query "^0.4.4"
+    typed-conversions "^0.8.8"
     wait-in-parallel "^1.1.4"
 
 accepts@^1.2.2:
@@ -3424,7 +3424,7 @@ firebase-key@^2.0.1:
   version "2.0.1"
   resolved "https://registry.yarnpkg.com/firebase-key/-/firebase-key-2.0.1.tgz#5f1fe462c011c7f944f2f0f489c838dd1ed162ef"
 
-firebase@^5.0.4:
+firebase@^5.1.0:
   version "5.1.0"
   resolved "https://registry.yarnpkg.com/firebase/-/firebase-5.1.0.tgz#9f56f910ef4e5e605c0f3de910b2070d2a1c3b55"
   dependencies:
@@ -3437,9 +3437,9 @@ firebase@^5.0.4:
     "@firebase/polyfill" "0.3.3"
     "@firebase/storage" "0.2.3"
 
-firemock@^0.17.12:
-  version "0.17.12"
-  resolved "https://registry.yarnpkg.com/firemock/-/firemock-0.17.12.tgz#d41c2ac7b9541e90678998e91383d61abb00cc02"
+firemock@^0.18.0:
+  version "0.18.0"
+  resolved "https://registry.yarnpkg.com/firemock/-/firemock-0.18.0.tgz#22059e676e3c61ce46230865daf636cd0d45be4e"
   dependencies:
     chance "^1.0.16"
     common-types "^1.7.36"
@@ -3448,7 +3448,7 @@ firemock@^0.17.12:
     firebase-key "^2.0.1"
     lodash "^4.17.10"
     moment "^2.20.1"
-    typed-conversions "^0.8.3"
+    typed-conversions "^0.8.8"
 
 flatten@^1.0.2:
   version "1.0.2"
@@ -3956,16 +3956,16 @@ hogan.js@^3.0.2:
     nopt "1.0.10"
 
 hosted-git-info@^2.1.4:
-  version "2.6.0"
-  resolved "https://registry.yarnpkg.com/hosted-git-info/-/hosted-git-info-2.6.0.tgz#23235b29ab230c576aab0d4f13fc046b0b038222"
+  version "2.6.1"
+  resolved "https://registry.yarnpkg.com/hosted-git-info/-/hosted-git-info-2.6.1.tgz#6e4cee78b01bb849dcf93527708c69fdbee410df"
 
 html-comment-regex@^1.1.0:
   version "1.1.1"
   resolved "https://registry.yarnpkg.com/html-comment-regex/-/html-comment-regex-1.1.1.tgz#668b93776eaae55ebde8f3ad464b307a4963625e"
 
 html-minifier@^3.2.3:
-  version "3.5.16"
-  resolved "https://registry.yarnpkg.com/html-minifier/-/html-minifier-3.5.16.tgz#39f5aabaf78bdfc057fe67334226efd7f3851175"
+  version "3.5.17"
+  resolved "https://registry.yarnpkg.com/html-minifier/-/html-minifier-3.5.17.tgz#fe9834c4288e4d5b4dfe18fbc7f3f811c108e5ea"
   dependencies:
     camel-case "3.0.x"
     clean-css "4.1.x"
@@ -3973,7 +3973,7 @@ html-minifier@^3.2.3:
     he "1.1.x"
     param-case "2.1.x"
     relateurl "0.2.x"
-    uglify-js "3.3.x"
+    uglify-js "3.4.x"
 
 htmlparser2@~3.3.0:
   version "3.3.0"
@@ -5424,8 +5424,8 @@ node-libs-browser@^2.0.0:
     vm-browserify "0.0.4"
 
 node-pre-gyp@^0.10.0:
-  version "0.10.1"
-  resolved "https://registry.yarnpkg.com/node-pre-gyp/-/node-pre-gyp-0.10.1.tgz#d518883e27ebc43161bae86f18400dc2b86b7668"
+  version "0.10.2"
+  resolved "https://registry.yarnpkg.com/node-pre-gyp/-/node-pre-gyp-0.10.2.tgz#e8945c20ef6795a20aac2b44f036eb13cf5146e3"
   dependencies:
     detect-libc "^1.0.2"
     mkdirp "^0.5.1"
@@ -5433,7 +5433,7 @@ node-pre-gyp@^0.10.0:
     nopt "^4.0.1"
     npm-packlist "^1.1.6"
     npmlog "^4.0.2"
-    rc "^1.1.7"
+    rc "^1.2.7"
     rimraf "^2.6.1"
     semver "^5.3.0"
     tar "^4"
@@ -6270,8 +6270,8 @@ preserve@^0.2.0:
   resolved "https://registry.yarnpkg.com/preserve/-/preserve-0.2.0.tgz#815ed1f6ebc65926f865b310c0713bcb3315ce4b"
 
 prettier@^1.11.1, prettier@^1.13.0:
-  version "1.13.5"
-  resolved "https://registry.yarnpkg.com/prettier/-/prettier-1.13.5.tgz#7ae2076998c8edce79d63834e9b7b09fead6bfd0"
+  version "1.13.6"
+  resolved "https://registry.yarnpkg.com/prettier/-/prettier-1.13.6.tgz#00ae0b777ad92f81a9e7a1df2f0470b6dab0cb44"
 
 pretty-bytes@^4.0.2:
   version "4.0.2"
@@ -6445,7 +6445,7 @@ range-parser@^1.0.3:
   version "1.2.0"
   resolved "https://registry.yarnpkg.com/range-parser/-/range-parser-1.2.0.tgz#f49be6b487894ddc40dcc94a322f611092e00d5e"
 
-rc@^1.0.1, rc@^1.1.6, rc@^1.1.7:
+rc@^1.0.1, rc@^1.1.6, rc@^1.2.7:
   version "1.2.8"
   resolved "https://registry.yarnpkg.com/rc/-/rc-1.2.8.tgz#cd924bf5200a075b83c188cd6b9e211b7fc0d3ed"
   dependencies:
@@ -6786,8 +6786,8 @@ ripemd160@^2.0.0, ripemd160@^2.0.1:
     inherits "^2.0.1"
 
 rollup-plugin-typescript2@^0.15.0:
-  version "0.15.0"
-  resolved "https://registry.yarnpkg.com/rollup-plugin-typescript2/-/rollup-plugin-typescript2-0.15.0.tgz#33cf4ec8528f6fa5686cf1246f047acec4801d3a"
+  version "0.15.1"
+  resolved "https://registry.yarnpkg.com/rollup-plugin-typescript2/-/rollup-plugin-typescript2-0.15.1.tgz#7b35d0eaa6ad5a54a253ed158a565b99d8f15372"
   dependencies:
     fs-extra "^5.0.0"
     resolve "^1.7.1"
@@ -7553,9 +7553,9 @@ typed-conversions@^0.7.4:
   dependencies:
     common-types "^1.1.0"
 
-typed-conversions@^0.8.3:
-  version "0.8.3"
-  resolved "https://registry.yarnpkg.com/typed-conversions/-/typed-conversions-0.8.3.tgz#8b477cf03f383b2a08259a9f018fee0113a075bd"
+typed-conversions@^0.8.8, typed-conversions@^0.8.9:
+  version "0.8.9"
+  resolved "https://registry.yarnpkg.com/typed-conversions/-/typed-conversions-0.8.9.tgz#160b9f6aaf2228cc271461a41444279f6fde0a30"
   dependencies:
     common-types "^1.7.36"
     lodash.get "^4.4.2"
@@ -7579,9 +7579,9 @@ uglify-es@^3.3.4:
     commander "~2.13.0"
     source-map "~0.6.1"
 
-uglify-js@3.3.x:
-  version "3.3.28"
-  resolved "https://registry.yarnpkg.com/uglify-js/-/uglify-js-3.3.28.tgz#0efb9a13850e11303361c1051f64d2ec68d9be06"
+uglify-js@3.4.x:
+  version "3.4.2"
+  resolved "https://registry.yarnpkg.com/uglify-js/-/uglify-js-3.4.2.tgz#70511a390eb62423675ba63c374ba1abf045116c"
   dependencies:
     commander "~2.15.0"
     source-map "~0.6.1"
@@ -7600,8 +7600,8 @@ uglify-to-browserify@~1.0.0:
   resolved "https://registry.yarnpkg.com/uglify-to-browserify/-/uglify-to-browserify-1.0.2.tgz#6e0924d6bda6b5afe349e39a6d632850a0f882b7"
 
 uglifyjs-webpack-plugin@^1.2.4:
-  version "1.2.6"
-  resolved "https://registry.yarnpkg.com/uglifyjs-webpack-plugin/-/uglifyjs-webpack-plugin-1.2.6.tgz#f4bb44f02431e82b301d8d4624330a6a35729381"
+  version "1.2.7"
+  resolved "https://registry.yarnpkg.com/uglifyjs-webpack-plugin/-/uglifyjs-webpack-plugin-1.2.7.tgz#57638dd99c853a1ebfe9d97b42160a8a507f9d00"
   dependencies:
     cacache "^10.0.4"
     find-cache-dir "^1.0.0"
@@ -8049,8 +8049,8 @@ webpack-sources@^1.0.1, webpack-sources@^1.1.0:
     source-map "~0.6.1"
 
 webpack@^4.8.1:
-  version "4.12.0"
-  resolved "https://registry.yarnpkg.com/webpack/-/webpack-4.12.0.tgz#14758e035ae69747f68dd0edf3c5a572a82bdee9"
+  version "4.12.1"
+  resolved "https://registry.yarnpkg.com/webpack/-/webpack-4.12.1.tgz#9108078c67fdd72c2609cea22af87d7aed2acb08"
   dependencies:
     "@webassemblyjs/ast" "1.5.12"
     "@webassemblyjs/helper-module-context" "1.5.12"
