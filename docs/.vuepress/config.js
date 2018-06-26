@@ -3,9 +3,13 @@ module.exports = {
   description: "Modeling, Access, and Mocking for Firebase Projects",
   head: [
     ["meta", { name: "apple-mobile-web-app-capable", content: "yes" }],
+    ["meta", { name: "application-name", content: "FireModel" }],
     ["link", { rel: "icon", href: "icon/icon-225.png" }],
     ["link", { rel: "manifest", href: "manifest.json" }],
-
+    [
+      "link",
+      { rel: "apple-touch-icon-precomposed", href: "icon/icon-192.png" }
+    ],
     [
       "link",
       {
