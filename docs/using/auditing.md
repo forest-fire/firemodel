@@ -71,7 +71,7 @@ The audit logs which are being stored are kept in your database at the root path
 {
   auditing: {
     [ MODEL ]: {
-      logs: {
+      all: {
         [ PUSHKEY ]: IAuditLogItem
       },
       byId: {
