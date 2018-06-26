@@ -2,6 +2,7 @@ module.exports = {
   title: "FireModel",
   description: "Modeling, Access, and Mocking for Firebase Projects",
   head: [
+    ["meta", { name: "apple-mobile-web-app-capable", content: "yes" }],
     ["link", { rel: "icon", href: "icon/icon-192.png" }],
     ["link", { rel: "manifest", href: "manifest.json" }],
 
