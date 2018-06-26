@@ -1,7 +1,10 @@
 module.exports = {
   title: "FireModel",
   description: "Modeling, Access, and Mocking for Firebase Projects",
-  head: [["link", { rel: "icon", href: "icon/icon-32.png" }], ["link", { rel: "manifest", href="/manifest.json"}]],
+  head: [
+    ["link", { rel: "icon", href: "icon/icon-192.png" }],
+    ["link", { rel: "manifest", href="manifest.json"}]
+  ],
   serviceWorker: true,
   themeConfig: {
     editLinks: true,
