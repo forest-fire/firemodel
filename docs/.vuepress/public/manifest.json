@@ -1,6 +1,7 @@
 {
   "short_name": "FireModel",
-  "name": "FireModel",
+  "name": "FireModel for Firebase",
+  "description": "Modeling, Access, and Mocking for Firebase Projects",
   "icons": [
     {
       "src": "/icon/icon-48.png",
