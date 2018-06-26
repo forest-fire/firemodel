@@ -3,7 +3,7 @@ module.exports = {
   description: "Modeling, Access, and Mocking for Firebase Projects",
   head: [
     ["link", { rel: "icon", href: "icon/icon-192.png" }],
-    ["link", { rel: "manifest", href="manifest.json"}]
+    ["link", { rel: "manifest", href: "manifest.json" }]
   ],
   serviceWorker: true,
   themeConfig: {
