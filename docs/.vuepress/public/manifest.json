@@ -1,0 +1,25 @@
+{
+  "short_name": "FireModel",
+  "name": "FireModel",
+  "icons": [
+    {
+      "src": "/icon/icons-48.png",
+      "type": "image/png",
+      "sizes": "48x48"
+    },
+    {
+      "src": "/icon/icons-192.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "/icon/icons-512.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": "/?source=pwa",
+  "background_color": "#3367D6",
+  "display": "standalone",
+  "theme_color": "#3367D6"
+}
