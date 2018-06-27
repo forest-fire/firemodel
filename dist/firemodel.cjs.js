@@ -5,6 +5,7 @@ Object.defineProperty(exports, '__esModule', { value: true });
 require('reflect-metadata');
 var lodash = require('lodash');
 var serializedQuery = require('serialized-query');
+var waitInParallel = require('wait-in-parallel');
 var commonTypes = require('common-types');
 var firebaseKey = require('firebase-key');
 var abstractedFirebase = require('abstracted-firebase');
@@ -296,13 +297,42 @@ async function writeAudit(recordId, pluralName, action, changes, options = {}) {
     const db = options.db || FireModel.defaultDb;
     const timestamp = new Date().getTime();
     const writePath = pathJoin(FireModel.auditLogs, pluralName);
-    await db.push(writePath, {
-        createdAt: new Date().getTime(),
+    const p = new waitInParallel.Parallel();
+    const createdAt = new Date().getTime();
+    const auditId = firebaseKey.key();
+    p.add("audit-log-item", db.set(pathJoin(writePath, "all", auditId), {
+        createdAt,
         recordId,
         timestamp,
         action,
         changes
+    }));
+    const mps = db.multiPathSet(pathJoin(writePath, "byId", recordId));
+    mps.add({ path: pathJoin("all", auditId), value: createdAt });
+    changes.map(change => {
+        mps.add({
+            path: pathJoin("props", change.property, auditId),
+            value: createdAt
+        });
     });
+    p.add("byId", mps.execute());
+    await p.isDone();
+}
+
+function updateToAuditChanges(changed, prior) {
+    return Object.keys(changed).reduce((prev, curr) => {
+        const after = changed[curr];
+        const before = prior[curr];
+        const propertyAction = !before ? "added" : !after ? "removed" : "updated";
+        const payload = {
+            before,
+            after,
+            property: curr,
+            action: propertyAction
+        };
+        prev.push(payload);
+        return prev;
+    }, []);
 }
 
 class Record extends FireModel {
@@ -804,7 +834,7 @@ class Record extends FireModel {
                 prev.push(payload);
                 return prev;
             }, []);
-            writeAudit(this.id, this.pluralName, action, changes, { db: this.db });
+            writeAudit(this.id, this.pluralName, action, updateToAuditChanges(changed, priorValues), { db: this.db });
         }
         // if this path is being watched we should avoid
         // sending a duplicative event
@@ -913,6 +943,9 @@ function model(options) {
         // new constructor
         const f = function (...args) {
             const obj = Reflect.construct(original, args);
+            if (options.audit === undefined) {
+                options.audit = false;
+            }
             if (!(options.audit === true ||
                 options.audit === false ||
                 options.audit === "server")) {
@@ -1482,6 +1515,14 @@ function getRelationshipIds(instance, rel) {
         return instance[rel.property];
     }
 }
+function auditMocks(record) {
+    return (instance) => {
+        if (record.META.audit === true) {
+            writeAudit(instance.id, record.pluralName, "added", updateToAuditChanges(instance, {}));
+        }
+        return instance;
+    };
+}
 function Mock$$1(modelConstructor, db) {
     const record = Record.create(modelConstructor);
     const config = { relationshipBehavior: "ignore" };
@@ -1498,10 +1539,11 @@ function Mock$$1(modelConstructor, db) {
             const props = properties(db, config, exceptions);
             const relns = addRelationships(db, config, exceptions);
             const follow = followRelationships(db, config, exceptions);
+            const audit = auditMocks(record);
             const records = [];
             for (let i = 0; i < count; i++) {
                 const model$$1 = new modelConstructor();
-                records.push(follow(relns(props(model$$1))));
+                records.push(audit(follow(relns(props(model$$1)))));
             }
             db.mock.updateDB(dbOffset(record, typedConversions.arrayToHash(records)));
         },

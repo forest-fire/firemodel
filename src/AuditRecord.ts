@@ -19,14 +19,13 @@ export class AuditRecord<T extends Model> extends AuditBase {
 
   public async first(howMany: number, startAt?: string) {
     this._query = this._query.setPath(this.byId);
-    console.log(this.byId);
 
     this._query = this._query.orderByKey().limitToLast(howMany);
     if (startAt) {
       this._query = this._query.startAt(startAt);
     }
     const ids = (await this.db.getList(this._query)).map(i =>
-      pathJoin(this.auditLogs, i)
+      pathJoin(this.auditLogs, i.id)
     );
     const p = new Parallel<IAuditLogItem>();
     ids.map(id => p.add(id, this.db.getValue(id)));
@@ -43,7 +42,7 @@ export class AuditRecord<T extends Model> extends AuditBase {
       this._query = this._query.startAt(startAt);
     }
     const ids = (await this.db.getList(this._query)).map(i =>
-      pathJoin(this.auditLogs, i)
+      pathJoin(this.auditLogs, i.id)
     );
     const p = new Parallel<IAuditLogItem>();
     ids.map(id => p.add(id, this.db.getValue(id)));
@@ -61,15 +60,71 @@ export class AuditRecord<T extends Model> extends AuditBase {
       .orderByChild("value")
       .startAt(when);
     const qr = await this.db.getList(this._query);
-    console.log(qr);
 
     const ids = (await this.db.getList(this._query)).map(i =>
-      pathJoin(this.auditLogs, i)
+      pathJoin(this.auditLogs, i.id)
     );
-    console.log(when, this.db.mock.db.auditing.people.byId);
 
     const p = new Parallel<IAuditLogItem>();
-    ids.map(id => p.add(id, this.db.getValue(id)));
+
+    ids.map(id => {
+      p.add(id, this.db.getValue(id));
+    });
+    const results = await p.isDoneAsArray();
+    return results;
+  }
+
+  public async before(when: epochWithMilliseconds | string) {
+    if (typeof when === "string") {
+      when = new Date(when).getTime();
+    }
+
+    this._query = this._query
+      .setPath(this.byId)
+      .orderByChild("value")
+      .endAt(when);
+    const qr = await this.db.getList(this._query);
+
+    const ids = (await this.db.getList(this._query)).map(i =>
+      pathJoin(this.auditLogs, i.id)
+    );
+
+    const p = new Parallel<IAuditLogItem>();
+
+    ids.map(id => {
+      p.add(id, this.db.getValue(id));
+    });
+    const results = await p.isDoneAsArray();
+    return results;
+  }
+
+  public async between(
+    after: epochWithMilliseconds | string,
+    before: epochWithMilliseconds | string
+  ) {
+    if (typeof after === "string") {
+      after = new Date(after).getTime();
+    }
+    if (typeof before === "string") {
+      before = new Date(before).getTime();
+    }
+
+    this._query = this._query
+      .setPath(this.byId)
+      .orderByChild("value")
+      .startAt(after)
+      .endAt(before);
+    const qr = await this.db.getList(this._query);
+
+    const ids = (await this.db.getList(this._query)).map(i =>
+      pathJoin(this.auditLogs, i.id)
+    );
+
+    const p = new Parallel<IAuditLogItem>();
+
+    ids.map(id => {
+      p.add(id, this.db.getValue(id));
+    });
     const results = await p.isDoneAsArray();
     return results;
   }

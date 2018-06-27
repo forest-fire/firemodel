@@ -186,7 +186,7 @@ describe("Auditing →", () => {
       expect(auditLast[0].action).to.equal("removed");
     });
 
-    it.only("since() works", async () => {
+    it("since() works", async () => {
       Mock(Person, db).generate(10);
       const people = await List.all(Person);
       const firstPerson = await Record.get(Person, people.data[0].id);
@@ -198,17 +198,51 @@ describe("Auditing →", () => {
       await firstPerson.update({ age: 33 });
       await firstPerson.remove();
       const since = await Audit.record(Person, firstPerson.id).since(now);
-      console.log(since);
-
       expect(since).to.have.lengthOf(3);
+      const actions = since.map(i => i.action);
+      expect(actions.includes("updated")).to.equal(true);
+      expect(actions.includes("removed")).to.equal(true);
+      expect(actions.includes("added")).to.equal(false);
     });
 
     it("before() works", async () => {
-      throw new Error("not ready");
+      Mock(Person, db).generate(10);
+      const people = await List.all(Person);
+      const firstPerson = await Record.get(Person, people.data[0].id);
+      await firstPerson.update({ age: 11 });
+      await wait(25);
+      const now = new Date().getTime();
+      await wait(25);
+      await firstPerson.update({ age: 22 });
+      await firstPerson.update({ age: 33 });
+      await firstPerson.remove();
+      const before = await Audit.record(Person, firstPerson.id).before(now);
+      expect(before).to.have.lengthOf(2);
+      const actions = before.map(i => i.action);
+      expect(actions.includes("updated")).to.equal(true);
+      expect(actions.includes("removed")).to.equal(false);
+      expect(actions.includes("added")).to.equal(true);
     });
 
     it("between() works", async () => {
-      throw new Error("not ready");
+      Mock(Person, db).generate(10);
+      const people = await List.all(Person);
+      const firstPerson = await Record.get(Person, people.data[0].id);
+      await firstPerson.update({ age: 11 });
+      await wait(25);
+      const t1 = new Date().getTime();
+      await wait(25);
+      await firstPerson.update({ age: 22 });
+      await wait(25);
+      const t2 = new Date().getTime();
+      await wait(25);
+      await firstPerson.update({ age: 33 });
+      await firstPerson.remove();
+      const between = await Audit.record(Person, firstPerson.id).between(
+        t1,
+        t2
+      );
+      expect(between).to.have.lengthOf(1);
     });
   });
 });
