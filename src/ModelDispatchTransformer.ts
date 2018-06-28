@@ -1,6 +1,7 @@
 import { IReduxDispatch } from "./VuexWrapper";
-import { IDictionary } from "../node_modules/common-types/dist";
-import { IFirebaseWatchEvent } from "../node_modules/abstracted-firebase/dist";
+import { IDictionary } from "common-types";
+// tslint:disable-next-line:no-implicit-dependencies
+import { IFirebaseWatchEvent } from "abstracted-firebase";
 import { FMEvents } from "./state-mgmt";
 
 /**

@@ -1,0 +1,1 @@
+{"version":3,"file":"VuexWrapper.js","sourceRoot":"","sources":["../../src/VuexWrapper.ts"],"names":[],"mappings":";;AAQa,QAAA,WAAW,GAAG,CAAC,YAA2B,EAAE,EAAE,CAAC,CAC1D,WAAyB,EACzB,EAAE;IACF,MAAM,IAAI,GAAG,WAAW,CAAC,IAAI,CAAC;IAC9B,OAAO,WAAW,CAAC,IAAI,CAAC;IACxB,YAAY,CAAC,IAAI,EAAE,WAAW,CAAC,CAAC;AAClC,CAAC,CAAC"}

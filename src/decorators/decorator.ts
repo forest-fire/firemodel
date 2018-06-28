@@ -1,5 +1,5 @@
 import "reflect-metadata";
-import { Model, IModelPropertyMeta, IModelRelationshipMeta } from "..";
+import { Model, IModelPropertyMeta, IModelRelationshipMeta } from "../index";
 import { IDictionary } from "common-types";
 import { set, get } from "lodash";
 

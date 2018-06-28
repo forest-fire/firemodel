@@ -1,4 +1,4 @@
-import { IDictionary } from "../node_modules/common-types/dist";
+import { IDictionary } from "common-types";
 import { IAuditChange } from "./Audit";
 
 export function normalized(...args: string[]) {

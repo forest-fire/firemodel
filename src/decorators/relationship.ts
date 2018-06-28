@@ -2,7 +2,7 @@ import "reflect-metadata";
 import { propertyDecorator } from "./decorator";
 import { Record } from "../Record";
 import { getModelMeta, addModelMeta } from "../ModelMeta";
-import { IDictionary } from "../../node_modules/common-types/dist";
+import { IDictionary } from "common-types";
 
 export function hasMany(modelConstructor: new () => any) {
   const rec = Record.create(modelConstructor);

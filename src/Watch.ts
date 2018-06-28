@@ -1,19 +1,13 @@
-import { epochWithMilliseconds, pathJoin, IDictionary } from "common-types";
-import {
-  FMModelConstructor,
-  Model,
-  IComparisonOperator,
-  IModelOptions
-} from "./Model";
+import { epochWithMilliseconds, IDictionary } from "common-types";
+import { Model, IComparisonOperator, IModelOptions } from "./Model";
 import { SerializedQuery } from "serialized-query";
-import { IReduxAction, IReduxDispatch } from "./VuexWrapper";
+import { IReduxDispatch } from "./VuexWrapper";
 import { FireModel } from "./FireModel";
 import { Record } from "./Record";
-import { WSAENETUNREACH } from "constants";
-import { RealTimeDB } from "../node_modules/abstracted-admin/dist/esnext";
+// tslint:disable-next-line:no-implicit-dependencies
+import { RealTimeDB } from "abstracted-firebase";
 import { ModelDispatchTransformer } from "./ModelDispatchTransformer";
 import { List } from "./List";
-import { watch } from "fs";
 
 export type IWatchEventClassification = "child" | "value";
 export type IQuerySetter = (q: SerializedQuery) => void;
