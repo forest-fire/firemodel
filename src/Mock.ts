@@ -3,15 +3,20 @@ import { IDictionary } from "common-types";
 // tslint:disable-next-line:no-implicit-dependencies
 import { RealTimeDB } from "abstracted-firebase";
 import { Record } from "./Record";
-import { arrayToHash } from "typed-conversions";
+import {
+  arrayToHash,
+  hashToArray,
+  keyValueArrayToDictionary
+} from "typed-conversions";
 import { IModelPropertyMeta } from "./decorators/schema";
 import { fbKey } from "./index";
 import { set } from "lodash";
 import { MockHelper } from "firemock";
 import { pathJoin } from "./path";
-import { getModelMeta } from "./ModelMeta";
+import { getModelMeta, modelsWithMeta } from "./ModelMeta";
 import { writeAudit } from "./Audit";
 import { updateToAuditChanges } from "./util";
+import { Parallel } from "wait-in-parallel";
 
 export type ICardinalityConfig<T> = {
   [key in keyof T]: [number, number] | number | true
@@ -34,8 +39,11 @@ function defaultCardinality<T>(r: Record<T>) {
 function dbOffset<T extends Model>(record: Record<T>, payload: IDictionary<T>) {
   const output = {};
   const path = pathJoin(record.META.dbOffset || "", record.pluralName);
+  console.log(path);
 
   set(output, path.replace(/\//g, "."), payload);
+  console.log(output);
+
   return output;
 }
 
@@ -176,21 +184,24 @@ function mockValue<T extends Model>(
 }
 
 /** adds mock values for all the properties on a given model */
-function properties<T extends Model>(
+function mockProperties<T extends Model>(
   db: RealTimeDB,
   config: IMockConfig<T>,
   exceptions: IDictionary
 ) {
-  return (instance: T): T => {
-    const modelName = instance.constructor.name.toLowerCase();
+  return async (instance: Record<T>): Promise<Record<T>> => {
+    const meta = getModelMeta(instance.modelName);
+    const props = instance.META ? instance.META.properties : meta.properties;
 
-    const props = instance.META
-      ? instance.META.properties
-      : getModelMeta(modelName).properties;
-
+    const recProps: Partial<T> = {};
     props.map(prop => {
-      (instance as any)[prop.property] = mockValue<T>(db, prop);
+      const p = prop.property as keyof T;
+      recProps[p] = mockValue<T>(db, prop);
     });
+    const finalized: T = { ...(recProps as any), ...exceptions };
+
+    instance = await instance.addAnother(finalized);
+
     return instance;
   };
 }
@@ -206,32 +217,54 @@ function addRelationships<T extends Model>(
   config: IMockConfig<T>,
   exceptions: IDictionary
 ) {
-  return (instance: T): T => {
-    const relns = instance.META.relationships;
+  return async (instance: Record<T>): Promise<Record<T>> => {
+    const meta = getModelMeta(instance.modelName);
+    const relns =
+      meta && meta.relationships
+        ? meta.relationships
+        : instance.META.relationships;
+    const p = new Parallel();
     if (!relns || config.relationshipBehavior === "ignore") {
       return instance;
     }
+    const follow = config.relationshipBehavior === "follow";
     relns.map(rel => {
       if (
         !config.cardinality ||
         Object.keys(config.cardinality).includes(rel.property)
       ) {
         if (rel.relType === "ownedBy") {
-          (instance as any)[rel.property] = fbKey();
+          const id = fbKey();
+          const prop: Extract<keyof T, string> = rel.property as any;
+          p.add(
+            `ownedBy-${id}`,
+            follow
+              ? instance.setRelationship(prop, id)
+              : db.set(pathJoin(instance.dbPath, prop), id)
+          );
         } else {
           const cardinality = config.cardinality
             ? typeof config.cardinality[rel.property] === "number"
               ? config.cardinality[rel.property]
               : NumberBetween(config.cardinality[rel.property] as any)
             : 2;
-
-          (instance as any)[rel.property] = [];
           for (let i = 0; i < cardinality; i++) {
-            (instance as any)[rel.property].push(fbKey());
+            const id = fbKey();
+            const prop: Extract<keyof T, string> = rel.property as any;
+            p.add(
+              `hasMany-${id}`,
+              follow
+                ? instance.addToRelationship(prop, id)
+                : db.set(pathJoin(instance.dbPath, prop, id), true)
+            );
           }
         }
       }
     });
+
+    await p.isDone();
+    instance = await instance.reload();
+
     return instance;
   };
 }
@@ -242,63 +275,32 @@ function followRelationships<T extends Model>(
   config: IMockConfig<T>,
   exceptions: IDictionary
 ) {
-  return (instance: T): T => {
+  return async (instance: Record<T>): Promise<Record<T>> => {
+    const p = new Parallel();
+
     const relns = instance.META
       ? instance.META.relationships
-      : getModelMeta(instance.constructor.name.toLowerCase()).relationships;
+      : getModelMeta(instance.modelName).relationships;
     if (!relns || config.relationshipBehavior !== "follow") {
       return instance;
     }
 
-    // first add the FK's into instance
-    instance = addRelationships(db, config, exceptions)(instance);
-    // then iterate through the relationships
-    relns.map(rel => {
-      const fkConstructor = rel.fkConstructor;
-      let foreignModel = new fkConstructor();
-      const fkMeta: IModelPropertyMeta =
-        getModelMeta(rel.fkModelName) || foreignModel.META;
-      foreignModel = { ...foreignModel, ...{ META: fkMeta } };
-
-      const fks = getRelationshipIds<T>(instance, rel as any);
+    const hasMany = relns.filter(i => i.relType === "hasMany");
+    const ownedBy = relns.filter(i => i.relType === "ownedBy");
+    hasMany.map(r => {
+      const fks = Object.keys(instance.get(r.property as any));
       fks.map(fk => {
-        // Mock the foreign model
-        foreignModel = properties(db, { relationshipBehavior: "link" }, {})(
-          foreignModel
-        );
-        // Associate the foreign model to the instance's FK
-        foreignModel.id = fk;
-
-        // Follow up with the inverse, only if inverse's model is self-reflexive
-        if (
-          rel.inverseProperty &&
-          fkMeta.relationship(rel.inverseProperty).fkModelName ===
-            instance.constructor.name.toLowerCase()
-        ) {
-          const inverseType = fkMeta.relationship(rel.inverseProperty).relType;
-
-          if (inverseType === "hasMany") {
-            //
-          }
-        }
-
-        Record.add(fkConstructor, foreignModel);
+        p.add(fk, Mock(r.fkConstructor, db).generate(1, { id: fk }));
       });
     });
+    ownedBy.map(r => {
+      const fk: any = instance.get(r.property as any);
+      p.add(fk, Mock(r.fkConstructor, db).generate(1, { id: fk }));
+    });
 
+    await p.isDone();
     return instance;
   };
-}
-
-function getRelationshipIds<T>(
-  instance: T,
-  rel: IModelPropertyMeta<T>
-): string[] {
-  if (rel.relType === "ownedBy") {
-    return [instance[rel.property]] as any;
-  } else {
-    return instance[rel.property] as any;
-  }
 }
 
 function auditMocks<T extends Model>(record: Record<T>) {
@@ -332,18 +334,17 @@ export function Mock<T extends Model>(
      * @param count how many instances of the given Model do you want?
      * @param exceptions do you want to fix a given set of properties to a static value?
      */
-    generate(count: number, exceptions?: IDictionary) {
-      const props = properties<T>(db, config, exceptions);
+    async generate(count: number, exceptions?: IDictionary) {
+      const props = mockProperties<T>(db, config, exceptions);
       const relns = addRelationships<T>(db, config, exceptions);
       const follow = followRelationships<T>(db, config, exceptions);
-      const audit = auditMocks(record);
-      const records: T[] = [];
+      const p = new Parallel();
       for (let i = 0; i < count; i++) {
-        const model = new modelConstructor();
-        records.push(audit(follow(relns(props(model)))));
+        const rec = Record.create(modelConstructor);
+        p.add(`record-${i}`, follow(await relns(await props(rec))));
       }
 
-      db.mock.updateDB(dbOffset(record, arrayToHash(records)));
+      await p.isDone();
     },
     /**
      * createRelationshipLinks
@@ -358,6 +359,7 @@ export function Mock<T extends Model>(
       config.relationshipBehavior = "link";
       return API;
     },
+
     /**
      * followRelationshipLinks
      *

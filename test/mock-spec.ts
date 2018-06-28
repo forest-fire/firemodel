@@ -6,6 +6,8 @@ import { Mock } from "../src/Mock";
 import { FancyPerson } from "./testing/FancyPerson";
 import { Car } from "./testing/Car";
 import { Company } from "./testing/company";
+import * as helpers from "./testing/helpers";
+import { Record } from "../src/record";
 const expect = chai.expect;
 
 @model({})
@@ -23,8 +25,9 @@ describe("Mocking:", () => {
     List.defaultDb = db;
   });
   it("the auto-mock works for named properties", async () => {
-    Mock(SimplePerson, db).generate(10);
+    await Mock(SimplePerson, db).generate(10);
     const people = await List.all(SimplePerson);
+    console.log(db.mock.db);
 
     expect(people).to.have.lengthOf(10);
     people.map(person => {
@@ -36,7 +39,7 @@ describe("Mocking:", () => {
   });
 
   it("giving a @mock named hint corrects the typing of a named prop", async () => {
-    Mock(FancyPerson, db).generate(10);
+    await Mock(FancyPerson, db).generate(10);
     const people = await List.all(FancyPerson);
     expect(people).to.have.lengthOf(10);
     people.map(person => {
@@ -46,7 +49,7 @@ describe("Mocking:", () => {
   });
 
   it("passing in a function to @mock produces expected results", async () => {
-    Mock(FancyPerson, db).generate(10);
+    await Mock(FancyPerson, db).generate(10);
     const people = await List.all(FancyPerson);
     expect(people).to.have.lengthOf(10);
     people.map(person => {
@@ -56,58 +59,50 @@ describe("Mocking:", () => {
   });
 
   it("using createRelationshipLinks() sets fake links to all relns", async () => {
-    Mock(FancyPerson, db)
+    const numberOfFolks = 1;
+    await Mock(FancyPerson, db)
       .createRelationshipLinks()
-      .generate(10);
+      .generate(numberOfFolks);
+
     const people = await List.all(FancyPerson);
-    expect(people).to.have.lengthOf(10);
+    expect(people).to.have.lengthOf(numberOfFolks);
     people.map(person => {
       expect(person.employer).to.be.a("string");
-      expect(person.cars)
-        .to.be.an("array")
-        .and.to.be.length(2);
+      expect(person.cars).to.be.an("object");
     });
   });
 
   it("using followRelationshipLinks() sets links and adds those models", async () => {
-    Mock(FancyPerson, db)
+    const numberOfFolks = 10;
+    await Mock(FancyPerson, db)
       .followRelationshipLinks()
-      .generate(10);
-    const people = await List.all(FancyPerson);
-    const company = await List.all(Company);
-    const cars = await List.all(Car);
+      .generate(numberOfFolks);
 
-    expect(people).to.have.lengthOf(10);
-    expect(cars.length).to.equal(20);
-    expect(company.length).to.equal(10);
-    people.map(person => {
-      expect(person.employer).to.be.a("string");
-      expect(company.findById(person.employer)).to.be.an("object");
-      expect(company.findById(person.employer).data.employees)
-        .to.be.a("number")
-        .and.be.greaterThan(0);
-      expect(person.cars)
-        .to.be.an("array")
-        .and.to.be.length(2);
-      expect(cars.findById(person.cars[0])).to.be.an("object");
-      expect(cars.findById(person.cars[1])).to.be.an("object");
-      expect(cars.findById(person.cars[0]).data.model).to.be.a("string");
-      expect(cars.findById(person.cars[1]).data.modelYear).to.be.a("number");
-    });
+    const people = await List.all(FancyPerson);
+    const cars = await List.all(Car);
+    const company = await List.all(Company);
+
+    expect(cars.length).to.equal(numberOfFolks * 2);
+    expect(company.length).to.equal(numberOfFolks);
+    expect(people).to.have.lengthOf(numberOfFolks * 5);
+
+    const carIds = cars.map(car => car.id);
+    carIds.map(id => people.findWhere("cars", id));
+
+    const companyIds = company.map(c => c.id);
+    companyIds.map(id => people.findWhere("employer", id));
   });
 
   it("using a specific config for createRelationshipLinks works as expected", async () => {
-    Mock(FancyPerson, db)
+    const numberOfFolks = 25;
+    await Mock(FancyPerson, db)
       .followRelationshipLinks({
         cars: [3, 5]
       })
-      .generate(25);
+      .generate(numberOfFolks);
     const people = await List.all(FancyPerson);
+    console.log(JSON.stringify(db.mock.db, null, 2));
 
-    people.map(person => {
-      expect(person.cars.length)
-        .to.be.greaterThan(2)
-        .and.lessThan(6);
-    });
+    expect(people).to.have.lengthOf(numberOfFolks);
   });
 });

@@ -171,7 +171,9 @@ describe("Auditing →", () => {
     });
 
     it("first() and last() works", async () => {
-      Mock(Person, db).generate(10);
+      await Mock(Person, db)
+        .followRelationshipLinks()
+        .generate(10);
       const people = await List.all(Person);
       const firstPerson = await Record.get(Person, people.data[0].id);
       await firstPerson.update({ age: 11 });
@@ -182,12 +184,14 @@ describe("Auditing →", () => {
       const auditFirst = await Audit.record(Person, firstPerson.id).first(1);
       const auditLast = await Audit.record(Person, firstPerson.id).last(1);
       expect(auditFirst).to.have.lengthOf(1);
+      console.log(auditFirst);
+
       expect(auditFirst[0].action).to.equal("added");
       expect(auditLast[0].action).to.equal("removed");
     });
 
     it("since() works", async () => {
-      Mock(Person, db).generate(10);
+      await Mock(Person, db).generate(10);
       const people = await List.all(Person);
       const firstPerson = await Record.get(Person, people.data[0].id);
       await firstPerson.update({ age: 11 });
@@ -206,7 +210,7 @@ describe("Auditing →", () => {
     });
 
     it("before() works", async () => {
-      Mock(Person, db).generate(10);
+      await Mock(Person, db).generate(10);
       const people = await List.all(Person);
       const firstPerson = await Record.get(Person, people.data[0].id);
       await firstPerson.update({ age: 11 });
@@ -225,7 +229,7 @@ describe("Auditing →", () => {
     });
 
     it("between() works", async () => {
-      Mock(Person, db).generate(10);
+      await Mock(Person, db).generate(10);
       const people = await List.all(Person);
       const firstPerson = await Record.get(Person, people.data[0].id);
       await firstPerson.update({ age: 11 });

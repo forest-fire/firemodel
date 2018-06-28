@@ -266,7 +266,10 @@ export class List<T extends Model> extends FireModel<T> {
     value: T[typeof prop],
     defaultIfNotFound = DEFAULT_IF_NOT_FOUND
   ): Record<T> {
-    const list = this.filterWhere(prop, value);
+    const list =
+      this.META.property(prop).relType !== "hasMany"
+        ? this.filterWhere(prop, value)
+        : this.filter(i => Object.keys(i[prop]).includes(value as any));
 
     if (list.length > 0) {
       return Record.createWith(this._modelConstructor, list._data[0]);

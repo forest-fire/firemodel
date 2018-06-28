@@ -7,9 +7,8 @@ import { FireModel, IMultiPathUpdates } from "./FireModel";
 import { IReduxDispatch } from "./VuexWrapper";
 import { FMEvents, IFMEventName } from "./state-mgmt/index";
 import { pathJoin } from "./path";
-import { getModelMeta } from "./ModelMeta";
+import { getModelMeta, modelsWithMeta } from "./ModelMeta";
 import { writeAudit, IAuditChange, IAuditOperations } from "./Audit";
-import { POINT_CONVERSION_COMPRESSED } from "constants";
 import { updateToAuditChanges } from "./util";
 
 export interface IWriteOperation {
@@ -156,6 +155,29 @@ export class Record<T extends Model> extends FireModel<T> {
     this._data = new model();
   }
 
+  /**
+   * Goes out to the database and reloads this record
+   */
+  public async reload() {
+    const reloaded = await Record.get(this._modelConstructor, this.id);
+    return reloaded;
+  }
+
+  /**
+   * addAnother
+   *
+   * Allows a simple way to add another record to the database
+   * without needing the model's constructor fuction. Note, that
+   * the payload of the existing record is ignored in the creation
+   * of the new.
+   *
+   * @param payload the payload of the new record
+   */
+  public async addAnother(payload: T) {
+    const newRecord = await Record.add(this._modelConstructor, payload);
+    return newRecord;
+  }
+
   public get data() {
     return this._data as Readonly<T>;
   }
@@ -186,7 +208,14 @@ export class Record<T extends Model> extends FireModel<T> {
         `Invalid Record Path: you can not ask for the dbPath before setting an "id" property.`
       );
     }
-    return [this.data.META.dbOffset, this.pluralName, this.data.id].join("/");
+    const coreMeta = this.data.META;
+    const meta = getModelMeta(this.modelName);
+
+    return [
+      coreMeta.dbOffset || meta.dbOffset,
+      this.pluralName,
+      this.data.id
+    ].join("/");
   }
 
   /** The Record's primary key */
@@ -242,6 +271,7 @@ export class Record<T extends Model> extends FireModel<T> {
     Object.keys(data).map(key => {
       this._data[key as keyof T] = data[key as keyof T];
     });
+
     const relationships = this.META
       ? this.META.relationships
       : getModelMeta(this._modelConstructor.constructor.name.toLowerCase())

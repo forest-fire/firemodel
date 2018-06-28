@@ -2,7 +2,7 @@ import "reflect-metadata";
 import { IDictionary, ClassDecorator } from "common-types";
 import { getRelationships, getProperties, getPushKeys } from "./decorator";
 import { Model } from "../Model";
-import { addModelMeta } from "../ModelMeta";
+import { addModelMeta, modelsWithMeta, getModelMeta } from "../ModelMeta";
 /* tslint:disable:only-arrow-functions */
 
 export type ISchemaRelationshipType = "hasMany" | "ownedBy";

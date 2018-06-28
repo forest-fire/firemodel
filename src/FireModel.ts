@@ -14,6 +14,7 @@ import {
   IFMEventName
 } from "./state-mgmt";
 import { IReduxDispatch } from "./VuexWrapper";
+import { getModelMeta } from "./ModelMeta";
 // tslint:disable-next-line:no-var-requires
 const pluralize = require("pluralize");
 const defaultDispatch = (context: IDictionary) => "";
@@ -84,7 +85,10 @@ export class FireModel<T extends Model> {
   }
 
   public get META(): IModelMetaProperties<T> {
-    return (this._model as Model).META;
+    const coreMeta = (this._model as Model).META;
+    const storedMeta = getModelMeta(this.modelName);
+
+    return { ...storedMeta, ...coreMeta };
   }
 
   public get properties() {
