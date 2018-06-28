@@ -1,6 +1,6 @@
 {
   "name": "firemodel",
-  "version": "0.13.53",
+  "version": "0.14.0",
   "description": "Modeling, Access, and Mocking for Firebase Projects",
   "license": "MIT",
   "repository": "https://github.com/forest-fire/firemodel",
@@ -58,7 +58,7 @@
     "@types/stack-trace": "^0.0.28",
     "abstracted-admin": "^0.12.3",
     "abstracted-client": "^0.12.3",
-    "abstracted-firebase": "^0.12.5",
+    "abstracted-firebase": "^0.12.9",
     "async-shelljs": "^0.1.2",
     "chai": "^4.1.2",
     "chalk": "^2.4.1",

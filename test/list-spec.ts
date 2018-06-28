@@ -160,8 +160,6 @@ describe("List class: ", () => {
     db.mock.queueSchema("person", 30).generate();
     const firstPersonId = helpers.firstKey(db.mock.db.authenticated.people);
     const list = await List.all(Person);
-    console.log(list.data);
-
     const record = list.findById(firstPersonId);
     expect(record).to.be.an("object");
     expect(record).to.be.an.instanceOf(Record);

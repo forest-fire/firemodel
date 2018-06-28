@@ -9,7 +9,6 @@ var waitInParallel = require('wait-in-parallel');
 var commonTypes = require('common-types');
 var firebaseKey = require('firebase-key');
 var abstractedFirebase = require('abstracted-firebase');
-var typedConversions = require('typed-conversions');
 
 function push(target, path, value) {
     if (Array.isArray(lodash.get(target, path))) {
@@ -101,6 +100,14 @@ const pushKey = propertyDecorator({
     pushKey: true
 }, "property");
 
+const meta = {};
+function addModelMeta(modelName, props) {
+    meta[modelName] = props;
+}
+function getModelMeta(modelName) {
+    return meta[modelName] || {};
+}
+
 // tslint:disable-next-line:no-var-requires
 const pluralize = require("pluralize");
 const defaultDispatch = (context) => "";
@@ -144,7 +151,9 @@ class FireModel {
         return "dbPath was not overwritten!";
     }
     get META() {
-        return this._model.META;
+        const coreMeta = this._model.META;
+        const storedMeta = getModelMeta(this.modelName);
+        return Object.assign({}, storedMeta, coreMeta);
     }
     get properties() {
         return this._model.META.properties;
@@ -285,14 +294,6 @@ function joinStringsWithSlash(str1, str2) {
     return res;
 }
 
-const meta = {};
-function addModelMeta(modelName, props) {
-    meta[modelName] = props;
-}
-function getModelMeta(modelName) {
-    return meta[modelName] || {};
-}
-
 async function writeAudit(recordId, pluralName, action, changes, options = {}) {
     const db = options.db || FireModel.defaultDb;
     const timestamp = new Date().getTime();
@@ -390,7 +391,7 @@ class Record extends FireModel {
         try {
             r = Record.create(model, options);
             r._initialize(payload);
-            await r._save();
+            await r._adding();
         }
         catch (e) {
             const err = new Error(`Problem adding new Record: ${e.message}`);
@@ -426,6 +427,27 @@ class Record extends FireModel {
         await record.remove();
         return record;
     }
+    /**
+     * Goes out to the database and reloads this record
+     */
+    async reload() {
+        const reloaded = await Record.get(this._modelConstructor, this.id);
+        return reloaded;
+    }
+    /**
+     * addAnother
+     *
+     * Allows a simple way to add another record to the database
+     * without needing the model's constructor fuction. Note, that
+     * the payload of the existing record is ignored in the creation
+     * of the new.
+     *
+     * @param payload the payload of the new record
+     */
+    async addAnother(payload) {
+        const newRecord = await Record.add(this._modelConstructor, payload);
+        return newRecord;
+    }
     get data() {
         return this._data;
     }
@@ -450,7 +472,13 @@ class Record extends FireModel {
         if (!this.data.id) {
             throw commonTypes.createError("record/invalid-path", `Invalid Record Path: you can not ask for the dbPath before setting an "id" property.`);
         }
-        return [this.data.META.dbOffset, this.pluralName, this.data.id].join("/");
+        const coreMeta = this.data.META;
+        const meta = getModelMeta(this.modelName);
+        return [
+            coreMeta.dbOffset || meta.dbOffset,
+            this.pluralName,
+            this.data.id
+        ].join("/");
     }
     /** The Record's primary key */
     get id() {
@@ -861,12 +889,12 @@ class Record extends FireModel {
         }
         return this;
     }
-    async _save() {
+    async _adding() {
         if (!this.id) {
             this.id = firebaseKey.key();
-            if (this.META.audit === true) {
-                this._writeAudit("added", []);
-            }
+        }
+        if (this.META.audit === true) {
+            this._writeAudit("added", []);
         }
         const now = new Date().getTime();
         if (!this.get("createdAt")) {
@@ -1210,7 +1238,9 @@ class List extends FireModel {
      * it is stated
      */
     findWhere(prop, value, defaultIfNotFound = DEFAULT_IF_NOT_FOUND) {
-        const list = this.filterWhere(prop, value);
+        const list = this.META.property(prop).relType !== "hasMany"
+            ? this.filterWhere(prop, value)
+            : this.filter(i => Object.keys(i[prop]).includes(value));
         if (list.length > 0) {
             return Record.createWith(this._modelConstructor, list._data[0]);
         }
@@ -1300,12 +1330,6 @@ class List extends FireModel {
 }
 
 // tslint:disable-next-line:no-implicit-dependencies
-function dbOffset(record, payload) {
-    const output = {};
-    const path = pathJoin(record.META.dbOffset || "", record.pluralName);
-    lodash.set(output, path.replace(/\//g, "."), payload);
-    return output;
-}
 function fakeIt(helper, type) {
     switch (type) {
         case "id":
@@ -1429,15 +1453,17 @@ function mockValue(db, propMeta) {
     }
 }
 /** adds mock values for all the properties on a given model */
-function properties(db, config, exceptions) {
-    return (instance) => {
-        const modelName = instance.constructor.name.toLowerCase();
-        const props = instance.META
-            ? instance.META.properties
-            : getModelMeta(modelName).properties;
+function mockProperties(db, config, exceptions) {
+    return async (instance) => {
+        const meta = getModelMeta(instance.modelName);
+        const props = instance.META ? instance.META.properties : meta.properties;
+        const recProps = {};
         props.map(prop => {
-            instance[prop.property] = mockValue(db, prop);
+            const p = prop.property;
+            recProps[p] = mockValue(db, prop);
         });
+        const finalized = Object.assign({}, recProps, exceptions);
+        instance = await instance.addAnother(finalized);
         return instance;
     };
 }
@@ -1445,16 +1471,25 @@ function NumberBetween(startEnd) {
     return (Math.floor(Math.random() * (startEnd[1] - startEnd[0] + 1)) + startEnd[0]);
 }
 function addRelationships(db, config, exceptions) {
-    return (instance) => {
-        const relns = instance.META.relationships;
+    return async (instance) => {
+        const meta = getModelMeta(instance.modelName);
+        const relns = meta && meta.relationships
+            ? meta.relationships
+            : instance.META.relationships;
+        const p = new waitInParallel.Parallel();
         if (!relns || config.relationshipBehavior === "ignore") {
             return instance;
         }
+        const follow = config.relationshipBehavior === "follow";
         relns.map(rel => {
             if (!config.cardinality ||
                 Object.keys(config.cardinality).includes(rel.property)) {
                 if (rel.relType === "ownedBy") {
-                    instance[rel.property] = firebaseKey.key();
+                    const id = firebaseKey.key();
+                    const prop = rel.property;
+                    p.add(`ownedBy-${id}`, follow
+                        ? instance.setRelationship(prop, id)
+                        : db.set(pathJoin(instance.dbPath, prop), id));
                 }
                 else {
                     const cardinality = config.cardinality
@@ -1462,64 +1497,44 @@ function addRelationships(db, config, exceptions) {
                             ? config.cardinality[rel.property]
                             : NumberBetween(config.cardinality[rel.property])
                         : 2;
-                    instance[rel.property] = [];
                     for (let i = 0; i < cardinality; i++) {
-                        instance[rel.property].push(firebaseKey.key());
+                        const id = firebaseKey.key();
+                        const prop = rel.property;
+                        p.add(`hasMany-${id}`, follow
+                            ? instance.addToRelationship(prop, id)
+                            : db.set(pathJoin(instance.dbPath, prop, id), true));
                     }
                 }
             }
         });
+        await p.isDone();
+        instance = await instance.reload();
         return instance;
     };
 }
 /** adds models to mock DB which were pointed to by original model's FKs */
 function followRelationships(db, config, exceptions) {
-    return (instance) => {
+    return async (instance) => {
+        const p = new waitInParallel.Parallel();
         const relns = instance.META
             ? instance.META.relationships
-            : getModelMeta(instance.constructor.name.toLowerCase()).relationships;
+            : getModelMeta(instance.modelName).relationships;
         if (!relns || config.relationshipBehavior !== "follow") {
             return instance;
         }
-        // first add the FK's into instance
-        instance = addRelationships(db, config, exceptions)(instance);
-        // then iterate through the relationships
-        relns.map(rel => {
-            const fkConstructor = rel.fkConstructor;
-            let foreignModel = new fkConstructor();
-            const fkMeta = getModelMeta(rel.fkModelName) || foreignModel.META;
-            foreignModel = Object.assign({}, foreignModel, { META: fkMeta });
-            const fks = getRelationshipIds(instance, rel);
+        const hasMany$$1 = relns.filter(i => i.relType === "hasMany");
+        const ownedBy$$1 = relns.filter(i => i.relType === "ownedBy");
+        hasMany$$1.map(r => {
+            const fks = Object.keys(instance.get(r.property));
             fks.map(fk => {
-                // Mock the foreign model
-                foreignModel = properties(db, { relationshipBehavior: "link" }, {})(foreignModel);
-                // Associate the foreign model to the instance's FK
-                foreignModel.id = fk;
-                // Follow up with the inverse, only if inverse's model is self-reflexive
-                if (rel.inverseProperty &&
-                    fkMeta.relationship(rel.inverseProperty).fkModelName ===
-                        instance.constructor.name.toLowerCase()) {
-                    const inverseType = fkMeta.relationship(rel.inverseProperty).relType;
-                }
-                Record.add(fkConstructor, foreignModel);
+                p.add(fk, Mock$$1(r.fkConstructor, db).generate(1, { id: fk }));
             });
         });
-        return instance;
-    };
-}
-function getRelationshipIds(instance, rel) {
-    if (rel.relType === "ownedBy") {
-        return [instance[rel.property]];
-    }
-    else {
-        return instance[rel.property];
-    }
-}
-function auditMocks(record) {
-    return (instance) => {
-        if (record.META.audit === true) {
-            writeAudit(instance.id, record.pluralName, "added", updateToAuditChanges(instance, {}));
-        }
+        ownedBy$$1.map(r => {
+            const fk = instance.get(r.property);
+            p.add(fk, Mock$$1(r.fkConstructor, db).generate(1, { id: fk }));
+        });
+        await p.isDone();
         return instance;
     };
 }
@@ -1535,17 +1550,16 @@ function Mock$$1(modelConstructor, db) {
          * @param count how many instances of the given Model do you want?
          * @param exceptions do you want to fix a given set of properties to a static value?
          */
-        generate(count, exceptions) {
-            const props = properties(db, config, exceptions);
+        async generate(count, exceptions) {
+            const props = mockProperties(db, config, exceptions);
             const relns = addRelationships(db, config, exceptions);
             const follow = followRelationships(db, config, exceptions);
-            const audit = auditMocks(record);
-            const records = [];
+            const p = new waitInParallel.Parallel();
             for (let i = 0; i < count; i++) {
-                const model$$1 = new modelConstructor();
-                records.push(audit(follow(relns(props(model$$1)))));
+                const rec = Record.create(modelConstructor);
+                p.add(`record-${i}`, follow(await relns(await props(rec))));
             }
-            db.mock.updateDB(dbOffset(record, typedConversions.arrayToHash(records)));
+            await p.isDone();
         },
         /**
          * createRelationshipLinks

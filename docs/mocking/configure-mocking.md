@@ -8,7 +8,7 @@ import { DB } from "abstracted-admin";
 import { Person } from "./models/Person";
 const db = new DB({ mocking: true });
 
-Mock(Person, db)
+await Mock(Person, db)
   .generate(10)
   .generate(1, { age: 12 });
 ```

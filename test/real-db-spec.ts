@@ -25,14 +25,6 @@ describe("Tests using REAL db →", () => {
         age: 65
       });
       const since = List.since(Person, timestamp);
-      // const age = List.where(Person, "age", [">", 70]);
-      // console.log(age);
-
-      // const since = await db
-      //   .ref("/authenticated/people")
-      //   .startAt(timestamp)
-      //   .once("value");
-      // console.log(`timestamp ${timestamp}: `, since.val());
 
       // cleanup
       await db.remove("/authenticated");

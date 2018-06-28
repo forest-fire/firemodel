@@ -38,11 +38,12 @@ function defaultCardinality<T>(r: Record<T>) {
 
 function dbOffset<T extends Model>(record: Record<T>, payload: IDictionary<T>) {
   const output = {};
-  const path = pathJoin(record.META.dbOffset || "", record.pluralName);
-  console.log(path);
-
+  const meta = getModelMeta(record.modelName);
+  const path = pathJoin(
+    record.META.dbOffset || meta.dbOffset || "",
+    record.pluralName
+  );
   set(output, path.replace(/\//g, "."), payload);
-  console.log(output);
 
   return output;
 }

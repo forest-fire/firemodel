@@ -82,7 +82,7 @@ export class Record<T extends Model> extends FireModel<T> {
     try {
       r = Record.create(model, options);
       r._initialize(payload);
-      await r._save();
+      await r._adding();
     } catch (e) {
       const err = new Error(`Problem adding new Record: ${e.message}`);
       err.name = e.name !== "Error" ? e.name : "FireModel";
@@ -856,12 +856,12 @@ export class Record<T extends Model> extends FireModel<T> {
     return this;
   }
 
-  private async _save() {
+  private async _adding() {
     if (!this.id) {
       this.id = fbKey();
-      if (this.META.audit === true) {
-        this._writeAudit("added", []);
-      }
+    }
+    if (this.META.audit === true) {
+      this._writeAudit("added", []);
     }
     const now = new Date().getTime();
     if (!this.get("createdAt")) {

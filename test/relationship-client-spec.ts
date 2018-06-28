@@ -150,7 +150,6 @@ describe("Relationship > ", () => {
     await bob.setRelationship("employer", "e8899");
     expect(bob.get("employer")).to.equal("e8899");
     await bob.clearRelationship("employer");
-    console.log(bob.data);
 
     expect(bob.get("employer")).to.equal("e8899");
   });

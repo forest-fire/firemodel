@@ -1,5 +1,5 @@
 Arguments: 
-  /usr/local/bin/node /usr/local/bin/yarn run link abstracted-firebase
+  /usr/local/bin/node /usr/local/bin/yarn run build
 
 PATH: 
   /usr/local/bin:/Users/ken/.yarn/bin:/usr/local/share/android-sdk/platform-tools:.:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/MacGPG2/bin:/Users/ken/.yarn/bin:/usr/local/share/android-sdk/platform-tools:.:/Users/ken/Library/Python/2.7/bin:/usr/local/sbin:/opt/local/bin:/opt/local/sbin:/opt/X11/bin:/Users/kensnyder/.rvm/bin:/Users/kensnyder/.ec2/bin:/Developer/usr/bin:/Users/kensnyder/pear/bin:/usr/local/share/npm/bin:/Applications/Couchbase Server.app/Contents/Resources/couchbase-core/bin:/Users/kensnyder/repos/mine/api/commandline/bin:/Users/ken/Library/Python/2.7/bin:/usr/local/sbin:/usr/local/bin:/opt/local/bin:/opt/local/sbin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/opt/X11/bin:/Users/kensnyder/.rvm/bin:/Users/kensnyder/.ec2/bin:/Developer/usr/bin:/Users/kensnyder/pear/bin:/usr/local/share/npm/bin:/Applications/Couchbase Server.app/Contents/Resources/couchbase-core/bin:/Users/kensnyder/repos/mine/api/commandline/bin
@@ -16,7 +16,7 @@ Platform:
 npm manifest: 
   {
     "name": "firemodel",
-    "version": "0.13.53",
+    "version": "0.14.0",
     "description": "Modeling, Access, and Mocking for Firebase Projects",
     "license": "MIT",
     "repository": "https://github.com/forest-fire/firemodel",
@@ -74,7 +74,7 @@ npm manifest:
       "@types/stack-trace": "^0.0.28",
       "abstracted-admin": "^0.12.3",
       "abstracted-client": "^0.12.3",
-      "abstracted-firebase": "^0.12.5",
+      "abstracted-firebase": "^0.12.9",
       "async-shelljs": "^0.1.2",
       "chai": "^4.1.2",
       "chalk": "^2.4.1",
@@ -801,9 +801,9 @@ Lockfile:
     version "0.1.2"
     resolved "https://registry.yarnpkg.com/@firebase/database-types/-/database-types-0.1.2.tgz#c6a23b8aa721ca16951c752430167ee764659916"
   
-  "@firebase/database@0.3.3":
-    version "0.3.3"
-    resolved "https://registry.yarnpkg.com/@firebase/database/-/database-0.3.3.tgz#01123d4e0f8cb020e685ead27d795ef8794b2991"
+  "@firebase/database@0.3.4":
+    version "0.3.4"
+    resolved "https://registry.yarnpkg.com/@firebase/database/-/database-0.3.4.tgz#67fd48ed6d8fffc81c6c6f8e68bde70b99ba8ca9"
     dependencies:
       "@firebase/database-types" "0.3.2"
       "@firebase/logger" "0.1.1"
@@ -829,9 +829,9 @@ Lockfile:
     version "0.2.2"
     resolved "https://registry.yarnpkg.com/@firebase/firestore-types/-/firestore-types-0.2.2.tgz#e60b6c7a458538b1bf8ed89d9df981fa17a74871"
   
-  "@firebase/firestore@0.5.5":
-    version "0.5.5"
-    resolved "https://registry.yarnpkg.com/@firebase/firestore/-/firestore-0.5.5.tgz#cb41fd528520e45374cf0da4a7e87382b515840c"
+  "@firebase/firestore@0.5.6":
+    version "0.5.6"
+    resolved "https://registry.yarnpkg.com/@firebase/firestore/-/firestore-0.5.6.tgz#2d859b319680ad61c6b72a2d821588949ac8b491"
     dependencies:
       "@firebase/firestore-types" "0.4.3"
       "@firebase/logger" "0.1.1"
@@ -839,15 +839,15 @@ Lockfile:
       grpc "1.11.3"
       tslib "1.9.0"
   
-  "@firebase/functions-types@0.1.3":
-    version "0.1.3"
-    resolved "https://registry.yarnpkg.com/@firebase/functions-types/-/functions-types-0.1.3.tgz#17bc08a51f92b4eb5d1498f18b363f6c0e3a2df8"
+  "@firebase/functions-types@0.2.0":
+    version "0.2.0"
+    resolved "https://registry.yarnpkg.com/@firebase/functions-types/-/functions-types-0.2.0.tgz#936d3f77957431a8ef1817975fee26464575802b"
   
-  "@firebase/functions@0.2.4":
-    version "0.2.4"
-    resolved "https://registry.yarnpkg.com/@firebase/functions/-/functions-0.2.4.tgz#4d7acbc1feb8a1503f12072e40ea797d42bdb6b7"
+  "@firebase/functions@0.3.0":
+    version "0.3.0"
+    resolved "https://registry.yarnpkg.com/@firebase/functions/-/functions-0.3.0.tgz#61fbf0ec7fb997c1cd5c726cc16171fa32a9fd3b"
     dependencies:
-      "@firebase/functions-types" "0.1.3"
+      "@firebase/functions-types" "0.2.0"
       "@firebase/messaging-types" "0.2.3"
       isomorphic-fetch "2.2.1"
       tslib "1.9.0"
@@ -1144,8 +1144,8 @@ Lockfile:
     resolved "https://registry.yarnpkg.com/@types/mocha/-/mocha-5.2.3.tgz#11f3a5629d67cd444fa6c94536576244e6a52ea9"
   
   "@types/node@*":
-    version "10.3.5"
-    resolved "https://registry.yarnpkg.com/@types/node/-/node-10.3.5.tgz#8423cdf6e6fb83433e489900d7600d3b61c8260c"
+    version "10.5.0"
+    resolved "https://registry.yarnpkg.com/@types/node/-/node-10.5.0.tgz#f5b61395c09b47ac46aaa1452750c9a72b3d3673"
   
   "@types/node@^8.0.53", "@types/node@^8.9.4":
     version "8.10.20"
@@ -1501,15 +1501,15 @@ Lockfile:
       serialized-query "^0.4.4"
       typed-conversions "^0.8.8"
   
-  abstracted-firebase@^0.12.4, abstracted-firebase@^0.12.5:
-    version "0.12.5"
-    resolved "https://registry.yarnpkg.com/abstracted-firebase/-/abstracted-firebase-0.12.5.tgz#1d55c939870d4b3cdf5ecdb8c10c09cb5869b6eb"
+  abstracted-firebase@^0.12.4, abstracted-firebase@^0.12.5, abstracted-firebase@^0.12.9:
+    version "0.12.9"
+    resolved "https://registry.yarnpkg.com/abstracted-firebase/-/abstracted-firebase-0.12.9.tgz#73c53690f07d9151fe39c32fb6555fb1ade95b68"
     dependencies:
       common-types "^1.8.2"
       firebase-api-surface "^0.8.3"
       lodash "^4.17.10"
       serialized-query "^0.4.4"
-      typed-conversions "^0.8.8"
+      typed-conversions "^0.8.9"
       wait-in-parallel "^1.1.4"
   
   accepts@^1.2.2:
@@ -1805,14 +1805,14 @@ Lockfile:
       postcss-value-parser "^3.2.3"
   
   autoprefixer@^8.2.0:
-    version "8.6.3"
-    resolved "https://registry.yarnpkg.com/autoprefixer/-/autoprefixer-8.6.3.tgz#1d38a129e6a4582a565b6570d16f2d7d3de9cbf9"
+    version "8.6.4"
+    resolved "https://registry.yarnpkg.com/autoprefixer/-/autoprefixer-8.6.4.tgz#6bf501de426a3b95973f5d237dbcc9181e9904d2"
     dependencies:
       browserslist "^3.2.8"
-      caniuse-lite "^1.0.30000856"
+      caniuse-lite "^1.0.30000859"
       normalize-range "^0.1.2"
       num2fraction "^1.2.2"
-      postcss "^6.0.22"
+      postcss "^6.0.23"
       postcss-value-parser "^3.2.3"
   
   aws-sign2@~0.7.0:
@@ -2234,12 +2234,12 @@ Lockfile:
       lodash.uniq "^4.5.0"
   
   caniuse-db@^1.0.30000529, caniuse-db@^1.0.30000634, caniuse-db@^1.0.30000639:
-    version "1.0.30000858"
-    resolved "https://registry.yarnpkg.com/caniuse-db/-/caniuse-db-1.0.30000858.tgz#153c9348350641dc624d150ec174262c2ad985e5"
+    version "1.0.30000860"
+    resolved "https://registry.yarnpkg.com/caniuse-db/-/caniuse-db-1.0.30000860.tgz#5ceab253aae172b5f0acd0d5428ba501c4b08d41"
   
-  caniuse-lite@^1.0.30000844, caniuse-lite@^1.0.30000856:
-    version "1.0.30000858"
-    resolved "https://registry.yarnpkg.com/caniuse-lite/-/caniuse-lite-1.0.30000858.tgz#f6f203a9128bac507136de1cf6cfd966d2df027c"
+  caniuse-lite@^1.0.30000844, caniuse-lite@^1.0.30000859:
+    version "1.0.30000860"
+    resolved "https://registry.yarnpkg.com/caniuse-lite/-/caniuse-lite-1.0.30000860.tgz#c902e3df3cc4303f631abc7a1579a3ce0a6153a3"
   
   capture-stack-trace@^1.0.0:
     version "1.0.0"
@@ -2600,8 +2600,8 @@ Lockfile:
     resolved "https://registry.yarnpkg.com/copy-descriptor/-/copy-descriptor-0.1.1.tgz#676f6eb3c39997c2ee1ac3a924fd6124748f578d"
   
   copy-webpack-plugin@^4.5.1:
-    version "4.5.1"
-    resolved "https://registry.yarnpkg.com/copy-webpack-plugin/-/copy-webpack-plugin-4.5.1.tgz#fc4f68f4add837cc5e13d111b20715793225d29c"
+    version "4.5.2"
+    resolved "https://registry.yarnpkg.com/copy-webpack-plugin/-/copy-webpack-plugin-4.5.2.tgz#d53444a8fea2912d806e78937390ddd7e632ee5c"
     dependencies:
       cacache "^10.0.4"
       find-cache-dir "^1.0.0"
@@ -3154,9 +3154,9 @@ Lockfile:
     dependencies:
       once "^1.4.0"
   
-  enhanced-resolve@^4.0.0:
-    version "4.0.0"
-    resolved "https://registry.yarnpkg.com/enhanced-resolve/-/enhanced-resolve-4.0.0.tgz#e34a6eaa790f62fccd71d93959f56b2b432db10a"
+  enhanced-resolve@^4.1.0:
+    version "4.1.0"
+    resolved "https://registry.yarnpkg.com/enhanced-resolve/-/enhanced-resolve-4.1.0.tgz#41c7e0bfdfe74ac1ffe1e57ad6a5c6c9f3742a7f"
     dependencies:
       graceful-fs "^4.1.2"
       memory-fs "^0.4.0"
@@ -3532,14 +3532,14 @@ Lockfile:
     resolved "https://registry.yarnpkg.com/firebase-key/-/firebase-key-2.0.1.tgz#5f1fe462c011c7f944f2f0f489c838dd1ed162ef"
   
   firebase@^5.1.0:
-    version "5.1.0"
-    resolved "https://registry.yarnpkg.com/firebase/-/firebase-5.1.0.tgz#9f56f910ef4e5e605c0f3de910b2070d2a1c3b55"
+    version "5.2.0"
+    resolved "https://registry.yarnpkg.com/firebase/-/firebase-5.2.0.tgz#aae53339ab510f523217fedd92246fe9f05cfd66"
     dependencies:
       "@firebase/app" "0.3.3"
       "@firebase/auth" "0.7.0"
-      "@firebase/database" "0.3.3"
-      "@firebase/firestore" "0.5.5"
-      "@firebase/functions" "0.2.4"
+      "@firebase/database" "0.3.4"
+      "@firebase/firestore" "0.5.6"
+      "@firebase/functions" "0.3.0"
       "@firebase/messaging" "0.3.5"
       "@firebase/polyfill" "0.3.3"
       "@firebase/storage" "0.2.3"
@@ -4403,12 +4403,6 @@ Lockfile:
   is-obj@^1.0.0:
     version "1.0.1"
     resolved "https://registry.yarnpkg.com/is-obj/-/is-obj-1.0.1.tgz#3e4729ac1f5fde025cd7d83a896dab9f4f67db0f"
-  
-  is-odd@^2.0.0:
-    version "2.0.0"
-    resolved "https://registry.yarnpkg.com/is-odd/-/is-odd-2.0.0.tgz#7646624671fd7ea558ccd9a2795182f2958f1b24"
-    dependencies:
-      is-number "^4.0.0"
   
   is-path-inside@^1.0.0:
     version "1.0.1"
@@ -5424,15 +5418,14 @@ Lockfile:
       remove-array-items "^1.0.0"
   
   nanomatch@^1.2.9:
-    version "1.2.9"
-    resolved "https://registry.yarnpkg.com/nanomatch/-/nanomatch-1.2.9.tgz#879f7150cb2dab7a471259066c104eee6e0fa7c2"
+    version "1.2.13"
+    resolved "https://registry.yarnpkg.com/nanomatch/-/nanomatch-1.2.13.tgz#b87a8aa4fc0de8fe6be88895b38983ff265bd119"
     dependencies:
       arr-diff "^4.0.0"
       array-unique "^0.3.2"
       define-property "^2.0.2"
       extend-shallow "^3.0.2"
       fragment-cache "^0.2.1"
-      is-odd "^2.0.0"
       is-windows "^1.0.2"
       kind-of "^6.0.2"
       object.pick "^1.3.0"
@@ -5753,8 +5746,8 @@ Lockfile:
       wordwrap "~0.0.2"
   
   optimize-css-assets-webpack-plugin@^4.0.0:
-    version "4.0.2"
-    resolved "https://registry.yarnpkg.com/optimize-css-assets-webpack-plugin/-/optimize-css-assets-webpack-plugin-4.0.2.tgz#813d511d20fe5d9a605458441ed97074d79c1122"
+    version "4.0.3"
+    resolved "https://registry.yarnpkg.com/optimize-css-assets-webpack-plugin/-/optimize-css-assets-webpack-plugin-4.0.3.tgz#4f714e276b279700892c4a6202b7e22812d6f683"
     dependencies:
       cssnano "^3.10.0"
       last-call-webpack-plugin "^3.0.0"
@@ -6272,7 +6265,7 @@ Lockfile:
       source-map "^0.5.6"
       supports-color "^3.2.3"
   
-  postcss@^6.0.0, postcss@^6.0.1, postcss@^6.0.20, postcss@^6.0.22:
+  postcss@^6.0.0, postcss@^6.0.1, postcss@^6.0.20, postcss@^6.0.23:
     version "6.0.23"
     resolved "https://registry.yarnpkg.com/postcss/-/postcss-6.0.23.tgz#61c82cc328ac60e677645f979054eb98bc0e3324"
     dependencies:
@@ -6377,8 +6370,8 @@ Lockfile:
     resolved "https://registry.yarnpkg.com/preserve/-/preserve-0.2.0.tgz#815ed1f6ebc65926f865b310c0713bcb3315ce4b"
   
   prettier@^1.11.1, prettier@^1.13.0:
-    version "1.13.6"
-    resolved "https://registry.yarnpkg.com/prettier/-/prettier-1.13.6.tgz#00ae0b777ad92f81a9e7a1df2f0470b6dab0cb44"
+    version "1.13.7"
+    resolved "https://registry.yarnpkg.com/prettier/-/prettier-1.13.7.tgz#850f3b8af784a49a6ea2d2eaa7ed1428a34b7281"
   
   pretty-bytes@^4.0.2:
     version "4.0.2"
@@ -7672,8 +7665,8 @@ Lockfile:
     resolved "https://registry.yarnpkg.com/typedarray/-/typedarray-0.0.6.tgz#867ac74e3864187b1d3d47d996a78ec5c8830777"
   
   typescript@^3.0.0-dev.20180605:
-    version "3.0.0-dev.20180623"
-    resolved "https://registry.yarnpkg.com/typescript/-/typescript-3.0.0-dev.20180623.tgz#2121f0c77a8737bdd9f028eb84ac328c35274fbb"
+    version "3.0.0-dev.20180628"
+    resolved "https://registry.yarnpkg.com/typescript/-/typescript-3.0.0-dev.20180628.tgz#9f70006d4e04daa5bb7a8b9db96e3728683330a6"
   
   uc.micro@^1.0.1, uc.micro@^1.0.5:
     version "1.0.5"
@@ -7896,8 +7889,8 @@ Lockfile:
     resolved "https://registry.yarnpkg.com/utila/-/utila-0.4.0.tgz#8a16a05d445657a3aea5eecc5b12a4fa5379772c"
   
   uuid@^3.1.0:
-    version "3.2.1"
-    resolved "https://registry.yarnpkg.com/uuid/-/uuid-3.2.1.tgz#12c528bb9d58d0b9265d9a2f6f0fe8be17ff1f14"
+    version "3.3.2"
+    resolved "https://registry.yarnpkg.com/uuid/-/uuid-3.3.2.tgz#1b4af4955eb3077c501c23872fc6513811587131"
   
   v8-compile-cache@^2.0.0:
     version "2.0.0"
@@ -8156,8 +8149,8 @@ Lockfile:
       source-map "~0.6.1"
   
   webpack@^4.8.1:
-    version "4.12.1"
-    resolved "https://registry.yarnpkg.com/webpack/-/webpack-4.12.1.tgz#9108078c67fdd72c2609cea22af87d7aed2acb08"
+    version "4.13.0"
+    resolved "https://registry.yarnpkg.com/webpack/-/webpack-4.13.0.tgz#9a7bb953109a4079e4a32843610d2dc0184dfbe6"
     dependencies:
       "@webassemblyjs/ast" "1.5.12"
       "@webassemblyjs/helper-module-context" "1.5.12"
@@ -8169,7 +8162,7 @@ Lockfile:
       ajv "^6.1.0"
       ajv-keywords "^3.1.0"
       chrome-trace-event "^1.0.0"
-      enhanced-resolve "^4.0.0"
+      enhanced-resolve "^4.1.0"
       eslint-scope "^3.7.1"
       json-parse-better-errors "^1.0.2"
       loader-runner "^2.3.0"
@@ -8261,21 +8254,21 @@ Lockfile:
     version "0.0.3"
     resolved "https://registry.yarnpkg.com/wordwrap/-/wordwrap-0.0.3.tgz#a3d5da6cd5c0bc0008d37234bbaf1bed63059107"
   
-  workbox-background-sync@^3.3.0:
-    version "3.3.0"
-    resolved "https://registry.yarnpkg.com/workbox-background-sync/-/workbox-background-sync-3.3.0.tgz#87e212715391d2002274f526e77851cfab86ed8a"
+  workbox-background-sync@^3.3.1:
+    version "3.3.1"
+    resolved "https://registry.yarnpkg.com/workbox-background-sync/-/workbox-background-sync-3.3.1.tgz#6778c174f3a31219f3de3e606b6974abd4ec30e7"
     dependencies:
-      workbox-core "^3.3.0"
+      workbox-core "^3.3.1"
   
-  workbox-broadcast-cache-update@^3.3.0:
-    version "3.3.0"
-    resolved "https://registry.yarnpkg.com/workbox-broadcast-cache-update/-/workbox-broadcast-cache-update-3.3.0.tgz#ce4fa56656de5024f567c06f6614e36961c30c0f"
+  workbox-broadcast-cache-update@^3.3.1:
+    version "3.3.1"
+    resolved "https://registry.yarnpkg.com/workbox-broadcast-cache-update/-/workbox-broadcast-cache-update-3.3.1.tgz#d57099a29d0aea6d15dfc68e4f5b33628f39b43e"
     dependencies:
-      workbox-core "^3.3.0"
+      workbox-core "^3.3.1"
   
   workbox-build@^3.1.0:
-    version "3.3.0"
-    resolved "https://registry.yarnpkg.com/workbox-build/-/workbox-build-3.3.0.tgz#7f3fa9de9714dab318122933b9615a38d94d643d"
+    version "3.3.1"
+    resolved "https://registry.yarnpkg.com/workbox-build/-/workbox-build-3.3.1.tgz#de465a62b31e1caa2465b6f1b04b4e5756337b21"
     dependencies:
       babel-runtime "^6.26.0"
       common-tags "^1.4.0"
@@ -8284,77 +8277,77 @@ Lockfile:
       joi "^11.1.1"
       lodash.template "^4.4.0"
       pretty-bytes "^4.0.2"
-      workbox-background-sync "^3.3.0"
-      workbox-broadcast-cache-update "^3.3.0"
-      workbox-cache-expiration "^3.3.0"
-      workbox-cacheable-response "^3.3.0"
-      workbox-core "^3.3.0"
-      workbox-google-analytics "^3.3.0"
-      workbox-precaching "^3.3.0"
-      workbox-range-requests "^3.3.0"
-      workbox-routing "^3.3.0"
-      workbox-strategies "^3.3.0"
-      workbox-streams "^3.3.0"
-      workbox-sw "^3.3.0"
+      workbox-background-sync "^3.3.1"
+      workbox-broadcast-cache-update "^3.3.1"
+      workbox-cache-expiration "^3.3.1"
+      workbox-cacheable-response "^3.3.1"
+      workbox-core "^3.3.1"
+      workbox-google-analytics "^3.3.1"
+      workbox-precaching "^3.3.1"
+      workbox-range-requests "^3.3.1"
+      workbox-routing "^3.3.1"
+      workbox-strategies "^3.3.1"
+      workbox-streams "^3.3.1"
+      workbox-sw "^3.3.1"
   
-  workbox-cache-expiration@^3.3.0:
-    version "3.3.0"
-    resolved "https://registry.yarnpkg.com/workbox-cache-expiration/-/workbox-cache-expiration-3.3.0.tgz#fe9cfde8e8168fa25ff778c6e2eda54181f58506"
+  workbox-cache-expiration@^3.3.1:
+    version "3.3.1"
+    resolved "https://registry.yarnpkg.com/workbox-cache-expiration/-/workbox-cache-expiration-3.3.1.tgz#f16a34caa17572b8b9332f2208aed3feea62c038"
     dependencies:
-      workbox-core "^3.3.0"
+      workbox-core "^3.3.1"
   
-  workbox-cacheable-response@^3.3.0:
-    version "3.3.0"
-    resolved "https://registry.yarnpkg.com/workbox-cacheable-response/-/workbox-cacheable-response-3.3.0.tgz#b7d3904fa30baf7da271d73dd2f0da7518378acf"
+  workbox-cacheable-response@^3.3.1:
+    version "3.3.1"
+    resolved "https://registry.yarnpkg.com/workbox-cacheable-response/-/workbox-cacheable-response-3.3.1.tgz#0a9564c4d765610c8ef0676ab0583c5949a26e4b"
     dependencies:
-      workbox-core "^3.3.0"
+      workbox-core "^3.3.1"
   
-  workbox-core@^3.3.0:
-    version "3.3.0"
-    resolved "https://registry.yarnpkg.com/workbox-core/-/workbox-core-3.3.0.tgz#3606223514a85a0935550ed15d973c12b12ff680"
+  workbox-core@^3.3.1:
+    version "3.3.1"
+    resolved "https://registry.yarnpkg.com/workbox-core/-/workbox-core-3.3.1.tgz#4c7daeea08fe5646ea960b226572e899ddc7bc30"
   
-  workbox-google-analytics@^3.3.0:
-    version "3.3.0"
-    resolved "https://registry.yarnpkg.com/workbox-google-analytics/-/workbox-google-analytics-3.3.0.tgz#380ecefc24040db9e191b2789bced19ad61c8ccb"
+  workbox-google-analytics@^3.3.1:
+    version "3.3.1"
+    resolved "https://registry.yarnpkg.com/workbox-google-analytics/-/workbox-google-analytics-3.3.1.tgz#7a90b1e9193c32479e6d7acf07d547e95873887a"
     dependencies:
-      workbox-background-sync "^3.3.0"
-      workbox-core "^3.3.0"
-      workbox-routing "^3.3.0"
-      workbox-strategies "^3.3.0"
+      workbox-background-sync "^3.3.1"
+      workbox-core "^3.3.1"
+      workbox-routing "^3.3.1"
+      workbox-strategies "^3.3.1"
   
-  workbox-precaching@^3.3.0:
-    version "3.3.0"
-    resolved "https://registry.yarnpkg.com/workbox-precaching/-/workbox-precaching-3.3.0.tgz#471bbc26bd3e92b24fd9d636842cf3f358302bd2"
+  workbox-precaching@^3.3.1:
+    version "3.3.1"
+    resolved "https://registry.yarnpkg.com/workbox-precaching/-/workbox-precaching-3.3.1.tgz#2543caf903d46ef96159925bd5794bc5d58d0f3b"
     dependencies:
-      workbox-core "^3.3.0"
+      workbox-core "^3.3.1"
   
-  workbox-range-requests@^3.3.0:
-    version "3.3.0"
-    resolved "https://registry.yarnpkg.com/workbox-range-requests/-/workbox-range-requests-3.3.0.tgz#9703cb91e9ea9104ed09c545a87e25f41002ddce"
+  workbox-range-requests@^3.3.1:
+    version "3.3.1"
+    resolved "https://registry.yarnpkg.com/workbox-range-requests/-/workbox-range-requests-3.3.1.tgz#ff51544f389e96c5c10938cd3a0117f2edfd5076"
     dependencies:
-      workbox-core "^3.3.0"
+      workbox-core "^3.3.1"
   
-  workbox-routing@^3.3.0:
-    version "3.3.0"
-    resolved "https://registry.yarnpkg.com/workbox-routing/-/workbox-routing-3.3.0.tgz#8184d0159c8c4e4c9dd7a0da08e28e579e372319"
+  workbox-routing@^3.3.1:
+    version "3.3.1"
+    resolved "https://registry.yarnpkg.com/workbox-routing/-/workbox-routing-3.3.1.tgz#c11b9c64857096e2bc5225471a79d6b0aadd86a8"
     dependencies:
-      workbox-core "^3.3.0"
+      workbox-core "^3.3.1"
   
-  workbox-strategies@^3.3.0:
-    version "3.3.0"
-    resolved "https://registry.yarnpkg.com/workbox-strategies/-/workbox-strategies-3.3.0.tgz#0681df07ebf4628454aa91317aa87de2d1ded6c6"
+  workbox-strategies@^3.3.1:
+    version "3.3.1"
+    resolved "https://registry.yarnpkg.com/workbox-strategies/-/workbox-strategies-3.3.1.tgz#2af87723661847269e14f2a0d8f1c6d9245d5e68"
     dependencies:
-      workbox-core "^3.3.0"
+      workbox-core "^3.3.1"
   
-  workbox-streams@^3.3.0:
-    version "3.3.0"
-    resolved "https://registry.yarnpkg.com/workbox-streams/-/workbox-streams-3.3.0.tgz#7591e37a08bf65b32d1db076b86900a8a4b7d02c"
+  workbox-streams@^3.3.1:
+    version "3.3.1"
+    resolved "https://registry.yarnpkg.com/workbox-streams/-/workbox-streams-3.3.1.tgz#fdde3f0f2b9f52832999a4b4a223ff06c28d125f"
     dependencies:
-      workbox-core "^3.3.0"
+      workbox-core "^3.3.1"
   
-  workbox-sw@^3.3.0:
-    version "3.3.0"
-    resolved "https://registry.yarnpkg.com/workbox-sw/-/workbox-sw-3.3.0.tgz#1a9fd728951c76b86225b472f9e37088913c9bc4"
+  workbox-sw@^3.3.1:
+    version "3.3.1"
+    resolved "https://registry.yarnpkg.com/workbox-sw/-/workbox-sw-3.3.1.tgz#c18fb6546948b9da562da5b33e36fdf3e3dbcac1"
   
   worker-farm@^1.5.2:
     version "1.6.0"
@@ -8492,14 +8485,16 @@ Lockfile:
     resolved "https://registry.yarnpkg.com/yn/-/yn-2.0.0.tgz#e5adabc8acf408f6385fc76495684c88e6af689a"
 
 Trace: 
-  Error: Command "link" not found. Did you mean "lint"?
-      at new MessageError (/usr/local/lib/node_modules/yarn/lib/cli.js:186:110)
-      at /usr/local/lib/node_modules/yarn/lib/cli.js:87307:17
-      at Generator.next (<anonymous>)
-      at step (/usr/local/lib/node_modules/yarn/lib/cli.js:98:30)
-      at /usr/local/lib/node_modules/yarn/lib/cli.js:116:14
-      at new Promise (<anonymous>)
-      at new F (/usr/local/lib/node_modules/yarn/lib/cli.js:23451:28)
-      at /usr/local/lib/node_modules/yarn/lib/cli.js:95:12
-      at runCommand (/usr/local/lib/node_modules/yarn/lib/cli.js:87312:22)
-      at Object.<anonymous> (/usr/local/lib/node_modules/yarn/lib/cli.js:87412:14)
+  Error: Command failed.
+  Exit code: 1
+  Command: sh
+  Arguments: -c tslint src/**/*.ts && rollup -c rollup.config.js
+  Directory: /Users/ken/mine/forest-fire/firemodel
+  Output:
+  
+      at ProcessTermError.MessageError (/usr/local/lib/node_modules/yarn/lib/cli.js:186:110)
+      at new ProcessTermError (/usr/local/lib/node_modules/yarn/lib/cli.js:226:113)
+      at ChildProcess.<anonymous> (/usr/local/lib/node_modules/yarn/lib/cli.js:30281:17)
+      at ChildProcess.emit (events.js:180:13)
+      at maybeClose (internal/child_process.js:936:16)
+      at Process.ChildProcess._handle.onexit (internal/child_process.js:220:5)

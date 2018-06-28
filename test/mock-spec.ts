@@ -27,7 +27,6 @@ describe("Mocking:", () => {
   it("the auto-mock works for named properties", async () => {
     await Mock(SimplePerson, db).generate(10);
     const people = await List.all(SimplePerson);
-    console.log(db.mock.db);
 
     expect(people).to.have.lengthOf(10);
     people.map(person => {
@@ -101,7 +100,6 @@ describe("Mocking:", () => {
       })
       .generate(numberOfFolks);
     const people = await List.all(FancyPerson);
-    console.log(JSON.stringify(db.mock.db, null, 2));
 
     expect(people).to.have.lengthOf(numberOfFolks);
   });

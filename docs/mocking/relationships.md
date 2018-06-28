@@ -39,12 +39,12 @@ Well we can do better, but doing so comes as part of the `Mock` function. Let's 
 
 ```typescript
 // Scenario A
-Mock(Person, db)
+await Mock(Person, db)
   .createRelationshipLinks()
   .generate(10);
 
 // Scneario B
-Mock(Person, db)
+await Mock(Person, db)
   .followRelationshipLinks()
   .generate(10);
 ```
