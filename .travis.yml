@@ -4,7 +4,7 @@ node_js:
   - '8'
 script:
   - npm install codecov -g
-  - npm run build # build
+  - npm run build:tsc # build
   - npm run test  # test
 after_success:
   - codecov
