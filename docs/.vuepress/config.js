@@ -142,7 +142,7 @@ module.exports = {
       "/using/": [
         {
           title: "Using FireModel",
-          collapsable: true,
+          collapsable: false,
           children: [
             "/using/",
             "reading",
@@ -153,11 +153,12 @@ module.exports = {
         },
         {
           title: "Advanced Topics",
-          collapsable: true,
+          collapsable: false,
           children: [
             "frontend-state-mgmt",
             "auditing",
             "graphql",
+            "dexie",
             "proxy-objects"
           ]
         },

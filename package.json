@@ -14,7 +14,7 @@
   ],
   "main": "dist/cjs/index.js",
   "module": "dist/esnext/index.js",
-  "typings": "dist/index.d.ts",
+  "typings": "dist/esnext/index.d.ts",
   "scripts": {
     "clean": "rimraf lib",
     "lint": "./node_modules/.bin/tslint --force --format verbose \"src/**/*.ts\"",

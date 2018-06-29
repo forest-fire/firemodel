@@ -6,15 +6,37 @@ In addition to data-structure we can also annotate the permission level data sho
 
 All permissions are configured on a class/model level and consist of the following permission levels:
 
-  - `read-write` - anyone can read or write; outside a demo this is rarily advised
-  - `read-only` - public users can read data but no writing is allowed
-  - `user-write(prop)` - Users who are listed as the "owner" can write
-  - 
+| READ          | WRITE         | CREATE        |
+| ------------- | ------------- | ------------- |
+| `public`      | `public`      | `public`      |
+| `anon`        | `anon`        | `anon`        |
+| `auth`        | `auth`        | `auth`        |
+| `admin`       | `admin`       | `admin`       |
+| `owner, prop` | `owner, prop` | `owner, prop` |
+| `none`        | `none`        | `none`        |
 
+ So let's say that you'd like the `User` records to be readable by all but writable only by the owner of that record, you would state something like the following:
+
+```typescript
+@model({ read: "auth", write: ["owner" , "uid"], create: "none" })
+export class User extends Model {
+  @property public uid: string;
+  // ...
+}
+```
 
 ### Indexes
 
 You may use any of the following annotations on the property level:
 
 - `@index` - indexes the property in Firebase
-- `@uniqueIndex` - same as `@index` wrt Firebase but for some schema exports -- where distinction are made between unique and non-unique indexes -- this can be used to annotate this distinction
+- `@uniqueIndex` - same as `@index` *wrt* Firebase but for other schema exports (see GraphQL and Dexie) -- where distinction are made between unique and non-unique indexes -- this can be used to annotate this distinction
+
+```typescript
+@model({ read: "auth", write: "owner:uid", create: "none" })
+export class User extends Model {
+  @property @uniqueIndex public uid: string;
+  @property @index public age: number;
+  // ...
+}
+```
