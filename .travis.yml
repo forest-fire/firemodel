@@ -4,6 +4,6 @@ node_js:
   - '8'
 script:
   - npm install codecov -g
-  - npm run test  # test
+  - yarn test  # test
 after_success:
   - codecov
