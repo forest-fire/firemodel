@@ -126,6 +126,7 @@ module.exports = {
             "model-constraints",
             "property-constraints",
             "relationships",
+            "security-constraints",
             "the-model-class"
           ]
         },
