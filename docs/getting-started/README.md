@@ -1,6 +1,6 @@
 # Installing NPM Modules
 
-![](../images/starting.jpg)
+![](../images/interaction-model.jpg)
 
 ### FireModel and Data Access
 

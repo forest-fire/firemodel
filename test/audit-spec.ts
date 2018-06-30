@@ -10,7 +10,7 @@ const expect = chai.expect;
 
 describe("Auditing →", () => {
   describe("Writing →", () => {
-    let db: RealTimeDB;
+    let db: DB;
     beforeEach(async () => {
       db = await DB.connect({ mocking: true });
       FireModel.defaultDb = db;
@@ -21,6 +21,7 @@ describe("Auditing →", () => {
         age: 20
       });
       const log = await db.getList<IAuditLogItem>("/auditing/people/all");
+      console.log(db.mock.db.auditing);
 
       expect(log).to.have.lengthOf(1);
       expect(log[0])

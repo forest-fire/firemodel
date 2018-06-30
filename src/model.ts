@@ -6,6 +6,7 @@ export type Properties<T> = Pick<T, NonProperties<T>>;
 import { IDictionary, epochWithMilliseconds, datetime } from "common-types";
 import { property, mock } from "./decorators/property";
 import { IModelMetaProperties } from "./decorators/schema";
+import { index, uniqueIndex } from "./decorators/indexing";
 
 export interface IModelOptions {
   logger?: ILogger;
@@ -63,14 +64,18 @@ export type FMModelConstructor<T> = new () => T;
 
 export abstract class Model {
   /** The primary-key for the record */
-  @property public id?: string;
+  @property
+  @uniqueIndex
+  public id?: string;
   /** The last time that a given record was updated */
   @property
   @mock("dateRecentMiliseconds")
+  @index
   public lastUpdated?: epochWithMilliseconds;
   /** The datetime at which this record was first created */
   @property
   @mock("datePastMiliseconds")
+  @index
   public createdAt?: epochWithMilliseconds;
   /** Metadata properties of the given schema */
   public META?: IModelMetaProperties;

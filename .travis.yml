@@ -4,7 +4,7 @@ node_js:
   - '8'
 script:
   - npm install codecov -g
-  - yarn add --dev typescript ts-node tslint
+  - npm install -g typescript ts-node tslint
   - yarn test  # test
 after_success:
   - codecov

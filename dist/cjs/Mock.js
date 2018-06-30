@@ -107,7 +107,7 @@ function fakeIt(helper, type) {
 }
 function mockValue(db, propMeta) {
     if (!db || !(db instanceof abstracted_firebase_1.RealTimeDB)) {
-        const e = new Error(`When trying to Mock the value of "${propMeta.property}" the database reference passed in not a valid instance of the RealTimeDB provided by either 'abstracted-client' or 'abstracted-server' [ ${typeof db} ].`);
+        const e = new Error(`When trying to Mock the value of "${propMeta.property}" the database reference passed in not a valid instance of the RealTimeDB provided by either 'abstracted-client' or 'abstracted-server' [ ${typeof db}, ${typeof db === "object" ? db.constructor.name : db} ].`);
         e.name = "FireModel::NotReady";
         throw e;
     }

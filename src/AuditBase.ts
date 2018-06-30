@@ -1,12 +1,9 @@
 import { Model, IModelOptions } from "./Model";
-import { epochWithMilliseconds, IDictionary } from "common-types";
 import { FireModel } from "./FireModel";
 import { Record } from "./Record";
 import { pathJoin } from "./path";
-// tslint:disable-next-line:no-implicit-dependencies
 import { RealTimeDB } from "abstracted-firebase";
 import { SerializedQuery } from "serialized-query";
-import { AuditList } from "./AuditList";
 
 export class AuditBase<T extends Model = Model> {
   protected _modelKlass: new () => T;

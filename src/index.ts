@@ -9,6 +9,7 @@ export {
   desc,
   mock
 } from "./decorators/property";
+export { index, uniqueIndex } from "./decorators/indexing";
 export { hasMany, ownedBy, inverse } from "./decorators/relationship";
 export {
   model,

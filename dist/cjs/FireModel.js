@@ -107,7 +107,6 @@ class FireModel {
 }
 //#region STATIC INTERFACE
 FireModel.auditLogs = "/auditing";
-FireModel._defaultDb = null;
 FireModel._dispatchActive = false;
 /** the dispatch function used to interact with frontend frameworks */
 FireModel._dispatch = defaultDispatch;

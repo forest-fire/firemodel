@@ -142,7 +142,9 @@ function mockValue<T extends Model>(
     const e = new Error(
       `When trying to Mock the value of "${
         propMeta.property
-      }" the database reference passed in not a valid instance of the RealTimeDB provided by either 'abstracted-client' or 'abstracted-server' [ ${typeof db} ].`
+      }" the database reference passed in not a valid instance of the RealTimeDB provided by either 'abstracted-client' or 'abstracted-server' [ ${typeof db}, ${
+        typeof db === "object" ? db.constructor.name : db
+      } ].`
     );
     e.name = "FireModel::NotReady";
     throw e;

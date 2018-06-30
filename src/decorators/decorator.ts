@@ -2,6 +2,7 @@ import "reflect-metadata";
 import { Model, IModelPropertyMeta, IModelRelationshipMeta } from "../index";
 import { IDictionary } from "common-types";
 import { set, get } from "lodash";
+import { indexesForModel } from "./indexing";
 
 function push<T extends Model = Model>(
   target: IDictionary,
@@ -57,6 +58,13 @@ export const propertyDecorator = <T extends Model>(
     } else {
       push(relationshipsByModel, target.constructor.name, meta);
     }
+  }
+
+  if (nameValuePairs.isIndex) {
+    push(indexesForModel, target.constructor.name, {
+      ...meta,
+      [property]: key
+    });
   }
 };
 

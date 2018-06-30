@@ -1,4 +1,4 @@
-import { model, Model, property, ownedBy, fk, hasMany } from "../../src";
+import { model, Model, property, ownedBy, fk, hasMany, index } from "../../src";
 import { mock } from "../../src/decorators/property";
 import { Company } from "./company";
 import { Person } from "./person";
@@ -12,6 +12,6 @@ export class Car extends Model {
   @property public model: string;
   @property public cost: number;
   // prettier-ignore
-  @property @mock(modelYear) public modelYear: number;
+  @property @mock(modelYear) @index public modelYear: number;
   @ownedBy(Person) public owner?: fk;
 }

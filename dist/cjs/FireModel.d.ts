@@ -1,5 +1,4 @@
 import { Model } from "./Model";
-import { RealTimeDB } from "abstracted-firebase";
 import { IModelMetaProperties } from "./index";
 declare type Record<T> = import("./Record").Record<T>;
 import { IDictionary } from "common-types";
@@ -12,12 +11,12 @@ export declare class FireModel<T extends Model> {
     private static _dispatchActive;
     /** the dispatch function used to interact with frontend frameworks */
     private static _dispatch;
-    static defaultDb: RealTimeDB;
+    static defaultDb: import("abstracted-firebase").RealTimeDB;
     static dispatch: IReduxDispatch;
     /** the data structure/model that this class operates around */
     protected _model: T;
     protected _modelConstructor: new () => T;
-    protected _db: RealTimeDB;
+    protected _db: import("abstracted-firebase").RealTimeDB;
     readonly modelName: string;
     readonly pluralName: any;
     readonly dbPath: string;
@@ -28,7 +27,7 @@ export declare class FireModel<T extends Model> {
     readonly dispatch: IReduxDispatch;
     readonly dispatchIsActive: boolean;
     /** the connected real-time database */
-    readonly db: RealTimeDB;
+    readonly db: import("../../../../../../Users/ken/mine/forest-fire/firemodel/node_modules/abstracted-firebase/dist/esnext/db").RealTimeDB;
     readonly pushKeys: string[];
     /**
      * Creates a Redux-styled event

@@ -1,18 +1,9 @@
 import { Model } from "./Model";
-// tslint:disable-next-line:no-implicit-dependencies
-import { RealTimeDB } from "abstracted-firebase";
 import { IModelMetaProperties } from "./index";
 // prettier-ignore
 type Record<T> = import("./Record").Record<T>;
 import { IDictionary } from "common-types";
-import {
-  IFMRecordEvent,
-  FMEvents,
-  NotString,
-  Extractable,
-  IFMRelationshipEvent,
-  IFMEventName
-} from "./state-mgmt";
+import { IFMRecordEvent, FMEvents, NotString, Extractable } from "./state-mgmt";
 import { IReduxDispatch } from "./VuexWrapper";
 import { getModelMeta } from "./ModelMeta";
 // tslint:disable-next-line:no-var-requires
@@ -27,7 +18,7 @@ export class FireModel<T extends Model> {
     // TODO: implement this!
     return false;
   }
-  private static _defaultDb: RealTimeDB = null;
+  private static _defaultDb: import("abstracted-firebase").RealTimeDB;
   private static _dispatchActive: boolean = false;
   /** the dispatch function used to interact with frontend frameworks */
   private static _dispatch: IReduxDispatch = defaultDispatch;
@@ -36,7 +27,7 @@ export class FireModel<T extends Model> {
     return FireModel._defaultDb;
   }
 
-  public static set defaultDb(db: RealTimeDB) {
+  public static set defaultDb(db: import("abstracted-firebase").RealTimeDB) {
     this._defaultDb = db;
   }
 
@@ -61,7 +52,7 @@ export class FireModel<T extends Model> {
   /** the data structure/model that this class operates around */
   protected _model: T;
   protected _modelConstructor: new () => T;
-  protected _db: RealTimeDB;
+  protected _db: import("abstracted-firebase").RealTimeDB;
 
   //#endregion
 

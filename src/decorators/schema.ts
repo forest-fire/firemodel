@@ -2,7 +2,8 @@ import "reflect-metadata";
 import { IDictionary, ClassDecorator } from "common-types";
 import { getRelationships, getProperties, getPushKeys } from "./decorator";
 import { Model } from "../Model";
-import { addModelMeta, modelsWithMeta, getModelMeta } from "../ModelMeta";
+import { addModelMeta } from "../ModelMeta";
+import { IModelIndexMeta, getDbIndexes } from "./indexing";
 /* tslint:disable:only-arrow-functions */
 
 export type ISchemaRelationshipType = "hasMany" | "ownedBy";
@@ -25,6 +26,8 @@ export interface IModelMetaProperties<T extends Model = any> {
   pushKeys?: string[];
   /** indicates whether this property has been changed on client but not yet accepted by server */
   isDirty?: boolean;
+  /** get a list the list of database indexes on the given model */
+  dbIndexes?: IModelIndexMeta[];
 }
 
 export interface IModelRelationshipMeta<T extends Model = Model>
@@ -102,23 +105,24 @@ export function model(options: IModelMetaProperties): ClassDecorator {
         );
         options.audit = false;
       }
-      const payload = {
+      const meta = {
         ...options,
         ...{ property: getModelProperty(obj) },
         ...{ properties: getProperties(obj) },
         ...{ relationship: getModelRelationship(getRelationships(obj)) },
         ...{ relationships: getRelationships(obj) },
+        ...{ dbIndexes: getDbIndexes(obj) },
         ...{ pushKeys: getPushKeys(obj) },
         ...{ dbOffset: options.dbOffset ? options.dbOffset : "" },
         ...{ audit: options.audit ? options.audit : false },
         ...{ isDirty }
       };
 
-      addModelMeta(obj.constructor.name.toLowerCase(), payload);
+      addModelMeta(obj.constructor.name.toLowerCase(), meta);
 
       Reflect.defineProperty(obj, "META", {
         get(): IModelMetaProperties {
-          return payload;
+          return meta;
         },
         set(prop: IDictionary) {
           if (typeof prop === "object" && prop.isDirty !== undefined) {
