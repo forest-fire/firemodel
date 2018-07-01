@@ -8,7 +8,6 @@ const expect = chai.expect;
 describe("DB Indexes →", () => {
   it("Model shows indexes as expected on Model with no additional indexes", async () => {
     const person = Record.create(AuditedPerson);
-    console.log(person.META.dbIndexes);
 
     expect(person.META.dbIndexes)
       .is.an("array")

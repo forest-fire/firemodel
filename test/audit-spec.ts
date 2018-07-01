@@ -21,7 +21,6 @@ describe("Auditing →", () => {
         age: 20
       });
       const log = await db.getList<IAuditLogItem>("/auditing/people/all");
-      console.log(JSON.stringify(db.mock.db.auditing, null, 2));
 
       expect(log).to.have.lengthOf(1);
       expect(log[0])
