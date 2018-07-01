@@ -175,6 +175,9 @@ class List extends FireModel_1.FireModel {
         list._data = this.data.filter(whereFilter);
         return list;
     }
+    filterContains(prop, value) {
+        return this.filter((item) => Object.keys(item[prop]).includes(value));
+    }
     /**
      * findWhere
      *
@@ -183,9 +186,11 @@ class List extends FireModel_1.FireModel {
      * it is stated
      */
     findWhere(prop, value, defaultIfNotFound = DEFAULT_IF_NOT_FOUND) {
-        const list = this.META.property(prop).relType !== "hasMany"
+        const list = this.META.isProperty(prop) ||
+            (this.META.isRelationship(prop) &&
+                this.META.relationship(prop).relType === "ownedBy")
             ? this.filterWhere(prop, value)
-            : this.filter(i => Object.keys(i[prop]).includes(value));
+            : this.filterContains(prop, value);
         if (list.length > 0) {
             return Record_1.Record.createWith(this._modelConstructor, list._data[0]);
         }
@@ -194,7 +199,12 @@ class List extends FireModel_1.FireModel {
                 return defaultIfNotFound;
             }
             else {
-                const e = new Error(`findWhere(${prop}, ${value}) was not found in the List [ length: ${this.data.length} ]`);
+                const valid = this.META.isProperty(prop) ||
+                    (this.META.isRelationship(prop) &&
+                        this.META.relationship(prop).relType === "ownedBy")
+                    ? this.map(i => i[prop])
+                    : this.map(i => Object.keys(i[prop]));
+                const e = new Error(`List<${this.modelName}>.findWhere(${prop}, ${value}) was not found in the List [ length: ${this.data.length} ]. \n\nValid values include: \n\n${valid.join("\t")}`);
                 e.name = "NotFound";
                 throw e;
             }

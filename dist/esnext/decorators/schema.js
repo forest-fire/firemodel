@@ -1,12 +1,27 @@
 import "reflect-metadata";
-import { getRelationships, getProperties, getPushKeys } from "./decorator";
+import { getRelationships, getProperties, getPushKeys, propertiesByModel, relationshipsByModel } from "./decorator";
 import { addModelMeta } from "../ModelMeta";
+import { getDbIndexes } from "./indexing";
 /** lookup meta data for schema properties */
 function getModelProperty(modelKlass) {
-    return (prop) => Reflect.getMetadata(prop, modelKlass);
+    const className = modelKlass.constructor.name;
+    return (prop) => ((Object.assign({}, propertiesByModel[className], propertiesByModel.Model) || {})[prop]);
 }
-function getModelRelationship(relationships) {
-    return (relnProp) => relationships.find(i => relnProp === i.property);
+function isProperty(modelKlass) {
+    return (prop) => {
+        const modelProps = getModelProperty(modelKlass)(prop);
+        return modelProps ? true : false;
+    };
+}
+function isRelationship(modelKlass) {
+    return (prop) => {
+        const modelReln = getModelRelationship(modelKlass)(prop);
+        return modelReln ? true : false;
+    };
+}
+function getModelRelationship(modelKlass) {
+    const className = modelKlass.constructor.name;
+    return (prop) => (relationshipsByModel[className] || {})[prop];
 }
 export function model(options) {
     let isDirty = false;
@@ -24,11 +39,11 @@ export function model(options) {
                 console.warn(`You set the audit property to "${options.audit}" which is invalid. Valid properties are true, false, and "server". The audit property will be set to false for now.`);
                 options.audit = false;
             }
-            const payload = Object.assign({}, options, { property: getModelProperty(obj) }, { properties: getProperties(obj) }, { relationship: getModelRelationship(getRelationships(obj)) }, { relationships: getRelationships(obj) }, { pushKeys: getPushKeys(obj) }, { dbOffset: options.dbOffset ? options.dbOffset : "" }, { audit: options.audit ? options.audit : false }, { isDirty });
-            addModelMeta(obj.constructor.name.toLowerCase(), payload);
+            const meta = Object.assign({}, options, { isProperty: isProperty(obj) }, { property: getModelProperty(obj) }, { properties: getProperties(obj) }, { isRelationship: isRelationship(obj) }, { relationship: getModelRelationship(obj) }, { relationships: getRelationships(obj) }, { dbIndexes: getDbIndexes(obj) }, { pushKeys: getPushKeys(obj) }, { dbOffset: options.dbOffset ? options.dbOffset : "" }, { audit: options.audit ? options.audit : false }, { isDirty });
+            addModelMeta(obj.constructor.name.toLowerCase(), meta);
             Reflect.defineProperty(obj, "META", {
                 get() {
-                    return payload;
+                    return meta;
                 },
                 set(prop) {
                     if (typeof prop === "object" && prop.isDirty !== undefined) {

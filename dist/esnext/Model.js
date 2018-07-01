@@ -8,6 +8,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 import { property, mock } from "./decorators/property";
+import { index, uniqueIndex } from "./decorators/indexing";
 export var RelationshipPolicy;
 (function (RelationshipPolicy) {
     RelationshipPolicy["keys"] = "keys";
@@ -23,16 +24,19 @@ export class Model {
 }
 __decorate([
     property,
+    uniqueIndex,
     __metadata("design:type", String)
 ], Model.prototype, "id", void 0);
 __decorate([
     property,
     mock("dateRecentMiliseconds"),
+    index,
     __metadata("design:type", Number)
 ], Model.prototype, "lastUpdated", void 0);
 __decorate([
     property,
     mock("datePastMiliseconds"),
+    index,
     __metadata("design:type", Number)
 ], Model.prototype, "createdAt", void 0);
 //# sourceMappingURL=Model.js.map

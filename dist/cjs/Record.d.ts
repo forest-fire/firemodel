@@ -77,7 +77,7 @@ export declare class Record<T extends Model> extends FireModel<T> {
     addAnother(payload: T): Promise<Record<T>>;
     readonly data: Readonly<T>;
     /**
-    * set the dirty flag of the model
+    * deprecated
     */
     isDirty: boolean;
     /**

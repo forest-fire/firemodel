@@ -44,15 +44,15 @@ class FireModel {
         return "dbPath was not overwritten!";
     }
     get META() {
-        const coreMeta = this._model.META;
-        const storedMeta = ModelMeta_1.getModelMeta(this.modelName);
-        return Object.assign({}, storedMeta, coreMeta);
+        return ModelMeta_1.getModelMeta(this._model);
     }
     get properties() {
-        return this._model.META.properties;
+        const meta = ModelMeta_1.getModelMeta(this._model);
+        return meta.properties;
     }
     get relationships() {
-        return this._model.META.relationships;
+        const meta = ModelMeta_1.getModelMeta(this._model);
+        return meta.relationships;
     }
     get dispatch() {
         return FireModel.dispatch;

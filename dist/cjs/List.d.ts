@@ -67,6 +67,7 @@ export declare class List<T extends Model> extends FireModel<T> {
     /** Returns another List with data filtered down by passed in filter function */
     find(f: ListFilterFunction<T>, defaultIfNotFound?: string): Record<T>;
     filterWhere<K extends keyof T>(prop: K, value: T[K]): List<T>;
+    filterContains<K extends keyof T>(prop: K, value: any): List<T>;
     /**
      * findWhere
      *

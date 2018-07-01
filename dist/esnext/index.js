@@ -1,4 +1,5 @@
 export { property, pushKey, constrainedProperty, constrain, min, max, length, desc, mock } from "./decorators/property";
+export { index, uniqueIndex } from "./decorators/indexing";
 export { hasMany, ownedBy, inverse } from "./decorators/relationship";
 export { model } from "./decorators/schema";
 export { Model, RelationshipPolicy, RelationshipCardinality } from "./Model";
