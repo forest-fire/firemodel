@@ -187,7 +187,7 @@ export class Record<T extends Model> extends FireModel<T> {
   }
 
   /**
-   * set the dirty flag of the model
+   * deprecated
    */
   public set isDirty(value: boolean) {
     if (!this._data.META) {
@@ -494,7 +494,7 @@ export class Record<T extends Model> extends FireModel<T> {
     }
     const now = new Date().getTime();
     const mps = this.db.multiPathSet("/");
-    const inverseProperty = this.META.property(property).inverseProperty;
+    const inverseProperty = this.META.relationship(property).inverseProperty;
     mps.add({ path: pathJoin(this.dbPath, "lastUpdated"), value: now });
     refs.map(ref => {
       this._relationshipMPS(mps, ref, property, null, now);
@@ -660,14 +660,16 @@ export class Record<T extends Model> extends FireModel<T> {
     value: any,
     now: number
   ) {
-    const isHasMany = this.META.property(property).relType === "hasMany";
+    const isHasMany = this.META.relationship(property).relType === "hasMany";
     const pathToThisFkReln = pathJoin(
       this.dbPath,
       property,
       isHasMany ? ref : ""
     );
-    const inverseProperty = this.META.property(property).inverseProperty;
-    const fkRecord = Record.create(this.META.property(property).fkConstructor);
+    const inverseProperty = this.META.relationship(property).inverseProperty;
+    const fkRecord = Record.create(
+      this.META.relationship(property).fkConstructor
+    );
 
     mps.add({ path: pathToThisFkReln, value: isHasMany ? value : ref });
     // INVERSE RELATIONSHIP
@@ -731,14 +733,14 @@ export class Record<T extends Model> extends FireModel<T> {
     property: Extract<keyof T, string>,
     fn: string
   ) {
-    if (this.META.property(property).relType !== "ownedBy") {
+    if (this.META.relationship(property).relType !== "ownedBy") {
       const e = new Error(
         `Can not use property "${property}" on ${
           this.modelName
         } with ${fn}() because it is not a ownedBy relationship [ relType: ${
-          this.META.property(property).relType
+          this.META.relationship(property).relType
         }, inverse: ${
-          this.META.property(property).inverse
+          this.META.relationship(property).inverse
         } ]. If you are working with a hasMany relationship then you should instead use addRelationship() and removeRelationship().`
       );
       e.name = "FireModel::WrongRelationshipType";
@@ -750,14 +752,14 @@ export class Record<T extends Model> extends FireModel<T> {
     property: Extract<keyof T, string>,
     fn: string
   ) {
-    if (this.META.property(property).relType !== "hasMany") {
+    if (this.META.relationship(property).relType !== "hasMany") {
       const e = new Error(
         `Can not use property "${property}" on ${
           this.modelName
         } with ${fn}() because it is not a hasMany relationship [ relType: ${
-          this.META.property(property).relType
+          this.META.relationship(property).relType
         }, inverse: ${
-          this.META.property(property).inverse
+          this.META.relationship(property).inverseProperty
         } ]. If you are working with a ownedBy relationship then you should instead use setRelationship() and clearRelationship().`
       );
       e.name = "FireModel::WrongRelationshipType";

@@ -1,6 +1,12 @@
 import "reflect-metadata";
 import { IDictionary, ClassDecorator } from "common-types";
-import { getRelationships, getProperties, getPushKeys } from "./decorator";
+import {
+  getRelationships,
+  getProperties,
+  getPushKeys,
+  propertiesByModel,
+  relationshipsByModel
+} from "./decorator";
 import { Model } from "../Model";
 import { addModelMeta } from "../ModelMeta";
 import { IModelIndexMeta, getDbIndexes } from "./indexing";
@@ -13,8 +19,12 @@ export interface IModelMetaProperties<T extends Model = any> {
   dbOffset?: string;
   /** Optionally specify a root path where the local store will put this schema */
   localOffset?: string;
+  /** provides a boolean flag on whether the stated name is a property */
+  isProperty?: (prop: keyof T) => boolean;
   /** a function to lookup the meta properties of a given property */
   property?: (prop: keyof T) => IModelPropertyMeta<T>;
+  /** provides a boolean flag on whether the stated name is a property */
+  isRelationship?: (prop: keyof T) => boolean;
   /** a function to lookup the meta properties of a given relationship */
   relationship?: (prop: keyof T) => IModelRelationshipMeta<T>;
   audit?: boolean | "server";
@@ -55,7 +65,7 @@ export interface IModelPropertyMeta<T extends Model = Model>
   /** the name -- if it exists -- of the property on the FK which points back to this record */
   inverse?: string;
   /** is this prop a FK relationship to another entity/entities */
-  isRelationship: boolean;
+  isRelationship?: boolean;
   /** is this prop an attribute of the schema (versus being a relationship) */
   isProperty?: boolean;
   /** is this property an array which is added to using firebase pushkeys? */
@@ -68,19 +78,37 @@ export interface IModelPropertyMeta<T extends Model = Model>
 }
 
 /** lookup meta data for schema properties */
-function getModelProperty<T extends Model = Model>(modelKlass: object) {
-  return (prop: string): IModelPropertyMeta<T> =>
-    Reflect.getMetadata(prop, modelKlass);
+function getModelProperty<T extends Model = Model>(modelKlass: IDictionary) {
+  const className = modelKlass.constructor.name;
+
+  return (prop: string) =>
+    (({ ...propertiesByModel[className], ...propertiesByModel.Model } || {})[
+      prop
+    ]);
+}
+
+function isProperty(modelKlass: IDictionary) {
+  return (prop: string) => {
+    const modelProps = getModelProperty(modelKlass)(prop);
+    return modelProps ? true : false;
+  };
+}
+
+function isRelationship(modelKlass: IDictionary) {
+  return (prop: string) => {
+    const modelReln = getModelRelationship(modelKlass)(prop);
+    return modelReln ? true : false;
+  };
 }
 
 function getModelRelationship<T extends Model = Model>(
-  relationships: Array<IModelRelationshipMeta<T>>
+  modelKlass: IDictionary<IModelRelationshipMeta<T>>
 ) {
-  return (relnProp: string): IModelRelationshipMeta<T> =>
-    relationships.find(i => relnProp === i.property);
+  const className = modelKlass.constructor.name;
+  return (prop: string) => (relationshipsByModel[className] || {})[prop];
 }
 
-export function model(options: IModelMetaProperties): ClassDecorator {
+export function model(options: Partial<IModelMetaProperties>): ClassDecorator {
   let isDirty: boolean = false;
   return (target: any): void => {
     const original = target;
@@ -105,11 +133,13 @@ export function model(options: IModelMetaProperties): ClassDecorator {
         );
         options.audit = false;
       }
-      const meta = {
+      const meta: IModelMetaProperties = {
         ...options,
+        ...{ isProperty: isProperty(obj) },
         ...{ property: getModelProperty(obj) },
         ...{ properties: getProperties(obj) },
-        ...{ relationship: getModelRelationship(getRelationships(obj)) },
+        ...{ isRelationship: isRelationship(obj) },
+        ...{ relationship: getModelRelationship(obj) },
         ...{ relationships: getRelationships(obj) },
         ...{ dbIndexes: getDbIndexes(obj) },
         ...{ pushKeys: getPushKeys(obj) },

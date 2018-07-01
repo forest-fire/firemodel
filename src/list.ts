@@ -249,9 +249,14 @@ export class List<T extends Model> extends FireModel<T> {
 
   public filterWhere<K extends keyof T>(prop: K, value: T[K]): List<T> {
     const whereFilter = (item: T) => item[prop] === value;
+
     const list = new List(this._modelConstructor);
     list._data = this.data.filter(whereFilter);
     return list;
+  }
+
+  public filterContains<K extends keyof T>(prop: K, value: any): List<T> {
+    return this.filter((item: any) => Object.keys(item[prop]).includes(value));
   }
 
   /**
@@ -267,9 +272,11 @@ export class List<T extends Model> extends FireModel<T> {
     defaultIfNotFound = DEFAULT_IF_NOT_FOUND
   ): Record<T> {
     const list =
-      this.META.property(prop).relType !== "hasMany"
+      this.META.isProperty(prop) ||
+      (this.META.isRelationship(prop) &&
+        this.META.relationship(prop).relType === "ownedBy")
         ? this.filterWhere(prop, value)
-        : this.filter(i => Object.keys(i[prop]).includes(value as any));
+        : this.filterContains(prop, value);
 
     if (list.length > 0) {
       return Record.createWith(this._modelConstructor, list._data[0]);
@@ -277,10 +284,18 @@ export class List<T extends Model> extends FireModel<T> {
       if (defaultIfNotFound !== DEFAULT_IF_NOT_FOUND) {
         return defaultIfNotFound as any;
       } else {
+        const valid =
+          this.META.isProperty(prop) ||
+          (this.META.isRelationship(prop) &&
+            this.META.relationship(prop).relType === "ownedBy")
+            ? this.map(i => i[prop])
+            : this.map(i => Object.keys(i[prop]));
         const e = new Error(
-          `findWhere(${prop}, ${value}) was not found in the List [ length: ${
+          `List<${
+            this.modelName
+          }>.findWhere(${prop}, ${value}) was not found in the List [ length: ${
             this.data.length
-          } ]`
+          } ]. \n\nValid values include: \n\n${valid.join("\t")}`
         );
         e.name = "NotFound";
         throw e;

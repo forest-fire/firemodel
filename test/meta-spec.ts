@@ -1,13 +1,10 @@
 // tslint:disable:no-implicit-dependencies
 import { Record } from "../src";
 import { DB } from "abstracted-admin";
-import { SchemaCallback } from "firemock";
 import * as chai from "chai";
-import * as helpers from "./testing/helpers";
-import { Klass, ContainedKlass, SubKlass } from "./testing/klass";
+import { Klass } from "./testing/klass";
 import { Person } from "./testing/person";
 const expect = chai.expect;
-import "reflect-metadata";
 
 describe("schema() decorator: ", () => {
   it("can read Schema meta properties", () => {
@@ -86,17 +83,18 @@ describe("relationship decorators: ", () => {
     const person = new Person();
     const keys: string[] = Reflect.getMetadataKeys(person);
     expect(keys).to.include.members(["father", "mother"]);
-    expect(person.META.property("father").isRelationship).to.equal(true);
-    expect(person.META.property("father").relType).to.be.equal("ownedBy");
-    expect(person.META.property("mother").relType).to.be.equal("ownedBy");
+
+    expect(person.META.relationship("father").isRelationship).to.equal(true);
+    expect(person.META.relationship("father").relType).to.be.equal("ownedBy");
+    expect(person.META.relationship("mother").relType).to.be.equal("ownedBy");
   });
 
   it("hasMany() sets correct meta props", async () => {
     const person = new Person();
     const keys: string[] = Reflect.getMetadataKeys(person);
     expect(keys).to.include.members(["children"]);
-    expect(person.META.property("children").isRelationship).to.equal(true);
-    expect(person.META.property("children").relType).to.be.equal("hasMany");
+    expect(person.META.relationship("children").isRelationship).to.equal(true);
+    expect(person.META.relationship("children").relType).to.be.equal("hasMany");
   });
 
   it("@relationships show up on Schema's relationships array", async () => {
@@ -123,15 +121,13 @@ describe("relationship decorators: ", () => {
 
   it("@properties show up on Schema's properties array", async () => {
     const person = new Person();
-    const ids = person.META.properties.map(r => r.property);
-    const base = person.META.properties.filter(f => f.isModel);
+    const props = person.META.properties.map(r => r.property);
+
     expect(person.META.relationships.length).to.equal(4);
-    expect(ids).to.include("name");
-    expect(ids).to.include("age");
-    expect(ids).to.include("lastUpdated");
-    expect(ids).to.include("createdAt");
-    expect(base.length).to.equal(3);
-    expect(base.map(b => b.property)).to.include("lastUpdated");
+    expect(props).to.include("name");
+    expect(props).to.include("age");
+    expect(props).to.include("lastUpdated");
+    expect(props).to.include("createdAt");
   });
 
   it("@properties show up on Model", async () => {
@@ -148,7 +144,11 @@ describe("relationship decorators: ", () => {
 
   it("inverse() sets correct meta props", async () => {
     const person = new Person();
-    expect(person.META.property("mother").inverseProperty).to.equal("children");
-    expect(person.META.property("father").inverseProperty).to.equal("children");
+    expect(person.META.relationship("mother").inverseProperty).to.equal(
+      "children"
+    );
+    expect(person.META.relationship("father").inverseProperty).to.equal(
+      "children"
+    );
   });
 });

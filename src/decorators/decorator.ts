@@ -3,6 +3,7 @@ import { Model, IModelPropertyMeta, IModelRelationshipMeta } from "../index";
 import { IDictionary } from "common-types";
 import { set, get } from "lodash";
 import { indexesForModel } from "./indexing";
+import { arrayToHash, hashToArray } from "typed-conversions";
 
 function push<T extends Model = Model>(
   target: IDictionary,
@@ -17,9 +18,13 @@ function push<T extends Model = Model>(
 }
 
 /** Properties accumlated by propertyDecorators  */
-const propertiesByModel: IDictionary<IModelPropertyMeta[]> = {};
+export const propertiesByModel: IDictionary<
+  IDictionary<IModelPropertyMeta>
+> = {};
 /** Relationships accumlated by hasMany/ownedBy decorators */
-const relationshipsByModel: IDictionary<IModelPropertyMeta[]> = {};
+export const relationshipsByModel: IDictionary<
+  IDictionary<IModelRelationshipMeta>
+> = {};
 
 export const propertyDecorator = <T extends Model>(
   nameValuePairs: IDictionary = {},
@@ -59,13 +64,6 @@ export const propertyDecorator = <T extends Model>(
       push(relationshipsByModel, target.constructor.name, meta);
     }
   }
-
-  if (nameValuePairs.isIndex) {
-    push(indexesForModel, target.constructor.name, {
-      ...meta,
-      [property]: key
-    });
-  }
 };
 
 /** lookup meta data for schema properties */
@@ -77,25 +75,26 @@ function propertyMeta<T extends Model = Model>(context: object) {
 /**
  * Gets all the properties for a given model
  *
- * @param target the schema object which is being looked up
+ * @param model the schema object which is being looked up
  */
-export function getProperties(target: object) {
-  return [
-    ...propertiesByModel[target.constructor.name],
-    ...propertiesByModel.Model.map(s => ({
-      ...s,
-      ...{ isModel: true }
-    }))
-  ];
+export function getProperties(model: object) {
+  const modelName = model.constructor.name;
+  const baseModel = hashToArray(propertiesByModel.Model, "property");
+  const subClass =
+    modelName === "Model"
+      ? []
+      : hashToArray(propertiesByModel[modelName], "property");
+
+  return [...subClass, ...baseModel];
 }
 
 /**
  * Gets all the relationships for a given model
  */
-export function getRelationships<T>(target: object) {
-  return relationshipsByModel[target.constructor.name] as Array<
-    IModelRelationshipMeta<T>
-  >;
+export function getRelationships(model: object) {
+  const modelName = model.constructor.name;
+  const modelRelationships = relationshipsByModel[modelName];
+  return hashToArray<IModelRelationshipMeta>(modelRelationships);
 }
 
 export function getPushKeys(target: object) {

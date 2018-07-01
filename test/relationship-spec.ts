@@ -1,9 +1,9 @@
 // tslint:disable:no-implicit-dependencies
-import { Record } from "../src";
+import { Record } from "../src/record";
 import { DB } from "abstracted-admin";
 import * as chai from "chai";
 const expect = chai.expect;
-import "reflect-metadata";
+// import "reflect-metadata";
 import { Person } from "./testing/person";
 import { FireModel } from "../src/FireModel";
 import { FancyPerson } from "./testing/FancyPerson";

@@ -10,7 +10,9 @@ export function addModelMeta(
   meta[modelName] = props;
 }
 
-export function getModelMeta(modelName: Extract<keyof typeof meta, string>) {
+export function getModelMeta(
+  modelName: Extract<keyof typeof meta, string>
+): Partial<IModelMetaProperties> {
   return meta[modelName] || {};
 }
 

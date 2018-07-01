@@ -1,55 +1,70 @@
 import "reflect-metadata";
 import { IDictionary, PropertyDecorator } from "common-types";
-import { propertyDecorator } from "./decorator";
+import { propertyDecorator, propertiesByModel } from "./decorator";
+import { propertyReflector } from "./reflector";
+import { IModelMetaProperties, IModelPropertyMeta } from "./schema";
 
 export function constrainedProperty(options: IDictionary = {}) {
-  return propertyDecorator(
+  return propertyReflector<IModelPropertyMeta>(
     {
       ...options,
       ...{ isRelationship: false, isProperty: true }
     },
-    "property"
-  ) as PropertyDecorator;
+    propertiesByModel
+  );
 }
 
 /** allows the introduction of a new constraint to the metadata of a property */
 export function constrain(prop: string, value: any) {
-  return propertyDecorator({ [prop]: value }) as PropertyDecorator;
+  return propertyReflector<IModelPropertyMeta>(
+    { [prop]: value },
+    propertiesByModel
+  );
 }
 
 export function desc(value: string) {
-  return propertyDecorator({ desc: value }) as PropertyDecorator;
+  return propertyReflector<IModelPropertyMeta>(
+    { desc: value },
+    propertiesByModel
+  );
 }
 
 export function min(value: number) {
-  return propertyDecorator({ min: value });
+  return propertyReflector<IModelPropertyMeta>(
+    { min: value },
+    propertiesByModel
+  );
 }
 
 export type MockFunction = (context: import("firemock").MockHelper) => any;
 
 export function mock(value: string | MockFunction) {
-  return propertyDecorator({ mockType: value });
+  return propertyReflector<IModelPropertyMeta>(
+    { mockType: value },
+    propertiesByModel
+  );
 }
 
 export function max(value: number) {
-  return propertyDecorator({ max: value });
+  return propertyReflector<IModelPropertyMeta>(
+    { max: value },
+    propertiesByModel
+  );
 }
 
 export function length(value: number) {
-  return propertyDecorator({ length: value });
+  return propertyReflector<IModelPropertyMeta>(
+    { length: value },
+    propertiesByModel
+  );
 }
 
-export const property = propertyDecorator(
+export const property = propertyReflector(
   {
     isRelationship: false,
     isProperty: true
   },
-  "property"
-) as PropertyDecorator;
+  propertiesByModel
+);
 
-export const pushKey = propertyDecorator(
-  {
-    pushKey: true
-  },
-  "property"
-) as PropertyDecorator;
+export const pushKey = propertyReflector({ pushKey: true }, propertiesByModel);

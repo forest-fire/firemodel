@@ -28,17 +28,13 @@ export class ContainedKlass {
 /** a schema class */
 @model({ dbOffset: "authenticated", localOffset: "foobar" })
 export class Klass extends SubKlass {
-  @desc("who doesn't love a foobar?")
-  @property
-  @length(15)
-  public foobar: string;
+  // prettier-ignore
+  @desc("who doesn't love a foobar?") @property @length(15) public foobar: string;
   @property public foo: string;
-  @desc("the bar is a numeric property that holds no real meaning")
-  @property
-  @constrain("min", 2)
-  public bar: number = 8;
-  @constrainedProperty({ min: 1, max: 20 })
-  public bar2: number = 12;
+  // prettier-ignore
+  @desc("the bar is a numeric property that holds no real meaning") @property @constrain("min", 2) public bar: number = 8;
+  // prettier-ignore
+  @constrainedProperty({ min: 1, max: 20 }) public bar2: number = 12;
   // prettier-ignore
   @property @min(5) @max(10) public bar3: number;
   @property public cb: Callback;

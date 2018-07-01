@@ -41,7 +41,7 @@
     "pluralize": "^7.0.0",
     "reflect-metadata": "^0.1.12",
     "serialized-query": "^0.4.5",
-    "typed-conversions": "^0.8.9",
+    "typed-conversions": "^0.8.11",
     "wait-in-parallel": "^1.1.4"
   },
   "peerDependencies": {

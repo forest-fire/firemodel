@@ -1,7 +1,7 @@
 import "reflect-metadata";
-import { propertyDecorator } from "./decorator";
-import { IDictionary, PropertyDecorator } from "common-types";
+import { IDictionary } from "common-types";
 import { propertyReflector } from "./reflector";
+import { hashToArray } from "typed-conversions";
 
 export interface IModelIndexMeta {
   isIndex: boolean;
@@ -11,16 +11,19 @@ export interface IModelIndexMeta {
 }
 
 /** DB Indexes accumlated by index decorators */
-export const indexesForModel: IDictionary<IModelIndexMeta[]> = {};
+export const indexesForModel: IDictionary<IDictionary<IModelIndexMeta>> = {};
 
 /**
  * Gets all the db indexes for a given model
  */
-export function getDbIndexes<T>(target: object): IModelIndexMeta[] {
-  const modelName = target.constructor.name;
+export function getDbIndexes<T>(modelKlass: object): IModelIndexMeta[] {
+  const modelName = modelKlass.constructor.name;
+
   return modelName === "Model"
-    ? indexesForModel[modelName] || []
-    : (indexesForModel[modelName] || []).concat(indexesForModel.Model);
+    ? hashToArray<IModelIndexMeta>(indexesForModel[modelName])
+    : (hashToArray<IModelIndexMeta>(indexesForModel[modelName]) || []).concat(
+        hashToArray<IModelIndexMeta>(indexesForModel.Model)
+      );
 }
 
 export const index = propertyReflector<IModelIndexMeta>(
