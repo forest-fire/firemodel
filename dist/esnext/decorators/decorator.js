@@ -1,5 +1,6 @@
 import "reflect-metadata";
 import { set, get } from "lodash";
+import { hashToArray } from "typed-conversions";
 function push(target, path, value) {
     if (Array.isArray(get(target, path))) {
         get(target, path).push(value);
@@ -9,9 +10,9 @@ function push(target, path, value) {
     }
 }
 /** Properties accumlated by propertyDecorators  */
-const propertiesByModel = {};
+export const propertiesByModel = {};
 /** Relationships accumlated by hasMany/ownedBy decorators */
-const relationshipsByModel = {};
+export const relationshipsByModel = {};
 export const propertyDecorator = (nameValuePairs = {}, 
 /**
  * if you want to set the property being decorated's name
@@ -45,19 +46,23 @@ function propertyMeta(context) {
 /**
  * Gets all the properties for a given model
  *
- * @param target the schema object which is being looked up
+ * @param model the schema object which is being looked up
  */
-export function getProperties(target) {
-    return [
-        ...propertiesByModel[target.constructor.name],
-        ...propertiesByModel.Model.map(s => (Object.assign({}, s, { isModel: true })))
-    ];
+export function getProperties(model) {
+    const modelName = model.constructor.name;
+    const baseModel = hashToArray(propertiesByModel.Model, "property");
+    const subClass = modelName === "Model"
+        ? []
+        : hashToArray(propertiesByModel[modelName], "property");
+    return [...subClass, ...baseModel];
 }
 /**
  * Gets all the relationships for a given model
  */
-export function getRelationships(target) {
-    return relationshipsByModel[target.constructor.name];
+export function getRelationships(model) {
+    const modelName = model.constructor.name;
+    const modelRelationships = relationshipsByModel[modelName];
+    return hashToArray(modelRelationships, "property");
 }
 export function getPushKeys(target) {
     const props = getProperties(target);

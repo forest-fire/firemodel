@@ -1,11 +1,12 @@
 import { Model } from "./Model";
-import { IModelMetaProperties } from "./index";
+import { IModelMetaProperties, IModelPropertyMeta } from "./index";
 // prettier-ignore
 type Record<T> = import("./Record").Record<T>;
 import { IDictionary } from "common-types";
 import { IFMRecordEvent, FMEvents, NotString, Extractable } from "./state-mgmt";
 import { IReduxDispatch } from "./VuexWrapper";
 import { getModelMeta } from "./ModelMeta";
+import { IModelRelationshipMeta } from "./decorators/schema";
 // tslint:disable-next-line:no-var-requires
 const pluralize = require("pluralize");
 const defaultDispatch = (context: IDictionary) => "";
@@ -79,12 +80,14 @@ export class FireModel<T extends Model> {
     return getModelMeta(this._model);
   }
 
-  public get properties() {
-    return (this._model as Model).META.properties;
+  public get properties(): IModelPropertyMeta[] {
+    const meta = getModelMeta(this._model);
+    return meta.properties;
   }
 
-  public get relationships() {
-    return (this._model as Model).META.relationships;
+  public get relationships(): IModelRelationshipMeta[] {
+    const meta = getModelMeta(this._model);
+    return meta.relationships;
   }
 
   public get dispatch() {

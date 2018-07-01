@@ -5,8 +5,6 @@ import { fbKey } from "./index";
 import { set } from "lodash";
 import { pathJoin } from "./path";
 import { getModelMeta } from "./ModelMeta";
-import { writeAudit } from "./Audit";
-import { updateToAuditChanges } from "./util";
 import { Parallel } from "wait-in-parallel";
 function defaultCardinality(r) {
     return r.META.relationships.reduce((prev, curr) => {
@@ -15,8 +13,8 @@ function defaultCardinality(r) {
 }
 function dbOffset(record, payload) {
     const output = {};
-    const meta = getModelMeta(record.modelName);
-    const path = pathJoin(record.META.dbOffset || meta.dbOffset || "", record.pluralName);
+    const meta = getModelMeta(record);
+    const path = pathJoin(meta.dbOffset || "", record.pluralName);
     set(output, path.replace(/\//g, "."), payload);
     return output;
 }
@@ -145,8 +143,8 @@ function mockValue(db, propMeta) {
 /** adds mock values for all the properties on a given model */
 function mockProperties(db, config, exceptions) {
     return async (instance) => {
-        const meta = getModelMeta(instance.modelName);
-        const props = instance.META ? instance.META.properties : meta.properties;
+        const meta = getModelMeta(instance);
+        const props = meta.properties;
         const recProps = {};
         props.map(prop => {
             const p = prop.property;
@@ -162,10 +160,8 @@ function NumberBetween(startEnd) {
 }
 function addRelationships(db, config, exceptions) {
     return async (instance) => {
-        const meta = getModelMeta(instance.modelName);
-        const relns = meta && meta.relationships
-            ? meta.relationships
-            : instance.META.relationships;
+        const meta = getModelMeta(instance);
+        const relns = meta.relationships;
         const p = new Parallel();
         if (!relns || config.relationshipBehavior === "ignore") {
             return instance;
@@ -197,7 +193,13 @@ function addRelationships(db, config, exceptions) {
                 }
             }
         });
-        await p.isDone();
+        try {
+            await p.isDone();
+        }
+        catch (e) {
+            console.log(JSON.stringify(e));
+            throw e;
+        }
         instance = await instance.reload();
         return instance;
     };
@@ -206,9 +208,7 @@ function addRelationships(db, config, exceptions) {
 function followRelationships(db, config, exceptions) {
     return async (instance) => {
         const p = new Parallel();
-        const relns = instance.META
-            ? instance.META.relationships
-            : getModelMeta(instance.modelName).relationships;
+        const relns = getModelMeta(instance).relationships;
         if (!relns || config.relationshipBehavior !== "follow") {
             return instance;
         }
@@ -225,14 +225,6 @@ function followRelationships(db, config, exceptions) {
             p.add(fk, Mock(r.fkConstructor, db).generate(1, { id: fk }));
         });
         await p.isDone();
-        return instance;
-    };
-}
-function auditMocks(record) {
-    return (instance) => {
-        if (record.META.audit === true) {
-            writeAudit(instance.id, record.pluralName, "added", updateToAuditChanges(instance, {}));
-        }
         return instance;
     };
 }

@@ -1,7 +1,8 @@
 import "reflect-metadata";
-import { propertyDecorator } from "./decorator";
+import { relationshipsByModel } from "./decorator";
 import { Record } from "../Record";
 import { addModelMeta } from "../ModelMeta";
+import { propertyReflector } from "./reflector";
 export function hasMany(modelConstructor) {
     const rec = Record.create(modelConstructor);
     let meta = {};
@@ -17,7 +18,7 @@ export function hasMany(modelConstructor) {
         fkModelName: rec.modelName,
         fkPluralName: rec.pluralName
     };
-    return propertyDecorator(payload, "property");
+    return propertyReflector(payload, relationshipsByModel);
 }
 export function ownedBy(modelConstructor) {
     const rec = Record.create(modelConstructor);
@@ -33,9 +34,9 @@ export function ownedBy(modelConstructor) {
         fkConstructor: modelConstructor,
         fkModelName: rec.modelName
     };
-    return propertyDecorator(payload, "property");
+    return propertyReflector(payload, relationshipsByModel);
 }
 export function inverse(inverseProperty) {
-    return propertyDecorator({ inverseProperty });
+    return propertyReflector({ inverseProperty }, relationshipsByModel);
 }
 //# sourceMappingURL=relationship.js.map

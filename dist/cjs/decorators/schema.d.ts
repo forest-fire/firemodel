@@ -1,14 +1,19 @@
 import "reflect-metadata";
 import { IDictionary, ClassDecorator } from "common-types";
 import { Model } from "../Model";
+import { IModelIndexMeta } from "./indexing";
 export declare type ISchemaRelationshipType = "hasMany" | "ownedBy";
 export interface IModelMetaProperties<T extends Model = any> {
     /** Optionally specify a root path to store this schema under */
     dbOffset?: string;
     /** Optionally specify a root path where the local store will put this schema */
     localOffset?: string;
+    /** provides a boolean flag on whether the stated name is a property */
+    isProperty?: (prop: keyof T) => boolean;
     /** a function to lookup the meta properties of a given property */
     property?: (prop: keyof T) => IModelPropertyMeta<T>;
+    /** provides a boolean flag on whether the stated name is a property */
+    isRelationship?: (prop: keyof T) => boolean;
     /** a function to lookup the meta properties of a given relationship */
     relationship?: (prop: keyof T) => IModelRelationshipMeta<T>;
     audit?: boolean | "server";
@@ -20,6 +25,8 @@ export interface IModelMetaProperties<T extends Model = any> {
     pushKeys?: string[];
     /** indicates whether this property has been changed on client but not yet accepted by server */
     isDirty?: boolean;
+    /** get a list the list of database indexes on the given model */
+    dbIndexes?: IModelIndexMeta[];
 }
 export interface IModelRelationshipMeta<T extends Model = Model> extends IModelPropertyMeta<T> {
     isRelationship: true;
@@ -44,7 +51,7 @@ export interface IModelPropertyMeta<T extends Model = Model> extends IDictionary
     /** the name -- if it exists -- of the property on the FK which points back to this record */
     inverse?: string;
     /** is this prop a FK relationship to another entity/entities */
-    isRelationship: boolean;
+    isRelationship?: boolean;
     /** is this prop an attribute of the schema (versus being a relationship) */
     isProperty?: boolean;
     /** is this property an array which is added to using firebase pushkeys? */
@@ -55,4 +62,4 @@ export interface IModelPropertyMeta<T extends Model = Model> extends IDictionary
     fkConstructor?: new () => any;
     fkModelName?: string;
 }
-export declare function model(options: IModelMetaProperties): ClassDecorator;
+export declare function model(options: Partial<IModelMetaProperties>): ClassDecorator;

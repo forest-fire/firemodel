@@ -4,6 +4,7 @@ require("reflect-metadata");
 const decorator_1 = require("./decorator");
 const Record_1 = require("../Record");
 const ModelMeta_1 = require("../ModelMeta");
+const reflector_1 = require("./reflector");
 function hasMany(modelConstructor) {
     const rec = Record_1.Record.create(modelConstructor);
     let meta = {};
@@ -19,7 +20,7 @@ function hasMany(modelConstructor) {
         fkModelName: rec.modelName,
         fkPluralName: rec.pluralName
     };
-    return decorator_1.propertyDecorator(payload, "property");
+    return reflector_1.propertyReflector(payload, decorator_1.relationshipsByModel);
 }
 exports.hasMany = hasMany;
 function ownedBy(modelConstructor) {
@@ -36,11 +37,11 @@ function ownedBy(modelConstructor) {
         fkConstructor: modelConstructor,
         fkModelName: rec.modelName
     };
-    return decorator_1.propertyDecorator(payload, "property");
+    return reflector_1.propertyReflector(payload, decorator_1.relationshipsByModel);
 }
 exports.ownedBy = ownedBy;
 function inverse(inverseProperty) {
-    return decorator_1.propertyDecorator({ inverseProperty });
+    return reflector_1.propertyReflector({ inverseProperty }, decorator_1.relationshipsByModel);
 }
 exports.inverse = inverse;
 //# sourceMappingURL=relationship.js.map
