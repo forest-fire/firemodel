@@ -101,6 +101,7 @@ describe("relationship decorators: ", () => {
     const person = new Person();
     const ids = person.META.relationships.map(r => r.property);
     expect(person.META.relationships.length).to.equal(4);
+
     expect(ids).to.include("father");
     expect(ids).to.include("mother");
     expect(ids).to.include("children");

@@ -6,10 +6,14 @@ import {
   fk,
   hasMany,
   min,
-  inverse
+  inverse,
+  pushKey,
+  max,
+  length
 } from "../../src";
 import { mock } from "../../src/decorators/property";
 import { Company } from "./company";
+import { IDictionary } from "common-types";
 
 function bespokeMock(context: import("firemock").MockHelper) {
   return context.faker.name.firstName() + ", hello to you";
@@ -17,18 +21,21 @@ function bespokeMock(context: import("firemock").MockHelper) {
 
 @model({ dbOffset: "authenticated", audit: true })
 export class Person extends Model {
-  @property public name: string;
   // prettier-ignore
-  @property @min(0) public age?: number;
-  @property public phoneNumber?: string;
+  @property @length(20) public name: string;
   // prettier-ignore
-  @property @mock("phoneNumber") public otherPhone?: string;
+  @property @min(1) @max(100) public age?: number;
+  @property public gender?: "male" | "female" | "other";
+  @property public scratchpad?: IDictionary;
   // prettier-ignore
-  @property @mock(bespokeMock) public foobar?: string;
+  @property @pushKey public tags?: IDictionary<string>;
   // prettier-ignore
-  @ownedBy(Company) public employer?: fk;
+  @ownedBy(Person) @inverse("children") public mother?: fk;
   // prettier-ignore
-  @hasMany(Person) @inverse("children") public parents?: fk[];
+  @ownedBy(Person) @inverse("children") public father?: fk;
   // prettier-ignore
-  @hasMany(Person) @inverse("parents") public children?: fk[];
+  @hasMany(Person) public children?: IDictionary;
+  // prettier-ignore
+  // @ownedBy(Concert) public concerts?: IDictionary;
+  @ownedBy(Company) public employerId?: fk;
 }

@@ -94,7 +94,7 @@ export function getProperties(model: object) {
 export function getRelationships(model: object) {
   const modelName = model.constructor.name;
   const modelRelationships = relationshipsByModel[modelName];
-  return hashToArray<IModelRelationshipMeta>(modelRelationships);
+  return hashToArray<IModelRelationshipMeta>(modelRelationships, "property");
 }
 
 export function getPushKeys(target: object) {

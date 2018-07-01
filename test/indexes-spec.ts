@@ -1,13 +1,13 @@
 // tslint:disable:no-implicit-dependencies
 import * as chai from "chai";
-import { Person } from "./testing/AuditedPerson";
+import { Person as AuditedPerson } from "./testing/AuditedPerson";
 import { Record } from "../src/Record";
 import { Car } from "./testing/Car";
 const expect = chai.expect;
 
 describe("DB Indexes →", () => {
   it("Model shows indexes as expected on Model with no additional indexes", async () => {
-    const person = Record.create(Person);
+    const person = Record.create(AuditedPerson);
     console.log(person.META.dbIndexes);
 
     expect(person.META.dbIndexes)
