@@ -76,10 +76,7 @@ export class FireModel<T extends Model> {
   }
 
   public get META(): IModelMetaProperties<T> {
-    const coreMeta = (this._model as Model).META;
-    const storedMeta = getModelMeta(this.modelName);
-
-    return { ...storedMeta, ...coreMeta };
+    return getModelMeta(this._model);
   }
 
   public get properties() {

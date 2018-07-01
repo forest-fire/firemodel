@@ -38,11 +38,8 @@ function defaultCardinality<T>(r: Record<T>) {
 
 function dbOffset<T extends Model>(record: Record<T>, payload: IDictionary<T>) {
   const output = {};
-  const meta = getModelMeta(record.modelName);
-  const path = pathJoin(
-    record.META.dbOffset || meta.dbOffset || "",
-    record.pluralName
-  );
+  const meta = getModelMeta(record);
+  const path = pathJoin(meta.dbOffset || "", record.pluralName);
   set(output, path.replace(/\//g, "."), payload);
 
   return output;
@@ -193,8 +190,8 @@ function mockProperties<T extends Model>(
   exceptions: IDictionary
 ) {
   return async (instance: Record<T>): Promise<Record<T>> => {
-    const meta = getModelMeta(instance.modelName);
-    const props = instance.META ? instance.META.properties : meta.properties;
+    const meta = getModelMeta(instance);
+    const props = meta.properties;
 
     const recProps: Partial<T> = {};
     props.map(prop => {
@@ -221,11 +218,8 @@ function addRelationships<T extends Model>(
   exceptions: IDictionary
 ) {
   return async (instance: Record<T>): Promise<Record<T>> => {
-    const meta = getModelMeta(instance.modelName);
-    const relns =
-      meta && meta.relationships
-        ? meta.relationships
-        : instance.META.relationships;
+    const meta = getModelMeta(instance);
+    const relns = meta.relationships;
     const p = new Parallel();
     if (!relns || config.relationshipBehavior === "ignore") {
       return instance;
@@ -254,6 +248,7 @@ function addRelationships<T extends Model>(
           for (let i = 0; i < cardinality; i++) {
             const id = fbKey();
             const prop: Extract<keyof T, string> = rel.property as any;
+
             p.add(
               `hasMany-${id}`,
               follow
@@ -264,8 +259,12 @@ function addRelationships<T extends Model>(
         }
       }
     });
-
-    await p.isDone();
+    try {
+      await p.isDone();
+    } catch (e) {
+      console.log(JSON.stringify(e));
+      throw e;
+    }
     instance = await instance.reload();
 
     return instance;
@@ -281,9 +280,7 @@ function followRelationships<T extends Model>(
   return async (instance: Record<T>): Promise<Record<T>> => {
     const p = new Parallel();
 
-    const relns = instance.META
-      ? instance.META.relationships
-      : getModelMeta(instance.modelName).relationships;
+    const relns = getModelMeta(instance).relationships;
     if (!relns || config.relationshipBehavior !== "follow") {
       return instance;
     }
@@ -302,21 +299,6 @@ function followRelationships<T extends Model>(
     });
 
     await p.isDone();
-    return instance;
-  };
-}
-
-function auditMocks<T extends Model>(record: Record<T>) {
-  return (instance: T) => {
-    if (record.META.audit === true) {
-      writeAudit(
-        instance.id,
-        record.pluralName,
-        "added",
-        updateToAuditChanges(instance, {})
-      );
-    }
-
     return instance;
   };
 }

@@ -208,14 +208,9 @@ export class Record<T extends Model> extends FireModel<T> {
         `Invalid Record Path: you can not ask for the dbPath before setting an "id" property.`
       );
     }
-    const coreMeta = this.data.META;
-    const meta = getModelMeta(this.modelName);
+    const meta = getModelMeta(this);
 
-    return [
-      coreMeta.dbOffset || meta.dbOffset,
-      this.pluralName,
-      this.data.id
-    ].join("/");
+    return [meta.dbOffset, this.pluralName, this.data.id].join("/");
   }
 
   /** The Record's primary key */
@@ -240,9 +235,7 @@ export class Record<T extends Model> extends FireModel<T> {
    * among other things this can be useful prior to establishing an ID for a record
    */
   public get dbOffset() {
-    return this.data.META
-      ? this.data.META.dbOffset
-      : getModelMeta(this.modelName).dbOffset;
+    return getModelMeta(this).dbOffset;
   }
 
   /**
@@ -272,10 +265,7 @@ export class Record<T extends Model> extends FireModel<T> {
       this._data[key as keyof T] = data[key as keyof T];
     });
 
-    const relationships = this.META
-      ? this.META.relationships
-      : getModelMeta(this._modelConstructor.constructor.name.toLowerCase())
-          .relationships;
+    const relationships = getModelMeta(this).relationships;
 
     const ownedByRels = (relationships || [])
       .filter(r => r.relType === "ownedBy")
@@ -470,7 +460,12 @@ export class Record<T extends Model> extends FireModel<T> {
         mps.payload
       )
     );
-    await mps.execute();
+    try {
+      await mps.execute();
+    } catch (e) {
+      console.error("Errors in adding to relationship", e.errors);
+      throw e;
+    }
     this.dispatch(
       this._createRecordEvent(this, FMEvents.RELATIONSHIP_ADDED, this.data)
     );
@@ -660,21 +655,22 @@ export class Record<T extends Model> extends FireModel<T> {
     value: any,
     now: number
   ) {
-    const isHasMany = this.META.relationship(property).relType === "hasMany";
+    const meta = getModelMeta(this);
+    const isHasMany =
+      meta.isRelationship(property) &&
+      meta.relationship(property).relType === "hasMany";
     const pathToThisFkReln = pathJoin(
       this.dbPath,
       property,
       isHasMany ? ref : ""
     );
-    const inverseProperty = this.META.relationship(property).inverseProperty;
-    const fkRecord = Record.create(
-      this.META.relationship(property).fkConstructor
-    );
+    const inverseProperty = meta.relationship(property).inverseProperty;
+    const fkRecord = Record.create(meta.relationship(property).fkConstructor);
 
     mps.add({ path: pathToThisFkReln, value: isHasMany ? value : ref });
     // INVERSE RELATIONSHIP
     if (inverseProperty) {
-      const fkMeta = getModelMeta(fkRecord.modelName);
+      const fkMeta = getModelMeta(fkRecord);
       const fkInverseHasRecipricalInverse =
         fkMeta.relationship(inverseProperty).inverseProperty === property;
       if (!fkInverseHasRecipricalInverse) {

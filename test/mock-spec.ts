@@ -73,9 +73,14 @@ describe("Mocking:", () => {
 
   it("using followRelationshipLinks() sets links and adds those models", async () => {
     const numberOfFolks = 10;
-    await Mock(FancyPerson, db)
-      .followRelationshipLinks()
-      .generate(numberOfFolks);
+    try {
+      await Mock(FancyPerson, db)
+        .followRelationshipLinks()
+        .generate(numberOfFolks);
+    } catch (e) {
+      console.error(e.errors);
+      throw e;
+    }
 
     const people = await List.all(FancyPerson);
     const cars = await List.all(Car);
