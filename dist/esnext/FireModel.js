@@ -10,9 +10,24 @@ export class FireModel {
     static get defaultDb() {
         return FireModel._defaultDb;
     }
+    /**
+     * Any FireModel transaction needs to connect to the database
+     * via a passed-in reference to "abstracted-client" or "abstracted-admin"
+     * database. These references can be done with any/every transaction via
+     * the options hash but it is often more convient to set a "fallback" or
+     * "default" database to use should a given transaction not state a DB
+     * connection explicitly.
+     */
     static set defaultDb(db) {
         this._defaultDb = db;
     }
+    /**
+     * All Watchers and write-based transactions in FireModel offer a way to
+     * call out to a "dispatch" function. This can be done on a per-transaction
+     * basis but more typically it makes sense to just set this once here and then
+     * all subsequent transactions will use this dispatch function unless they are
+     * explicitly passed another.
+     */
     static set dispatch(fn) {
         if (!fn) {
             FireModel._dispatchActive = false;
@@ -23,14 +38,25 @@ export class FireModel {
             FireModel._dispatch = fn;
         }
     }
+    /**
+     * The default dispatch function which should be called/notified whenever
+     * a write based transaction has modified state.
+     */
     static get dispatch() {
         return FireModel._dispatch;
     }
     //#endregion
     //#region PUBLIC INTERFACE
+    /**
+     * The name of the model; typically a "sigular" name
+     */
     get modelName() {
         return this._model.constructor.name.toLowerCase();
     }
+    /**
+     * The plural name of the model (which plays a role in storage of state in both
+     * the database as well as the dispatch function's path)
+     */
     get pluralName() {
         // TODO: add back the exception processing
         return pluralize(this.modelName);
@@ -44,10 +70,18 @@ export class FireModel {
     get META() {
         return getModelMeta(this._model);
     }
+    /**
+     * A list of all the properties -- and those properties
+     * meta information -- contained on the given model
+     */
     get properties() {
         const meta = getModelMeta(this._model);
         return meta.properties;
     }
+    /**
+     * A list of all the realtionships -- and those relationships
+     * meta information -- contained on the given model
+     */
     get relationships() {
         const meta = getModelMeta(this._model);
         return meta.relationships;

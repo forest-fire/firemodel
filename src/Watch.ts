@@ -1,16 +1,28 @@
-import { epochWithMilliseconds, IDictionary } from "common-types";
+import { epochWithMilliseconds, IDictionary, Omit } from "common-types";
 import { Model, IComparisonOperator, IModelOptions } from "./Model";
 import { SerializedQuery } from "serialized-query";
 import { IReduxDispatch } from "./VuexWrapper";
 import { FireModel } from "./FireModel";
 import { Record } from "./Record";
-// tslint:disable-next-line:no-implicit-dependencies
-import { RealTimeDB } from "abstracted-firebase";
+type RealTimeDB = import("abstracted-firebase").RealTimeDB;
 import { ModelDispatchTransformer } from "./ModelDispatchTransformer";
 import { List } from "./List";
 
 export type IWatchEventClassification = "child" | "value";
 export type IQuerySetter = (q: SerializedQuery) => void;
+
+export type IWatchListQueries =
+  | "all"
+  | "first"
+  | "last"
+  | "since"
+  | "dormantSince"
+  | "where"
+  | "fromQuery"
+  | "after"
+  | "before"
+  | "recent"
+  | "inactive";
 
 export interface IWatcherItem {
   eventType: string;
@@ -26,6 +38,10 @@ let watcherPool: IDictionary<IWatcherItem> = {};
 export class Watch {
   public static set defaultDb(db: RealTimeDB) {
     FireModel.defaultDb = db;
+  }
+
+  public static set dispatch(d: IReduxDispatch) {
+    FireModel.dispatch = d;
   }
 
   /**
@@ -106,7 +122,7 @@ export class Watch {
     o._pluralName = r.pluralName;
     o._localPath = r.localPath;
 
-    return o.apiPostQuery(o);
+    return o as Omit<Watch, IWatchListQueries | "toString">;
   }
 
   public static list<T extends Model>(
@@ -123,7 +139,7 @@ export class Watch {
     o._modelName = lst.modelName;
     o._pluralName = lst.pluralName;
     o._localPath = lst.localPath;
-    return o.apiList(o);
+    return o as Pick<Watch, IWatchListQueries>;
   }
 
   protected _query: SerializedQuery;
@@ -134,6 +150,7 @@ export class Watch {
   protected _pluralName: string;
   protected _localPath: string;
 
+  /** executes the watcher so that it becomes actively watched */
   public start() {
     const hash = "w" + String(this._query.hashCode());
 
@@ -166,9 +183,16 @@ export class Watch {
     return hash;
   }
 
-  public dispatch(d: IReduxDispatch) {
+  /**
+   * allows you to state an explicit dispatch function which will be called
+   * when this watcher detects a change; by default it will use the "default dispatch"
+   * set on FireModel.dispatch.
+   */
+  public dispatch(
+    d: IReduxDispatch
+  ): Omit<Watch, IWatchListQueries | "toString" | "dispatch"> {
     this._dispatcher = d;
-    return this.apiStartOnly(this);
+    return this;
   }
   /**
    * since
@@ -178,13 +202,16 @@ export class Watch {
    * @param when  the datetime in milliseconds or a string format that works with new Date(x)
    * @param limit  optionally limit the records returned to a max number
    */
-  public since(when: epochWithMilliseconds | string, limit?: number) {
+  public since(
+    when: epochWithMilliseconds | string,
+    limit?: number
+  ): Omit<Watch, IWatchListQueries | "toString"> {
     this._query = this._query.orderByChild("lastUpdated").startAt(when);
     if (limit) {
       this._query = this._query.limitToFirst(limit);
     }
 
-    return this.apiPostQuery(this);
+    return this;
   }
 
   /**
@@ -195,13 +222,16 @@ export class Watch {
    * @param when  the datetime in milliseconds or a string format that works with new Date(x)
    * @param limit  optionally limit the records returned to a max number
    */
-  public dormantSince(when: epochWithMilliseconds | string, limit?: number) {
+  public dormantSince(
+    when: epochWithMilliseconds | string,
+    limit?: number
+  ): Omit<Watch, IWatchListQueries | "toString"> {
     this._query = this._query.orderByChild("lastUpdated").endAt(when);
     if (limit) {
       this._query = this._query.limitToFirst(limit);
     }
 
-    return this.apiPostQuery(this);
+    return this;
   }
 
   /**
@@ -212,13 +242,16 @@ export class Watch {
    * @param when  the datetime in milliseconds or a string format that works with new Date(x)
    * @param limit  optionally limit the records returned to a max number
    */
-  public after(when: epochWithMilliseconds | string, limit?: number) {
+  public after(
+    when: epochWithMilliseconds | string,
+    limit?: number
+  ): Omit<Watch, IWatchListQueries | "toString"> {
     this._query = this._query.orderByChild("createdAt").startAt(when);
     if (limit) {
       this._query = this._query.limitToFirst(limit);
     }
 
-    return this.apiPostQuery(this);
+    return this;
   }
 
   /**
@@ -229,13 +262,16 @@ export class Watch {
    * @param when  the datetime in milliseconds or a string format that works with new Date(x)
    * @param limit  optionally limit the records returned to a max number
    */
-  public before(when: epochWithMilliseconds | string, limit?: number) {
+  public before(
+    when: epochWithMilliseconds | string,
+    limit?: number
+  ): Omit<Watch, IWatchListQueries | "toString"> {
     this._query = this._query.orderByChild("createdAt").endAt(when);
     if (limit) {
       this._query = this._query.limitToFirst(limit);
     }
 
-    return this.apiPostQuery(this);
+    return this;
   }
 
   /**
@@ -248,13 +284,16 @@ export class Watch {
    * @param howMany  the datetime in milliseconds or a string format that works with new Date(x)
    * @param startAt  the ID reference to a record in the list (if used for pagination, add the last record in the list to this value)
    */
-  public first(howMany: number, startAt?: string) {
+  public first(
+    howMany: number,
+    startAt?: string
+  ): Omit<Watch, IWatchListQueries | "toString"> {
     this._query = this._query.orderByChild("createdAt").limitToFirst(howMany);
     if (startAt) {
       this._query = this._query.startAt(startAt);
     }
 
-    return this.apiPostQuery(this);
+    return this;
   }
 
   /**
@@ -267,13 +306,16 @@ export class Watch {
    * @param howMany  the datetime in milliseconds or a string format that works with new Date(x)
    * @param startAt  the ID reference to a record in the list (if used for pagination, add the last record in the list to this value)
    */
-  public last(howMany: number, startAt?: string) {
+  public last(
+    howMany: number,
+    startAt?: string
+  ): Omit<Watch, IWatchListQueries | "toString"> {
     this._query = this._query.orderByChild("createdAt").limitToLast(howMany);
     if (startAt) {
       this._query = this._query.endAt(startAt);
     }
 
-    return this.apiPostQuery(this);
+    return this;
   }
 
   /**
@@ -286,13 +328,16 @@ export class Watch {
    * @param howMany  the datetime in milliseconds or a string format that works with new Date(x)
    * @param startAt  the ID reference to a record in the list (if used for pagination, add the recent record in the list to this value)
    */
-  public recent(howMany: number, startAt?: string) {
+  public recent(
+    howMany: number,
+    startAt?: string
+  ): Omit<Watch, IWatchListQueries | "toString"> {
     this._query = this._query.orderByChild("lastUpdated").limitToFirst(howMany);
     if (startAt) {
       this._query = this._query.startAt(startAt);
     }
 
-    return this.apiPostQuery(this);
+    return this;
   }
 
   /**
@@ -305,13 +350,16 @@ export class Watch {
    * @param howMany  the datetime in milliseconds or a string format that works with new Date(x)
    * @param startAt  the ID reference to a record in the list (if used for pagination, add the inactive record in the list to this value)
    */
-  public inactive(howMany: number, startAt?: string) {
+  public inactive(
+    howMany: number,
+    startAt?: string
+  ): Omit<Watch, IWatchListQueries | "toString"> {
     this._query = this._query.orderByChild("lastUpdated").limitToLast(howMany);
     if (startAt) {
       this._query = this._query.endAt(startAt);
     }
 
-    return this.apiPostQuery(this);
+    return this;
   }
 
   /**
@@ -321,10 +369,12 @@ export class Watch {
    *
    * @param query
    */
-  public fromQuery<T extends Model>(inputQuery: SerializedQuery) {
+  public fromQuery<T extends Model>(
+    inputQuery: SerializedQuery
+  ): Omit<Watch, IWatchListQueries | "toString"> {
     this._query = inputQuery;
 
-    return this.apiPostQuery(this);
+    return this;
   }
 
   /**
@@ -334,11 +384,11 @@ export class Watch {
    *
    * @param limit it you want to limit the results a max number of records
    */
-  public all(limit?: number) {
+  public all(limit?: number): Omit<Watch, IWatchListQueries | "toString"> {
     if (limit) {
       this._query = this._query.limitToLast(limit);
     }
-    return this.apiPostQuery(this);
+    return this;
   }
 
   /**
@@ -353,14 +403,14 @@ export class Watch {
   public where<T extends Model, K extends keyof T>(
     property: K,
     value: T[K] | [IComparisonOperator, T[K]]
-  ) {
+  ): Omit<Watch, IWatchListQueries | "toString"> {
     let operation: IComparisonOperator = "=";
     let val = value;
     if (Array.isArray(value)) {
       val = value[1];
       operation = value[0];
     }
-    return this.apiPostQuery(this);
+    return this;
   }
 
   public toString() {
@@ -377,30 +427,10 @@ export class Watch {
     }
     return this._db;
   }
+}
 
-  protected apiList(context: IDictionary) {
-    return {
-      all: this.all.bind(context),
-      since: this.since.bind(context),
-      first: this.first.bind(context),
-      last: this.last.bind(context),
-      recent: this.recent.bind(context),
-      inactive: this.inactive.bind(context),
-      where: this.where.bind(context),
-      fromQuery: this.fromQuery.bind(context)
-    };
-  }
-
-  protected apiPostQuery(context: IDictionary) {
-    return {
-      start: this.start.bind(context),
-      dispatch: this.dispatch.bind(context)
-    };
-  }
-
-  protected apiStartOnly(context: IDictionary) {
-    return {
-      start: this.start.bind(context)
-    };
-  }
+export interface IWatcherApiPostQuery {
+  /** executes the watcher so that it becomes actively watched */
+  start: () => void;
+  dispatch: IReduxDispatch;
 }

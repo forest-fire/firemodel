@@ -17,8 +17,12 @@ export type ISchemaRelationshipType = "hasMany" | "ownedBy";
 export interface IModelMetaProperties<T extends Model = any> {
   /** Optionally specify a root path to store this schema under */
   dbOffset?: string;
+  /** Optionally specify an explicit string for the plural name */
+  explicitPlural?: string;
   /** Optionally specify a root path where the local store will put this schema */
   localOffset?: string;
+  /** Optionally specify a post-fix to the path where lists of records will be stored; by default this is set to "all" */
+  localPostfix?: string;
   /** provides a boolean flag on whether the stated name is a property */
   isProperty?: (prop: keyof T) => boolean;
   /** a function to lookup the meta properties of a given property */
@@ -145,6 +149,11 @@ export function model(options: Partial<IModelMetaProperties>): ClassDecorator {
         ...{ pushKeys: getPushKeys(obj) },
         ...{ dbOffset: options.dbOffset ? options.dbOffset : "" },
         ...{ audit: options.audit ? options.audit : false },
+        ...{ explicitPlural: options.explicitPlural },
+        ...{
+          localPostfix:
+            options.localPostfix === undefined ? "add" : options.localPostfix
+        },
         ...{ isDirty }
       };
 

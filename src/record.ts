@@ -248,9 +248,11 @@ export class Record<T extends Model> extends FireModel<T> {
         'Invalid Path: you can not ask for the dbPath before setting an "id" property.'
       );
     }
-    return [this.data.META.localOffset, this.pluralName, this.data.id].join(
-      "/"
-    );
+    return pathJoin(
+      this.data.META.localOffset,
+      this.pluralName,
+      this.data.id
+    ).replace(/\//g, ".");
   }
 
   /**
