@@ -9,6 +9,7 @@ import { RealTimeDB } from "abstracted-firebase";
 import { IReduxDispatch } from "./VuexWrapper";
 import { pathJoin } from "./path";
 import { getModelMeta } from "./ModelMeta";
+import { FMEvents } from "./state-mgmt";
 
 const DEFAULT_IF_NOT_FOUND = "__DO_NOT_USE__";
 
@@ -399,6 +400,13 @@ export class List<T extends Model> extends FireModel<T> {
       throw e;
     }
     this._data = await this.db.getList<T>(pathOrQuery);
+    this.dispatch({
+      type: FMEvents.RECORD_LIST,
+      modelName: this.modelName,
+      pluralName: this.pluralName,
+      dbPath: this.dbPath,
+      records: this.data
+    });
     return this;
   }
 }

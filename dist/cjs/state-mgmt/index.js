@@ -6,6 +6,8 @@ function promoteStringToFMEvents(k) {
 /** Enumeration of all Firemodel Actions that will be fired */
 var FMEvents;
 (function (FMEvents) {
+    /** a list of records has been queried from DB and being dispatched to FE State Mgmt */
+    FMEvents["RECORD_LIST"] = "@firemodel/RECORD_LIST";
     /** A record has been added locally */
     FMEvents["RECORD_ADDED_LOCALLY"] = "@firemodel/RECORD_ADDED_LOCALLY";
     /** A record has been added to a given Model list being watched */

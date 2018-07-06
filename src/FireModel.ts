@@ -91,7 +91,7 @@ export class FireModel<T extends Model> {
    * the database as well as the dispatch function's path)
    */
   public get pluralName() {
-    const explicitPlural = this.META.explicitPlural;
+    const explicitPlural = this.META.plural;
     return explicitPlural || pluralize(this.modelName);
   }
 

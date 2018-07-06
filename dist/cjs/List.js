@@ -3,6 +3,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const Record_1 = require("./Record");
 const serialized_query_1 = require("serialized-query");
 const FireModel_1 = require("./FireModel");
+const path_1 = require("./path");
+const ModelMeta_1 = require("./ModelMeta");
+const state_mgmt_1 = require("./state-mgmt");
 const DEFAULT_IF_NOT_FOUND = "__DO_NOT_USE__";
 class List extends FireModel_1.FireModel {
     constructor(model, options = {}) {
@@ -142,7 +145,8 @@ class List extends FireModel_1.FireModel {
         return [this.META.dbOffset, this.pluralName].join("/");
     }
     get localPath() {
-        return [this.META.localOffset, this.pluralName].join("/");
+        const meta = ModelMeta_1.getModelMeta(this._model);
+        return path_1.pathJoin(meta.localOffset, this.pluralName, meta.localPostfix).replace(/\//g, ".");
     }
     /** Returns another List with data filtered down by passed in filter function */
     filter(f) {
@@ -280,6 +284,13 @@ class List extends FireModel_1.FireModel {
             throw e;
         }
         this._data = await this.db.getList(pathOrQuery);
+        this.dispatch({
+            type: state_mgmt_1.FMEvents.RECORD_LIST,
+            modelName: this.modelName,
+            pluralName: this.pluralName,
+            dbPath: this.dbPath,
+            records: this.data
+        });
         return this;
     }
 }

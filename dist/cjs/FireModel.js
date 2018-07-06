@@ -60,8 +60,8 @@ class FireModel {
      * the database as well as the dispatch function's path)
      */
     get pluralName() {
-        // TODO: add back the exception processing
-        return pluralize(this.modelName);
+        const explicitPlural = this.META.plural;
+        return explicitPlural || pluralize(this.modelName);
     }
     get dbPath() {
         return "dbPath was not overwritten!";

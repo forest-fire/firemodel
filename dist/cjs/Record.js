@@ -174,7 +174,7 @@ class Record extends FireModel_1.FireModel {
         if (!this.data.id) {
             throw new Error('Invalid Path: you can not ask for the dbPath before setting an "id" property.');
         }
-        return [this.data.META.localOffset, this.pluralName, this.data.id].join("/");
+        return path_1.pathJoin(this.data.META.localOffset, this.pluralName, this.data.id).replace(/\//g, ".");
     }
     /**
      * Allows an empty Record to be initialized to a known state.

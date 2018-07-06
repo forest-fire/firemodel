@@ -18,7 +18,7 @@ export interface IModelMetaProperties<T extends Model = any> {
   /** Optionally specify a root path to store this schema under */
   dbOffset?: string;
   /** Optionally specify an explicit string for the plural name */
-  explicitPlural?: string;
+  plural?: string;
   /** Optionally specify a root path where the local store will put this schema */
   localOffset?: string;
   /** Optionally specify a post-fix to the path where lists of records will be stored; by default this is set to "all" */
@@ -149,10 +149,10 @@ export function model(options: Partial<IModelMetaProperties>): ClassDecorator {
         ...{ pushKeys: getPushKeys(obj) },
         ...{ dbOffset: options.dbOffset ? options.dbOffset : "" },
         ...{ audit: options.audit ? options.audit : false },
-        ...{ explicitPlural: options.explicitPlural },
+        ...{ plural: options.plural },
         ...{
           localPostfix:
-            options.localPostfix === undefined ? "add" : options.localPostfix
+            options.localPostfix === undefined ? "all" : options.localPostfix
         },
         ...{ isDirty }
       };

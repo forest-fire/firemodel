@@ -5,7 +5,9 @@ if (!Array.isArray) {
         return Object.prototype.toString.call(arg) === "[object Array]";
     };
 }
-const errorStr = "tried to join something other than a string or array, it was ignored in pathJoin's result";
+const errorStr = (type) => {
+    return `tried to join something other than undefined, a string or an array [${type}], it was ignored in pathJoin's result`;
+};
 /** An ISO-morphic path join that works everywhere */
 export function pathJoin(...args) {
     return args
@@ -13,12 +15,16 @@ export function pathJoin(...args) {
         if (typeof prev === "undefined") {
             return;
         }
+        if (val === undefined) {
+            return prev;
+        }
         return typeof val === "string" || typeof val === "number"
             ? joinStringsWithSlash(prev, "" + val) // if string or number just keep as is
             : Array.isArray(val)
                 ? joinStringsWithSlash(prev, pathJoin.apply(null, val)) // handle array with recursion
-                : (console.error ? console.error(errorStr) : console.log(errorStr)) ||
-                    "";
+                : (console.error
+                    ? console.error(errorStr(typeof val))
+                    : console.log(errorStr(typeof val))) || "";
     }, "")
         .replace(moreThanThreePeriods, ".."); // join the resulting array together
 }

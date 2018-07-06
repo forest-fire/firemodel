@@ -63,7 +63,7 @@ export declare class FireModel<T extends Model> {
     readonly dispatch: IReduxDispatch;
     readonly dispatchIsActive: boolean;
     /** the connected real-time database */
-    readonly db: import("abstracted-firebase").RealTimeDB;
+    readonly db: RealTimeDB;
     readonly pushKeys: string[];
     /**
      * Creates a Redux-styled event

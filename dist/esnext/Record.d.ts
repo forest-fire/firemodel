@@ -97,7 +97,7 @@ export declare class Record<T extends Model> extends FireModel<T> {
      * returns the record's location in the frontend state management framework;
      * depends on appropriate configuration of model to be accurate.
      */
-    readonly localPath: string;
+    readonly localPath: any;
     /**
      * Allows an empty Record to be initialized to a known state.
      * This is not intended to allow for mass property manipulation other
@@ -182,7 +182,7 @@ export declare class Record<T extends Model> extends FireModel<T> {
         modelName: string;
         pluralName: any;
         key: string;
-        localPath: string;
+        localPath: any;
         data: string;
     };
     protected _writeAudit(action: IAuditOperations, changes?: IAuditChange[], options?: IModelOptions): void;

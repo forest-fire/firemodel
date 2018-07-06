@@ -7,6 +7,8 @@ export declare type NotString<T> = string extends T ? never : any;
 export declare type IFMEventName<T> = string & NotString<T> & Extractable<FMEvents, T>;
 /** Enumeration of all Firemodel Actions that will be fired */
 export declare enum FMEvents {
+    /** a list of records has been queried from DB and being dispatched to FE State Mgmt */
+    RECORD_LIST = "@firemodel/RECORD_LIST",
     /** A record has been added locally */
     RECORD_ADDED_LOCALLY = "@firemodel/RECORD_ADDED_LOCALLY",
     /** A record has been added to a given Model list being watched */

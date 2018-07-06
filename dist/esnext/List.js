@@ -1,6 +1,9 @@
 import { Record } from "./Record";
 import { SerializedQuery } from "serialized-query";
 import { FireModel } from "./FireModel";
+import { pathJoin } from "./path";
+import { getModelMeta } from "./ModelMeta";
+import { FMEvents } from "./state-mgmt";
 const DEFAULT_IF_NOT_FOUND = "__DO_NOT_USE__";
 export class List extends FireModel {
     constructor(model, options = {}) {
@@ -140,7 +143,8 @@ export class List extends FireModel {
         return [this.META.dbOffset, this.pluralName].join("/");
     }
     get localPath() {
-        return [this.META.localOffset, this.pluralName].join("/");
+        const meta = getModelMeta(this._model);
+        return pathJoin(meta.localOffset, this.pluralName, meta.localPostfix).replace(/\//g, ".");
     }
     /** Returns another List with data filtered down by passed in filter function */
     filter(f) {
@@ -278,6 +282,13 @@ export class List extends FireModel {
             throw e;
         }
         this._data = await this.db.getList(pathOrQuery);
+        this.dispatch({
+            type: FMEvents.RECORD_LIST,
+            modelName: this.modelName,
+            pluralName: this.pluralName,
+            dbPath: this.dbPath,
+            records: this.data
+        });
         return this;
     }
 }
