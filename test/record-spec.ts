@@ -5,6 +5,7 @@ import * as chai from "chai";
 const expect = chai.expect;
 import "reflect-metadata";
 import { Person } from "./testing/person";
+import { Person as Peeps } from "./testing/PersonAsPeeps";
 import { FireModel } from "../src/FireModel";
 import { IFMRecordEvent, FMEvents } from "../src/state-mgmt";
 import { Mock } from "../src/Mock";
@@ -220,5 +221,12 @@ describe("Record > ", () => {
     expect(peeps2).to.have.lengthOf(9);
     const ids = peeps2.map(p => p.id);
     expect(ids.includes(id)).to.equal(false);
+  });
+
+  it("setting an explicit value for plural is picked up by Record", async () => {
+    const p = Record.create(Peeps);
+    expect(p.modelName).to.equal("person");
+    expect(p.META.plural).to.equal("peeps");
+    expect(p.pluralName).to.equal("peeps");
   });
 });

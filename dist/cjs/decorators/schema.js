@@ -41,7 +41,9 @@ function model(options) {
                 console.warn(`You set the audit property to "${options.audit}" which is invalid. Valid properties are true, false, and "server". The audit property will be set to false for now.`);
                 options.audit = false;
             }
-            const meta = Object.assign({}, options, { isProperty: isProperty(obj) }, { property: getModelProperty(obj) }, { properties: decorator_1.getProperties(obj) }, { isRelationship: isRelationship(obj) }, { relationship: getModelRelationship(obj) }, { relationships: decorator_1.getRelationships(obj) }, { dbIndexes: indexing_1.getDbIndexes(obj) }, { pushKeys: decorator_1.getPushKeys(obj) }, { dbOffset: options.dbOffset ? options.dbOffset : "" }, { audit: options.audit ? options.audit : false }, { isDirty });
+            const meta = Object.assign({}, options, { isProperty: isProperty(obj) }, { property: getModelProperty(obj) }, { properties: decorator_1.getProperties(obj) }, { isRelationship: isRelationship(obj) }, { relationship: getModelRelationship(obj) }, { relationships: decorator_1.getRelationships(obj) }, { dbIndexes: indexing_1.getDbIndexes(obj) }, { pushKeys: decorator_1.getPushKeys(obj) }, { dbOffset: options.dbOffset ? options.dbOffset : "" }, { audit: options.audit ? options.audit : false }, { plural: options.plural }, {
+                localPostfix: options.localPostfix === undefined ? "all" : options.localPostfix
+            }, { isDirty });
             ModelMeta_1.addModelMeta(obj.constructor.name.toLowerCase(), meta);
             Reflect.defineProperty(obj, "META", {
                 get() {

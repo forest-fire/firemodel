@@ -73,6 +73,28 @@ class Record extends FireModel_1.FireModel {
         return r;
     }
     /**
+     * update
+     *
+     * update an existing record in the database
+     *
+     * @param schema the schema of the record
+     * @param payload the data for the new record
+     * @param options
+     */
+    static async update(model, id, updates, options = {}) {
+        let r;
+        try {
+            r = await Record.get(model, id, options);
+            await r.update(updates);
+        }
+        catch (e) {
+            const err = new Error(`Problem adding new Record: ${e.message}`);
+            err.name = e.name !== "Error" ? e.name : "FireModel";
+            throw e;
+        }
+        return r;
+    }
+    /**
      * load
      *
      * static method to create a Record when you want to load the
@@ -174,7 +196,7 @@ class Record extends FireModel_1.FireModel {
         if (!this.data.id) {
             throw new Error('Invalid Path: you can not ask for the dbPath before setting an "id" property.');
         }
-        return [this.data.META.localOffset, this.pluralName, this.data.id].join("/");
+        return path_1.pathJoin(this.data.META.localOffset, this.pluralName, this.data.id).replace(/\//g, ".");
     }
     /**
      * Allows an empty Record to be initialized to a known state.

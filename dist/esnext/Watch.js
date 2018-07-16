@@ -9,6 +9,9 @@ export class Watch {
     static set defaultDb(db) {
         FireModel.defaultDb = db;
     }
+    static set dispatch(d) {
+        FireModel.dispatch = d;
+    }
     /**
      * lookup
      *
@@ -69,7 +72,7 @@ export class Watch {
         o._modelName = r.modelName;
         o._pluralName = r.pluralName;
         o._localPath = r.localPath;
-        return o.apiPostQuery(o);
+        return o;
     }
     static list(modelConstructor, options = {}) {
         const o = new Watch();
@@ -82,8 +85,9 @@ export class Watch {
         o._modelName = lst.modelName;
         o._pluralName = lst.pluralName;
         o._localPath = lst.localPath;
-        return o.apiList(o);
+        return o;
     }
+    /** executes the watcher so that it becomes actively watched */
     start() {
         const hash = "w" + String(this._query.hashCode());
         const dispatch = ModelDispatchTransformer({
@@ -108,9 +112,14 @@ export class Watch {
         };
         return hash;
     }
+    /**
+     * allows you to state an explicit dispatch function which will be called
+     * when this watcher detects a change; by default it will use the "default dispatch"
+     * set on FireModel.dispatch.
+     */
     dispatch(d) {
         this._dispatcher = d;
-        return this.apiStartOnly(this);
+        return this;
     }
     /**
      * since
@@ -125,7 +134,7 @@ export class Watch {
         if (limit) {
             this._query = this._query.limitToFirst(limit);
         }
-        return this.apiPostQuery(this);
+        return this;
     }
     /**
      * dormantSince
@@ -140,7 +149,7 @@ export class Watch {
         if (limit) {
             this._query = this._query.limitToFirst(limit);
         }
-        return this.apiPostQuery(this);
+        return this;
     }
     /**
      * after
@@ -155,7 +164,7 @@ export class Watch {
         if (limit) {
             this._query = this._query.limitToFirst(limit);
         }
-        return this.apiPostQuery(this);
+        return this;
     }
     /**
      * before
@@ -170,7 +179,7 @@ export class Watch {
         if (limit) {
             this._query = this._query.limitToFirst(limit);
         }
-        return this.apiPostQuery(this);
+        return this;
     }
     /**
      * first
@@ -187,7 +196,7 @@ export class Watch {
         if (startAt) {
             this._query = this._query.startAt(startAt);
         }
-        return this.apiPostQuery(this);
+        return this;
     }
     /**
      * last
@@ -204,7 +213,7 @@ export class Watch {
         if (startAt) {
             this._query = this._query.endAt(startAt);
         }
-        return this.apiPostQuery(this);
+        return this;
     }
     /**
      * recent
@@ -221,7 +230,7 @@ export class Watch {
         if (startAt) {
             this._query = this._query.startAt(startAt);
         }
-        return this.apiPostQuery(this);
+        return this;
     }
     /**
      * inactive
@@ -238,7 +247,7 @@ export class Watch {
         if (startAt) {
             this._query = this._query.endAt(startAt);
         }
-        return this.apiPostQuery(this);
+        return this;
     }
     /**
      * fromQuery
@@ -249,7 +258,7 @@ export class Watch {
      */
     fromQuery(inputQuery) {
         this._query = inputQuery;
-        return this.apiPostQuery(this);
+        return this;
     }
     /**
      * all
@@ -262,7 +271,7 @@ export class Watch {
         if (limit) {
             this._query = this._query.limitToLast(limit);
         }
-        return this.apiPostQuery(this);
+        return this;
     }
     /**
      * where
@@ -280,7 +289,7 @@ export class Watch {
             val = value[1];
             operation = value[0];
         }
-        return this.apiPostQuery(this);
+        return this;
     }
     toString() {
         return `Watching path "${this._query.path}" for "${this._eventType}" event(s) [ hashcode: ${String(this._query.hashCode())} ]`;
@@ -292,29 +301,6 @@ export class Watch {
             }
         }
         return this._db;
-    }
-    apiList(context) {
-        return {
-            all: this.all.bind(context),
-            since: this.since.bind(context),
-            first: this.first.bind(context),
-            last: this.last.bind(context),
-            recent: this.recent.bind(context),
-            inactive: this.inactive.bind(context),
-            where: this.where.bind(context),
-            fromQuery: this.fromQuery.bind(context)
-        };
-    }
-    apiPostQuery(context) {
-        return {
-            start: this.start.bind(context),
-            dispatch: this.dispatch.bind(context)
-        };
-    }
-    apiStartOnly(context) {
-        return {
-            start: this.start.bind(context)
-        };
     }
 }
 //# sourceMappingURL=Watch.js.map

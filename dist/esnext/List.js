@@ -1,6 +1,9 @@
 import { Record } from "./Record";
 import { SerializedQuery } from "serialized-query";
 import { FireModel } from "./FireModel";
+import { pathJoin } from "./path";
+import { getModelMeta } from "./ModelMeta";
+import { FMEvents } from "./state-mgmt";
 const DEFAULT_IF_NOT_FOUND = "__DO_NOT_USE__";
 export class List extends FireModel {
     constructor(model, options = {}) {
@@ -40,6 +43,17 @@ export class List extends FireModel {
         const list = List.create(model, options);
         query.setPath(list.dbPath);
         await list.load(query);
+        list.dispatch({
+            type: FMEvents.RECORD_LIST,
+            modelName: list.modelName,
+            pluralName: list.pluralName,
+            dbPath: list.dbPath,
+            localPath: list.localPath,
+            modelConstructor: list._modelConstructor,
+            query,
+            hashCode: query.hashCode(),
+            records: list.data
+        });
         return list;
     }
     /**
@@ -140,7 +154,14 @@ export class List extends FireModel {
         return [this.META.dbOffset, this.pluralName].join("/");
     }
     get localPath() {
-        return [this.META.localOffset, this.pluralName].join("/");
+        const meta = getModelMeta(this._model);
+        return pathJoin(meta.localOffset, this.pluralName, meta.localPostfix).replace(/\//g, ".");
+    }
+    get localPathToSince() {
+        const lp = this.META.localPostfix
+            ? this.localPath.replace(`/${this.META.localPostfix}`, "")
+            : this.localPath;
+        return pathJoin(lp, "since");
     }
     /** Returns another List with data filtered down by passed in filter function */
     filter(f) {

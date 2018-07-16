@@ -7,6 +7,9 @@ import { FireModel } from "./FireModel";
 // tslint:disable-next-line:no-implicit-dependencies
 import { RealTimeDB } from "abstracted-firebase";
 import { IReduxDispatch } from "./VuexWrapper";
+import { pathJoin } from "./path";
+import { getModelMeta } from "./ModelMeta";
+import { FMEvents, IFMRecordListEvent } from "./state-mgmt";
 
 const DEFAULT_IF_NOT_FOUND = "__DO_NOT_USE__";
 
@@ -47,6 +50,17 @@ export class List<T extends Model> extends FireModel<T> {
     query.setPath(list.dbPath);
 
     await list.load(query);
+    list.dispatch({
+      type: FMEvents.RECORD_LIST,
+      modelName: list.modelName,
+      pluralName: list.pluralName,
+      dbPath: list.dbPath,
+      localPath: list.localPath,
+      modelConstructor: list._modelConstructor,
+      query,
+      hashCode: query.hashCode(),
+      records: list.data
+    });
     return list;
   }
 
@@ -212,7 +226,19 @@ export class List<T extends Model> extends FireModel<T> {
   }
 
   public get localPath() {
-    return [this.META.localOffset, this.pluralName].join("/");
+    const meta = getModelMeta(this._model);
+    return pathJoin(
+      meta.localOffset,
+      this.pluralName,
+      meta.localPostfix
+    ).replace(/\//g, ".");
+  }
+
+  public get localPathToSince() {
+    const lp = this.META.localPostfix
+      ? this.localPath.replace(`/${this.META.localPostfix}`, "")
+      : this.localPath;
+    return pathJoin(lp, "since");
   }
 
   /** Returns another List with data filtered down by passed in filter function */

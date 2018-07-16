@@ -1326,12 +1326,13 @@
     long "^3.2.0"
 
 "@webpack-contrib/config-loader@^1.1.1":
-  version "1.1.3"
-  resolved "https://registry.yarnpkg.com/@webpack-contrib/config-loader/-/config-loader-1.1.3.tgz#6cce904cabfd880203db600207fdbf64f4744fd7"
+  version "1.2.1"
+  resolved "https://registry.yarnpkg.com/@webpack-contrib/config-loader/-/config-loader-1.2.1.tgz#5b3dd474e207437939d294d200c68b7b00008e04"
   dependencies:
     "@webpack-contrib/schema-utils" "^1.0.0-beta.0"
     chalk "^2.1.0"
     cosmiconfig "^5.0.2"
+    is-plain-obj "^1.1.0"
     loud-rejection "^1.6.0"
     merge-options "^1.0.1"
     minimist "^1.2.0"
@@ -1368,8 +1369,8 @@ abstracted-admin@^0.14.0:
     typed-conversions "^0.8.9"
 
 abstracted-client@^0.14.1:
-  version "0.14.1"
-  resolved "https://registry.yarnpkg.com/abstracted-client/-/abstracted-client-0.14.1.tgz#79bdf97fc21122cd7e85bd7e67c2c0315b84b235"
+  version "0.14.4"
+  resolved "https://registry.yarnpkg.com/abstracted-client/-/abstracted-client-0.14.4.tgz#3dc390c7719752e47a668f33e4ad08a770eb2b47"
   dependencies:
     "@firebase/app" "^0.3.3"
     "@firebase/auth-types" "^0.3.4"
@@ -2381,8 +2382,8 @@ common-tags@^1.4.0:
   resolved "https://registry.yarnpkg.com/common-tags/-/common-tags-1.8.0.tgz#8e3153e542d4a39e9b10554434afaaf98956a937"
 
 common-types@^1.1.0, common-types@^1.7.21, common-types@^1.7.36, common-types@^1.8.2:
-  version "1.8.2"
-  resolved "https://registry.yarnpkg.com/common-types/-/common-types-1.8.2.tgz#e5bbe6468882243e9e917ec879c298306edb8921"
+  version "1.8.3"
+  resolved "https://registry.yarnpkg.com/common-types/-/common-types-1.8.3.tgz#95f3ac4ef72ecd14b48b3bf60ed4995046c71e34"
 
 commondir@^1.0.1:
   version "1.0.1"

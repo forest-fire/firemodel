@@ -43,6 +43,16 @@ export declare class Record<T extends Model> extends FireModel<T> {
      */
     static add<T extends Model>(model: new () => T, payload: T, options?: IRecordOptions): Promise<Record<T>>;
     /**
+     * update
+     *
+     * update an existing record in the database
+     *
+     * @param schema the schema of the record
+     * @param payload the data for the new record
+     * @param options
+     */
+    static update<T extends Model>(model: new () => T, id: string, updates: Partial<T>, options?: IRecordOptions): Promise<Record<T>>;
+    /**
      * load
      *
      * static method to create a Record when you want to load the
@@ -97,7 +107,7 @@ export declare class Record<T extends Model> extends FireModel<T> {
      * returns the record's location in the frontend state management framework;
      * depends on appropriate configuration of model to be accurate.
      */
-    readonly localPath: string;
+    readonly localPath: any;
     /**
      * Allows an empty Record to be initialized to a known state.
      * This is not intended to allow for mass property manipulation other
@@ -182,7 +192,7 @@ export declare class Record<T extends Model> extends FireModel<T> {
         modelName: string;
         pluralName: any;
         key: string;
-        localPath: string;
+        localPath: any;
         data: string;
     };
     protected _writeAudit(action: IAuditOperations, changes?: IAuditChange[], options?: IModelOptions): void;

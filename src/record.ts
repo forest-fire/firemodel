@@ -93,6 +93,34 @@ export class Record<T extends Model> extends FireModel<T> {
   }
 
   /**
+   * update
+   *
+   * update an existing record in the database
+   *
+   * @param schema the schema of the record
+   * @param payload the data for the new record
+   * @param options
+   */
+  public static async update<T extends Model>(
+    model: new () => T,
+    id: string,
+    updates: Partial<T>,
+    options: IRecordOptions = {}
+  ) {
+    let r;
+    try {
+      r = await Record.get(model, id, options);
+      await r.update(updates);
+    } catch (e) {
+      const err = new Error(`Problem adding new Record: ${e.message}`);
+      err.name = e.name !== "Error" ? e.name : "FireModel";
+      throw e;
+    }
+
+    return r;
+  }
+
+  /**
    * load
    *
    * static method to create a Record when you want to load the
@@ -248,9 +276,11 @@ export class Record<T extends Model> extends FireModel<T> {
         'Invalid Path: you can not ask for the dbPath before setting an "id" property.'
       );
     }
-    return [this.data.META.localOffset, this.pluralName, this.data.id].join(
-      "/"
-    );
+    return pathJoin(
+      this.data.META.localOffset,
+      this.pluralName,
+      this.data.id
+    ).replace(/\//g, ".");
   }
 
   /**

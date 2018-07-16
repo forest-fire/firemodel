@@ -7,6 +7,8 @@ export declare type NotString<T> = string extends T ? never : any;
 export declare type IFMEventName<T> = string & NotString<T> & Extractable<FMEvents, T>;
 /** Enumeration of all Firemodel Actions that will be fired */
 export declare enum FMEvents {
+    /** a list of records has been queried from DB and being dispatched to FE State Mgmt */
+    RECORD_LIST = "@firemodel/RECORD_LIST",
     /** A record has been added locally */
     RECORD_ADDED_LOCALLY = "@firemodel/RECORD_ADDED_LOCALLY",
     /** A record has been added to a given Model list being watched */
@@ -21,6 +23,8 @@ export declare enum FMEvents {
     RECORD_REMOVED_LOCALLY = "@firemodel/RECORD_REMOVED_LOCALLY",
     /** A record has been removed from a given Model list being watched */
     RECORD_REMOVED = "@firemodel/RECORD_REMOVED",
+    /** Indicates that a given model's "since" property has been updated */
+    SINCE_UPDATED = "@firemodel/SINCE_UPDATED",
     /** Watcher has established connection with Firebase */
     WATCHER_STARTED = "@firemodel/WATCHER_STARTED",
     /** Watcher has disconnected an event stream from Firebase */
@@ -45,6 +49,21 @@ export interface IFMChangedPath {
     dbPath: string;
     /** the value to set at this path */
     value: any;
+}
+/**
+ * The payload triggered when a LIST object pulls back datasets from
+ * the database.
+ */
+export interface IFMRecordListEvent<T extends Model = Model> {
+    type: IFMEventName<T>;
+    modelName: string;
+    pluralName: string;
+    dbPath: string;
+    localPath: string;
+    modelConstructor: new () => T;
+    query: SerializedQuery;
+    hashCode: number;
+    records: T[];
 }
 export interface IFMRelationshipEvent<T extends Model = Model> extends IFMRecordEventCore<T> {
     fk: string;
