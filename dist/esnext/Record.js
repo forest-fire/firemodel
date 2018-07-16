@@ -71,6 +71,29 @@ export class Record extends FireModel {
         return r;
     }
     /**
+     * update
+     *
+     * update an existing record in the database
+     *
+     * @param schema the schema of the record
+     * @param payload the data for the new record
+     * @param options
+     */
+    static async update(model, payload, options = {}) {
+        let r;
+        try {
+            r = Record.create(model, options);
+            r._initialize(payload);
+            await r._adding();
+        }
+        catch (e) {
+            const err = new Error(`Problem adding new Record: ${e.message}`);
+            err.name = e.name !== "Error" ? e.name : "FireModel";
+            throw e;
+        }
+        return r;
+    }
+    /**
      * load
      *
      * static method to create a Record when you want to load the

@@ -20,6 +20,8 @@ export var FMEvents;
     FMEvents["RECORD_REMOVED_LOCALLY"] = "@firemodel/RECORD_REMOVED_LOCALLY";
     /** A record has been removed from a given Model list being watched */
     FMEvents["RECORD_REMOVED"] = "@firemodel/RECORD_REMOVED";
+    /** Indicates that a given model's "since" property has been updated */
+    FMEvents["SINCE_UPDATED"] = "@firemodel/SINCE_UPDATED";
     /** Watcher has established connection with Firebase */
     FMEvents["WATCHER_STARTED"] = "@firemodel/WATCHER_STARTED";
     /** Watcher has disconnected an event stream from Firebase */

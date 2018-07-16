@@ -1,6 +1,6 @@
 {
   "name": "firemodel",
-  "version": "0.15.15",
+  "version": "0.15.21",
   "description": "Modeling, Access, and Mocking for Firebase Projects",
   "license": "MIT",
   "repository": "https://github.com/forest-fire/firemodel",

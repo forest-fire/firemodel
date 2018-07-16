@@ -32,6 +32,8 @@ export enum FMEvents {
   RECORD_REMOVED_LOCALLY = "@firemodel/RECORD_REMOVED_LOCALLY",
   /** A record has been removed from a given Model list being watched */
   RECORD_REMOVED = "@firemodel/RECORD_REMOVED",
+  /** Indicates that a given model's "since" property has been updated */
+  SINCE_UPDATED = "@firemodel/SINCE_UPDATED",
 
   /** Watcher has established connection with Firebase */
   WATCHER_STARTED = "@firemodel/WATCHER_STARTED",
@@ -59,6 +61,22 @@ export interface IFMChangedPath {
   dbPath: string;
   /** the value to set at this path */
   value: any;
+}
+
+/**
+ * The payload triggered when a LIST object pulls back datasets from
+ * the database.
+ */
+export interface IFMRecordListEvent<T extends Model = Model> {
+  type: IFMEventName<T>;
+  modelName: string;
+  pluralName: string;
+  dbPath: string;
+  localPath: string;
+  modelConstructor: new () => T;
+  query: SerializedQuery;
+  hashCode: number;
+  records: T[];
 }
 
 export interface IFMRelationshipEvent<T extends Model = Model>

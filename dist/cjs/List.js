@@ -45,6 +45,17 @@ class List extends FireModel_1.FireModel {
         const list = List.create(model, options);
         query.setPath(list.dbPath);
         await list.load(query);
+        list.dispatch({
+            type: state_mgmt_1.FMEvents.RECORD_LIST,
+            modelName: list.modelName,
+            pluralName: list.pluralName,
+            dbPath: list.dbPath,
+            localPath: list.localPath,
+            modelConstructor: list._modelConstructor,
+            query,
+            hashCode: query.hashCode(),
+            records: list.data
+        });
         return list;
     }
     /**
@@ -147,6 +158,12 @@ class List extends FireModel_1.FireModel {
     get localPath() {
         const meta = ModelMeta_1.getModelMeta(this._model);
         return path_1.pathJoin(meta.localOffset, this.pluralName, meta.localPostfix).replace(/\//g, ".");
+    }
+    get localPathToSince() {
+        const lp = this.META.localPostfix
+            ? this.localPath.replace(`/${this.META.localPostfix}`, "")
+            : this.localPath;
+        return path_1.pathJoin(lp, "since");
     }
     /** Returns another List with data filtered down by passed in filter function */
     filter(f) {
@@ -284,13 +301,6 @@ class List extends FireModel_1.FireModel {
             throw e;
         }
         this._data = await this.db.getList(pathOrQuery);
-        this.dispatch({
-            type: state_mgmt_1.FMEvents.RECORD_LIST,
-            modelName: this.modelName,
-            pluralName: this.pluralName,
-            dbPath: this.dbPath,
-            records: this.data
-        });
         return this;
     }
 }

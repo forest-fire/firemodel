@@ -43,6 +43,16 @@ export declare class Record<T extends Model> extends FireModel<T> {
      */
     static add<T extends Model>(model: new () => T, payload: T, options?: IRecordOptions): Promise<Record<T>>;
     /**
+     * update
+     *
+     * update an existing record in the database
+     *
+     * @param schema the schema of the record
+     * @param payload the data for the new record
+     * @param options
+     */
+    static update<T extends Model>(model: new () => T, payload: T, options?: IRecordOptions): Promise<Record<T>>;
+    /**
      * load
      *
      * static method to create a Record when you want to load the
