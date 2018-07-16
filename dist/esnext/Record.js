@@ -79,12 +79,11 @@ export class Record extends FireModel {
      * @param payload the data for the new record
      * @param options
      */
-    static async update(model, payload, options = {}) {
+    static async update(model, id, updates, options = {}) {
         let r;
         try {
-            r = Record.create(model, options);
-            r._initialize(payload);
-            await r._adding();
+            r = await Record.get(model, id, options);
+            await r.update(updates);
         }
         catch (e) {
             const err = new Error(`Problem adding new Record: ${e.message}`);

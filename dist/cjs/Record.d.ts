@@ -51,7 +51,7 @@ export declare class Record<T extends Model> extends FireModel<T> {
      * @param payload the data for the new record
      * @param options
      */
-    static update<T extends Model>(model: new () => T, payload: T, options?: IRecordOptions): Promise<Record<T>>;
+    static update<T extends Model>(model: new () => T, id: string, updates: Partial<T>, options?: IRecordOptions): Promise<Record<T>>;
     /**
      * load
      *

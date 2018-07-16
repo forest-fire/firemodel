@@ -103,14 +103,14 @@ export class Record<T extends Model> extends FireModel<T> {
    */
   public static async update<T extends Model>(
     model: new () => T,
-    payload: T,
+    id: string,
+    updates: Partial<T>,
     options: IRecordOptions = {}
   ) {
     let r;
     try {
-      r = Record.create(model, options);
-      r._initialize(payload);
-      await r._adding();
+      r = await Record.get(model, id, options);
+      await r.update(updates);
     } catch (e) {
       const err = new Error(`Problem adding new Record: ${e.message}`);
       err.name = e.name !== "Error" ? e.name : "FireModel";
