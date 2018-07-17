@@ -13,7 +13,7 @@ async function writeAudit(recordId, pluralName, action, changes, options = {}) {
     const p = new wait_in_parallel_1.Parallel();
     const createdAt = new Date().getTime();
     const auditId = index_1.fbKey();
-    p.add("audit-log-item", db.set(path_1.pathJoin(writePath, "all", auditId), {
+    p.add(`audit-log-${action}-on-${recordId}`, db.set(path_1.pathJoin(writePath, "all", auditId), {
         createdAt,
         recordId,
         timestamp,

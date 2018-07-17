@@ -11,7 +11,7 @@ export async function writeAudit(recordId, pluralName, action, changes, options 
     const p = new Parallel();
     const createdAt = new Date().getTime();
     const auditId = fbKey();
-    p.add("audit-log-item", db.set(pathJoin(writePath, "all", auditId), {
+    p.add(`audit-log-${action}-on-${recordId}`, db.set(pathJoin(writePath, "all", auditId), {
         createdAt,
         recordId,
         timestamp,
