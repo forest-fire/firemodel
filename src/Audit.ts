@@ -65,7 +65,11 @@ export async function writeAudit(
       recordId,
       timestamp,
       action,
-      changes
+      changes: changes.map(c => {
+        c.before = c.before === undefined ? null : c.before;
+        c.after = c.after === undefined ? null : c.after;
+        return c;
+      })
     })
   );
 

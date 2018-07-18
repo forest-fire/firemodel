@@ -25,6 +25,17 @@ export interface IAuditRecordReference {
     createdAt: number;
     action: IAuditOperations;
 }
+/**
+ * writeAudit
+ *
+ * Allows for a consistent way of writing audit records to the database
+ *
+ * @param recordId the ID of the record which is changing
+ * @param pluralName the plural name of the Model type
+ * @param action CRUD action
+ * @param changes array of changes
+ * @param options
+ */
 export declare function writeAudit(recordId: string, pluralName: string, action: IAuditOperations, changes: IAuditChange[], options?: IModelOptions): Promise<void>;
 export declare class Audit<T extends Model = Model> {
     static list<T>(modelKlass: new () => T, options?: IModelOptions): AuditList<T>;

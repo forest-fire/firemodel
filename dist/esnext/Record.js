@@ -438,7 +438,8 @@ export class Record extends FireModel {
     _writeAudit(action, changes, options = {}) {
         if (!changes || changes.length === 0) {
             changes = [];
-            this.META.properties.map(p => {
+            const meta = getModelMeta(this);
+            meta.properties.map(p => {
                 if (this.data[p.property]) {
                     changes.push({
                         before: undefined,
@@ -586,6 +587,7 @@ export class Record extends FireModel {
             this.id = fbKey();
         }
         if (this.META.audit === true) {
+            // TODO: Fix
             this._writeAudit("added", []);
         }
         const now = new Date().getTime();

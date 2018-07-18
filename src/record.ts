@@ -664,6 +664,7 @@ export class Record<T extends Model> extends FireModel<T> {
         }
       });
     }
+
     writeAudit(this.id, this.pluralName, action, changes, {
       ...options,
       db: this.db
