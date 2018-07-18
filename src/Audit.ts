@@ -34,6 +34,17 @@ export interface IAuditRecordReference {
   action: IAuditOperations;
 }
 
+/**
+ * writeAudit
+ *
+ * Allows for a consistent way of writing audit records to the database
+ *
+ * @param recordId the ID of the record which is changing
+ * @param pluralName the plural name of the Model type
+ * @param action CRUD action
+ * @param changes array of changes
+ * @param options
+ */
 export async function writeAudit(
   recordId: string,
   pluralName: string,
@@ -48,13 +59,17 @@ export async function writeAudit(
   const createdAt = new Date().getTime();
   const auditId = fbKey();
   p.add(
-    "audit-log-item",
+    `audit-log-${action}-on-${recordId}`,
     db.set<IAuditLogItem>(pathJoin(writePath, "all", auditId), {
       createdAt,
       recordId,
       timestamp,
       action,
-      changes
+      changes: changes.map(c => {
+        c.before = c.before === undefined ? null : c.before;
+        c.after = c.after === undefined ? null : c.after;
+        return c;
+      })
     })
   );
 

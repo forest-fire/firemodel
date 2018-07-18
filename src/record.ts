@@ -652,17 +652,19 @@ export class Record<T extends Model> extends FireModel<T> {
   ) {
     if (!changes || changes.length === 0) {
       changes = [];
-      this.META.properties.map(p => {
-        if (this.data[p.property]) {
+      const meta = getModelMeta(this);
+      meta.properties.map(p => {
+        if (this.data[p.property as keyof T]) {
           changes.push({
             before: undefined,
-            after: this.data[p.property],
+            after: this.data[p.property as keyof T],
             property: p.property,
             action: "added"
           });
         }
       });
     }
+
     writeAudit(this.id, this.pluralName, action, changes, {
       ...options,
       db: this.db
@@ -889,6 +891,7 @@ export class Record<T extends Model> extends FireModel<T> {
       this.id = fbKey();
     }
     if (this.META.audit === true) {
+      // TODO: Fix
       this._writeAudit("added", []);
     }
     const now = new Date().getTime();

@@ -6,6 +6,17 @@ const AuditList_1 = require("./AuditList");
 const wait_in_parallel_1 = require("wait-in-parallel");
 const index_1 = require("./index");
 const AuditRecord_1 = require("./AuditRecord");
+/**
+ * writeAudit
+ *
+ * Allows for a consistent way of writing audit records to the database
+ *
+ * @param recordId the ID of the record which is changing
+ * @param pluralName the plural name of the Model type
+ * @param action CRUD action
+ * @param changes array of changes
+ * @param options
+ */
 async function writeAudit(recordId, pluralName, action, changes, options = {}) {
     const db = options.db || FireModel_1.FireModel.defaultDb;
     const timestamp = new Date().getTime();
@@ -13,12 +24,16 @@ async function writeAudit(recordId, pluralName, action, changes, options = {}) {
     const p = new wait_in_parallel_1.Parallel();
     const createdAt = new Date().getTime();
     const auditId = index_1.fbKey();
-    p.add("audit-log-item", db.set(path_1.pathJoin(writePath, "all", auditId), {
+    p.add(`audit-log-${action}-on-${recordId}`, db.set(path_1.pathJoin(writePath, "all", auditId), {
         createdAt,
         recordId,
         timestamp,
         action,
-        changes
+        changes: changes.map(c => {
+            c.before = c.before === undefined ? null : c.before;
+            c.after = c.after === undefined ? null : c.after;
+            return c;
+        })
     }));
     const mps = db.multiPathSet(path_1.pathJoin(writePath, "byId", recordId));
     mps.add({ path: path_1.pathJoin("all", auditId), value: createdAt });
