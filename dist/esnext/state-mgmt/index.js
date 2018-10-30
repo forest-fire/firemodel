@@ -6,6 +6,10 @@ export var FMEvents;
 (function (FMEvents) {
     /** a list of records has been queried from DB and being dispatched to FE State Mgmt */
     FMEvents["RECORD_LIST"] = "@firemodel/RECORD_LIST";
+    /** a list of records was SET to a new list of records */
+    FMEvents["LIST_SET"] = "@firemodel/LIST_SET";
+    /** a list of records removed */
+    FMEvents["LIST_CLEAR"] = "@firemodel/LIST_CLEAR";
     /** A record has been added locally */
     FMEvents["RECORD_ADDED_LOCALLY"] = "@firemodel/RECORD_ADDED_LOCALLY";
     /** A record has been added to a given Model list being watched */

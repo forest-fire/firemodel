@@ -9,6 +9,10 @@ export declare type IFMEventName<T> = string & NotString<T> & Extractable<FMEven
 export declare enum FMEvents {
     /** a list of records has been queried from DB and being dispatched to FE State Mgmt */
     RECORD_LIST = "@firemodel/RECORD_LIST",
+    /** a list of records was SET to a new list of records */
+    LIST_SET = "@firemodel/LIST_SET",
+    /** a list of records removed */
+    LIST_CLEAR = "@firemodel/LIST_CLEAR",
     /** A record has been added locally */
     RECORD_ADDED_LOCALLY = "@firemodel/RECORD_ADDED_LOCALLY",
     /** A record has been added to a given Model list being watched */

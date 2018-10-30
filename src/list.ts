@@ -16,11 +16,49 @@ const DEFAULT_IF_NOT_FOUND = "__DO_NOT_USE__";
 export class List<T extends Model> extends FireModel<T> {
   //#region STATIC Interfaces
 
+  /**
+   * Sets the default database to be used by all FireModel classes
+   * unless explicitly told otherwise
+   */
   public static set defaultDb(db: RealTimeDB) {
     FireModel.defaultDb = db;
   }
+
   public static get defaultDb() {
     return FireModel.defaultDb;
+  }
+
+  /**
+   * Set
+   *
+   * Sets a given model to the payload passed in. This is
+   * a destructive operation ... any other records of the
+   * same type that existed beforehand are removed.
+   */
+  public static async set<T extends Model>(model: new () => T, payload: T[]) {
+    try {
+      const m = new model();
+      if(m.META.audit) {
+        const existing = await List.all(model);
+        if (existing.length > 0) {
+          // TODO: need to write an appropriate AUDIT EVENT
+          // TODO: implement
+        } else {
+          // LIST_SET event
+          // TODO: need to write an appropriate AUDIT EVENT
+          // TODO: implement
+        }
+      } else {
+        await FireModel.defaultDb.set(m.META.dbOffset, payload);
+      }
+
+      const current = await List.all(model);
+      return current;
+    } catch (e) {
+      const err = new Error(`Problem adding new Record: ${e.message}`);
+      err.name = e.name !== "Error" ? e.name : "FireModel";
+      throw e;
+    }
   }
 
   public static set dispatch(fn: IReduxDispatch) {
