@@ -52,6 +52,8 @@ describe("List class: ", () => {
     expect(list.map(i => i.name)).to.include('Roger');
     expect(list.map(i => i.age)).to.include(14);
     expect(list.map(i => i.age)).to.include(22);
+    expect(list.data[0].createdAt).is.a('number');
+    expect(list.data[1].createdAt).is.a('number');
   });
 
 

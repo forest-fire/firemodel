@@ -13,6 +13,20 @@ import { FMEvents, IFMRecordListEvent } from "./state-mgmt";
 
 const DEFAULT_IF_NOT_FOUND = "__DO_NOT_USE__";
 
+
+function addTimestamps<T extends Model>(obj: IDictionary) {
+  const datetime = new Date().getTime();
+  const output: IDictionary = {};
+  Object.keys(obj).forEach(i => {
+    output[i] = {
+      ...obj[i],
+      createdAt: datetime,
+      lastUpdated: datetime
+    }
+  });
+
+  return output as T;
+}
 export class List<T extends Model> extends FireModel<T> {
   //#region STATIC Interfaces
 
@@ -38,6 +52,7 @@ export class List<T extends Model> extends FireModel<T> {
     public static async set<T extends Model>(model: new () => T, payload: IDictionary<T>) {
     try {
       const m = Record.create(model);
+      const payloadWithDates = addTimestamps(payload);
       if(m.META.audit) {
         const existing = await List.all(model);
         if (existing.length > 0) {
@@ -49,7 +64,8 @@ export class List<T extends Model> extends FireModel<T> {
           // TODO: implement
         }
       } else {
-        await FireModel.defaultDb.set(`${m.META.dbOffset}/${m.pluralName}` , payload);
+        const datetime = new Date().getTime();
+        await FireModel.defaultDb.set(`${m.META.dbOffset}/${m.pluralName}` , payloadWithDates);
       }
 
       const current = await List.all(model);
