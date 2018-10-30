@@ -2,7 +2,7 @@ import { Model, IModelOptions } from "./Model";
 import { Record } from "./Record";
 import { SerializedQuery, IComparisonOperator } from "serialized-query";
 
-import { epochWithMilliseconds } from "common-types";
+import { epochWithMilliseconds, IDictionary } from "common-types";
 import { FireModel } from "./FireModel";
 // tslint:disable-next-line:no-implicit-dependencies
 import { RealTimeDB } from "abstracted-firebase";
@@ -35,7 +35,7 @@ export class List<T extends Model> extends FireModel<T> {
    * a destructive operation ... any other records of the
    * same type that existed beforehand are removed.
    */
-  public static async set<T extends Model>(model: new () => T, payload: T[]) {
+  public static async set<T extends Model>(model: new () => T, payload: IDictionary<T>) {
     try {
       const m = new model();
       if(m.META.audit) {
