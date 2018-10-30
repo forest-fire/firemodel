@@ -35,9 +35,9 @@ export class List<T extends Model> extends FireModel<T> {
    * a destructive operation ... any other records of the
    * same type that existed beforehand are removed.
    */
-  public static async set<T extends Model>(model: new () => T, payload: IDictionary<T>) {
+    public static async set<T extends Model>(model: new () => T, payload: IDictionary<T>) {
     try {
-      const m = new model();
+      const m = Record.create(model);
       if(m.META.audit) {
         const existing = await List.all(model);
         if (existing.length > 0) {
@@ -49,7 +49,7 @@ export class List<T extends Model> extends FireModel<T> {
           // TODO: implement
         }
       } else {
-        await FireModel.defaultDb.set(m.META.dbOffset, payload);
+        await FireModel.defaultDb.set(`${m.META.dbOffset}/${m.pluralName}` , payload);
       }
 
       const current = await List.all(model);

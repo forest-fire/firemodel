@@ -35,6 +35,26 @@ describe("List class: ", () => {
     expect(list.dbPath).to.equal(`${list.META.dbOffset}/people`);
   });
 
+  it('List can SET a dictionary of records', async () => {
+    const list = await List.set(Person, {
+      joe: {
+        name: 'Joe',
+        age: 14
+      },
+      roger: {
+        age: 22,
+        name: "Roger"
+      }
+    });
+
+    expect(list).to.have.lengthOf(2);
+    expect(list.map(i => i.name)).to.include('Joe');
+    expect(list.map(i => i.name)).to.include('Roger');
+    expect(list.map(i => i.age)).to.include(14);
+    expect(list.map(i => i.age)).to.include(22);
+  });
+
+
   it("can instantiate with all() method", async () => {
     db.mock
       .addSchema("person", h => () => ({
