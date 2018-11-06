@@ -23,6 +23,10 @@ function hasMany(modelConstructor) {
     return reflector_1.propertyReflector(payload, decorator_1.relationshipsByModel);
 }
 exports.hasMany = hasMany;
+function belongsTo(modelConstructor) {
+    return ownedBy(modelConstructor);
+}
+exports.belongsTo = belongsTo;
 function ownedBy(modelConstructor) {
     const rec = Record_1.Record.create(modelConstructor);
     let meta;

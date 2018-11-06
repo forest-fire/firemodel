@@ -5,6 +5,14 @@ import { pathJoin } from "./path";
 import { getModelMeta } from "./ModelMeta";
 import { FMEvents } from "./state-mgmt";
 const DEFAULT_IF_NOT_FOUND = "__DO_NOT_USE__";
+function addTimestamps(obj) {
+    const datetime = new Date().getTime();
+    const output = {};
+    Object.keys(obj).forEach(i => {
+        output[i] = Object.assign({}, obj[i], { createdAt: datetime, lastUpdated: datetime });
+    });
+    return output;
+}
 export class List extends FireModel {
     constructor(model, options = {}) {
         super();
@@ -39,7 +47,8 @@ export class List extends FireModel {
      */
     static async set(model, payload) {
         try {
-            const m = new model();
+            const m = Record.create(model);
+            // If Auditing is one we must be more careful
             if (m.META.audit) {
                 const existing = await List.all(model);
                 if (existing.length > 0) {
@@ -53,7 +62,9 @@ export class List extends FireModel {
                 }
             }
             else {
-                await FireModel.defaultDb.set(m.META.dbOffset, payload);
+                // Without auditing we can just set the payload into the DB
+                const datetime = new Date().getTime();
+                await FireModel.defaultDb.set(`${m.META.dbOffset}/${m.pluralName}`, addTimestamps(payload));
             }
             const current = await List.all(model);
             return current;
@@ -324,11 +335,22 @@ export class List extends FireModel {
      * @param id the unique ID which is being looked for
      * @param defaultIfNotFound the default value returned if the ID is not found in the list
      */
-    getData(id, defaultIfNotFound = "__DO_NOT_USE__") {
-        const record = this.findById(id, defaultIfNotFound);
-        return record === defaultIfNotFound
-            ? defaultIfNotFound
-            : record.data;
+    getData(id, defaultIfNotFound = DEFAULT_IF_NOT_FOUND) {
+        let record;
+        try {
+            record = this.findById(id, defaultIfNotFound);
+            return record === defaultIfNotFound
+                ? defaultIfNotFound
+                : record.data;
+        }
+        catch (e) {
+            if (e.name === "NotFound" && defaultIfNotFound !== DEFAULT_IF_NOT_FOUND) {
+                return defaultIfNotFound;
+            }
+            else {
+                throw e;
+            }
+        }
     }
     async load(pathOrQuery) {
         if (!this.db) {

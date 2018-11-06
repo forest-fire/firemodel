@@ -9,6 +9,7 @@ import { addModelMeta } from "../ModelMeta";
 import { IDictionary } from "common-types";
 import { propertyReflector } from "./reflector";
 import { IModelRelationshipMeta } from "./schema";
+import { Model } from "../Model";
 
 export function hasMany(modelConstructor: new () => any) {
   const rec = Record.create(modelConstructor);
@@ -29,7 +30,11 @@ export function hasMany(modelConstructor: new () => any) {
   return propertyReflector(payload, relationshipsByModel);
 }
 
-export function ownedBy(modelConstructor: new () => any) {
+export function belongsTo<T = Model>(modelConstructor: new () => T) {
+  return ownedBy(modelConstructor);
+}
+
+export function ownedBy<T = Model>(modelConstructor: new () => T) {
   const rec = Record.create(modelConstructor);
   let meta;
   if (rec.META) {

@@ -52,7 +52,7 @@ export class List<T extends Model> extends FireModel<T> {
     public static async set<T extends Model>(model: new () => T, payload: IDictionary<T>) {
     try {
       const m = Record.create(model);
-      const payloadWithDates = addTimestamps(payload);
+      // If Auditing is one we must be more careful
       if(m.META.audit) {
         const existing = await List.all(model);
         if (existing.length > 0) {
@@ -64,8 +64,9 @@ export class List<T extends Model> extends FireModel<T> {
           // TODO: implement
         }
       } else {
+        // Without auditing we can just set the payload into the DB
         const datetime = new Date().getTime();
-        await FireModel.defaultDb.set(`${m.META.dbOffset}/${m.pluralName}` , payloadWithDates);
+        await FireModel.defaultDb.set(`${m.META.dbOffset}/${m.pluralName}` , addTimestamps(payload));
       }
 
       const current = await List.all(model);
@@ -455,12 +456,20 @@ export class List<T extends Model> extends FireModel<T> {
    * @param id the unique ID which is being looked for
    * @param defaultIfNotFound the default value returned if the ID is not found in the list
    */
-  public getData(id: string, defaultIfNotFound: any = "__DO_NOT_USE__"): T {
-    const record = this.findById(id, defaultIfNotFound);
-
-    return record === defaultIfNotFound
-      ? defaultIfNotFound
-      : ((record as any).data as T);
+  public getData(id: string, defaultIfNotFound: any = DEFAULT_IF_NOT_FOUND): T {
+    let record: Record<T>;
+    try {
+      record = this.findById(id, defaultIfNotFound);
+      return record === defaultIfNotFound
+        ? defaultIfNotFound
+        : ((record as any).data as T);
+    } catch (e) {
+      if (e.name === "NotFound" && defaultIfNotFound !== DEFAULT_IF_NOT_FOUND) {
+        return defaultIfNotFound;
+      } else {
+        throw e;
+      }
+    }
   }
 
   public async load(pathOrQuery: string | SerializedQuery<T>) {

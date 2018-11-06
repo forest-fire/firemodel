@@ -1,7 +1,7 @@
 import { Model, IModelOptions } from "./Model";
 import { Record } from "./Record";
 import { SerializedQuery, IComparisonOperator } from "serialized-query";
-import { epochWithMilliseconds } from "common-types";
+import { epochWithMilliseconds, IDictionary } from "common-types";
 import { FireModel } from "./FireModel";
 import { RealTimeDB } from "abstracted-firebase";
 import { IReduxDispatch } from "./VuexWrapper";
@@ -18,7 +18,7 @@ export declare class List<T extends Model> extends FireModel<T> {
      * a destructive operation ... any other records of the
      * same type that existed beforehand are removed.
      */
-    static set<T extends Model>(model: new () => T, payload: T[]): Promise<List<T>>;
+    static set<T extends Model>(model: new () => T, payload: IDictionary<T>): Promise<List<T>>;
     static dispatch: IReduxDispatch;
     static create<T extends Model>(model: new () => T, options?: IModelOptions): List<T>;
     /**
