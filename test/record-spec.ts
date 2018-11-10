@@ -33,6 +33,11 @@ describe("Record > ", () => {
     expect(r).to.be.instanceof(Record);
     expect(r.get("name")).to.equal("Bob Marley");
     expect(r.id).to.exist.and.be.a("string");
+    // test DB too
+    const fromDb = await Record.get(Person, r.id);
+    expect(fromDb).to.be.instanceof(Record);
+    expect(fromDb.get("name")).to.equal("Bob Marley");
+    expect(fromDb.id).to.exist.and.be.a("string");
   });
 
   it(`Record's static add() fires client events`, async () => {

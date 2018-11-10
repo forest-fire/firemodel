@@ -1,6 +1,6 @@
 import { RealTimeDB } from "abstracted-firebase";
 import { Model, IModelOptions } from "./Model";
-import { fk } from "common-types";
+import { fk, Omit } from "common-types";
 import { FireModel } from "./FireModel";
 import { IReduxDispatch } from "./VuexWrapper";
 import { IFMEventName } from "./state-mgmt/index";
@@ -38,10 +38,10 @@ export declare class Record<T extends Model> extends FireModel<T> {
      * Adds a new record to the database
      *
      * @param schema the schema of the record
-     * @param payload the data for the new record
+     * @param payload the data for the new record; this optionally can include the "id" but if left off the new record will use a firebase pushkey
      * @param options
      */
-    static add<T extends Model>(model: new () => T, payload: T, options?: IRecordOptions): Promise<Record<T>>;
+    static add<T extends Model>(model: new () => T, payload: Omit<T, "id">, options?: IRecordOptions): Promise<Record<T>>;
     /**
      * update
      *

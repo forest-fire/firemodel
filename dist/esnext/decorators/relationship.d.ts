@@ -1,5 +1,6 @@
 import "reflect-metadata";
-export declare function hasMany(modelConstructor: new () => any): (modelKlass: import("../Model").Model, key: string) => void;
-export declare function belongsTo(modelConstructor: new () => any): (modelKlass: import("../Model").Model, key: string) => void;
-export declare function ownedBy(modelConstructor: new () => any): (modelKlass: import("../Model").Model, key: string) => void;
-export declare function inverse(inverseProperty: string): (modelKlass: import("../Model").Model, key: string) => void;
+import { Model } from "../Model";
+export declare function hasMany(modelConstructor: new () => any): (modelKlass: Model, key: string) => void;
+export declare function belongsTo<T = Model>(modelConstructor: new () => T): (modelKlass: Model, key: string) => void;
+export declare function ownedBy<T = Model>(modelConstructor: new () => T): (modelKlass: Model, key: string) => void;
+export declare function inverse(inverseProperty: string): (modelKlass: Model, key: string) => void;

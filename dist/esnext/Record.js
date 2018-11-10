@@ -53,13 +53,16 @@ export class Record extends FireModel {
      * Adds a new record to the database
      *
      * @param schema the schema of the record
-     * @param payload the data for the new record
+     * @param payload the data for the new record; this optionally can include the "id" but if left off the new record will use a firebase pushkey
      * @param options
      */
     static async add(model, payload, options = {}) {
         let r;
         try {
             r = Record.create(model, options);
+            if (!payload.id) {
+                payload.id = fbKey();
+            }
             r._initialize(payload);
             await r._adding();
         }
