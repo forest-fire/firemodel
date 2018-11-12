@@ -11,6 +11,7 @@ import { getModelMeta, modelsWithMeta } from "./ModelMeta";
 import { writeAudit, IAuditChange, IAuditOperations } from "./Audit";
 import { updateToAuditChanges } from "./util";
 
+// TODO: see if there's a way to convert to interface so that design time errors are more clear
 export type ModelOptionalId<T extends Model> = Omit<T, 'id'>;
 
 export interface IWriteOperation {
