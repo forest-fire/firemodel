@@ -152,7 +152,7 @@ export declare class Watch {
      */
     where<T extends Model, K extends keyof T>(property: K, value: T[K] | [IComparisonOperator, T[K]]): Omit<Watch, IWatchListQueries | "toString">;
     toString(): string;
-    protected readonly db: import("../node_modules/abstracted-firebase/dist/esnext/db").RealTimeDB;
+    protected readonly db: RealTimeDB;
 }
 export interface IWatcherApiPostQuery {
     /** executes the watcher so that it becomes actively watched */

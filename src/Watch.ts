@@ -419,7 +419,7 @@ export class Watch {
     }" event(s) [ hashcode: ${String(this._query.hashCode())} ]`;
   }
 
-  protected get db() {
+  protected get db(): RealTimeDB {
     if (!this._db) {
       if (FireModel.defaultDb) {
         this._db = FireModel.defaultDb;

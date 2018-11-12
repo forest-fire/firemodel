@@ -14,7 +14,7 @@ export class AuditBase<T extends Model = Model> {
   protected _recordId: string;
   protected _property: string;
 
-  protected get db() {
+  protected get db(): RealTimeDB {
     return this._db;
   }
 

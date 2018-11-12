@@ -11,6 +11,8 @@ import { getModelMeta, modelsWithMeta } from "./ModelMeta";
 import { writeAudit, IAuditChange, IAuditOperations } from "./Audit";
 import { updateToAuditChanges } from "./util";
 
+export type ModelOptionalId<T extends Model> = Omit<T, 'id'>;
+
 export interface IWriteOperation {
   id: string;
   type: "set" | "pushKey" | "update";
@@ -75,7 +77,7 @@ export class Record<T extends Model> extends FireModel<T> {
    */
   public static async add<T extends Model>(
     model: new () => T,
-    payload: Omit<T, "id">,
+    payload: ModelOptionalId<T>,
     options: IRecordOptions = {}
   ) {
     let r;
