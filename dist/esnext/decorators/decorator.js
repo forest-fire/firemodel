@@ -11,7 +11,7 @@ function push(target, path, value) {
 }
 /** Properties accumlated by propertyDecorators  */
 export const propertiesByModel = {};
-/** Relationships accumlated by hasMany/ownedBy decorators */
+/** Relationships accumlated by hasMany/hasOne decorators */
 export const relationshipsByModel = {};
 export const propertyDecorator = (nameValuePairs = {}, 
 /**

@@ -90,6 +90,18 @@ module.exports = {
     ]
   ],
   serviceWorker: true,
+  plugins: {
+    "@vuepress/pwa": {
+      serviceWorker: true,
+      updatePopup: {
+        message: "New content is available",
+        buttonText: "Refresh"
+      }
+    },
+    "@vuepress/back-to-top": true,
+    "@vuepress/last-updated": true,
+    "@vuepress/medium-zoom": true
+  },
   themeConfig: {
     editLinks: true,
     nav: [

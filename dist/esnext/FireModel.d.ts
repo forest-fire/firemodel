@@ -1,10 +1,10 @@
 import { Model } from "./Model";
-import { IModelMetaProperties, IModelPropertyMeta } from "./index";
+import { IFmModelMeta, IFmModelPropertyMeta } from "./index";
 declare type Record<T> = import("./Record").Record<T>;
 import { IDictionary } from "common-types";
 import { IFMRecordEvent, FMEvents, NotString, Extractable } from "./state-mgmt";
 import { IReduxDispatch } from "./VuexWrapper";
-import { IModelRelationshipMeta } from "./decorators/schema";
+import { IFmModelRelationshipMeta } from "./decorators/schema";
 declare type RealTimeDB = import("abstracted-firebase").RealTimeDB;
 export declare class FireModel<T extends Model> {
     static auditLogs: string;
@@ -49,17 +49,17 @@ export declare class FireModel<T extends Model> {
     readonly pluralName: any;
     readonly dbPath: string;
     readonly localPath: string;
-    readonly META: IModelMetaProperties<T>;
+    readonly META: IFmModelMeta<T>;
     /**
      * A list of all the properties -- and those properties
      * meta information -- contained on the given model
      */
-    readonly properties: IModelPropertyMeta[];
+    readonly properties: IFmModelPropertyMeta[];
     /**
      * A list of all the realtionships -- and those relationships
      * meta information -- contained on the given model
      */
-    readonly relationships: IModelRelationshipMeta[];
+    readonly relationships: IFmModelRelationshipMeta[];
     readonly dispatch: IReduxDispatch;
     readonly dispatchIsActive: boolean;
     /** the connected real-time database */

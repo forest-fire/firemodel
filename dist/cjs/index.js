@@ -3,25 +3,7 @@ function __export(m) {
     for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
 }
 Object.defineProperty(exports, "__esModule", { value: true });
-var property_1 = require("./decorators/property");
-exports.property = property_1.property;
-exports.pushKey = property_1.pushKey;
-exports.constrainedProperty = property_1.constrainedProperty;
-exports.constrain = property_1.constrain;
-exports.min = property_1.min;
-exports.max = property_1.max;
-exports.length = property_1.length;
-exports.desc = property_1.desc;
-exports.mock = property_1.mock;
-var indexing_1 = require("./decorators/indexing");
-exports.index = indexing_1.index;
-exports.uniqueIndex = indexing_1.uniqueIndex;
-var relationship_1 = require("./decorators/relationship");
-exports.hasMany = relationship_1.hasMany;
-exports.ownedBy = relationship_1.ownedBy;
-exports.inverse = relationship_1.inverse;
-var schema_1 = require("./decorators/schema");
-exports.model = schema_1.model;
+__export(require("./decorators"));
 var Model_1 = require("./Model");
 exports.Model = Model_1.Model;
 exports.RelationshipPolicy = Model_1.RelationshipPolicy;

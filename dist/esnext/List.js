@@ -256,7 +256,7 @@ export class List extends FireModel {
     findWhere(prop, value, defaultIfNotFound = DEFAULT_IF_NOT_FOUND) {
         const list = this.META.isProperty(prop) ||
             (this.META.isRelationship(prop) &&
-                this.META.relationship(prop).relType === "ownedBy")
+                this.META.relationship(prop).relType === "hasOne")
             ? this.filterWhere(prop, value)
             : this.filterContains(prop, value);
         if (list.length > 0) {
@@ -269,7 +269,7 @@ export class List extends FireModel {
             else {
                 const valid = this.META.isProperty(prop) ||
                     (this.META.isRelationship(prop) &&
-                        this.META.relationship(prop).relType === "ownedBy")
+                        this.META.relationship(prop).relType === "hasOne")
                     ? this.map(i => i[prop])
                     : this.map(i => Object.keys(i[prop]));
                 const e = new Error(`List<${this.modelName}>.findWhere(${prop}, ${value}) was not found in the List [ length: ${this.data.length} ]. \n\nValid values include: \n\n${valid.join("\t")}`);

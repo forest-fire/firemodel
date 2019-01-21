@@ -12,5 +12,5 @@ export declare const indexesForModel: IDictionary<IDictionary<IModelIndexMeta>>;
  * Gets all the db indexes for a given model
  */
 export declare function getDbIndexes<T>(modelKlass: object): IModelIndexMeta[];
-export declare const index: (modelKlass: import("../Model").Model, key: string) => void;
-export declare const uniqueIndex: (modelKlass: import("../Model").Model, key: string) => void;
+export declare const index: (modelKlass: import("..").Model, key: string) => void;
+export declare const uniqueIndex: (modelKlass: import("..").Model, key: string) => void;

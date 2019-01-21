@@ -170,10 +170,10 @@ function addRelationships(db, config, exceptions) {
         relns.map(rel => {
             if (!config.cardinality ||
                 Object.keys(config.cardinality).includes(rel.property)) {
-                if (rel.relType === "ownedBy") {
+                if (rel.relType === "hasOne") {
                     const id = fbKey();
                     const prop = rel.property;
-                    p.add(`ownedBy-${id}`, follow
+                    p.add(`hasOne-${id}`, follow
                         ? instance.setRelationship(prop, id)
                         : db.set(pathJoin(instance.dbPath, prop), id));
                 }
@@ -213,14 +213,14 @@ function followRelationships(db, config, exceptions) {
             return instance;
         }
         const hasMany = relns.filter(i => i.relType === "hasMany");
-        const ownedBy = relns.filter(i => i.relType === "ownedBy");
+        const hasOne = relns.filter(i => i.relType === "hasOne");
         hasMany.map(r => {
             const fks = Object.keys(instance.get(r.property));
             fks.map(fk => {
                 p.add(fk, Mock(r.fkConstructor, db).generate(1, { id: fk }));
             });
         });
-        ownedBy.map(r => {
+        hasOne.map(r => {
             const fk = instance.get(r.property);
             p.add(fk, Mock(r.fkConstructor, db).generate(1, { id: fk }));
         });

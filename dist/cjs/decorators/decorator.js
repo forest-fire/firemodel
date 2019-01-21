@@ -13,7 +13,7 @@ function push(target, path, value) {
 }
 /** Properties accumlated by propertyDecorators  */
 exports.propertiesByModel = {};
-/** Relationships accumlated by hasMany/ownedBy decorators */
+/** Relationships accumlated by hasMany/hasOne decorators */
 exports.relationshipsByModel = {};
 exports.propertyDecorator = (nameValuePairs = {}, 
 /**
