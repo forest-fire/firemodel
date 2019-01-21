@@ -8,7 +8,7 @@ import { FireModel } from "../src/FireModel";
 import { FancyPerson } from "./testing/FancyPerson";
 import { IFMRecordEvent, FMEvents } from "../src/state-mgmt";
 import { List } from "../src/List";
-import { Company } from "./testing/company";
+import { Company } from "./testing/Company";
 
 const addFatherAndChildren = async () => {
   const bob = await Record.add(FancyPerson, {

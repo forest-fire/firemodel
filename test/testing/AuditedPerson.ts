@@ -12,8 +12,9 @@ import {
   length
 } from "../../src";
 import { mock } from "../../src/decorators/property";
-import { Company } from "./company";
+import { Company } from "./Company";
 import { IDictionary } from "common-types";
+import { Concert } from "./Concert";
 
 function bespokeMock(context: import("firemock").MockHelper) {
   return context.faker.name.firstName() + ", hello to you";
@@ -30,12 +31,13 @@ export class Person extends Model {
   // prettier-ignore
   @property @pushKey public tags?: IDictionary<string>;
   // prettier-ignore
-  @ownedBy(Person) @inverse("children") public mother?: fk;
+  @ownedBy(() => Person) @inverse("children") public mother?: fk;
   // prettier-ignore
-  @ownedBy(Person) @inverse("children") public father?: fk;
+  @ownedBy(() => Person) @inverse("children") public father?: fk;
   // prettier-ignore
-  @hasMany(Person) public children?: IDictionary;
+  @hasMany(() => Person) public children?: IDictionary;
   // prettier-ignore
-  // @ownedBy(Concert) public concerts?: IDictionary;
-  @ownedBy(Company) public employerId?: fk;
+  @ownedBy(() => Concert) public concerts?: IDictionary;
+  // prettier-ignore
+  @ownedBy(() => Company) public employerId?: fk;
 }

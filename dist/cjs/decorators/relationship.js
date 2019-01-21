@@ -6,7 +6,7 @@ const Record_1 = require("../Record");
 const ModelMeta_1 = require("../ModelMeta");
 const reflector_1 = require("./reflector");
 function hasMany(modelConstructor) {
-    const rec = Record_1.Record.create(modelConstructor);
+    const rec = Record_1.Record.create(modelConstructor());
     let meta = {};
     if (rec.META) {
         ModelMeta_1.addModelMeta(rec.modelName, rec.META);
@@ -28,7 +28,7 @@ function belongsTo(modelConstructor) {
 }
 exports.belongsTo = belongsTo;
 function ownedBy(modelConstructor) {
-    const rec = Record_1.Record.create(modelConstructor);
+    const rec = Record_1.Record.create(modelConstructor());
     let meta;
     if (rec.META) {
         ModelMeta_1.addModelMeta(rec.modelName, rec.META);

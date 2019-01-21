@@ -120,5 +120,5 @@ describe("Watch →", () => {
     }
   });
 
-  Watch.list(Person).since();
+  // Watch.list(Person).since();
 });

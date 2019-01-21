@@ -5,7 +5,7 @@ import * as chai from "chai";
 import { Mock } from "../src/Mock";
 import { FancyPerson } from "./testing/FancyPerson";
 import { Car } from "./testing/Car";
-import { Company } from "./testing/company";
+import { Company } from "./testing/Company";
 import * as helpers from "./testing/helpers";
 import { Record } from "../src/record";
 const expect = chai.expect;

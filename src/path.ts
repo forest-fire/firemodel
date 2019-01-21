@@ -27,9 +27,7 @@ export function pathJoin(...args: any[]) {
         ? joinStringsWithSlash(prev, "" + val) // if string or number just keep as is
         : Array.isArray(val)
           ? joinStringsWithSlash(prev, pathJoin.apply(null, val)) // handle array with recursion
-          : (console.error
-              ? console.error(errorStr(typeof val))
-              : console.log(errorStr(typeof val))) || "";
+          : console.error(errorStr(typeof val));
     }, "")
     .replace(moreThanThreePeriods, ".."); // join the resulting array together
 }

@@ -4,7 +4,7 @@ import { Record } from "../Record";
 import { addModelMeta } from "../ModelMeta";
 import { propertyReflector } from "./reflector";
 export function hasMany(modelConstructor) {
-    const rec = Record.create(modelConstructor);
+    const rec = Record.create(modelConstructor());
     let meta = {};
     if (rec.META) {
         addModelMeta(rec.modelName, rec.META);
@@ -24,7 +24,7 @@ export function belongsTo(modelConstructor) {
     return ownedBy(modelConstructor);
 }
 export function ownedBy(modelConstructor) {
-    const rec = Record.create(modelConstructor);
+    const rec = Record.create(modelConstructor());
     let meta;
     if (rec.META) {
         addModelMeta(rec.modelName, rec.META);

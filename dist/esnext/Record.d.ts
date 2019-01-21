@@ -5,6 +5,9 @@ import { FireModel } from "./FireModel";
 import { IReduxDispatch } from "./VuexWrapper";
 import { IFMEventName } from "./state-mgmt/index";
 import { IAuditChange, IAuditOperations } from "./Audit";
+export declare type ModelOptionalId<T extends Model> = Omit<T, "id"> & {
+    id?: string;
+};
 export interface IWriteOperation {
     id: string;
     type: "set" | "pushKey" | "update";
@@ -41,7 +44,7 @@ export declare class Record<T extends Model> extends FireModel<T> {
      * @param payload the data for the new record; this optionally can include the "id" but if left off the new record will use a firebase pushkey
      * @param options
      */
-    static add<T extends Model>(model: new () => T, payload: Omit<T, "id">, options?: IRecordOptions): Promise<Record<T>>;
+    static add<T extends Model>(model: new () => T, payload: ModelOptionalId<T>, options?: IRecordOptions): Promise<Record<T>>;
     /**
      * update
      *
