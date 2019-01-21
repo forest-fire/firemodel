@@ -6,7 +6,7 @@ import {
   length,
   model,
   fk,
-  ownedBy,
+  hasOne,
   hasMany
 } from "../../src";
 import { Company } from "./Company";
@@ -25,13 +25,13 @@ export class Person extends Model {
   // prettier-ignore
   @property @pushKey public tags?: IDictionary<string>;
   // prettier-ignore
-  @ownedBy(() => Person, "children") public mother?: fk;
+  @hasOne(() => Person, "children") public mother?: fk;
   // prettier-ignore
-  @ownedBy(() => Person, "children") public father?: fk;
+  @hasOne(() => Person, "children") public father?: fk;
   // prettier-ignore
   @hasMany(() => Person) public children?: IDictionary;
   // prettier-ignore
-  @ownedBy(() => Concert) public concerts?: IDictionary;
+  @hasOne(() => Concert) public concerts?: IDictionary;
   // prettier-ignore
-  @ownedBy(() => Company) public employerId?: fk;
+  @hasOne(() => Company) public employerId?: fk;
 }

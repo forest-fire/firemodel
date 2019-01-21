@@ -355,7 +355,7 @@ export class List<T extends Model> extends FireModel<T> {
     const list =
       this.META.isProperty(prop) ||
       (this.META.isRelationship(prop) &&
-        this.META.relationship(prop).relType === "ownedBy")
+        this.META.relationship(prop).relType === "hasOne")
         ? this.filterWhere(prop, value)
         : this.filterContains(prop, value);
 
@@ -368,7 +368,7 @@ export class List<T extends Model> extends FireModel<T> {
         const valid =
           this.META.isProperty(prop) ||
           (this.META.isRelationship(prop) &&
-            this.META.relationship(prop).relType === "ownedBy")
+            this.META.relationship(prop).relType === "hasOne")
             ? this.map(i => i[prop])
             : this.map(i => Object.keys(i[prop]));
         const e = new Error(

@@ -79,14 +79,14 @@ describe("property decorator: ", () => {
 });
 
 describe("relationship decorators: ", () => {
-  it("ownedBy() sets correct meta props", async () => {
+  it("hasOne() sets correct meta props", async () => {
     const person = new Person();
     const keys: string[] = Reflect.getMetadataKeys(person);
     expect(keys).to.include.members(["father", "mother"]);
 
     expect(person.META.relationship("father").isRelationship).to.equal(true);
-    expect(person.META.relationship("father").relType).to.be.equal("ownedBy");
-    expect(person.META.relationship("mother").relType).to.be.equal("ownedBy");
+    expect(person.META.relationship("father").relType).to.be.equal("hasOne");
+    expect(person.META.relationship("mother").relType).to.be.equal("hasOne");
   });
 
   it("hasMany() sets correct meta props", async () => {

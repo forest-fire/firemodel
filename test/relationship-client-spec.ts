@@ -54,7 +54,7 @@ describe.only("Relationship > ", () => {
     expect(person.data.age).to.equal(23);
   });
 
-  it.only("using addToRelationship() to relationship with inverse (M:1)", async () => {
+  it("using addToRelationship() to relationship with inverse (M:1)", async () => {
     const person = await Record.add(FancyPerson, {
       name: "Bob",
       age: 23
@@ -85,10 +85,6 @@ describe.only("Relationship > ", () => {
 
     // last updated has changed since relationship added
     expect(person.data.lastUpdated).to.be.greaterThan(lastUpdated);
-
-    console.log(person.META.relationship("cars"));
-
-    // expect(person.META.property("cars")).to.be.an("object");
   });
 
   it("using addToRelationship() to relationship with inverse (M:M)", async () => {
@@ -136,7 +132,7 @@ describe.only("Relationship > ", () => {
     expect(pops.data.children).to.not.haveOwnProperty(results.bobId);
   });
 
-  it("using addToRelationship() on a ownedBy prop throws error", async () => {
+  it("using addToRelationship() on a hasOne prop throws error", async () => {
     const bob = await Record.add(FancyPerson, {
       name: "Bob",
       age: 23
@@ -148,7 +144,7 @@ describe.only("Relationship > ", () => {
     }
   });
 
-  it("using setRelationship() on an ownedBy prop sets relationship", async () => {
+  it("using setRelationship() on an hasOne prop sets relationship", async () => {
     // TODO: add in an inverse relationship; currently getting very odd decorator behavior
     const bob = await Record.add(FancyPerson, {
       name: "Bob",
@@ -167,7 +163,7 @@ describe.only("Relationship > ", () => {
     const company = await Record.get(Company, "e8899");
   });
 
-  it("using clearRelationship() on an ownedBy prop sets relationship", async () => {
+  it("using clearRelationship() on an hasOne prop sets relationship", async () => {
     const bob = await Record.add(FancyPerson, {
       name: "Bob",
       age: 23

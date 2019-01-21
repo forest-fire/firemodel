@@ -225,11 +225,11 @@ function addRelationships<T extends Model>(
         !config.cardinality ||
         Object.keys(config.cardinality).includes(rel.property)
       ) {
-        if (rel.relType === "ownedBy") {
+        if (rel.relType === "hasOne") {
           const id = fbKey();
           const prop: Extract<keyof T, string> = rel.property as any;
           p.add(
-            `ownedBy-${id}`,
+            `hasOne-${id}`,
             follow
               ? instance.setRelationship(prop, id)
               : db.set(pathJoin(instance.dbPath, prop), id)
@@ -281,14 +281,14 @@ function followRelationships<T extends Model>(
     }
 
     const hasMany = relns.filter(i => i.relType === "hasMany");
-    const ownedBy = relns.filter(i => i.relType === "ownedBy");
+    const hasOne = relns.filter(i => i.relType === "hasOne");
     hasMany.map(r => {
       const fks = Object.keys(instance.get(r.property as any));
       fks.map(fk => {
         p.add(fk, Mock(r.fkConstructor, db).generate(1, { id: fk }));
       });
     });
-    ownedBy.map(r => {
+    hasOne.map(r => {
       const fk: any = instance.get(r.property as any);
       p.add(fk, Mock(r.fkConstructor, db).generate(1, { id: fk }));
     });

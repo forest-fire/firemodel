@@ -21,7 +21,7 @@ function push<T extends Model = Model>(
 export const propertiesByModel: IDictionary<
   IDictionary<IModelPropertyMeta>
 > = {};
-/** Relationships accumlated by hasMany/ownedBy decorators */
+/** Relationships accumlated by hasMany/hasOne decorators */
 export const relationshipsByModel: IDictionary<
   IDictionary<IModelRelationshipMeta>
 > = {};

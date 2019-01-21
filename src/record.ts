@@ -303,8 +303,8 @@ export class Record<T extends Model> extends FireModel<T> {
 
     const relationships = getModelMeta(this).relationships;
 
-    const ownedByRels = (relationships || [])
-      .filter(r => r.relType === "ownedBy")
+    const hasOneRels = (relationships || [])
+      .filter(r => r.relType === "hasOne")
       .map(r => r.property);
     const hasManyRels = (relationships || [])
       .filter(r => r.relType === "hasMany")
@@ -547,12 +547,12 @@ export class Record<T extends Model> extends FireModel<T> {
   /**
    * clearRelationship
    *
-   * clears an existing FK on a ownedBy relationship
+   * clears an existing FK on a hasOne relationship
    *
-   * @param property the property containing the ownedBy FK
+   * @param property the property containing the hasOne FK
    */
   public async clearRelationship(property: Extract<keyof T, string>) {
-    this._errorIfNotOwnedByReln(property, "clearRelationship");
+    this._errorIfNothasOneReln(property, "clearRelationship");
     if (!this.get(property)) {
       console.warn(
         `Call to clearRelationship(${property}) on model ${
@@ -586,9 +586,9 @@ export class Record<T extends Model> extends FireModel<T> {
   /**
    * setRelationship
    *
-   * sets up an ownedBy FK relationship
+   * sets up an hasOne FK relationship
    *
-   * @param property the property containing the ownedBy FK
+   * @param property the property containing the hasOne FK
    * @param ref the FK
    */
   public async setRelationship(
@@ -596,7 +596,7 @@ export class Record<T extends Model> extends FireModel<T> {
     ref: Extract<fk, string>,
     optionalValue: any = true
   ) {
-    this._errorIfNotOwnedByReln(property, "setRelationship");
+    this._errorIfNothasOneReln(property, "setRelationship");
     const mps = this.db.multiPathSet("/");
 
     this._relationshipMPS(
@@ -763,15 +763,15 @@ export class Record<T extends Model> extends FireModel<T> {
     }
   }
 
-  protected _errorIfNotOwnedByReln(
+  protected _errorIfNothasOneReln(
     property: Extract<keyof T, string>,
     fn: string
   ) {
-    if (this.META.relationship(property).relType !== "ownedBy") {
+    if (this.META.relationship(property).relType !== "hasOne") {
       const e = new Error(
         `Can not use property "${property}" on ${
           this.modelName
-        } with ${fn}() because it is not a ownedBy relationship [ relType: ${
+        } with ${fn}() because it is not a hasOne relationship [ relType: ${
           this.META.relationship(property).relType
         }, inverse: ${
           this.META.relationship(property).inverse
@@ -794,7 +794,7 @@ export class Record<T extends Model> extends FireModel<T> {
           this.META.relationship(property).relType
         }, inverse: ${
           this.META.relationship(property).inverseProperty
-        } ]. If you are working with a ownedBy relationship then you should instead use setRelationship() and clearRelationship().`
+        } ]. If you are working with a hasOne relationship then you should instead use setRelationship() and clearRelationship().`
       );
       e.name = "FireModel::WrongRelationshipType";
       throw e;

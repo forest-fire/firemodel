@@ -34,7 +34,7 @@ describe("Relationship > ", () => {
     expect(eventTypes.has(FMEvents.RELATIONSHIP_ADDED_LOCALLY)).to.equal(true);
   });
 
-  // it.skip("using addToRelationship() on a hasMany relationship with an inverse of ownedBy", async () => {
+  // it.skip("using addToRelationship() on a hasMany relationship with an inverse of hasOne", async () => {
   //   const person = await Record.add(Person, {
   //     name: "Bob",
   //     age: 23

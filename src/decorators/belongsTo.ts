@@ -25,7 +25,7 @@ export function belongsTo<T = Model>(
   > = {
     isRelationship: true,
     isProperty: false,
-    relType: "ownedBy",
+    relType: "hasOne",
     fkConstructor: modelConstructor,
     fkModelName: record.modelName,
     fkPluralName: record.pluralName

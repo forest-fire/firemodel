@@ -13,7 +13,7 @@ import { IModelIndexMeta, getDbIndexes } from "./indexing";
 import { FmMockType } from "./constraints";
 /* tslint:disable:only-arrow-functions */
 
-export type FmRelationshipType = "hasMany" | "ownedBy";
+export type FmRelationshipType = "hasMany" | "hasOne";
 
 export interface IFmModelMeta<T extends Model = any> {
   /** Optionally specify a root path to store this schema under */
@@ -49,7 +49,7 @@ export interface IFmModelRelationshipMeta<T extends Model = Model>
   extends IFmModelAttributeBase<T> {
   isRelationship: true;
   isProperty: false;
-  /** the general cardinality type of the relationship (aka, hasMany, ownedBy) */
+  /** the general cardinality type of the relationship (aka, hasMany, hasOne) */
   relType: FmRelationshipType;
   /** the property name on the related model that points back to this relationship */
   inverseProperty?: string;
