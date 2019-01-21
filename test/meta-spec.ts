@@ -100,11 +100,12 @@ describe("relationship decorators: ", () => {
   it("@relationships show up on Schema's relationships array", async () => {
     const person = new Person();
     const ids = person.META.relationships.map(r => r.property);
-    expect(person.META.relationships.length).to.equal(4);
 
+    expect(person.META.relationships.length).to.equal(5);
     expect(ids).to.include("father");
     expect(ids).to.include("mother");
     expect(ids).to.include("children");
+    expect(ids).to.include("concerts");
     expect(ids).to.include("employerId");
   });
   it("@relationships show up on Model", async () => {
@@ -124,11 +125,31 @@ describe("relationship decorators: ", () => {
     const person = new Person();
     const props = person.META.properties.map(r => r.property);
 
-    expect(person.META.relationships.length).to.equal(4);
+    // positive tests
     expect(props).to.include("name");
     expect(props).to.include("age");
     expect(props).to.include("lastUpdated");
     expect(props).to.include("createdAt");
+    // negative tests
+    expect(props).to.not.include("mother");
+    expect(props).to.not.include("concerts");
+  });
+
+  it("@relationships represent all relationships in a model", async () => {
+    const person = new Person();
+    const props = person.META.relationships.map(r => r.property);
+    expect(person.META.relationships.length).to.equal(5);
+
+    expect(props).to.include("mother");
+    expect(props).to.include("father");
+    expect(props).to.include("concerts");
+    expect(props).to.include("employerId");
+
+    const mother = person.META.relationships.filter(
+      i => i.property === "mother"
+    )[0];
+    expect(mother.inverseProperty).to.equal("children");
+    expect(mother.type).to.equal("Object"); // this is the Firebase Object notation of an array
   });
 
   it("@properties show up on Model", async () => {

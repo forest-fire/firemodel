@@ -1,14 +1,14 @@
 import "reflect-metadata";
-import { Model, IModelPropertyMeta, IModelRelationshipMeta } from "../index";
+import { Model } from "../";
+import { IFmModelPropertyMeta, IFmModelRelationshipMeta } from "./index";
 import { IDictionary } from "common-types";
 import { set, get } from "lodash";
-import { indexesForModel } from "./indexing";
-import { arrayToHash, hashToArray } from "typed-conversions";
+import { hashToArray } from "typed-conversions";
 
 function push<T extends Model = Model>(
   target: IDictionary,
   path: string,
-  value: IModelPropertyMeta<T>
+  value: IFmModelPropertyMeta<T>
 ) {
   if (Array.isArray(get(target, path))) {
     get(target, path).push(value);
@@ -19,11 +19,11 @@ function push<T extends Model = Model>(
 
 /** Properties accumlated by propertyDecorators  */
 export const propertiesByModel: IDictionary<
-  IDictionary<IModelPropertyMeta>
+  IDictionary<IFmModelPropertyMeta>
 > = {};
 /** Relationships accumlated by hasMany/hasOne decorators */
 export const relationshipsByModel: IDictionary<
-  IDictionary<IModelRelationshipMeta>
+  IDictionary<IFmModelRelationshipMeta>
 > = {};
 
 export const propertyDecorator = <T extends Model>(
@@ -36,7 +36,7 @@ export const propertyDecorator = <T extends Model>(
 ) => (target: Model, key: string): void => {
   const reflect: IDictionary =
     Reflect.getMetadata("design:type", target, key) || {};
-  const meta: IModelPropertyMeta<T> = {
+  const meta: IFmModelPropertyMeta<T> = {
     ...Reflect.getMetadata(key, target),
     ...{ type: reflect.name },
     ...nameValuePairs
@@ -68,7 +68,7 @@ export const propertyDecorator = <T extends Model>(
 
 /** lookup meta data for schema properties */
 function propertyMeta<T extends Model = Model>(context: object) {
-  return (prop: string): IModelPropertyMeta<T> =>
+  return (prop: string): IFmModelPropertyMeta<T> =>
     Reflect.getMetadata(prop, context);
 }
 
@@ -94,7 +94,7 @@ export function getProperties(model: object) {
 export function getRelationships(model: object) {
   const modelName = model.constructor.name;
   const modelRelationships = relationshipsByModel[modelName];
-  return hashToArray<IModelRelationshipMeta>(modelRelationships, "property");
+  return hashToArray<IFmModelRelationshipMeta>(modelRelationships, "property");
 }
 
 export function getPushKeys(target: object) {

@@ -36,7 +36,7 @@ const addFatherAndChildren = async () => {
   };
 };
 
-describe.only("Relationship > ", () => {
+describe("Relationship > ", () => {
   let db: DB;
   beforeEach(async () => {
     db = new DB({ mocking: true });

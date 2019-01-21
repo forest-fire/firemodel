@@ -35,10 +35,10 @@ describe("List class: ", () => {
     expect(list.dbPath).to.equal(`${list.META.dbOffset}/people`);
   });
 
-  it('List can SET a dictionary of records', async () => {
+  it("List can SET a dictionary of records", async () => {
     const list = await List.set(Person, {
       joe: {
-        name: 'Joe',
+        name: "Joe",
         age: 14
       },
       roger: {
@@ -48,14 +48,13 @@ describe("List class: ", () => {
     });
 
     expect(list).to.have.lengthOf(2);
-    expect(list.map(i => i.name)).to.include('Joe');
-    expect(list.map(i => i.name)).to.include('Roger');
+    expect(list.map(i => i.name)).to.include("Joe");
+    expect(list.map(i => i.name)).to.include("Roger");
     expect(list.map(i => i.age)).to.include(14);
     expect(list.map(i => i.age)).to.include(22);
-    expect(list.data[0].createdAt).is.a('number');
-    expect(list.data[1].createdAt).is.a('number');
+    expect(list.data[0].createdAt).is.a("number");
+    expect(list.data[1].createdAt).is.a("number");
   });
-
 
   it("can instantiate with all() method", async () => {
     db.mock
@@ -362,10 +361,11 @@ describe("List class: ", () => {
     const id = peeps.data[1].id;
     const removed = await peeps.removeById(id);
     expect(peeps).to.have.lengthOf(9);
-    expect(events).to.has.lengthOf(2);
     const eventTypes = events.map(e => e.type);
+
     expect(eventTypes).to.contain(FMEvents.RECORD_REMOVED);
     expect(eventTypes).to.contain(FMEvents.RECORD_REMOVED_LOCALLY);
+    expect(eventTypes).to.contain(FMEvents.RECORD_LIST);
 
     const peeps2 = await List.all(Person);
     expect(peeps2).to.have.length(9);
