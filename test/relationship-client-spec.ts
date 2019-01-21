@@ -45,7 +45,16 @@ describe.only("Relationship > ", () => {
     FireModel.dispatch = null;
   });
 
-  it("using addToRelationship() to relationship with inverse (M:1)", async () => {
+  it("can instantiate a model which has circular relationships", async () => {
+    const person = await Record.add(FancyPerson, {
+      name: "Bob",
+      age: 23
+    });
+    expect(typeof person).to.equal("object");
+    expect(person.data.age).to.equal(23);
+  });
+
+  it.only("using addToRelationship() to relationship with inverse (M:1)", async () => {
     const person = await Record.add(FancyPerson, {
       name: "Bob",
       age: 23
@@ -54,16 +63,32 @@ describe.only("Relationship > ", () => {
     const lastUpdated = person.data.lastUpdated;
     const events: IFMRecordEvent[] = [];
     Record.dispatch = (evt: IFMRecordEvent) => events.push(evt);
+
     await person.addToRelationship("cars", "car12345");
+
     expect((person.data.cars as any)["car12345"]).to.equal(true);
     expect(events).to.have.lengthOf(2);
+
     const eventTypes = new Set(events.map(e => e.type));
     expect(eventTypes.has(FMEvents.RELATIONSHIP_ADDED)).to.equal(true);
     expect(eventTypes.has(FMEvents.RELATIONSHIP_ADDED_LOCALLY)).to.equal(true);
     const localEvent = events.find(
       i => i.type === FMEvents.RELATIONSHIP_ADDED_LOCALLY
     );
+
     expect(localEvent.paths).to.have.lengthOf(4);
+    const paths = localEvent.paths.map(i => i.path);
+    expect(paths.filter(i => i.includes("car-offset"))).to.have.lengthOf(2);
+    expect(paths.filter(i => i.includes("fancypeople"))).to.have.lengthOf(2);
+    expect(paths).to.include("/car-offset/cars/car12345/lastUpdated");
+    expect(paths).to.include("/car-offset/cars/car12345/owner");
+
+    // last updated has changed since relationship added
+    expect(person.data.lastUpdated).to.be.greaterThan(lastUpdated);
+
+    console.log(person.META.relationship("cars"));
+
+    // expect(person.META.property("cars")).to.be.an("object");
   });
 
   it("using addToRelationship() to relationship with inverse (M:M)", async () => {

@@ -6,13 +6,12 @@ import {
   length,
   model,
   fk,
-  ownedBy,
   hasMany,
-  inverse
+  belongsTo
 } from "../../src";
 import { Company } from "./Company";
 import { IDictionary } from "common-types";
-import { pushKey } from "../../src/decorators/property";
+import { pushKey } from "../../src/decorators/constraints";
 import { Concert } from "./Concert";
 
 @model({ dbOffset: "authenticated" })
@@ -26,12 +25,13 @@ export class Person extends Model {
   // prettier-ignore
   @property @pushKey public tags?: IDictionary<string>;
   // prettier-ignore
-  @ownedBy(() => Person) @inverse("children") public mother?: fk;
+  @belongsTo(() => Person, "children") public mother?: fk;
   // prettier-ignore
-  @ownedBy(() => Person) @inverse("children") public father?: fk;
+  @belongsTo(() => Person, "children") public father?: fk;
   // prettier-ignore
   @hasMany(() => Person) public children?: IDictionary;
   // prettier-ignore
-  // @ownedBy(Concert) public concerts?: IDictionary;
-  @ownedBy(() => Company) public employerId?: fk;
+  @belongsTo(() => Concert) public concerts?: IDictionary;
+  // prettier-ignore
+  @belongsTo(() => Company) public employerId?: fk;
 }

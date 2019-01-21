@@ -1,6 +1,6 @@
 import { SerializedQuery } from "serialized-query";
 import { Model, FMModelConstructor } from "../Model";
-import { ISchemaRelationshipType } from "../decorators/schema";
+import { FmRelationshipType } from "../decorators/schema";
 import { IMultiPathUpdates } from "../FireModel";
 //#region generalized structures
 
@@ -89,7 +89,7 @@ export interface IFMRelationshipEvent<T extends Model = Model>
   fkModelName: string;
   fkPluralName: string;
   fkConstructor?: FMModelConstructor<T>;
-  fkRelType?: ISchemaRelationshipType;
+  fkRelType?: FmRelationshipType;
   fkLocalPath?: string;
 }
 

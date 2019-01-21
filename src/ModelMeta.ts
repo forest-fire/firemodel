@@ -1,12 +1,12 @@
-import { IModelMetaProperties, model } from "./decorators/schema";
+import { IFmModelMeta, model } from "./decorators/schema";
 import { IDictionary } from "common-types";
 import { Model } from "./Model";
 
-const meta: IDictionary<IModelMetaProperties> = {};
+const meta: IDictionary<IFmModelMeta> = {};
 
 export function addModelMeta(
   modelName: keyof typeof meta,
-  props: IModelMetaProperties
+  props: IFmModelMeta
 ) {
   meta[modelName] = props;
 }
@@ -19,11 +19,9 @@ export function addModelMeta(
  *
  * @param modelKlass a model or record which exposes META property
  */
-export function getModelMeta(
-  modelKlass: IDictionary
-): Partial<IModelMetaProperties> {
-  const localMeta: IModelMetaProperties = modelKlass.META;
-  const modelMeta: IModelMetaProperties = meta[modelKlass.modelName];
+export function getModelMeta(modelKlass: IDictionary): Partial<IFmModelMeta> {
+  const localMeta: IFmModelMeta = modelKlass.META;
+  const modelMeta: IFmModelMeta = meta[modelKlass.modelName];
   return localMeta && localMeta.properties ? localMeta : modelMeta || {};
 }
 

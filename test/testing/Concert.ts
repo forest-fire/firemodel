@@ -1,7 +1,6 @@
-import { model, Model, property, hasMany, length, ownedBy } from "../../src";
+import { model, Model, property, hasMany } from "../../src";
 import { IDictionary, fk } from "common-types";
 import { Person } from "./person";
-import { mock } from "../../src/decorators/property";
 
 @model({ dbOffset: "authenticated" })
 export class Concert extends Model {
@@ -10,5 +9,5 @@ export class Concert extends Model {
   @property public employees?: number;
   @property public founded?: string;
   // prettier-ignore
-  @hasMany(() => Person) public attendees: IDictionary<fk>;
+  // @hasMany(() => Person) public attendees: IDictionary<fk>;
 }

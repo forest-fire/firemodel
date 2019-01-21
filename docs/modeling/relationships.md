@@ -38,4 +38,4 @@ export class Person extends Model {
 Let's decompose what this example is illustrating:
 
 1. `@belongsTo()` and `@hasmany()` establish their repective types of relationships while also associating the foreign model that is being linked to (even though that "foreign" model could be a self reference; as it is for `parents` and `children`)
-2. We have optionally decided to add the `@inverse()` decorator to show that the relationship is linked bi-directionally. You don't need to do this but -- for instance -- by adding `@inverse()` to the `children` relationship, if you add a child FK to a person, then that child will automatically get a FK reference back to the parent on the `parents` property.
+2. Both relationship types can take an _optional_ second parameter which states the "inverse" (aka, the property name on the other end of the foreign key)

@@ -6,12 +6,11 @@ import {
   fk,
   hasMany,
   min,
-  inverse,
   pushKey,
   max,
   length
 } from "../../src";
-import { mock } from "../../src/decorators/property";
+import { mock } from "../../src/decorators/constraints";
 import { Company } from "./Company";
 import { IDictionary } from "common-types";
 import { Concert } from "./Concert";
@@ -31,11 +30,11 @@ export class Person extends Model {
   // prettier-ignore
   @property @pushKey public tags?: IDictionary<string>;
   // prettier-ignore
-  @ownedBy(() => Person) @inverse("children") public mother?: fk;
+  @ownedBy(() => Person, "parents") public mother?: fk;
   // prettier-ignore
-  @ownedBy(() => Person) @inverse("children") public father?: fk;
+  @ownedBy(() => Person, "parents") public father?: fk;
   // prettier-ignore
-  @hasMany(() => Person) public children?: IDictionary;
+  @hasMany(() => Person) public parents?: IDictionary;
   // prettier-ignore
   @ownedBy(() => Concert) public concerts?: IDictionary;
   // prettier-ignore

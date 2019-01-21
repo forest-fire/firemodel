@@ -1,12 +1,12 @@
 import { Model } from "./Model";
-import { IModelMetaProperties, IModelPropertyMeta } from "./index";
+import { IFmModelMeta, IFmModelPropertyMeta } from "./index";
 // prettier-ignore
 type Record<T> = import("./Record").Record<T>;
 import { IDictionary } from "common-types";
 import { IFMRecordEvent, FMEvents, NotString, Extractable } from "./state-mgmt";
 import { IReduxDispatch } from "./VuexWrapper";
 import { getModelMeta } from "./ModelMeta";
-import { IModelRelationshipMeta } from "./decorators/schema";
+import { IFmModelRelationshipMeta } from "./decorators/schema";
 // tslint:disable-next-line:no-var-requires
 const pluralize = require("pluralize");
 const defaultDispatch = (context: IDictionary) => "";
@@ -103,7 +103,7 @@ export class FireModel<T extends Model> {
     return "dbPath was not overwritten!";
   }
 
-  public get META(): IModelMetaProperties<T> {
+  public get META(): IFmModelMeta<T> {
     return getModelMeta(this._model);
   }
 
@@ -111,7 +111,7 @@ export class FireModel<T extends Model> {
    * A list of all the properties -- and those properties
    * meta information -- contained on the given model
    */
-  public get properties(): IModelPropertyMeta[] {
+  public get properties(): IFmModelPropertyMeta[] {
     const meta = getModelMeta(this._model);
     return meta.properties;
   }
@@ -120,7 +120,7 @@ export class FireModel<T extends Model> {
    * A list of all the realtionships -- and those relationships
    * meta information -- contained on the given model
    */
-  public get relationships(): IModelRelationshipMeta[] {
+  public get relationships(): IFmModelRelationshipMeta[] {
     const meta = getModelMeta(this._model);
     return meta.relationships;
   }

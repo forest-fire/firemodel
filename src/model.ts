@@ -4,8 +4,8 @@ export type NonProperties<T> = {
 }[keyof T];
 export type Properties<T> = Pick<T, NonProperties<T>>;
 import { IDictionary, epochWithMilliseconds, datetime } from "common-types";
-import { property, mock } from "./decorators/property";
-import { IModelMetaProperties } from "./decorators/schema";
+import { property, mock } from "./decorators/constraints";
+import { IFmModelMeta } from "./decorators/schema";
 import { index, uniqueIndex } from "./decorators/indexing";
 
 export interface IModelOptions {
@@ -78,5 +78,5 @@ export abstract class Model {
   @index
   public createdAt?: epochWithMilliseconds;
   /** Metadata properties of the given schema */
-  public META?: IModelMetaProperties;
+  public META?: IFmModelMeta;
 }

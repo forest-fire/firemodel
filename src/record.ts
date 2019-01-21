@@ -170,7 +170,7 @@ export class Record<T extends Model> extends FireModel<T> {
 
   //#endregion
 
-  //#region OBJECT DEFINITION
+  //#region INSTANCE DEFINITION
   private _existsOnDB: boolean = false;
   private _writeOperations: IWriteOperation[] = [];
   private _data?: Partial<T>;

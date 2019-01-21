@@ -10,7 +10,7 @@ import {
   model
 } from "../../src";
 import { IDictionary } from "common-types";
-import { pushKey } from "../../src/decorators/property";
+import { pushKey } from "../../src/decorators/constraints";
 
 /* tslint:disable:max-classes-per-file */
 export type Callback = (m: string) => boolean;

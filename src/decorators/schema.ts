@@ -10,11 +10,12 @@ import {
 import { Model } from "../Model";
 import { addModelMeta } from "../ModelMeta";
 import { IModelIndexMeta, getDbIndexes } from "./indexing";
+import { FmMockType } from "./constraints";
 /* tslint:disable:only-arrow-functions */
 
-export type ISchemaRelationshipType = "hasMany" | "ownedBy";
+export type FmRelationshipType = "hasMany" | "ownedBy";
 
-export interface IModelMetaProperties<T extends Model = any> {
+export interface IFmModelMeta<T extends Model = any> {
   /** Optionally specify a root path to store this schema under */
   dbOffset?: string;
   /** Optionally specify an explicit string for the plural name */
@@ -26,16 +27,16 @@ export interface IModelMetaProperties<T extends Model = any> {
   /** provides a boolean flag on whether the stated name is a property */
   isProperty?: (prop: keyof T) => boolean;
   /** a function to lookup the meta properties of a given property */
-  property?: (prop: keyof T) => IModelPropertyMeta<T>;
+  property?: (prop: keyof T) => IFmModelPropertyMeta<T>;
   /** provides a boolean flag on whether the stated name is a property */
   isRelationship?: (prop: keyof T) => boolean;
   /** a function to lookup the meta properties of a given relationship */
-  relationship?: (prop: keyof T) => IModelRelationshipMeta<T>;
+  relationship?: (prop: keyof T) => IFmModelRelationshipMeta<T>;
   audit?: boolean | "server";
   /** A list of all properties and associated meta-data for the given schema */
-  properties?: Array<IModelPropertyMeta<T>>;
+  properties?: Array<IFmModelPropertyMeta<T>>;
   /** A list of all relationships and associated meta-data for the given schema */
-  relationships?: Array<IModelRelationshipMeta<T>>;
+  relationships?: Array<IFmModelRelationshipMeta<T>>;
   /** A list of properties which should be pushed using firebase push() */
   pushKeys?: string[];
   /** indicates whether this property has been changed on client but not yet accepted by server */
@@ -44,38 +45,66 @@ export interface IModelMetaProperties<T extends Model = any> {
   dbIndexes?: IModelIndexMeta[];
 }
 
-export interface IModelRelationshipMeta<T extends Model = Model>
-  extends IModelPropertyMeta<T> {
+export interface IFmModelRelationshipMeta<T extends Model = Model>
+  extends IFmModelAttributeBase<T> {
   isRelationship: true;
   isProperty: false;
   /** the general cardinality type of the relationship (aka, hasMany, ownedBy) */
-  relType: ISchemaRelationshipType;
+  relType: FmRelationshipType;
+  /** the property name on the related model that points back to this relationship */
+  inverseProperty?: string;
   /** The constructor for a model of the FK reference that this relationship maintains */
   fkConstructor: new () => T;
+  /** the singular name of the relationship's model */
   fkModelName: string;
-}
-export interface IModelPropertyMeta<T extends Model = Model>
-  extends IDictionary {
-  /** the property name */
-  property: Extract<keyof T, string>;
-  /** the type of the property */
-  type: string;
-  /** constraint: a maximum length */
-  length?: number;
-  /** constraint: a minimum value */
-  min?: number;
-  /** constraint: a maximum value */
-  max?: number;
+  /** the plural name of the relationship's model */
+  fkPluralName: string;
   /** the name -- if it exists -- of the property on the FK which points back to this record */
   inverse?: string;
+}
+export interface IFmModelPropertyMeta<T extends Model = Model>
+  extends IFmModelAttributeBase<T> {
+  /** constraint: a maximum length */
+  length?: number;
+  /** the minimum length of the property */
+  min?: number;
+  /** the maximum length of the property */
+  max?: number;
   /** is this prop a FK relationship to another entity/entities */
   isRelationship?: boolean;
   /** is this prop an attribute of the schema (versus being a relationship) */
   isProperty?: boolean;
   /** is this property an array which is added to using firebase pushkeys? */
   pushKey?: boolean;
+}
+
+export type FMPropertyType = "string" | "number" | "object" | "array";
+
+export interface IFmModelAttributeBase<T> {
+  /** the property name */
+  property: Extract<keyof T, string>;
+  /** the property's "typed value" */
+  type: FMPropertyType;
+  /** constraint: a maximum length */
+  length?: number;
+  /** constraint: a minimum value */
+  min?: number;
+  /** constraint: a maximum value */
+  max?: number;
+  /** is this prop a FK relationship to another entity/entities */
+  isRelationship?: boolean;
+  /** is this prop an attribute of the schema (versus being a relationship) */
+  isProperty?: boolean;
+  /** is this property an array which is added to using firebase pushkeys? */
+  pushKey?: boolean;
+  /**
+   * a name or function of a type of data which can be mocked
+   * in a more complete way than just it's stict "type". Examples
+   * would include "telephone", "name", etc.
+   */
+  mockType?: FmMockType;
   /** what kind of relationship does this foreign key contain */
-  relType?: ISchemaRelationshipType;
+  relType?: FmRelationshipType;
   /** if the property is a relationship ... a constructor for the FK's Model */
   fkConstructor?: new () => any;
   fkModelName?: string;
@@ -106,13 +135,13 @@ function isRelationship(modelKlass: IDictionary) {
 }
 
 function getModelRelationship<T extends Model = Model>(
-  modelKlass: IDictionary<IModelRelationshipMeta<T>>
+  modelKlass: IDictionary<IFmModelRelationshipMeta<T>>
 ) {
   const className = modelKlass.constructor.name;
   return (prop: string) => (relationshipsByModel[className] || {})[prop];
 }
 
-export function model(options: Partial<IModelMetaProperties>): ClassDecorator {
+export function model(options: Partial<IFmModelMeta>): ClassDecorator {
   let isDirty: boolean = false;
   return (target: any): void => {
     const original = target;
@@ -137,7 +166,7 @@ export function model(options: Partial<IModelMetaProperties>): ClassDecorator {
         );
         options.audit = false;
       }
-      const meta: IModelMetaProperties = {
+      const meta: IFmModelMeta = {
         ...options,
         ...{ isProperty: isProperty(obj) },
         ...{ property: getModelProperty(obj) },
@@ -160,7 +189,7 @@ export function model(options: Partial<IModelMetaProperties>): ClassDecorator {
       addModelMeta(obj.constructor.name.toLowerCase(), meta);
 
       Reflect.defineProperty(obj, "META", {
-        get(): IModelMetaProperties {
+        get(): IFmModelMeta {
           return meta;
         },
         set(prop: IDictionary) {

@@ -2,13 +2,12 @@ import {
   model,
   Model,
   property,
-  ownedBy,
   fk,
-  hasMany,
   min,
-  inverse
+  belongsTo,
+  hasMany,
+  mock
 } from "../../src";
-import { mock } from "../../src/decorators/property";
 import { Company } from "./Company";
 import { Car } from "./Car";
 
@@ -27,11 +26,11 @@ export class FancyPerson extends Model {
   // prettier-ignore
   @property @mock(bespokeMock) public foobar?: string;
   // prettier-ignore
-  @ownedBy(() => Company) public employer?: fk;
+  @belongsTo(() => Company) public employer?: fk;
   // prettier-ignore
-  @hasMany(() => Car) @inverse("owner") public cars?: fk[];
+  @hasMany(() => Car, "owner") public cars?: fk[];
   // prettier-ignore
-  @hasMany(() => FancyPerson) @inverse("children") public parents?: fk[];
+  @hasMany(() => FancyPerson, "children") public parents?: fk[];
   // prettier-ignore
-  @hasMany(() => FancyPerson) @inverse("parents") public children?: fk[];
+  @hasMany(() => FancyPerson, "parents") public children?: fk[];
 }

@@ -3,12 +3,7 @@ import { IDictionary } from "common-types";
 // tslint:disable-next-line:no-implicit-dependencies
 import { RealTimeDB } from "abstracted-firebase";
 import { Record } from "./Record";
-import {
-  arrayToHash,
-  hashToArray,
-  keyValueArrayToDictionary
-} from "typed-conversions";
-import { IModelPropertyMeta } from "./decorators/schema";
+import { IFmModelPropertyMeta } from "./decorators";
 import { fbKey } from "./index";
 import { set } from "lodash";
 import { MockHelper } from "firemock";
@@ -133,7 +128,7 @@ function fakeIt(helper: MockHelper, type: string) {
 
 function mockValue<T extends Model>(
   db: RealTimeDB,
-  propMeta: IModelPropertyMeta<T>
+  propMeta: IFmModelPropertyMeta<T>
 ) {
   if (!db || !(db instanceof RealTimeDB)) {
     const e = new Error(

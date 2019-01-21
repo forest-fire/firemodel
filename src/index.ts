@@ -1,22 +1,4 @@
-export {
-  property,
-  pushKey,
-  constrainedProperty,
-  constrain,
-  min,
-  max,
-  length,
-  desc,
-  mock
-} from "./decorators/property";
-export { index, uniqueIndex } from "./decorators/indexing";
-export { hasMany, ownedBy, inverse } from "./decorators/relationship";
-export {
-  model,
-  IModelMetaProperties,
-  IModelPropertyMeta,
-  IModelRelationshipMeta
-} from "./decorators/schema";
+export * from "./decorators";
 export { Model, RelationshipPolicy, RelationshipCardinality } from "./Model";
 export { Record } from "./Record";
 export { List } from "./List";

@@ -1,6 +1,4 @@
-import { length, model, property, Model, hasMany } from "../../src";
-import { mock } from "../../src/decorators/property";
-import { FancyPerson } from "./FancyPerson";
+import { length, model, property, Model, mock } from "../../src";
 
 @model({ dbOffset: "authenticated", audit: true })
 export class Company extends Model {
