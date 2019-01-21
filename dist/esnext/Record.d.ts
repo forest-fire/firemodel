@@ -167,17 +167,17 @@ export declare class Record<T extends Model> extends FireModel<T> {
     /**
      * clearRelationship
      *
-     * clears an existing FK on a ownedBy relationship
+     * clears an existing FK on a hasOne relationship
      *
-     * @param property the property containing the ownedBy FK
+     * @param property the property containing the hasOne FK
      */
     clearRelationship(property: Extract<keyof T, string>): Promise<void>;
     /**
      * setRelationship
      *
-     * sets up an ownedBy FK relationship
+     * sets up an hasOne FK relationship
      *
-     * @param property the property containing the ownedBy FK
+     * @param property the property containing the hasOne FK
      * @param ref the FK
      */
     setRelationship(property: Extract<keyof T, string>, ref: Extract<fk, string>, optionalValue?: any): Promise<void>;
@@ -209,7 +209,7 @@ export declare class Record<T extends Model> extends FireModel<T> {
      * @param now the current time in miliseconds
      */
     protected _relationshipMPS(mps: any, ref: string, property: Extract<keyof T, string>, value: any, now: number): void;
-    protected _errorIfNotOwnedByReln(property: Extract<keyof T, string>, fn: string): void;
+    protected _errorIfNothasOneReln(property: Extract<keyof T, string>, fn: string): void;
     protected _errorIfNotHasManyReln(property: Extract<keyof T, string>, fn: string): void;
     protected _updateProps<K extends IFMEventName<K>>(actionTypeStart: K, actionTypeEnd: K, changed: Partial<T>): Promise<void>;
     /**

@@ -12,7 +12,7 @@ class Record extends FireModel_1.FireModel {
     constructor(model, options = {}) {
         super();
         //#endregion
-        //#region OBJECT DEFINITION
+        //#region INSTANCE DEFINITION
         this._existsOnDB = false;
         this._writeOperations = [];
         if (!model) {
@@ -213,8 +213,8 @@ class Record extends FireModel_1.FireModel {
             this._data[key] = data[key];
         });
         const relationships = ModelMeta_1.getModelMeta(this).relationships;
-        const ownedByRels = (relationships || [])
-            .filter(r => r.relType === "ownedBy")
+        const hasOneRels = (relationships || [])
+            .filter(r => r.relType === "hasOne")
             .map(r => r.property);
         const hasManyRels = (relationships || [])
             .filter(r => r.relType === "hasMany")
@@ -383,12 +383,12 @@ class Record extends FireModel_1.FireModel {
     /**
      * clearRelationship
      *
-     * clears an existing FK on a ownedBy relationship
+     * clears an existing FK on a hasOne relationship
      *
-     * @param property the property containing the ownedBy FK
+     * @param property the property containing the hasOne FK
      */
     async clearRelationship(property) {
-        this._errorIfNotOwnedByReln(property, "clearRelationship");
+        this._errorIfNothasOneReln(property, "clearRelationship");
         if (!this.get(property)) {
             console.warn(`Call to clearRelationship(${property}) on model ${this.modelName} but there was no relationship set. This may be ok.`);
             return;
@@ -402,13 +402,13 @@ class Record extends FireModel_1.FireModel {
     /**
      * setRelationship
      *
-     * sets up an ownedBy FK relationship
+     * sets up an hasOne FK relationship
      *
-     * @param property the property containing the ownedBy FK
+     * @param property the property containing the hasOne FK
      * @param ref the FK
      */
     async setRelationship(property, ref, optionalValue = true) {
-        this._errorIfNotOwnedByReln(property, "setRelationship");
+        this._errorIfNothasOneReln(property, "setRelationship");
         const mps = this.db.multiPathSet("/");
         this._relationshipMPS(mps, ref, property, optionalValue, new Date().getTime());
         this.dispatch(this._createRecordEvent(this, index_1.FMEvents.RELATIONSHIP_ADDED_LOCALLY, mps.payload));
@@ -511,16 +511,16 @@ class Record extends FireModel_1.FireModel {
             return;
         }
     }
-    _errorIfNotOwnedByReln(property, fn) {
-        if (this.META.relationship(property).relType !== "ownedBy") {
-            const e = new Error(`Can not use property "${property}" on ${this.modelName} with ${fn}() because it is not a ownedBy relationship [ relType: ${this.META.relationship(property).relType}, inverse: ${this.META.relationship(property).inverse} ]. If you are working with a hasMany relationship then you should instead use addRelationship() and removeRelationship().`);
+    _errorIfNothasOneReln(property, fn) {
+        if (this.META.relationship(property).relType !== "hasOne") {
+            const e = new Error(`Can not use property "${property}" on ${this.modelName} with ${fn}() because it is not a hasOne relationship [ relType: ${this.META.relationship(property).relType}, inverse: ${this.META.relationship(property).inverse} ]. If you are working with a hasMany relationship then you should instead use addRelationship() and removeRelationship().`);
             e.name = "FireModel::WrongRelationshipType";
             throw e;
         }
     }
     _errorIfNotHasManyReln(property, fn) {
         if (this.META.relationship(property).relType !== "hasMany") {
-            const e = new Error(`Can not use property "${property}" on ${this.modelName} with ${fn}() because it is not a hasMany relationship [ relType: ${this.META.relationship(property).relType}, inverse: ${this.META.relationship(property).inverseProperty} ]. If you are working with a ownedBy relationship then you should instead use setRelationship() and clearRelationship().`);
+            const e = new Error(`Can not use property "${property}" on ${this.modelName} with ${fn}() because it is not a hasMany relationship [ relType: ${this.META.relationship(property).relType}, inverse: ${this.META.relationship(property).inverseProperty} ]. If you are working with a hasOne relationship then you should instead use setRelationship() and clearRelationship().`);
             e.name = "FireModel::WrongRelationshipType";
             throw e;
         }

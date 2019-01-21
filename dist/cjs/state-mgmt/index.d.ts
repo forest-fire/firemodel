@@ -1,6 +1,6 @@
 import { SerializedQuery } from "serialized-query";
 import { Model, FMModelConstructor } from "../Model";
-import { ISchemaRelationshipType } from "../decorators/schema";
+import { FmRelationshipType } from "../decorators/schema";
 import { IMultiPathUpdates } from "../FireModel";
 export declare type Extractable<T, U> = T extends U ? any : never;
 export declare type NotString<T> = string extends T ? never : any;
@@ -74,7 +74,7 @@ export interface IFMRelationshipEvent<T extends Model = Model> extends IFMRecord
     fkModelName: string;
     fkPluralName: string;
     fkConstructor?: FMModelConstructor<T>;
-    fkRelType?: ISchemaRelationshipType;
+    fkRelType?: FmRelationshipType;
     fkLocalPath?: string;
 }
 export interface IFMRecordEventCore<T extends Model = Model> {

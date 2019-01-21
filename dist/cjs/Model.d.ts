@@ -3,7 +3,7 @@ export declare type NonProperties<T> = {
 }[keyof T];
 export declare type Properties<T> = Pick<T, NonProperties<T>>;
 import { IDictionary, epochWithMilliseconds, datetime } from "common-types";
-import { IModelMetaProperties } from "./decorators/schema";
+import { IFmModelMeta } from "./decorators/schema";
 export interface IModelOptions {
     logger?: ILogger;
     db?: import("abstracted-firebase").RealTimeDB;
@@ -56,5 +56,5 @@ export declare abstract class Model {
     /** The datetime at which this record was first created */
     createdAt?: epochWithMilliseconds;
     /** Metadata properties of the given schema */
-    META?: IModelMetaProperties;
+    META?: IFmModelMeta;
 }
