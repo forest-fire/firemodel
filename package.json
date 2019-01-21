@@ -58,6 +58,10 @@
     "@types/pluralize": "^0.0.28",
     "@types/rimraf": "^0.0.28",
     "@types/stack-trace": "^0.0.28",
+    "@vuepress/plugin-back-to-top": "^1.0.0-alpha.0",
+    "@vuepress/plugin-last-updated": "^1.0.0-alpha.0",
+    "@vuepress/plugin-medium-zoom": "^1.0.0-alpha.0",
+    "@vuepress/plugin-pwa": "^1.0.0-alpha.0",
     "abstracted-admin": "^0.14.0",
     "abstracted-client": "^0.14.1",
     "async-shelljs": "^0.1.2",
@@ -79,7 +83,7 @@
     "tslint": "^5.11.0",
     "tslint-config-prettier": "^1.15.0",
     "typescript": "^3.1.4",
-    "vuepress": "^0.14.4"
+    "vuepress": "^1.0.0-alpha.32"
   },
   "engines": {
     "node": ">=6.0.0"
