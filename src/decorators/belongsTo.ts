@@ -6,6 +6,8 @@ import { relationshipsByModel } from "./decorator";
 import { IFmModelRelationshipMeta } from "./schema";
 import { Omit } from "common-types";
 
+export type IFmHasOne = string;
+
 export function belongsTo<T = Model>(
   fnToModelConstructor: () => new () => T,
   inverse?: string

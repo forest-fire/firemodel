@@ -1,9 +1,10 @@
 import { Record } from "../Record";
 import { IDictionary, Omit } from "common-types";
-import { addModelMeta } from "../ModelMeta";
 import { propertyReflector } from "./reflector";
 import { relationshipsByModel } from "./decorator";
 import { IFmModelRelationshipMeta } from "./schema";
+
+export type IFmHasMany = IDictionary<string>;
 
 export function hasMany(
   fnToModelConstructor: () => new () => any,
