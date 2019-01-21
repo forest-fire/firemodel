@@ -29,13 +29,13 @@ export class Person extends Model {
   @property public name: string;
   @property public age: number;
   @property public gender?: "male" | "female" | "other";
-  @ownedBy(Company) public employer?: fk;
-  @hasMany(Person) @inverse('parents') public children?: fk[];
-  @hasMany(Person) @inverse('children') public parents?: fk[];
+  @belongsTo(() => Company) public employer?: fk;
+  @hasMany(() => Person, 'parents') public children?: fk[];
+  @hasMany(() => Person, 'children') public parents?: fk[];
 }
 ```
 
 Let's decompose what this example is illustrating:
 
-1. `@ownedBy()` and `@hasmany()` establish their repective types of relationships while also associating the foreign model that is being linked to (even though that "foreign" model could be a self reference; as it is for `parents` and `children`)
+1. `@belongsTo()` and `@hasmany()` establish their repective types of relationships while also associating the foreign model that is being linked to (even though that "foreign" model could be a self reference; as it is for `parents` and `children`)
 2. We have optionally decided to add the `@inverse()` decorator to show that the relationship is linked bi-directionally. You don't need to do this but -- for instance -- by adding `@inverse()` to the `children` relationship, if you add a child FK to a person, then that child will automatically get a FK reference back to the parent on the `parents` property.
