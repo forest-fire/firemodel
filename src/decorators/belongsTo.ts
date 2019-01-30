@@ -38,19 +38,13 @@ export function belongsTo<T = Model>(
     if (inverse) {
       payload.inverseProperty = inverse;
     }
-  } catch (e) {
-    if (e.name === "TypeError" && e.message.includes("modelContructor")) {
-      const err = new Error(
-        e.message +
-          `. The type passed into the decorator was ${typeof fnToModelConstructor} [should be function] and the resulting call to this returns typeof "${typeof model}"`
-      );
-      err.stack = e.stack;
-      err.name = e.name;
-      throw e;
-    }
-  }
 
-  return propertyReflector(payload, relationshipsByModel);
+    return propertyReflector(payload, relationshipsByModel);
+  } catch (e) {
+    e.name =
+      e.name +
+      `. The type passed into the decorator was ${typeof fnToModelConstructor} [should be function] and the resulting call to this returns typeof ${typeof model}`;
+  }
 }
 
 export const ownedBy = belongsTo;
