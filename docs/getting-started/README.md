@@ -1,8 +1,8 @@
 # Installing NPM Modules
 
-![](../images/interaction-model.jpg)
+![interaction](../images/interaction-model.jpg)
 
-### FireModel and Data Access
+## FireModel and Data Access
 
 The first we need to do to get started is install the required NPM modules and clearly **FireModel** is one of them:
 
@@ -10,15 +10,15 @@ The first we need to do to get started is install the required NPM modules and c
 yarn add firemodel
 ```
 
-**FireModel** has been built in a modular fashion to give you as much flexibility as possible. One thing you will NEED to do is install a means to connect to Firebase. There are two similar libraries which will do that: `abstracted-admin` and `abstracted-client`.
+**FireModel** has been built in a modular fashion to give you as much flexibility as possible. As a result of this you will need to choose a library to connect to Firebase; there are two similar libraries which will do that: `abstracted-admin` and `abstracted-client`.
 
-As you probably know if you're developing a backend application then you're likely to use the "Admin SDK" and in this case `abstracted-admin` is the tool you want to employ. If you're building a frontend application -- or for whatever reason are using the JS SDK -- then you'll use `abstracted-client`:
+As you probably know if you're developing a backend application then you're likely to use the "Admin SDK" and in this case `abstracted-admin` is the tool you want to employ. If you're building a frontend application -- or for whatever reason are using the JS Client SDK -- then you'll use `abstracted-client`:
 
 ```shell
 # ADMIN SDK
 yarn add abstracted-admin
 # Frontend JS SDK
-yarn add abstrated-client
+yarn add abstracted-client
 ```
 
 That's all that is required at this point but there is one more optional install:
