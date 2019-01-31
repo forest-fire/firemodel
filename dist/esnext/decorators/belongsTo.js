@@ -31,6 +31,7 @@ export function belongsTo(fnToModelConstructor, inverse) {
         e.name =
             e.name +
                 `. The type passed into the decorator was ${typeof fnToModelConstructor} [should be function] and the resulting call to this returns typeof ${typeof model}`;
+        throw e;
     }
 }
 export const ownedBy = belongsTo;
