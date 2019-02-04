@@ -299,10 +299,9 @@ function followRelationships<T extends Model>(
 }
 
 export function Mock<T extends Model>(
-  modelConstructor: new () => T,
+  modelConstructor: () => new () => T,
   db: RealTimeDB
 ) {
-  const record = Record.create(modelConstructor);
   const config: IMockConfig<T> = { relationshipBehavior: "ignore" };
 
   const API = {
@@ -320,7 +319,7 @@ export function Mock<T extends Model>(
       const follow = followRelationships<T>(db, config, exceptions);
       const p = new Parallel();
       for (let i = 0; i < count; i++) {
-        const rec = Record.create(modelConstructor);
+        const rec = Record.create(modelConstructor());
         p.add(`record-${i}`, follow(await relns(await props(rec))));
       }
 

@@ -7,7 +7,7 @@ import { FireModel, IMultiPathUpdates } from "./FireModel";
 import { IReduxDispatch } from "./VuexWrapper";
 import { FMEvents, IFMEventName } from "./state-mgmt/index";
 import { pathJoin } from "./path";
-import { getModelMeta, modelsWithMeta } from "./ModelMeta";
+import { getModelMeta, addModelMeta, modelsWithMeta } from "./ModelMeta";
 import { writeAudit, IAuditChange, IAuditOperations } from "./Audit";
 import { updateToAuditChanges } from "./util";
 
@@ -702,8 +702,10 @@ export class Record<T extends Model> extends FireModel<T> {
       property,
       isHasMany ? ref : ""
     );
+    const fkModelConstructor = meta.relationship(property).fkConstructor();
     const inverseProperty = meta.relationship(property).inverseProperty;
-    const fkRecord = Record.create(meta.relationship(property).fkConstructor);
+    const fkRecord = Record.create(fkModelConstructor);
+    addModelMeta(fkRecord.modelName, fkRecord.META);
 
     mps.add({ path: pathToThisFkReln, value: isHasMany ? value : ref });
     // INVERSE RELATIONSHIP

@@ -7,12 +7,14 @@ import {
   model,
   fk,
   hasMany,
-  belongsTo
+  belongsTo,
+  IFmHasMany
 } from "../../src";
 import { Company } from "./Company";
 import { IDictionary } from "common-types";
 import { pushKey } from "../../src/decorators/constraints";
 import { Concert } from "./Concert";
+import { Pay } from "./Pay";
 
 @model({ dbOffset: "authenticated" })
 export class Person extends Model {
@@ -34,4 +36,6 @@ export class Person extends Model {
   @belongsTo(() => Concert) public concerts?: IDictionary;
   // prettier-ignore
   @belongsTo(() => Company) public employerId?: fk;
+  // prettier-ignore
+  @hasMany(() => Pay) public pays?: IFmHasMany;
 }

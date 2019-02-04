@@ -1,7 +1,7 @@
 import { model, Model, property, hasOne, fk, hasMany, index } from "../../src";
 import { mock } from "../../src/decorators/constraints";
 import { Company } from "./Company";
-import { Person } from "./person";
+import { Person } from "./Person";
 
 function modelYear() {
   return 2018 - Math.floor(Math.random() * 10);
