@@ -7,7 +7,7 @@ import { FancyPerson } from "./testing/FancyPerson";
 import { Car } from "./testing/Car";
 import { Company } from "./testing/Company";
 import * as helpers from "./testing/helpers";
-import { Record } from "../src/record";
+import { Record } from "../src/Record";
 const expect = chai.expect;
 
 @model({})
