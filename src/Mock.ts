@@ -285,12 +285,12 @@ function followRelationships<T extends Model>(
     hasMany.map(r => {
       const fks = Object.keys(instance.get(r.property as any));
       fks.map(fk => {
-        p.add(fk, Mock(r.fkConstructor, db).generate(1, { id: fk }));
+        p.add(fk, Mock(r.fkConstructor(), db).generate(1, { id: fk }));
       });
     });
     hasOne.map(r => {
       const fk: any = instance.get(r.property as any);
-      p.add(fk, Mock(r.fkConstructor, db).generate(1, { id: fk }));
+      p.add(fk, Mock(r.fkConstructor(), db).generate(1, { id: fk }));
     });
 
     await p.isDone();
@@ -299,7 +299,7 @@ function followRelationships<T extends Model>(
 }
 
 export function Mock<T extends Model>(
-  modelConstructor: () => new () => T,
+  modelConstructor: new () => T,
   db: RealTimeDB
 ) {
   const config: IMockConfig<T> = { relationshipBehavior: "ignore" };
@@ -319,7 +319,7 @@ export function Mock<T extends Model>(
       const follow = followRelationships<T>(db, config, exceptions);
       const p = new Parallel();
       for (let i = 0; i < count; i++) {
-        const rec = Record.create(modelConstructor());
+        const rec = Record.create(modelConstructor);
         p.add(`record-${i}`, follow(await relns(await props(rec))));
       }
 
