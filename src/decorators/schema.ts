@@ -54,11 +54,11 @@ export interface IFmModelRelationshipMeta<T extends Model = Model>
   /** the property name on the related model that points back to this relationship */
   inverseProperty?: string;
   /** The constructor for a model of the FK reference that this relationship maintains */
-  fkConstructor: new () => T;
+  fkConstructor: () => new () => T;
   /** the singular name of the relationship's model */
-  fkModelName: string;
+  fkModelName?: string;
   /** the plural name of the relationship's model */
-  fkPluralName: string;
+  fkPluralName?: string;
   /** the name -- if it exists -- of the property on the FK which points back to this record */
   inverse?: string;
 }
@@ -106,7 +106,7 @@ export interface IFmModelAttributeBase<T> {
   /** what kind of relationship does this foreign key contain */
   relType?: FmRelationshipType;
   /** if the property is a relationship ... a constructor for the FK's Model */
-  fkConstructor?: new () => any;
+  fkConstructor?: () => new () => any;
   fkModelName?: string;
 }
 

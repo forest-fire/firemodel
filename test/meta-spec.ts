@@ -101,7 +101,7 @@ describe("relationship decorators: ", () => {
     const person = new Person();
     const ids = person.META.relationships.map(r => r.property);
 
-    expect(person.META.relationships.length).to.equal(5);
+    expect(person.META.relationships.length).to.equal(7);
     expect(ids).to.include("father");
     expect(ids).to.include("mother");
     expect(ids).to.include("children");
@@ -138,7 +138,7 @@ describe("relationship decorators: ", () => {
   it("@relationships represent all relationships in a model", async () => {
     const person = new Person();
     const props = person.META.relationships.map(r => r.property);
-    expect(person.META.relationships.length).to.equal(5);
+    expect(person.META.relationships.length).to.equal(7);
 
     expect(props).to.include("mother");
     expect(props).to.include("father");

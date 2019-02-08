@@ -8,6 +8,8 @@ import { Person } from "./testing/person";
 import { FireModel } from "../src/FireModel";
 import { FancyPerson } from "./testing/FancyPerson";
 import { IFMRecordEvent, FMEvents } from "../src/state-mgmt";
+import { Company } from "./testing/Company";
+import { Pay } from "./testing/Pay";
 
 describe("Relationship > ", () => {
   let db: DB;
@@ -32,6 +34,28 @@ describe("Relationship > ", () => {
     const eventTypes = new Set(events.map(e => e.type));
     expect(eventTypes.has(FMEvents.RELATIONSHIP_ADDED)).to.equal(true);
     expect(eventTypes.has(FMEvents.RELATIONSHIP_ADDED_LOCALLY)).to.equal(true);
+  });
+
+  it("testing adding relationships", async () => {
+    const company = await Record.add(Company, {
+      name: "Acme Inc",
+      founded: "1992"
+    })
+
+    const person = await Record.add(Person, {
+      name: "Joe Bloggs",
+      age: 22,
+      gender: "male"
+    })
+
+    const pay = await Record.add(Pay, {
+      amount: "2400.00"
+    })
+
+    company.addToRelationship("employees", person.id)
+    person.addToRelationship("pays", pay.id)
+
+    expect((company.data.employees as any)[person.id]).to.equal(true)
   });
 
   // it.skip("using addToRelationship() on a hasMany relationship with an inverse of hasOne", async () => {
