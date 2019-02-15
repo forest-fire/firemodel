@@ -35,7 +35,7 @@ export class Person extends Model {
   // prettier-ignore
   @belongsTo(() => Concert) public concerts?: IDictionary;
   // prettier-ignore
-  @belongsTo(() => Company) public employerId?: fk;
+  @belongsTo(() => Company) public company?: fk;
   // prettier-ignore
   @hasMany(() => Pay) public pays?: IFmHasMany;
 }

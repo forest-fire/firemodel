@@ -116,14 +116,14 @@ describe("Record > ", () => {
       name: "Roger Rabbit",
       age: 3,
       tags: { 123: "cartoon" },
-      employerId: "disney"
+      company: "disney"
     });
     const roger = await Record.get(Person, "8888");
     expect(roger).to.be.an.instanceOf(Record);
     expect(roger.data).to.be.an.instanceOf(Person);
     expect(roger.get("name")).to.equal("Roger Rabbit");
     expect(roger.get("age")).to.equal(3);
-    expect(roger.get("employerId")).to.equal("disney");
+    expect(roger.get("company")).to.equal("disney");
     expect(roger.data.tags["123"]).to.equal("cartoon");
   });
 
@@ -131,7 +131,7 @@ describe("Record > ", () => {
     await db.set<Person>("/authenticated/people/8888", {
       name: "Roger Rabbit",
       age: 3,
-      employerId: "disney",
+      company: "disney",
       lastUpdated: 12345
     });
     const roger = await Record.get(Person, "8888");
@@ -152,7 +152,7 @@ describe("Record > ", () => {
     await db.set<Person>("/authenticated/people/8888", {
       name: "Roger Rabbit",
       age: 3,
-      employerId: "disney",
+      company: "disney",
       lastUpdated: 12345
     });
     const roger = await Record.get(Person, "8888");
