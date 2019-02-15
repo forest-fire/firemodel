@@ -159,6 +159,7 @@ module.exports = {
             "/using/",
             "reading",
             "writing",
+            "relationships",
             "watching",
             "review-of-objects"
           ]
