@@ -464,6 +464,33 @@ export class Record<T extends Model> extends FireModel<T> {
     return;
   }
 
+  public async associate(
+    property: Extract<keyof T, string>,
+    refs: Extract<fk, string> | Array<Extract<fk, string>>,
+    optionalValue: any = true
+  ) {
+    if (this.META.relationship(property).relType === "hasOne") {
+      if (!Array.isArray(refs)) {
+        this.setRelationship(property, refs, optionalValue);
+      } else {
+        throw new Error(`Ref ${refs} must not be an array of strings.`);
+      }
+    } else if (this.META.relationship(property).relType === "hasMany") {
+      this.addToRelationship(property, refs, optionalValue);
+    }
+  }
+
+  public async disassociate(
+    property: Extract<keyof T, string>,
+    refs?: Extract<fk, string> | Array<Extract<fk, string>>
+  ) {
+    if (this.META.relationship(property).relType === "hasOne") {
+      this.clearRelationship(property);
+    } else if (this.META.relationship(property).relType === "hasMany") {
+      this.removeFromRelationship(property, refs);
+    }
+  }
+
   /**
    * Adds one or more fk's to a hasMany relationship
    *
@@ -577,6 +604,7 @@ export class Record<T extends Model> extends FireModel<T> {
         mps.payload
       )
     );
+    console.log(mps.payload)
     await mps.execute();
     this.dispatch(
       this._createRecordEvent(this, FMEvents.RELATIONSHIP_REMOVED, this.data)
