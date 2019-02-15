@@ -3,7 +3,7 @@ import { key as fbKey } from "firebase-key";
 import { FireModel } from "./FireModel";
 import { FMEvents } from "./state-mgmt/index";
 import { pathJoin } from "./path";
-import { getModelMeta } from "./ModelMeta";
+import { getModelMeta, addModelMeta } from "./ModelMeta";
 import { writeAudit } from "./Audit";
 import { updateToAuditChanges } from "./util";
 export class Record extends FireModel {
@@ -469,8 +469,10 @@ export class Record extends FireModel {
         const isHasMany = meta.isRelationship(property) &&
             meta.relationship(property).relType === "hasMany";
         const pathToThisFkReln = pathJoin(this.dbPath, property, isHasMany ? ref : "");
+        const fkModelConstructor = meta.relationship(property).fkConstructor();
         const inverseProperty = meta.relationship(property).inverseProperty;
-        const fkRecord = Record.create(meta.relationship(property).fkConstructor);
+        const fkRecord = Record.create(fkModelConstructor);
+        addModelMeta(fkRecord.modelName, fkRecord.META);
         mps.add({ path: pathToThisFkReln, value: isHasMany ? value : ref });
         // INVERSE RELATIONSHIP
         if (inverseProperty) {

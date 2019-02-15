@@ -471,8 +471,10 @@ class Record extends FireModel_1.FireModel {
         const isHasMany = meta.isRelationship(property) &&
             meta.relationship(property).relType === "hasMany";
         const pathToThisFkReln = path_1.pathJoin(this.dbPath, property, isHasMany ? ref : "");
+        const fkModelConstructor = meta.relationship(property).fkConstructor();
         const inverseProperty = meta.relationship(property).inverseProperty;
-        const fkRecord = Record.create(meta.relationship(property).fkConstructor);
+        const fkRecord = Record.create(fkModelConstructor);
+        ModelMeta_1.addModelMeta(fkRecord.modelName, fkRecord.META);
         mps.add({ path: pathToThisFkReln, value: isHasMany ? value : ref });
         // INVERSE RELATIONSHIP
         if (inverseProperty) {
