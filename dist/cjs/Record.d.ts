@@ -147,6 +147,8 @@ export declare class Record<T extends Model> extends FireModel<T> {
      * @param value the new value to set to
      */
     set<K extends keyof T>(prop: K, value: T[K]): Promise<void>;
+    associate(property: Extract<keyof T, string>, refs: Extract<fk, string> | Array<Extract<fk, string>>, optionalValue?: any): Promise<void>;
+    disassociate(property: Extract<keyof T, string>, refs?: Extract<fk, string> | Array<Extract<fk, string>>): Promise<void>;
     /**
      * Adds one or more fk's to a hasMany relationship
      *

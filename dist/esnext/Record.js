@@ -326,6 +326,27 @@ export class Record extends FireModel {
         }
         return;
     }
+    async associate(property, refs, optionalValue = true) {
+        if (this.META.relationship(property).relType === "hasOne") {
+            if (!Array.isArray(refs)) {
+                this.setRelationship(property, refs, optionalValue);
+            }
+            else {
+                throw new Error(`Ref ${refs} must not be an array of strings.`);
+            }
+        }
+        else if (this.META.relationship(property).relType === "hasMany") {
+            this.addToRelationship(property, refs, optionalValue);
+        }
+    }
+    async disassociate(property, refs) {
+        if (this.META.relationship(property).relType === "hasOne") {
+            this.clearRelationship(property);
+        }
+        else if (this.META.relationship(property).relType === "hasMany") {
+            this.removeFromRelationship(property, refs);
+        }
+    }
     /**
      * Adds one or more fk's to a hasMany relationship
      *
@@ -394,6 +415,7 @@ export class Record extends FireModel {
         const mps = this.db.multiPathSet("/");
         this._relationshipMPS(mps, this.get(property), property, null, new Date().getTime());
         this.dispatch(this._createRecordEvent(this, FMEvents.RELATIONSHIP_REMOVED_LOCALLY, mps.payload));
+        console.log(mps.payload);
         await mps.execute();
         this.dispatch(this._createRecordEvent(this, FMEvents.RELATIONSHIP_REMOVED, this.data));
     }

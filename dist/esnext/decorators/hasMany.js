@@ -5,7 +5,7 @@ export function hasMany(fnToModelConstructor, inverse) {
         isRelationship: true,
         isProperty: false,
         relType: "hasMany",
-        fkConstructor: fnToModelConstructor,
+        fkConstructor: fnToModelConstructor
     };
     if (inverse) {
         payload.inverseProperty = inverse;
