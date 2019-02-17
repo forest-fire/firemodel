@@ -4,7 +4,7 @@ import { propertyReflector } from "./reflector";
 import { relationshipsByModel } from "./decorator";
 import { IFmModelRelationshipMeta } from "./schema";
 
-export type IFmHasMany = IDictionary<string>;
+export type IFmHasMany = IDictionary<true>;
 
 export function hasMany(
   fnToModelConstructor: () => new () => any,
@@ -14,7 +14,7 @@ export function hasMany(
     isRelationship: true,
     isProperty: false,
     relType: "hasMany",
-    fkConstructor: fnToModelConstructor,
+    fkConstructor: fnToModelConstructor
   };
   if (inverse) {
     payload.inverseProperty = inverse;

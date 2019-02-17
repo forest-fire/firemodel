@@ -219,19 +219,18 @@ function followRelationships(db, config, exceptions) {
         hasMany.map(r => {
             const fks = Object.keys(instance.get(r.property));
             fks.map(fk => {
-                p.add(fk, Mock(r.fkConstructor, db).generate(1, { id: fk }));
+                p.add(fk, Mock(r.fkConstructor(), db).generate(1, { id: fk }));
             });
         });
         hasOne.map(r => {
             const fk = instance.get(r.property);
-            p.add(fk, Mock(r.fkConstructor, db).generate(1, { id: fk }));
+            p.add(fk, Mock(r.fkConstructor(), db).generate(1, { id: fk }));
         });
         await p.isDone();
         return instance;
     };
 }
 function Mock(modelConstructor, db) {
-    const record = Record_1.Record.create(modelConstructor);
     const config = { relationshipBehavior: "ignore" };
     const API = {
         /**
