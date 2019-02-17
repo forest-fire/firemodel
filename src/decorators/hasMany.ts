@@ -4,7 +4,7 @@ import { propertyReflector } from "./reflector";
 import { relationshipsByModel } from "./decorator";
 import { IFmModelRelationshipMeta } from "./schema";
 
-export type IFmHasMany = IDictionary<true>;
+export type IFmHasMany<T = true> = IDictionary<T>;
 
 export function hasMany(
   fnToModelConstructor: () => new () => any,
