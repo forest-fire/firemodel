@@ -34,6 +34,97 @@ class Record extends FireModel_1.FireModel {
     static set dispatch(fn) {
         FireModel_1.FireModel.dispatch = fn;
     }
+    get data() {
+        return this._data;
+    }
+    get isDirty() {
+        return this.META.isDirty ? true : false;
+    }
+    /**
+     * deprecated
+     */
+    set isDirty(value) {
+        if (!this._data.META) {
+            this._data.META = { isDirty: value };
+        }
+        this._data.META.isDirty = value;
+    }
+    /**
+     * returns the fully qualified name in the database to this record;
+     * this of course includes the record id so if that's not set yet calling
+     * this getter will result in an error
+     */
+    get dbPath() {
+        if (!this.data.id) {
+            throw common_types_1.createError("record/invalid-path", `Invalid Record Path: you can not ask for the dbPath before setting an "id" property.`);
+        }
+        const meta = ModelMeta_1.getModelMeta(this);
+        return [
+            this._injectDynamicDbOffsets(meta.dbOffset),
+            this.pluralName,
+            this.data.id
+        ].join("/");
+    }
+    /**
+     * provides a boolean flag which indicates whether the underlying
+     * model as a "dynamic path" which ultimately comes from a dynamic
+     * component in the "dbOffset" property defined in the model decorator
+     */
+    get hasDynamicPath() {
+        return this.META.dbOffset.includes(":");
+    }
+    get getDynamicPathComponents() {
+        if (!this.hasDynamicPath) {
+            return [];
+        }
+        const results = [];
+        let remaining = this.dbOffset;
+        let index = remaining.indexOf(":");
+        while (index !== -1) {
+            remaining = remaining.slice(index);
+            const prop = remaining.replace(/\:(\w+).*/, "$1");
+            results.push(prop);
+            remaining = remaining.replace(`:${prop}`, "");
+            index = remaining.indexOf(":");
+        }
+        return results;
+    }
+    /** The Record's primary key */
+    get id() {
+        return this.data.id;
+    }
+    set id(val) {
+        if (this.data.id) {
+            const e = new Error(`You may not re-set the ID of a record [ ${this.data.id} → ${val} ].`);
+            e.name = "NotAllowed";
+            throw e;
+        }
+        this._data.id = val;
+    }
+    /**
+     * returns the record's database offset without including the ID of the record;
+     * among other things this can be useful prior to establishing an ID for a record
+     */
+    get dbOffset() {
+        return ModelMeta_1.getModelMeta(this).dbOffset;
+    }
+    /**
+     * returns the record's location in the frontend state management framework;
+     * depends on appropriate configuration of model to be accurate.
+     */
+    get localPath() {
+        if (!this.data.id) {
+            throw new Error('Invalid Path: you can not ask for the dbPath before setting an "id" property.');
+        }
+        return path_1.pathJoin(this.data.META.localOffset, this.pluralName, this.data.id).replace(/\//g, ".");
+    }
+    get existsOnDB() {
+        return this.data && this.data.id ? true : false;
+    }
+    /** indicates whether this record is already being watched locally */
+    get isBeingWatched() {
+        return FireModel_1.FireModel.isBeingWatched(this.dbPath);
+    }
     /**
      * create
      *
@@ -111,8 +202,27 @@ class Record extends FireModel_1.FireModel {
         rec._initialize(payload);
         return rec;
     }
+    /**
+     * get (static initializer)
+     *
+     * Allows the retrieval of records based on the record's id (and dynamic path prefixes
+     * in cases where that applies)
+     *
+     * @param model the model definition you are retrieving
+     * @param id either just an "id" string or in the case of models with dynamic path prefixes you can pass in an object with the id and all dynamic prefixes
+     * @param options
+     */
     static async get(model, id, options = {}) {
         const record = Record.create(model, options);
+        if (typeof id === "object") {
+            if (!id.id) {
+                throw common_types_1.createError("record/not-allowed", `Attempting to get a ${record.modelName} record where the ID and prefix hash did not include the "id" property! Properties that were sent in were: ${Object.keys(id)}`);
+            }
+            Object.keys(id).forEach(key => {
+                record.data[key] = id[key];
+            });
+            id = id.id;
+        }
         await record._getFromDB(id);
         return record;
     }
@@ -145,62 +255,6 @@ class Record extends FireModel_1.FireModel {
         const newRecord = await Record.add(this._modelConstructor, payload);
         return newRecord;
     }
-    get data() {
-        return this._data;
-    }
-    get isDirty() {
-        return this.META.isDirty ? true : false;
-    }
-    /**
-     * deprecated
-     */
-    set isDirty(value) {
-        if (!this._data.META) {
-            this._data.META = { isDirty: value };
-        }
-        this._data.META.isDirty = value;
-    }
-    /**
-     * returns the fully qualified name in the database to this record;
-     * this of course includes the record id so if that's not set yet calling
-     * this getter will result in an error
-     */
-    get dbPath() {
-        if (!this.data.id) {
-            throw common_types_1.createError("record/invalid-path", `Invalid Record Path: you can not ask for the dbPath before setting an "id" property.`);
-        }
-        const meta = ModelMeta_1.getModelMeta(this);
-        return [meta.dbOffset, this.pluralName, this.data.id].join("/");
-    }
-    /** The Record's primary key */
-    get id() {
-        return this.data.id;
-    }
-    set id(val) {
-        if (this.data.id) {
-            const e = new Error(`You may not re-set the ID of a record [ ${this.data.id} → ${val} ].`);
-            e.name = "NotAllowed";
-            throw e;
-        }
-        this._data.id = val;
-    }
-    /**
-     * returns the record's database offset without including the ID of the record;
-     * among other things this can be useful prior to establishing an ID for a record
-     */
-    get dbOffset() {
-        return ModelMeta_1.getModelMeta(this).dbOffset;
-    }
-    /**
-     * returns the record's location in the frontend state management framework;
-     * depends on appropriate configuration of model to be accurate.
-     */
-    get localPath() {
-        if (!this.data.id) {
-            throw new Error('Invalid Path: you can not ask for the dbPath before setting an "id" property.');
-        }
-        return path_1.pathJoin(this.data.META.localOffset, this.pluralName, this.data.id).replace(/\//g, ".");
-    }
     /**
      * Allows an empty Record to be initialized to a known state.
      * This is not intended to allow for mass property manipulation other
@@ -232,9 +286,6 @@ class Record extends FireModel_1.FireModel {
         if (!this._data.createdAt) {
             this._data.createdAt = now;
         }
-    }
-    get existsOnDB() {
-        return this.data && this.data.id ? true : false;
     }
     /**
      * Pushes new values onto properties on the record
@@ -437,10 +488,6 @@ class Record extends FireModel_1.FireModel {
         await mps.execute();
         this.dispatch(this._createRecordEvent(this, index_1.FMEvents.RELATIONSHIP_ADDED, this.data));
     }
-    /** indicates whether this record is already being watched locally */
-    get isBeingWatched() {
-        return FireModel_1.FireModel.isBeingWatched(this.dbPath);
-    }
     /**
      * get a property value from the record
      *
@@ -591,6 +638,45 @@ class Record extends FireModel_1.FireModel {
         if (!this.isBeingWatched) {
             this.dispatch(this._createRecordEvent(this, actionTypeEnd, this.data));
         }
+    }
+    /**
+     * looks for ":name" property references within the dbOffset and expands them
+     */
+    _injectDynamicDbOffsets(dbOffset) {
+        this.getDynamicPathComponents.forEach(prop => {
+            const value = this.data[prop];
+            if (!value) {
+                throw common_types_1.createError("record/invalid-path", `Invalid Record Path: you can not ask for the dbPath on a model like ${this.modelName} which has a dynamic property of "${prop}" before setting that property.`);
+            }
+            if (typeof value !== "string" && typeof value !== "number") {
+                throw common_types_1.createError("record/not-allowed", `The path is using the property "${prop}" on ${this.modelName} as a part of the route path but that property must be either a string or a number and instead was a ${typeof prop}`);
+            }
+            dbOffset = dbOffset.replace(`:${prop}`, String(this.data[prop]));
+        });
+        return dbOffset;
+        // let remaining = dbOffset;
+        // let index = remaining.indexOf(":");
+        // while (index !== -1) {
+        //   remaining = remaining.slice(index);
+        //   const prop = remaining.replace(/\:(\w+).*/, "$1");
+        //   const value = this.data[prop as keyof T];
+        //   if (!value) {
+        //     throw createError(
+        //       "record/invalid-path",
+        //       `Invalid Record Path: you can not ask for the dbPath which has a dynamic property of "${prop}" before setting that property.`
+        //     );
+        //   }
+        //   if (typeof value !== "string" && typeof value !== "number") {
+        //     throw createError(
+        //       "record/not-allowed",
+        //       `The path is using the property "${prop}" as a part of the route path but that property must be either a string or a number and instead was a ${typeof prop}`
+        //     );
+        //   }
+        //   dbOffset = dbOffset.replace(`:${prop}`, String(value));
+        //   remaining = remaining.replace(`:${prop}`, "");
+        //   index = remaining.indexOf(":");
+        // }
+        // return dbOffset;
     }
     /**
      * Load data from a record in database

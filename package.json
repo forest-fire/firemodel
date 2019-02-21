@@ -1,6 +1,6 @@
 {
   "name": "firemodel",
-  "version": "0.16.9",
+  "version": "0.16.10",
   "description": "Modeling, Access, and Mocking for Firebase Projects",
   "license": "MIT",
   "repository": "https://github.com/forest-fire/firemodel",
@@ -29,12 +29,12 @@
     "deploy": "./node_modules/.bin/ts-node ./scripts/deploy.ts",
     "package": "./node_modules/.bin/ts-node ./scripts/package.ts ",
     "cli": "./node_modules/.bin/ts-node cli/index.ts --",
-    "docs:dev": "vuepress dev docs",
+    "docs": "vuepress dev docs",
     "docs:build": "vuepress build docs"
   },
   "dependencies": {
-    "abstracted-firebase": "^0.14.2",
-    "common-types": "^1.8.16",
+    "abstracted-firebase": "^0.14.5",
+    "common-types": "^1.9.6",
     "firebase-api-surface": "^0.8.5",
     "firebase-key": "^2.0.1",
     "lodash": "^4.17.10",
@@ -79,10 +79,10 @@
     "rollup": "^0.62.0",
     "rollup-plugin-typescript2": "^0.15.1",
     "test-console": "^1.1.0",
-    "ts-node": "^7.0.0",
-    "tslint": "^5.11.0",
+    "ts-node": "^8.0.2",
+    "tslint": "^5.12.1",
     "tslint-config-prettier": "^1.15.0",
-    "typescript": "^3.1.4",
+    "typescript": "^3.3.3",
     "vuepress": "^1.0.0-alpha.32"
   },
   "engines": {

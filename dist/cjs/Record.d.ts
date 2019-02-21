@@ -5,6 +5,7 @@ import { FireModel } from "./FireModel";
 import { IReduxDispatch } from "./VuexWrapper";
 import { IFMEventName } from "./state-mgmt/index";
 import { IAuditChange, IAuditOperations } from "./Audit";
+import { IIdWithDynamicPrefix } from "./@types/record-types";
 export declare type ModelOptionalId<T extends Model> = Omit<T, "id"> & {
     id?: string;
 };
@@ -28,6 +29,39 @@ export interface IRecordOptions {
 export declare class Record<T extends Model> extends FireModel<T> {
     static defaultDb: RealTimeDB;
     static dispatch: IReduxDispatch;
+    readonly data: Readonly<T>;
+    /**
+    * deprecated
+    */
+    isDirty: boolean;
+    /**
+     * returns the fully qualified name in the database to this record;
+     * this of course includes the record id so if that's not set yet calling
+     * this getter will result in an error
+     */
+    readonly dbPath: string;
+    /**
+     * provides a boolean flag which indicates whether the underlying
+     * model as a "dynamic path" which ultimately comes from a dynamic
+     * component in the "dbOffset" property defined in the model decorator
+     */
+    readonly hasDynamicPath: boolean;
+    readonly getDynamicPathComponents: string[];
+    /** The Record's primary key */
+    id: string;
+    /**
+     * returns the record's database offset without including the ID of the record;
+     * among other things this can be useful prior to establishing an ID for a record
+     */
+    readonly dbOffset: string;
+    /**
+     * returns the record's location in the frontend state management framework;
+     * depends on appropriate configuration of model to be accurate.
+     */
+    readonly localPath: any;
+    readonly existsOnDB: boolean;
+    /** indicates whether this record is already being watched locally */
+    readonly isBeingWatched: boolean;
     /**
      * create
      *
@@ -65,7 +99,17 @@ export declare class Record<T extends Model> extends FireModel<T> {
      * database. If you want to add to the database then use add()
      */
     static createWith<T extends Model>(model: new () => T, payload: T, options?: IRecordOptions): Record<T>;
-    static get<T extends Model>(model: new () => T, id: string, options?: IRecordOptions): Promise<Record<T>>;
+    /**
+     * get (static initializer)
+     *
+     * Allows the retrieval of records based on the record's id (and dynamic path prefixes
+     * in cases where that applies)
+     *
+     * @param model the model definition you are retrieving
+     * @param id either just an "id" string or in the case of models with dynamic path prefixes you can pass in an object with the id and all dynamic prefixes
+     * @param options
+     */
+    static get<T extends Model>(model: new () => T, id: string | IIdWithDynamicPrefix, options?: IRecordOptions): Promise<Record<T>>;
     static remove<T extends Model>(model: new () => T, id: string, 
     /** if there is a known current state of this model you can avoid a DB call to get it */
     currentState?: Record<T>): Promise<Record<T>>;
@@ -88,29 +132,6 @@ export declare class Record<T extends Model> extends FireModel<T> {
      * @param payload the payload of the new record
      */
     addAnother(payload: T): Promise<Record<T>>;
-    readonly data: Readonly<T>;
-    /**
-    * deprecated
-    */
-    isDirty: boolean;
-    /**
-     * returns the fully qualified name in the database to this record;
-     * this of course includes the record id so if that's not set yet calling
-     * this getter will result in an error
-     */
-    readonly dbPath: string;
-    /** The Record's primary key */
-    id: string;
-    /**
-     * returns the record's database offset without including the ID of the record;
-     * among other things this can be useful prior to establishing an ID for a record
-     */
-    readonly dbOffset: string;
-    /**
-     * returns the record's location in the frontend state management framework;
-     * depends on appropriate configuration of model to be accurate.
-     */
-    readonly localPath: any;
     /**
      * Allows an empty Record to be initialized to a known state.
      * This is not intended to allow for mass property manipulation other
@@ -119,7 +140,6 @@ export declare class Record<T extends Model> extends FireModel<T> {
      * @param data the initial state you want to start with
      */
     _initialize(data: T): void;
-    readonly existsOnDB: boolean;
     /**
      * Pushes new values onto properties on the record
      * which have been stated to be a "pushKey"
@@ -183,8 +203,6 @@ export declare class Record<T extends Model> extends FireModel<T> {
      * @param ref the FK
      */
     setRelationship(property: Extract<keyof T, string>, ref: Extract<fk, string>, optionalValue?: any): Promise<void>;
-    /** indicates whether this record is already being watched locally */
-    readonly isBeingWatched: boolean;
     /**
      * get a property value from the record
      *
@@ -214,6 +232,10 @@ export declare class Record<T extends Model> extends FireModel<T> {
     protected _errorIfNothasOneReln(property: Extract<keyof T, string>, fn: string): void;
     protected _errorIfNotHasManyReln(property: Extract<keyof T, string>, fn: string): void;
     protected _updateProps<K extends IFMEventName<K>>(actionTypeStart: K, actionTypeEnd: K, changed: Partial<T>): Promise<void>;
+    /**
+     * looks for ":name" property references within the dbOffset and expands them
+     */
+    private _injectDynamicDbOffsets;
     /**
      * Load data from a record in database
      */

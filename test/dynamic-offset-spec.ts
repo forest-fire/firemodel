@@ -26,6 +26,9 @@ describe("Dynamic offsets reflected in path", () => {
     });
 
     expect(person.META.dbOffset).to.equal(":group/testing");
+    expect(person.dynamicPathComponents)
+      .to.be.lengthOf(1)
+      .and.contain("group");
     expect(person.dbPath).to.contain(`${person.data.group}/testing`);
   });
 
@@ -42,6 +45,10 @@ describe("Dynamic offsets reflected in path", () => {
     });
 
     expect(person.META.dbOffset).to.equal(":group/:subGroup/testing");
+    expect(person.dynamicPathComponents)
+      .to.be.lengthOf(2)
+      .and.contain("group")
+      .and.contain("subGroup");
     expect(person.dbPath).to.contain(
       `${person.data.group}/${person.data.subGroup}/testing`
     );
