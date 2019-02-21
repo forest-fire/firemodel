@@ -1,6 +1,6 @@
 {
   "name": "firemodel",
-  "version": "0.16.9",
+  "version": "0.16.10",
   "description": "Modeling, Access, and Mocking for Firebase Projects",
   "license": "MIT",
   "repository": "https://github.com/forest-fire/firemodel",
@@ -33,13 +33,13 @@
     "docs:build": "vuepress build docs"
   },
   "dependencies": {
-    "abstracted-firebase": "^0.14.2",
-    "common-types": "^1.8.16",
+    "abstracted-firebase": "^0.14.5",
+    "common-types": "^1.9.6",
     "firebase-api-surface": "^0.8.5",
     "firebase-key": "^2.0.1",
-    "lodash": "^4.17.10",
+    "lodash": "^4.17.11",
     "pluralize": "^7.0.0",
-    "reflect-metadata": "^0.1.12",
+    "reflect-metadata": "^0.1.13",
     "serialized-query": "^0.4.5",
     "typed-conversions": "^0.8.13",
     "wait-in-parallel": "^1.1.4"
@@ -62,8 +62,8 @@
     "@vuepress/plugin-last-updated": "^1.0.0-alpha.0",
     "@vuepress/plugin-medium-zoom": "^1.0.0-alpha.0",
     "@vuepress/plugin-pwa": "^1.0.0-alpha.0",
-    "abstracted-admin": "^0.14.0",
-    "abstracted-client": "^0.14.1",
+    "abstracted-admin": "^0.14.10",
+    "abstracted-client": "^0.14.5",
     "async-shelljs": "^0.1.2",
     "chai": "^4.1.2",
     "chalk": "^2.4.1",
@@ -82,7 +82,7 @@
     "ts-node": "^7.0.0",
     "tslint": "^5.11.0",
     "tslint-config-prettier": "^1.15.0",
-    "typescript": "^3.1.4",
+    "typescript": "^3.3.3",
     "vuepress": "^1.0.0-alpha.32"
   },
   "engines": {
