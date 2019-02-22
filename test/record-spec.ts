@@ -179,8 +179,8 @@ describe("Record > ", () => {
       const foo = record.dbPath;
       throw new Error("Error should have happened");
     } catch (e) {
-      expect(e.code).to.equal("record/invalid-path");
-      expect(e.message).contains("Invalid Record Path");
+      expect(e.code).to.equal("record/not-ready");
+      expect(e.message).contains("dbPath before");
     }
   });
 

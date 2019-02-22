@@ -103,16 +103,17 @@ export class Record<T extends Model> extends FireModel<T> {
    * this getter will result in an error
    */
   public get dbPath() {
-    if (!this.data.id) {
+    if (this.data.id ? false : true) {
       throw createError(
-        "record/invalid-path",
-        `Invalid Record Path: you can not ask for the dbPath before setting an "id" property.`
+        "record/not-ready",
+        `you can not ask for the dbPath before setting an "id" property [ ${
+          this.modelName
+        } ]`
       );
     }
-    const meta = getModelMeta(this);
 
     return [
-      this._injectDynamicDbOffsets(meta.dbOffset),
+      this._injectDynamicDbOffsets(this.dbOffset),
       this.pluralName,
       this.data.id
     ].join("/");
@@ -145,6 +146,24 @@ export class Record<T extends Model> extends FireModel<T> {
     }
 
     return results;
+  }
+
+  /**
+   * A hash of values -- including "id" -- which represent
+   * the composite key of a model. If the model being interogated
+   * does NOT have any dynamic segments in dbOffset then this function
+   * returns just the ID as a string
+   */
+  public get compositeKey(): ICompositeKey | string {
+    return createCompositeKey(this);
+  }
+
+  /**
+   * a string value which is used in relationships to fully qualify
+   * a composite string (aka, a model which has a dynamic dbOffset)
+   */
+  public get compositeKeyRef() {
+    return createCompositeKeyString(this);
   }
 
   /** The Record's primary key */
@@ -731,7 +750,7 @@ export class Record<T extends Model> extends FireModel<T> {
    */
   public async setRelationship(
     property: Extract<keyof T, string>,
-    ref: Extract<fk, string>,
+    ref: IFkReference,
     optionalValue: any = true
   ) {
     this._errorIfNothasOneReln(property, "setRelationship");
@@ -810,6 +829,31 @@ export class Record<T extends Model> extends FireModel<T> {
     });
   }
 
+  protected _expandFkStringToCompositeNotation(
+    fkRef: string,
+    dynamicComponents: string[] = []
+  ) {
+    if (fkRef.indexOf("::") === -1) {
+      return {
+        ...{ id: fkRef },
+        ...dynamicComponents.reduce((prev, curr) => {
+          return { ...prev, ...{ [curr]: this.data[curr as keyof T] } };
+        }, {})
+      };
+    }
+
+    const id = fkRef.slice(0, fkRef.indexOf("::"));
+    const remaining = fkRef
+      .slice(fkRef.indexOf("::"))
+      .split("::")
+      .filter(i => i)
+      .reduce((prev, curr) => {
+        const [name, value] = curr.split(":");
+        return { ...prev, ...{ [name]: value } };
+      }, {});
+    return { ...{ id }, ...remaining };
+  }
+
   /**
    * _relationshipMPS
    *
@@ -835,7 +879,19 @@ export class Record<T extends Model> extends FireModel<T> {
     const fkModelConstructor = meta.relationship(property).fkConstructor();
     const inverseProperty = meta.relationship(property).inverseProperty;
     const fkRecord = Record.create(fkModelConstructor);
-    const fkRecordData = typeof fkRef === "object" ? fkRef : { id: fkRef };
+    // TODO: determine if fk string which has composite key embedded is expected/desired
+    /**
+     * It was expected that fkRef would be ICompositeKey or a string representing
+     * just an ID but it appears it may also be a composite key reference string
+     */
+    const fkRecordData =
+      typeof fkRef === "object"
+        ? fkRef
+        : this._expandFkStringToCompositeNotation(
+            fkRef,
+            fkRecord.dynamicPathComponents
+          );
+
     fkRecord._initialize({ ...fkRecord.data, ...fkRecordData });
     let fkId: string;
 
@@ -888,6 +944,14 @@ export class Record<T extends Model> extends FireModel<T> {
           .filter(k => k !== "id")
           .map(k => `::${k}:${propData[k]}`);
     } else {
+      // TODO: this probably shouldn't be needed; look to cleanup
+      if (
+        typeof fkRef === "object" &&
+        Object.keys(fkRef).length === 1 &&
+        fkRef.id
+      ) {
+        fkRef = fkRef.id;
+      }
       if (typeof fkRef === "object") {
         throw createError(
           `record/invalid-key`,
@@ -914,13 +978,12 @@ export class Record<T extends Model> extends FireModel<T> {
       // to other hasMany keys which already exist
       hasManyReln ? createCompositeKeyString(fkRecord) : ""
     );
-    addModelMeta(fkRecord.modelName, fkRecord.META);
 
     // Add paths for primary model to FK in MPS
     mps.add({
       path: pathToRecordsFkReln,
       // if hasMany then just add value, the fk is already part of path
-      value: hasManyReln ? value : createCompositeKeyString(fkRecord)
+      value: hasManyReln ? value : fkRecord.compositeKeyRef
     });
 
     // INVERSE RELATIONSHIP
@@ -1081,17 +1144,26 @@ export class Record<T extends Model> extends FireModel<T> {
    * looks for ":name" property references within the dbOffset and expands them
    */
   private _injectDynamicDbOffsets(dbOffset: string) {
+    console.log(`${this.modelName}:${this.dynamicPathComponents}`);
+
     this.dynamicPathComponents.forEach(prop => {
       const value = this.data[prop as keyof T];
-      if (!value) {
+
+      if (value ? false : true) {
+        console.log(value, this.id);
+        // TODO: cleanup
+        console.log(JSON.stringify(this.db.mock.db, null, 2));
+
         throw createError(
-          "record/invalid-path",
-          `Invalid Record Path: you can not ask for the dbPath on a model like ${
+          "record/not-ready",
+          `You can not ask for the dbPath on a model like "${
             this.modelName
-          } which has a dynamic property of "${prop}" before setting that property.`
+          }" which has a dynamic property of "${prop}" before setting that property [ id: ${
+            this.id
+          } ].`
         );
       }
-      if (typeof value !== "string" && typeof value !== "number") {
+      if (!["string", "number"].includes(typeof value)) {
         throw createError(
           "record/not-allowed",
           `The path is using the property "${prop}" on ${

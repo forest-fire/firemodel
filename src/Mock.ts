@@ -1,5 +1,5 @@
 import { Model } from "./Model";
-import { IDictionary } from "common-types";
+import { IDictionary, createError } from "common-types";
 // tslint:disable-next-line:no-implicit-dependencies
 import { RealTimeDB } from "abstracted-firebase";
 import { Record } from "./Record";
@@ -9,9 +9,8 @@ import { set } from "lodash";
 import { MockHelper } from "firemock";
 import { pathJoin } from "./path";
 import { getModelMeta, modelsWithMeta } from "./ModelMeta";
-import { writeAudit } from "./Audit";
-import { updateToAuditChanges } from "./util";
 import { Parallel } from "wait-in-parallel";
+import { FireModel } from "./FireModel";
 
 export type ICardinalityConfig<T> = {
   [key in keyof T]: [number, number] | number | true
@@ -195,6 +194,7 @@ function mockProperties<T extends Model>(
     });
     const finalized: T = { ...(recProps as any), ...exceptions };
 
+    // write to mock db
     instance = await instance.addAnother(finalized);
 
     return instance;
@@ -300,9 +300,19 @@ function followRelationships<T extends Model>(
 
 export function Mock<T extends Model>(
   modelConstructor: new () => T,
-  db: RealTimeDB
+  db?: RealTimeDB
 ) {
   const config: IMockConfig<T> = { relationshipBehavior: "ignore" };
+  if (!db) {
+    if (FireModel.defaultDb) {
+      db = FireModel.defaultDb;
+    } else {
+      throw createError(
+        "mock/no-database",
+        `You must either explicitly add a database on call to Mock() or ensure that the default database for Firemodel is set!`
+      );
+    }
+  }
 
   const API = {
     /**
@@ -313,17 +323,23 @@ export function Mock<T extends Model>(
      * @param count how many instances of the given Model do you want?
      * @param exceptions do you want to fix a given set of properties to a static value?
      */
-    async generate(count: number, exceptions?: IDictionary) {
+    async generate(count: number, exceptions?: IDictionary): Promise<string[]> {
       const props = mockProperties<T>(db, config, exceptions);
       const relns = addRelationships<T>(db, config, exceptions);
       const follow = followRelationships<T>(db, config, exceptions);
-      const p = new Parallel();
+      const p = new Parallel<IDictionary & { id: string }>();
       for (let i = 0; i < count; i++) {
         const rec = Record.create(modelConstructor);
         p.add(`record-${i}`, follow(await relns(await props(rec))));
       }
 
-      await p.isDone();
+      const results = await p.isDone();
+      return Object.keys(results).reduce(
+        (prev, curr) => {
+          return prev.concat(results[curr].id);
+        },
+        [] as string[]
+      );
     },
     /**
      * createRelationshipLinks
