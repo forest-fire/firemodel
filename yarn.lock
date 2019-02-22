@@ -1627,10 +1627,10 @@ abstracted-admin@^0.14.10:
     serialized-query "^0.4.5"
     typed-conversions "^0.8.13"
 
-abstracted-client@^0.14.5:
-  version "0.14.5"
-  resolved "https://registry.yarnpkg.com/abstracted-client/-/abstracted-client-0.14.5.tgz#3c4624626059088194e57e77bc6501fb0af37c7f"
-  integrity sha512-6i6CZ14Ijy1sHjX8bf311j87I2Go9alVusEv6+u862wzKofs29F/gRZR5Ww6NrSIDwtyRnjRjP+uOoL/ApkeBw==
+abstracted-client@^0.14.16:
+  version "0.14.16"
+  resolved "https://registry.yarnpkg.com/abstracted-client/-/abstracted-client-0.14.16.tgz#be02879c57dababc752150d0ea867722447c6df8"
+  integrity sha512-juiKMa7Sqn99njEeklplVvq0nUNwio6c8IBSmsP2aiDrAYLY+pUVaGtrY0623Cttk84xPhCqszSGwQ9RWzxbNQ==
   dependencies:
     "@firebase/app" "^0.3.9"
     "@firebase/app-types" "^0.3.4"
