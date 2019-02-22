@@ -6,7 +6,8 @@ import {
   min,
   belongsTo,
   hasMany,
-  mock
+  mock,
+  fks
 } from "../../src";
 import { Company } from "./Company";
 import { Car } from "./Car";
@@ -28,9 +29,9 @@ export class FancyPerson extends Model {
   // prettier-ignore
   @belongsTo(() => Company) public employer?: fk;
   // prettier-ignore
-  @hasMany(() => Car, "owner") public cars?: fk[];
+  @hasMany(() => Car, "owner") public cars?: fks;
   // prettier-ignore
-  @hasMany(() => FancyPerson, "children") public parents?: fk[];
+  @hasMany(() => FancyPerson, "children") public parents?: fks;
   // prettier-ignore
-  @hasMany(() => FancyPerson, "parents") public children?: fk[];
+  @hasMany(() => FancyPerson, "parents") public children?: fks;
 }

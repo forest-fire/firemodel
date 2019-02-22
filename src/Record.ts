@@ -16,28 +16,32 @@ import {
   ICompositeKey
 } from "./@types/record-types";
 
-function createCompositeKey<T extends Record<T>>(rec: T) {
+function createCompositeKey(rec: Record<Model>) {
   const model = rec.data;
   return {
     ...{ id: rec.id },
     ...rec.dynamicPathComponents.reduce(
       (prev, key) => ({
         ...prev,
-        [key]: model.get(key as keyof T)
+        ...{ [key]: model[key as keyof typeof model] }
       }),
       {}
     )
   };
 }
 
-function createCompositeKeyString<T extends Record<T>>(rec: T) {
-  const cKey: IDictionary = createCompositeKey<T>(rec);
-  return (
-    cKey.id +
-    Object.keys(cKey)
-      .filter(k => k !== "id")
-      .map(k => `::${k}:${cKey[k]}`)
-  );
+/**
+ * Creates a string based composite key if the passed in record
+ * has dynamic path segments; if not it will just return the "id"
+ */
+function createCompositeKeyString(rec: Record<Model>) {
+  const cKey: IDictionary = createCompositeKey(rec);
+  return rec.hasDynamicPath
+    ? cKey.id +
+        Object.keys(cKey)
+          .filter(k => k !== "id")
+          .map(k => `::${k}:${cKey[k]}`)
+    : rec.id;
 }
 
 // TODO: see if there's a way to convert to interface so that design time errors are more clear
@@ -557,16 +561,30 @@ export class Record<T extends Model> extends FireModel<T> {
     return;
   }
 
+  /**
+   * associate
+   *
+   * Associates the current model with another regardless if the cardinality is 1 or M.
+   * If it is a "hasOne" relationship it will proxy this request to setRelationship,
+   * if it is a "hasMany" relationshipo it will proxy this request to addToRelationship
+   */
   public async associate(
     property: Extract<keyof T, string>,
-    refs: Extract<fk, string> | Array<Extract<fk, string>>,
+    refs: IFkReference | IFkReference[],
     optionalValue: any = true
   ) {
     if (this.META.relationship(property).relType === "hasOne") {
-      if (!Array.isArray(refs)) {
-        this.setRelationship(property, refs, optionalValue);
+      if (!Array.isArray(refs) || refs.length === 1) {
+        this.setRelationship(
+          property,
+          Array.isArray(refs) ? refs[0] : refs,
+          optionalValue
+        );
       } else {
-        throw new Error(`Ref ${refs} must not be an array of strings.`);
+        throw createError(
+          "record/not-allowed",
+          `There were an array of references [ ${refs} ] for a property "${property}" which is "hasOne".`
+        );
       }
     } else if (this.META.relationship(property).relType === "hasMany") {
       this.addToRelationship(property, refs, optionalValue);
@@ -575,7 +593,7 @@ export class Record<T extends Model> extends FireModel<T> {
 
   public async disassociate(
     property: Extract<keyof T, string>,
-    refs?: Extract<fk, string> | Array<Extract<fk, string>>
+    refs?: IFkReference | IFkReference[]
   ) {
     if (this.META.relationship(property).relType === "hasOne") {
       this.clearRelationship(property);
@@ -589,12 +607,12 @@ export class Record<T extends Model> extends FireModel<T> {
    *
    * @param property the property which is acting as a foreign key (array)
    * @param fkRefs FK reference (or array of FKs) that should be added to reln
-   * @param optionalValue the default behaviour is to add the value TRUE but you can optionally add some additional piece of information here instead
+   * @param value the default behaviour is to add the value TRUE but you can optionally add some additional piece of information here instead
    */
   public async addToRelationship(
     property: Extract<keyof T, string>,
     fkRefs: IFkReference | IFkReference[],
-    optionalValue: any = true
+    value: any = true
   ) {
     this._errorIfNotHasManyReln(property, "addToRelationship");
 
@@ -605,7 +623,7 @@ export class Record<T extends Model> extends FireModel<T> {
     fkRefs.map(ref => {
       // adds appropriate paths to the MPS for both this model as well
       // as the foreign key being discussed
-      this._relationshipMPS(mps, ref, property, optionalValue, now);
+      this._relationshipMPS(mps, ref, property, value, now);
     });
     mps.add({ path: pathJoin(this.dbPath, "lastUpdated"), value: now });
 
@@ -888,15 +906,22 @@ export class Record<T extends Model> extends FireModel<T> {
     const hasManyReln =
       meta.isRelationship(property) &&
       meta.relationship(property).relType === "hasMany";
-    const pathToThisFkReln = pathJoin(
+
+    const pathToRecordsFkReln = pathJoin(
       this.dbPath, // this includes dynamic segments for originating model
       property,
-      hasManyReln ? fkId : ""
+      // we must add the fk id to path (versus value) to make the write non-destructive
+      // to other hasMany keys which already exist
+      hasManyReln ? createCompositeKeyString(fkRecord) : ""
     );
     addModelMeta(fkRecord.modelName, fkRecord.META);
 
     // Add paths for primary model to FK in MPS
-    mps.add({ path: pathToThisFkReln, value: hasManyReln ? value : fkId });
+    mps.add({
+      path: pathToRecordsFkReln,
+      // if hasMany then just add value, the fk is already part of path
+      value: hasManyReln ? value : createCompositeKeyString(fkRecord)
+    });
 
     // INVERSE RELATIONSHIP
     if (inverseProperty) {
@@ -925,13 +950,12 @@ export class Record<T extends Model> extends FireModel<T> {
         ? fkMeta.relationship(inverseProperty).relType === "hasMany"
         : false;
 
+      // Inverse: add to FK the reference back to this record
       mps.add({
-        path: fkInverseIsHasManyReln
-          ? pathJoin(pathToInverseFkReln, this.id)
-          : pathToInverseFkReln,
-        value: !fkInverseIsHasManyReln
-          ? value // TODO: there should be variance between 1:1 and 1:M
-          : { [createCompositeKey(fkRecord, value)]: value }
+        path: pathToInverseFkReln,
+        value: fkInverseIsHasManyReln
+          ? { [createCompositeKeyString(this)]: value }
+          : createCompositeKeyString(this)
       });
 
       mps.add({

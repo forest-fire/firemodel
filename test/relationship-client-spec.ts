@@ -9,6 +9,7 @@ import { FancyPerson } from "./testing/FancyPerson";
 import { IFMRecordEvent, FMEvents } from "../src/state-mgmt";
 import { List } from "../src/List";
 import { Company } from "./testing/Company";
+import { fks } from "../src";
 
 const addFatherAndChildren = async () => {
   const bob = await Record.add(FancyPerson, {
@@ -101,7 +102,7 @@ describe("Relationship > ", () => {
     Record.dispatch = (evt: IFMRecordEvent) => events.push(evt);
     await bob.addToRelationship("parents", father.id);
     // local person record is updated
-    expect((bob.data.parents as any)[father.id]).to.equal(true);
+    expect(bob.data.parents[father.id]).to.equal(true);
     const localEvent = events.find(
       i => i.type === FMEvents.RELATIONSHIP_ADDED_LOCALLY
     );
@@ -109,7 +110,9 @@ describe("Relationship > ", () => {
     expect(localEvent.paths).to.have.lengthOf(4);
     // father record is updated too
     const pops = await Record.get(FancyPerson, father.id);
-    expect((pops.data.children as any)[bob.id]).to.equal(true);
+    console.log(pops.data.children, bob.id, father.id);
+
+    expect(pops.data.children[bob.id]).to.equal(true);
     expect(pops.data.lastUpdated).to.equal(bob.data.lastUpdated);
   });
 

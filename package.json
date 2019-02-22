@@ -16,7 +16,8 @@
   "module": "dist/esnext/index.js",
   "typings": "dist/esnext/index.d.ts",
   "scripts": {
-    "clean": "rimraf lib",
+    "clean": "rimraf lib;",
+    "clean:nuclear": "rimraf lib; rimraf node_modeles; yarn cache clean; rm yarn.lock; yarn ",
     "lint": "./node_modules/.bin/tslint --force --format verbose \"src/**/*.ts\"",
     "build": "yarn build:tsc",
     "build:rollup": "tslint src/**/*.ts && rollup -c rollup.config.js",
