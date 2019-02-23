@@ -5,9 +5,10 @@ import { Record, FireModel, Mock, List } from "../src";
 import DeepPerson, { IDeepName } from "./testing/dynamicPaths/DeepPerson";
 import { DeeperPerson } from "./testing/dynamicPaths/DeeperPerson";
 import Hobby from "./testing/dynamicPaths/Hobby";
-import { firstKey } from "./testing/helpers";
+import { firstKey, firstRecord, lastRecord } from "./testing/helpers";
 import Company from "./testing/dynamicPaths/Company";
 import { HumanAttribute } from "./testing/dynamicPaths/HumanAttribute";
+import { IDictionary } from "common-types";
 
 const expect = chai.expect;
 
@@ -236,7 +237,7 @@ describe("Dynamic offsets work with relationships", () => {
     expect(company.data.employees).to.haveOwnProperty(person.compositeKeyRef);
   });
 
-  it("setRelationship works for M:1 (where FK is not on a dynamic path)", async () => {
+  it("setRelationship works for 1:M (where FK is not on a dynamic path)", async () => {
     let attribute = await Record.add(HumanAttribute, {
       attribute: "smart"
     });
@@ -250,3 +251,155 @@ describe("Dynamic offsets work with relationships", () => {
     );
   });
 });
+
+describe("LIST uses static offsets() with static API methods", () => {
+  let db: DB;
+  before(async () => {
+    db = await DB.connect({ mocking: true });
+    FireModel.defaultDb = db;
+  });
+
+  it("LIST.offsets() returns LIST API", async () => {
+    const api = List.offsets({ geoCode: "1234" });
+    expect(List).to.have.ownProperty("all");
+    expect(List).to.have.ownProperty("where");
+  });
+
+  it("List.all works with offsets", async () => {
+    await Mock(DeepPerson).generate(3, { group: "test" });
+    await Mock(DeepPerson).generate(5, { group: "test2" });
+    const people = await List.offsets({ group: "test" }).all(DeepPerson);
+    expect(people.length).to.equal(3);
+  });
+
+  it("List.where works with offsets", async () => {
+    await Mock(DeepPerson).generate(3, { group: "test", age: 32 });
+    await Mock(DeepPerson).generate(6, { group: "test", age: 45 });
+    await Mock(DeepPerson).generate(5, { group: "test2", age: 45 });
+    const people = await List.offsets({ group: "test" }).where(
+      DeepPerson,
+      "age",
+      45
+    );
+    expect(people.length).to.equal(6);
+    expect(people.filter(i => i.age === 45)).is.length(6);
+  });
+});
+
+describe("MOCK uses static offsets()", () => {
+  let db: DB;
+  beforeEach(async () => {
+    db = await DB.connect({ mocking: true });
+    FireModel.defaultDb = db;
+  });
+  it("Mock() generates mocks on dynamic path", async () => {
+    await Mock(DeepPerson)
+      .followRelationshipLinks()
+      .generate(2, { group: "test" });
+    expect(db.mock.db.test.testing.deeppeople).is.an("object");
+    expect(db.mock.db.hobbies).is.an("object");
+    expect(db.mock.db.humanattributes).is.an("object");
+    expect(db.mock.db.test.testing.companies).is.an("object");
+  });
+
+  it("Mock() mocks on dynamic path without relationships rendered", async () => {
+    await Mock(DeepPerson).generate(2, { group: "test" });
+    expect(
+      firstRecord<DeepPerson>(db.mock.db.test.testing.deeppeople).age
+    ).to.be.a("number");
+    fkStructuralChecksForHasMany(db.mock.db.test.testing.deeppeople);
+  });
+
+  it("Mock() mocks on dynamic path and creates appropriate FK with using createRelationshipLinks()", async () => {
+    await Mock(DeepPerson)
+      .createRelationshipLinks()
+      .generate(2, { group: "test" });
+    fkStructuralChecksForHasMany(db.mock.db.test.testing.deeppeople);
+  });
+
+  it("Mock() mocks on dynamic path and creates appropriate FK bi-directionally with using followRelationshipLinks()", async () => {
+    await Mock(DeepPerson)
+      .followRelationshipLinks()
+      .generate(2, { group: "test" });
+    // basics
+    expect(db.mock.db.test.testing.deeppeople).is.an("object");
+    expect(db.mock.db.hobbies).is.an("object");
+    expect(db.mock.db.humanattributes).is.an("object");
+    expect(db.mock.db.test.testing.companies).is.an("object");
+    // FK checks
+    fkStructuralChecksForHasMany(db.mock.db.test.testing.deeppeople);
+    fkPropertyStructureForHasMany(
+      db.mock.db.test.testing.deeppeople,
+      ["parents", "children", "practitioners"],
+      true
+    );
+    fkPropertyStructureForHasMany(
+      db.mock.db.test.testing.deeppeople,
+      ["hobby"],
+      false
+    );
+    fkPropertyStructureForHasOne(
+      db.mock.db.test.testing.deeppeople,
+      ["employer"],
+      true
+    );
+    fkPropertyStructureForHasOne(
+      db.mock.db.test.testing.deeppeople,
+      ["school"],
+      false
+    );
+  });
+
+  it("Mock() warns if dynamic props are mocking to unbounded mock condition", async () => {
+    await Mock(DeepPerson).generate(3);
+    console.log(JSON.stringify(db.mock.db, null, 2));
+  });
+});
+
+function fkStructuralChecksForHasMany(person: IDictionary<DeepPerson>) {
+  expect(firstRecord<DeepPerson>(person).hobbies).is.an("object");
+  expect(firstRecord<DeepPerson>(person).parents).is.an("object");
+  expect(firstRecord<DeepPerson>(person).attributes).is.an("object");
+}
+
+function fkPropertyStructureForHasOne<T>(
+  record: IDictionary<T>,
+  props: Array<keyof T>,
+  withDynamicPath: boolean
+) {
+  props.forEach(prop => {
+    const firstFk = firstRecord<T>(record)[prop];
+    const lastFk = lastRecord<T>(record)[prop];
+    const fks = [firstFk, lastFk].filter(i => i);
+
+    fks.forEach(fk => {
+      expect(fk).to.be.a("string");
+      if (withDynamicPath) {
+        expect(fk).to.include("::");
+      } else {
+        expect(fk).to.not.include("::");
+      }
+    });
+  });
+}
+
+function fkPropertyStructureForHasMany<T>(
+  record: IDictionary<T>,
+  props: Array<keyof T>,
+  withDynamicPath: boolean
+) {
+  props.forEach(prop => {
+    const firstFk = firstRecord<T>(record)[prop];
+    const lastFk = lastRecord<T>(record)[prop];
+    const fks = [firstFk, lastFk].filter(i => i).map(i => firstKey(i));
+
+    fks.forEach(fk => {
+      expect(fk).to.be.a("string");
+      if (withDynamicPath) {
+        expect(fk).to.include("::");
+      } else {
+        expect(fk).to.not.include("::");
+      }
+    });
+  });
+}

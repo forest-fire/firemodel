@@ -2,7 +2,7 @@ import { Model, IModelOptions } from "./Model";
 import { Record } from "./Record";
 import { SerializedQuery, IComparisonOperator } from "serialized-query";
 
-import { epochWithMilliseconds, IDictionary } from "common-types";
+import { epochWithMilliseconds, IDictionary, createError } from "common-types";
 import { FireModel } from "./FireModel";
 // tslint:disable-next-line:no-implicit-dependencies
 import { RealTimeDB } from "abstracted-firebase";
@@ -13,7 +13,6 @@ import { FMEvents, IFMRecordListEvent } from "./state-mgmt";
 
 const DEFAULT_IF_NOT_FOUND = "__DO_NOT_USE__";
 
-
 function addTimestamps<T extends Model>(obj: IDictionary) {
   const datetime = new Date().getTime();
   const output: IDictionary = {};
@@ -22,7 +21,7 @@ function addTimestamps<T extends Model>(obj: IDictionary) {
       ...obj[i],
       createdAt: datetime,
       lastUpdated: datetime
-    }
+    };
   });
 
   return output as T;
@@ -49,11 +48,14 @@ export class List<T extends Model> extends FireModel<T> {
    * a destructive operation ... any other records of the
    * same type that existed beforehand are removed.
    */
-    public static async set<T extends Model>(model: new () => T, payload: IDictionary<T>) {
+  public static async set<T extends Model>(
+    model: new () => T,
+    payload: IDictionary<T>
+  ) {
     try {
       const m = Record.create(model);
       // If Auditing is one we must be more careful
-      if(m.META.audit) {
+      if (m.META.audit) {
         const existing = await List.all(model);
         if (existing.length > 0) {
           // TODO: need to write an appropriate AUDIT EVENT
@@ -66,7 +68,10 @@ export class List<T extends Model> extends FireModel<T> {
       } else {
         // Without auditing we can just set the payload into the DB
         const datetime = new Date().getTime();
-        await FireModel.defaultDb.set(`${m.META.dbOffset}/${m.pluralName}` , addTimestamps(payload));
+        await FireModel.defaultDb.set(
+          `${m.META.dbOffset}/${m.pluralName}`,
+          addTimestamps(payload)
+        );
       }
 
       const current = await List.all(model);
@@ -80,6 +85,15 @@ export class List<T extends Model> extends FireModel<T> {
 
   public static set dispatch(fn: IReduxDispatch) {
     FireModel.dispatch = fn;
+  }
+
+  /**
+   * Allows you to build a LIST on a model which has dynamic dbOffsets
+   * by statically initializing the dynamic segments up front
+   */
+  public static offsets(offsets: IDictionary<string | number>) {
+    List._offsets = offsets;
+    return List;
   }
 
   public static create<T extends Model>(
@@ -102,6 +116,7 @@ export class List<T extends Model> extends FireModel<T> {
     options: IModelOptions = {}
   ): Promise<List<T>> {
     const list = List.create(model, options);
+
     query.setPath(list.dbPath);
 
     await list.load(query);
@@ -256,6 +271,8 @@ export class List<T extends Model> extends FireModel<T> {
     return list;
   }
 
+  private static _offsets: IDictionary<string | number>;
+
   //#endregion
 
   private _data: T[] = [];
@@ -277,7 +294,10 @@ export class List<T extends Model> extends FireModel<T> {
   }
 
   public get dbPath() {
-    return [this.META.dbOffset, this.pluralName].join("/");
+    return [
+      this._injectDynamicDbOffsets(this.META.dbOffset),
+      this.pluralName
+    ].join("/");
   }
 
   public get localPath() {
@@ -482,6 +502,28 @@ export class List<T extends Model> extends FireModel<T> {
     }
     this._data = await this.db.getList<T>(pathOrQuery);
     return this;
+  }
+
+  private _injectDynamicDbOffsets(dbOffset: string) {
+    if (dbOffset.indexOf(":") === -1) {
+      return dbOffset;
+    }
+
+    Object.keys(List._offsets).forEach(prop => {
+      const value = List._offsets[prop];
+
+      if (!["string", "number"].includes(typeof value)) {
+        throw createError(
+          "record/not-allowed",
+          `The dynamic dbOffsest is using the property "${prop}" on ${
+            this.modelName
+          } as a part of the route path but that property must be either a string or a number and instead was a ${typeof prop}`
+        );
+      }
+      dbOffset = dbOffset.replace(`:${prop}`, String(List._offsets[prop]));
+    });
+
+    return dbOffset;
   }
 }
 

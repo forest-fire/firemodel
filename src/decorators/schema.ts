@@ -103,6 +103,8 @@ export interface IFmModelAttributeBase<T> {
    * would include "telephone", "name", etc.
    */
   mockType?: FmMockType;
+  /** a named mock can optionally recieve a set of parameters as additional input */
+  mockParameters?: any[];
   /** what kind of relationship does this foreign key contain */
   relType?: FmRelationshipType;
   /** if the property is a relationship ... a constructor for the FK's Model */

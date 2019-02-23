@@ -15,34 +15,10 @@ import {
   IFkReference,
   ICompositeKey
 } from "./@types/record-types";
-
-function createCompositeKey(rec: Record<Model>) {
-  const model = rec.data;
-  return {
-    ...{ id: rec.id },
-    ...rec.dynamicPathComponents.reduce(
-      (prev, key) => ({
-        ...prev,
-        ...{ [key]: model[key as keyof typeof model] }
-      }),
-      {}
-    )
-  };
-}
-
-/**
- * Creates a string based composite key if the passed in record
- * has dynamic path segments; if not it will just return the "id"
- */
-function createCompositeKeyString(rec: Record<Model>) {
-  const cKey: IDictionary = createCompositeKey(rec);
-  return rec.hasDynamicPath
-    ? cKey.id +
-        Object.keys(cKey)
-          .filter(k => k !== "id")
-          .map(k => `::${k}:${cKey[k]}`)
-    : rec.id;
-}
+import {
+  createCompositeKey,
+  createCompositeKeyString
+} from "./Record/CompositeKey";
 
 // TODO: see if there's a way to convert to interface so that design time errors are more clear
 export type ModelOptionalId<T extends Model> = Omit<T, "id"> & { id?: string };
@@ -390,7 +366,10 @@ export class Record<T extends Model> extends FireModel<T> {
    * Goes out to the database and reloads this record
    */
   public async reload() {
-    const reloaded = await Record.get(this._modelConstructor, this.id);
+    const reloaded = await Record.get(
+      this._modelConstructor,
+      this.compositeKey
+    );
     return reloaded;
   }
 
@@ -1144,8 +1123,6 @@ export class Record<T extends Model> extends FireModel<T> {
    * looks for ":name" property references within the dbOffset and expands them
    */
   private _injectDynamicDbOffsets(dbOffset: string) {
-    console.log(`${this.modelName}:${this.dynamicPathComponents}`);
-
     this.dynamicPathComponents.forEach(prop => {
       const value = this.data[prop as keyof T];
 

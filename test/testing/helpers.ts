@@ -136,7 +136,7 @@ export function lastKey<T = any>(listOf: IDictionary<T>) {
 /**
  * The last record in a Hash/Dictionary of records
  */
-export function lastRecord<T = any>(dictionary: IDictionary<T>) {
+export function lastRecord<T = any>(dictionary: IDictionary<T>): T {
   return dictionary[this.lastKey(dictionary)];
 }
 
