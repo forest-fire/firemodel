@@ -1,7 +1,8 @@
 import { IDictionary } from "common-types";
 import { Record, Model } from "../index";
+import { ICompositeKey } from "../@types/record-types";
 
-export function createCompositeKey(rec: Record<Model>) {
+export function createCompositeKey(rec: Record<Model>): ICompositeKey {
   const model = rec.data;
   return {
     ...{ id: rec.id },

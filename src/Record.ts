@@ -125,12 +125,10 @@ export class Record<T extends Model> extends FireModel<T> {
   }
 
   /**
-   * A hash of values -- including "id" -- which represent
-   * the composite key of a model. If the model being interogated
-   * does NOT have any dynamic segments in dbOffset then this function
-   * returns just the ID as a string
+   * A hash of values -- including at least "id" -- which represent
+   * the composite key of a model.
    */
-  public get compositeKey(): ICompositeKey | string {
+  public get compositeKey(): ICompositeKey {
     return createCompositeKey(this);
   }
 

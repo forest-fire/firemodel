@@ -300,7 +300,7 @@ describe("MOCK uses dynamic dbOffsets", () => {
     db = await DB.connect({ mocking: true });
     FireModel.defaultDb = db;
   });
-  it("Mock() generates mocks on dynamic path", async () => {
+  it.only("Mock() generates mocks on dynamic path", async () => {
     await Mock(DeepPerson)
       .followRelationshipLinks()
       .generate(2, { group: "test" });

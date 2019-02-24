@@ -12,14 +12,14 @@ Let's explore each of these separately.
 In the auto-mocking section we saw how a property named `name` would be automatically populated with a random name. What if you had a property called `fathersName`? Well that would NOT automatically be given a name but rather just a random string. This is a good example of where _named contexts_ can be leveraged to give the `fathersName` property the same treatment as name.
 
 Here's how we'd do that:
-<!-- prettier-ignore-start -->
+
 ```typescript
 export class Person extends Model {
   @property public name: string;
   @property @mock("name") public fathersName: string;
 }
 ```
-<!-- prettier-ignore-end -->
+
 with this simple addition you've told the mocking engine that the property `fathersName` should be treated as a name. Pretty cool right?
 
 So the obvious next question is ... what named properties are there? Glad you're there keeping me honest. So the answer is:

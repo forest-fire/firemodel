@@ -6,9 +6,12 @@ import { Record } from "../Record";
 import { Parallel } from "wait-in-parallel";
 import { RealTimeDB } from "abstracted-firebase";
 import { IMockConfig } from "./types";
+const config: IMockConfig = {
+  relationshipBehavior: "ignore",
+  exceptionPassthrough: false
+};
 
 export default function API<T>(db: RealTimeDB, modelConstructor: new () => T) {
-  const config: IMockConfig<T> = { relationshipBehavior: "ignore" };
   const MockApi = {
     /**
      * generate
@@ -83,6 +86,20 @@ export default function API<T>(db: RealTimeDB, modelConstructor: new () => T) {
       cardinality?: IDictionary<[number, number] | number | true>
     ) {
       config.relationshipBehavior = "link";
+      return MockApi;
+    },
+
+    /**
+     * Allows variation in how dynamic paths are configured on FK relationships
+     */
+    dynamicPathBehavior(options: string) {
+      //
+      return MockApi;
+    },
+
+    /** All overrides for the primary model are passed along to FK's as well */
+    overridesPassThrough() {
+      config.exceptionPassthrough = true;
       return MockApi;
     },
 

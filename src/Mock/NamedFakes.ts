@@ -1,6 +1,8 @@
 const NamedFakes = {
   id: true,
   String: true,
+  number: true,
+  /** alias for "number" */
   Number: true,
   Boolean: true,
   Object: true,

@@ -10,7 +10,7 @@ import { ICompositeKey } from "../@types/record-types";
 /** adds models to mock DB which were pointed to by original model's FKs */
 export default function followRelationships<T extends Model>(
   db: RealTimeDB,
-  config: IMockConfig<T>,
+  config: IMockConfig,
   exceptions: IDictionary = {}
 ) {
   return async (instance: Record<T>): Promise<Record<T>> => {
