@@ -26,7 +26,7 @@ export default class DeepPerson extends Model {
   // prettier-ignore
   @property @mock("random", "The Dude", "Jackass", "Boomer", "Buster") nickname?: string;
   // prettier-ignore
-  @property @mock("word") group: string;
+  @property @mock("random", "CT","MA","CA") group: string;
   // prettier-ignore
   @property @mock("placeImage", 640, 480) photo?: string;
   // prettier-ignore

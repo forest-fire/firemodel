@@ -330,12 +330,14 @@ describe("MOCK uses dynamic dbOffsets", () => {
       .followRelationshipLinks()
       .generate(2, { group: "test" });
     // basics
+    console.log(JSON.stringify(db.mock.db, null, 2));
     expect(db.mock.db.test.testing.deeppeople).is.an("object");
     expect(db.mock.db.hobbies).is.an("object");
     expect(db.mock.db.humanattributes).is.an("object");
     expect(db.mock.db.test.testing.companies).is.an("object");
     // FK checks
     fkStructuralChecksForHasMany(db.mock.db.test.testing.deeppeople);
+
     fkPropertyStructureForHasMany(
       db.mock.db.test.testing.deeppeople,
       ["parents", "children", "practitioners"],

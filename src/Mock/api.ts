@@ -18,7 +18,10 @@ export default function API<T>(db: RealTimeDB, modelConstructor: new () => T) {
      * @param count how many instances of the given Model do you want?
      * @param exceptions do you want to fix a given set of properties to a static value?
      */
-    async generate(count: number, exceptions?: IDictionary): Promise<string[]> {
+    async generate(
+      count: number,
+      exceptions: IDictionary = {}
+    ): Promise<string[]> {
       const props = mockProperties<T>(db, config, exceptions);
       const relns = addRelationships<T>(db, config, exceptions);
       const follow = followRelationships<T>(db, config, exceptions);
@@ -26,12 +29,14 @@ export default function API<T>(db: RealTimeDB, modelConstructor: new () => T) {
       // If dynamic props then warn if it's not constrained
       const record = Record.create(modelConstructor);
       if (record.hasDynamicPath) {
-        // this identifies which dynamic segments are NOT included
-        // in the "exceptions"; this is likely a mistake unless there
-        // is a constraining mock that is deemed adequate (all bespoke
-        // mocks are accepted).
         const notCovered = record.dynamicPathComponents.filter(
-          key => !Object.keys(exceptions ? exceptions : {}).includes(key)
+          key => !Object.keys(exceptions).includes(key)
+        );
+        console.log(
+          "not covered: ",
+          notCovered,
+          "exceptions: ",
+          Object.keys(exceptions)
         );
 
         const validMocks = ["sequence", "random"];
@@ -41,10 +46,14 @@ export default function API<T>(db: RealTimeDB, modelConstructor: new () => T) {
             !mock ||
             (typeof mock !== "function" && !validMocks.includes(mock as string))
           ) {
-            console.error(
+            console.log(
               `The mock for the "${
                 record.modelName
-              }" model has dynamic segments and "${key}" was neither set as a fixed value in the exception parameter of generate() nor was the model constrained by a @mock type which is deemed valid: ${validMocks} or bespoke`
+              }" model has dynamic segments and "${key}" was neither set as a fixed value in the exception parameter [ ${Object.keys(
+                exceptions || {}
+              )} ] of generate() nor was the model constrained by a @mock type ${
+                mock ? `[ ${mock} ]` : ""
+              } which is deemed valid: ${validMocks} or bespoke`
             );
           }
         });
@@ -52,8 +61,7 @@ export default function API<T>(db: RealTimeDB, modelConstructor: new () => T) {
 
       const p = new Parallel<IDictionary & { id: string }>();
       for (let i = 0; i < count; i++) {
-        const rec = Record.create(modelConstructor);
-        p.add(`record-${i}`, follow(await relns(await props(rec))));
+        p.add(`record-${i}`, follow(await relns(await props(record))));
       }
 
       const results = await p.isDone();

@@ -388,6 +388,10 @@ export class Record<T extends Model> extends FireModel<T> {
     return newRecord;
   }
 
+  public isSameModelAs(model: new () => any) {
+    return this._modelConstructor === model;
+  }
+
   /**
    * Allows an empty Record to be initialized to a known state.
    * This is not intended to allow for mass property manipulation other
@@ -904,8 +908,8 @@ export class Record<T extends Model> extends FireModel<T> {
       const propData = refIsCompositeKey
         ? (fkRef as ICompositeKey)
         : canAutoPopulate
-          ? { ...selfSourcedDynamicValues, id: fkRef as string }
-          : false;
+        ? { ...selfSourcedDynamicValues, id: fkRef as string }
+        : false;
       if (!propData) {
         throw createError(
           "record/insufficient-data",
@@ -1089,8 +1093,8 @@ export class Record<T extends Model> extends FireModel<T> {
           const propertyAction = !before
             ? "added"
             : !after
-              ? "removed"
-              : "updated";
+            ? "removed"
+            : "updated";
           const payload: IAuditChange = {
             before,
             after,

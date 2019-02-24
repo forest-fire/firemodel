@@ -1,5 +1,4 @@
 import { RealTimeDB } from "abstracted-firebase";
-import { IMockConfig } from "../Mock";
 import { IDictionary } from "common-types";
 import { Model } from "../Model";
 import { Record } from "../Record";
@@ -8,6 +7,7 @@ import { getModelMeta } from "../ModelMeta";
 import { fbKey } from "../index";
 import { pathJoin } from "../path";
 import { createCompositeKeyString } from "../Record/CompositeKey";
+import { IMockConfig } from "./types";
 
 export default function addRelationships<T extends Model>(
   db: RealTimeDB,

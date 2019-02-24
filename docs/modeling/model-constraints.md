@@ -220,4 +220,6 @@ Mocking model's which have dynamic offsets/prefixes leverages one of two strateg
      await Mock(Product, db).generate(10);
     ```
 
-    The this example there would be an even distribution of products between "CT" and "MA" and the products which have a random distibution between "Groceries" and "Cosmetics"
+    The this example there would be an even distribution of products between "CT" and "MA" and the products which have a random distibution between "Groceries" and "Cosmetics".
+
+Both of these methods are possible but it is considered best practice that you set each model which has a dynamic offset to a mock that constrains to a reasonable set and then you can apply exceptions where needed. This "best practice" becomes essential if you're Mocks are using the "followRelationships()" method.

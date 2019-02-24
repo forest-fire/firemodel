@@ -7,7 +7,8 @@ export default class Company extends Model {
   @property @mock("companyName") name: string;
   // prettier-ignore
   @property @mock("stateAbbr") state: string;
-  @property group: string;
+  // prettier-ignore
+  @property @mock("sequence", "test", "test2") group: string;
   // prettier-ignore
   @hasMany(() => DeepPerson, "employer") employees: fks;
 }
