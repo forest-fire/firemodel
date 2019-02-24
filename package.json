@@ -84,7 +84,7 @@
     "tslint": "^5.13.0",
     "tslint-config-prettier": "^1.15.0",
     "typescript": "^3.3.3",
-    "vuepress": "^1.0.0-alpha.39"
+    "vuepress": "1.0.0-alpha.30"
   },
   "engines": {
     "node": ">=6.0.0"

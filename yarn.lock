@@ -1311,7 +1311,7 @@
     source-map "~0.6.1"
     vue-template-es2015-compiler "^1.9.0"
 
-"@vuepress/core@^1.0.0-alpha.39":
+"@vuepress/core@^1.0.0-alpha.30":
   version "1.0.0-alpha.39"
   resolved "https://registry.yarnpkg.com/@vuepress/core/-/core-1.0.0-alpha.39.tgz#0a1bd7d30e36baab279cbdd97ab5d830311f3e6a"
   integrity sha512-brniVm6ISHfKzLGeS9nCjZ1uu4M4ZDIYd1d9KhzlElSE8URJQVqQWAOQTv2Kk6kRpN+tbLPH+kRooSU5dlPj/Q==
@@ -1463,7 +1463,7 @@
     semver "^5.5.0"
     upath "^1.1.0"
 
-"@vuepress/theme-default@^1.0.0-alpha.39":
+"@vuepress/theme-default@^1.0.0-alpha.30":
   version "1.0.0-alpha.39"
   resolved "https://registry.yarnpkg.com/@vuepress/theme-default/-/theme-default-1.0.0-alpha.39.tgz#5638d04768f5b71c83c28f5a750374e8b3f949f4"
   integrity sha512-Qwyob+Ep4C8kZsiNUC/fNZ5Ayfd4mKftZAr3XvcRa58xc7PkP/dtzQ1alPNp3GTZaAXldwMxqRegmY7s6Vgf/Q==
@@ -2360,11 +2360,6 @@ bytes@3.0.0:
   version "3.0.0"
   resolved "https://registry.yarnpkg.com/bytes/-/bytes-3.0.0.tgz#d32815404d689699f85a4ea4fa8755dd13a96048"
   integrity sha1-0ygVQE1olpn4Wk6k+odV3ROpYEg=
-
-cac@^6.3.9:
-  version "6.4.2"
-  resolved "https://registry.yarnpkg.com/cac/-/cac-6.4.2.tgz#6b2a2ab12619b778b3acc19f97e5298761d9c3de"
-  integrity sha512-HM7kl/Izk6pb2HD7z66LVNU52j0xWpBXg8J2MLnOdRMUo2wsrcxu3yRnubnDe/cT0btDzSOl3FPhze09uaT1Vw==
 
 cacache@^10.0.4:
   version "10.0.4"
@@ -9028,14 +9023,13 @@ vuepress-html-webpack-plugin@^3.2.0:
     toposort "^1.0.0"
     util.promisify "1.0.0"
 
-vuepress@^1.0.0-alpha.39:
-  version "1.0.0-alpha.39"
-  resolved "https://registry.yarnpkg.com/vuepress/-/vuepress-1.0.0-alpha.39.tgz#2d2a1e6baf2d7350d39d8922769db7c994597f43"
-  integrity sha512-8aI1zDCZD9OkJLMg3gSdKf7rP1yY0+CW88gfJ9Ge66XUyY/mNE9+JAqFA7y+6G/lhbfVedBss4SAFCBaL6AWBA==
+vuepress@1.0.0-alpha.30:
+  version "1.0.0-alpha.30"
+  resolved "https://registry.yarnpkg.com/vuepress/-/vuepress-1.0.0-alpha.30.tgz#6f615fb568fef04ea0bb4231e33b2cb87f4c0eee"
+  integrity sha512-f2A5dVYKgEO37Pzr2RCCoP4H1soiwoaIxlE6rGoLMSmqxetg+tfbm4x1a73LOEmsQ+zF0ztdcKpoYD6qBseTKw==
   dependencies:
-    "@vuepress/core" "^1.0.0-alpha.39"
-    "@vuepress/theme-default" "^1.0.0-alpha.39"
-    cac "^6.3.9"
+    "@vuepress/core" "^1.0.0-alpha.30"
+    "@vuepress/theme-default" "^1.0.0-alpha.30"
 
 wait-in-parallel@^1.1.4:
   version "1.1.4"
