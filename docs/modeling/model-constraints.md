@@ -177,25 +177,47 @@ If you're establishing a FK relationship _from_ a model which has dynamic path t
 This is where there is the biggest departure in terms of results but an attempt has been made to keep the API unchanged. Let's start out with the standard syntax using FireModel:
 
 ```typescript
-const products = List.where(Product, "status", "available");
+await List.where(Product, "status", "complete");
 ```
 
 This doesn't work for hopefully obvious reasons (aka, there is no _singular_ list for Product but rather one per state). Instead, when working with a model with dynamic paths you should write:
 
 ```typescript
-const products = List.prefix({ state: "CT" }).where(Product, "status", "available");
+await List.offsets({ state: "CT" }).where(Product, "status", "complete");
 ```
 
-Adding the `prefix()` API now brings you back to the standard API which **List** exposes but sets the scope of it a particular `state`.
+Adding the `offsets()` API now brings you back to the standard API which **List** exposes but sets the scope of it a particular `state`.
 
 > **Note:** in this example it is `state` which completes the _composite key_ but it could be any number of props which are set as dynamic path segments. Refer to your model definition's `pathOffset` to be sure.
 
 #### Mocking Data
 
-The approach to mocking data borrows from `List` to some degree but necessarily deviates a bit too. In the example below we'll see the use of `prefix()` but unlike the `LIST` operator, the dynamic prefixes are more like to be an _array_ of choices so that we can generate data across a known set of states.
+Mocking model's which have dynamic offsets/prefixes leverages one of two strategies:
 
-```typescript
-Mock(Product, db).prefix({ state: ["MA", "CT"] }).generate(10);
-```
+1. **Explicit Override.**
+    The `generate()` method that hangs off of Mock allows you to override mocking for a set of properties and by including the property which has the prefix you are holding it constant and thereby producing a reasonable result (e.g., *reasonable* because a prefix property should always be a bound set of values not a random mock)
 
-> In the above case, the `generate(10)` call will generate 10 Products _per_ state for a total of 20.
+    ```typescript
+     await Mock(Product, db).generate(10, { state: "CT" });
+    ```
+
+    If you wanted to mock several different *states* (in this example) then you could simple have a line item for each.
+2. **Constrained Mocks**.
+    There are two _named mocks_ which you can use to your advantage to maintained a constrained set of mocks. They are `random` and `sequence`; both take a discrete set of values as options and therefore they result in a natural data pattern for mocked data. Here is an example where we use both. The model would be:
+
+     ```typescript
+    @model({ dbOffset: ':state/:category' })
+    export default Product extends Model {
+      // ...
+      @property @mock("sequence", "CT","MA") state;
+      @property @mock("random", "Groceries", "Cosmetics") category;
+    };
+    ```
+
+    And then the Mock would look like:
+
+    ```typescript
+     await Mock(Product, db).generate(10);
+    ```
+
+    The this example there would be an even distribution of products between "CT" and "MA" and the products which have a random distibution between "Groceries" and "Cosmetics"

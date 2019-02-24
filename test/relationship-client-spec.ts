@@ -110,7 +110,6 @@ describe("Relationship > ", () => {
     expect(localEvent.paths).to.have.lengthOf(4);
     // father record is updated too
     const pops = await Record.get(FancyPerson, father.id);
-    console.log(pops.data.children, bob.id, father.id);
 
     expect(pops.data.children[bob.id]).to.equal(true);
     expect(pops.data.lastUpdated).to.equal(bob.data.lastUpdated);

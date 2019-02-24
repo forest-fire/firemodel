@@ -358,7 +358,7 @@ describe("MOCK uses dynamic dbOffsets", () => {
     );
   });
 
-  it.only("Mock() warns if dynamic props are mocking to unbounded mock condition", async () => {
+  it("Mock() warns if dynamic props are mocking to unbounded mock condition", async () => {
     // break the rule with single property
     let restore = captureStderr();
     await Mock(DeepPerson).generate(3);

@@ -1010,7 +1010,7 @@ export class Record<T extends Model> extends FireModel<T> {
       (this.data[property] as any)[fkId]
     ) {
       console.warn(
-        `The fk reference "${fkId}" already exists in "${
+        `Attempt to re-add the fk reference "${fkId}", which already exists in "${
           this.modelName
         }.${property}"!`
       );

@@ -9,5 +9,5 @@ export default class School extends Model {
   @property @mock("stateAbbr") state: string;
   @property group: string;
   // prettier-ignore
-  @hasMany(() => DeepPerson, "employer") students: fks;
+  @hasMany(() => DeepPerson, "school") students: fks;
 }

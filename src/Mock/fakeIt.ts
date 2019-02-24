@@ -117,7 +117,6 @@ export default function fakeIt(
     case "random":
       return helper.faker.random.arrayElement(rest[0]);
     case "sequence":
-      console.log(helper.context);
       const prop = helper.context.property;
       const items = rest[0];
       if (typeof sequence[prop] === "undefined") {

@@ -138,7 +138,6 @@ describe("relationship decorators: ", () => {
   it("@relationships represent all relationships in a model", async () => {
     const person = new Person();
     const props = person.META.relationships.map(r => r.property);
-    console.log(props);
 
     expect(person.META.relationships.length).to.equal(8);
 
