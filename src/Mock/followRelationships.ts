@@ -1,9 +1,10 @@
 import { Model, Record } from "..";
 import { RealTimeDB } from "abstracted-firebase";
-import { IMockConfig, Mock } from "../Mock";
+import { Mock } from "../Mock";
 import { IDictionary } from "common-types";
 import { Parallel } from "wait-in-parallel";
 import { getModelMeta } from "../ModelMeta";
+import { IMockConfig } from "./types";
 
 /** adds models to mock DB which were pointed to by original model's FKs */
 export default function followRelationships<T extends Model>(

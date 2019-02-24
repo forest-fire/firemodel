@@ -50,7 +50,7 @@ const NamedFakes = {
   slug: true,
   url: true,
   random: true,
-  shuffle: true,
+  sequence: true,
   placeImage: true,
   placeHolder: true
 };

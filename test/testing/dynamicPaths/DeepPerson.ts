@@ -24,11 +24,11 @@ export default class DeepPerson extends Model {
   @property name: IDeepName;
   @property age: number;
   // prettier-ignore
-  @property @mock("random", "The Dude", "Jackass", "Boomer", "Buster") nickname: string;
+  @property @mock("random", "The Dude", "Jackass", "Boomer", "Buster") nickname?: string;
   // prettier-ignore
   @property @mock("word") group: string;
   // prettier-ignore
-  @property @mock("placeImage", 640, 480) photo: string;
+  @property @mock("placeImage", 640, 480) photo?: string;
   // prettier-ignore
   @property @mock("phoneNumber") phoneNumber: string;
   // prettier-ignore

@@ -1,6 +1,9 @@
 import { MockHelper } from "firemock";
 import NamedFakes from "./NamedFakes";
 import { fbKey } from "../index";
+import { IDictionary } from "common-types";
+
+const sequence: IDictionary<number> = {};
 
 export default function fakeIt(
   helper: MockHelper,
@@ -113,8 +116,21 @@ export default function fakeIt(
       return helper.faker.internet.url();
     case "random":
       return helper.faker.random.arrayElement(rest[0]);
-    case "shuffle":
-      return helper.faker.helpers.shuffle(rest[0]);
+    case "sequence":
+      console.log(helper.context);
+      const prop = helper.context.property;
+      const items = rest[0];
+      if (typeof sequence[prop] === "undefined") {
+        sequence[prop] = 0;
+      } else {
+        if (sequence[prop] >= items.length - 1) {
+          sequence[prop] = 0;
+        } else {
+          sequence[prop]++;
+        }
+      }
+
+      return items[sequence[prop]];
     case "placeImage":
       // TODO: determine why data structure is an array of arrays
       const [width, height, imgType] = rest[0];

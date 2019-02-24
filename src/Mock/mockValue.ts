@@ -20,7 +20,12 @@ export default function mockValue<T extends Model>(
     e.name = "FireModel::NotReady";
     throw e;
   }
+
+  // TODO: it appears FireMock is not sending back the proper context
+  // so we are overwritting as least some for now
   const helper = db.mock.getMockHelper();
+  helper.context = propMeta;
+
   const { type, mockType, mockParameters } = propMeta;
 
   if (mockType) {

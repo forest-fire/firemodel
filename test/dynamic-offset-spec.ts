@@ -4,8 +4,16 @@ import * as chai from "chai";
 import { Record, FireModel, Mock, List } from "../src";
 import DeepPerson, { IDeepName } from "./testing/dynamicPaths/DeepPerson";
 import { DeeperPerson } from "./testing/dynamicPaths/DeeperPerson";
+import { MockedPerson } from "./testing/dynamicPaths/MockedPerson";
+import { MockedPerson2 } from "./testing/dynamicPaths/MockedPerson2";
 import Hobby from "./testing/dynamicPaths/Hobby";
-import { firstKey, firstRecord, lastRecord } from "./testing/helpers";
+import {
+  firstKey,
+  firstRecord,
+  lastRecord,
+  captureStderr,
+  captureStdout
+} from "./testing/helpers";
 import Company from "./testing/dynamicPaths/Company";
 import { HumanAttribute } from "./testing/dynamicPaths/HumanAttribute";
 import { IDictionary } from "common-types";
@@ -286,7 +294,7 @@ describe("LIST uses static offsets() with static API methods", () => {
   });
 });
 
-describe("MOCK uses static offsets()", () => {
+describe("MOCK uses dynamic dbOffsets", () => {
   let db: DB;
   beforeEach(async () => {
     db = await DB.connect({ mocking: true });
@@ -350,9 +358,33 @@ describe("MOCK uses static offsets()", () => {
     );
   });
 
-  it("Mock() warns if dynamic props are mocking to unbounded mock condition", async () => {
+  it.only("Mock() warns if dynamic props are mocking to unbounded mock condition", async () => {
+    // break the rule with single property
+    let restore = captureStderr();
     await Mock(DeepPerson).generate(3);
-    console.log(JSON.stringify(db.mock.db, null, 2));
+    let output = restore();
+    expect(output).to.have.lengthOf(1);
+    expect(output[0]).to.include("The mock for the");
+
+    // break the rule twice
+    restore = captureStderr();
+    await Mock(DeeperPerson).generate(3);
+    output = restore();
+    expect(output).to.have.lengthOf(2);
+    expect(output[0]).to.include("The mock for the");
+
+    // pass the rule via a valid named mock
+    restore = captureStderr();
+    await Mock(MockedPerson).generate(3);
+    output = restore();
+    expect(output).to.have.lengthOf(0);
+
+    // pass an invalid named mock
+    restore = captureStderr();
+    await Mock(MockedPerson2).generate(3);
+    output = restore();
+    expect(output).to.have.lengthOf(1);
+    expect(output[0]).to.contain("@mock type which is deemed valid");
   });
 });
 
