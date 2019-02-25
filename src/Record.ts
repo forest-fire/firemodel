@@ -691,7 +691,7 @@ export class Record<T extends Model> extends FireModel<T> {
   public async clearRelationship(property: Extract<keyof T, string>) {
     this._errorIfNothasOneReln(property, "clearRelationship");
     if (!this.get(property)) {
-      console.warn(
+      console.log(
         `Call to clearRelationship(${property}) on model ${
           this.modelName
         } but there was no relationship set. This may be ok.`
@@ -861,7 +861,7 @@ export class Record<T extends Model> extends FireModel<T> {
     const fkModelConstructor = meta.relationship(property).fkConstructor();
     const inverseProperty = meta.relationship(property).inverseProperty;
     const fkRecord = Record.create(fkModelConstructor);
-    // TODO: determine if fk string which has composite key embedded is expected/desired
+
     /**
      * It was expected that fkRef would be ICompositeKey or a string representing
      * just an ID but it appears it may also be a composite key reference string
@@ -979,12 +979,13 @@ export class Record<T extends Model> extends FireModel<T> {
         throw createError(
           "record/inverse-property-missing",
           `When trying to map the model "${this.modelName}" to "${
-            fkMeta.modelName
+            fkRecord.modelName
           }" there was a problem with inverse properties.`
         );
       }
       if (!hasRecipricalInverse) {
-        console.warn(
+        // TODO: back to warn?
+        console.log(
           `The FK "${property}" on ${
             this.modelName
           } has an inverse property set of "${inverseProperty}" but on the reference model [ ${
@@ -1022,7 +1023,8 @@ export class Record<T extends Model> extends FireModel<T> {
       typeof this.data[property] === "object" &&
       (this.data[property] as any)[fkId]
     ) {
-      console.warn(
+      // TODO: back to warn?
+      console.log(
         `Attempt to re-add the fk reference "${fkId}", which already exists in "${
           this.modelName
         }.${property}"!`

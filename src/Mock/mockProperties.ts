@@ -25,9 +25,7 @@ export default function mockProperties<T extends Model>(
 
     // write to mock db and retain a reference to same model
     record = await record.addAnother(finalized);
-    if (record.modelName === "hobby") {
-      console.log(record.id);
-    }
+
     return record;
   };
 }

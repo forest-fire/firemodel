@@ -30,7 +30,6 @@ export default function API<T>(db: RealTimeDB, modelConstructor: new () => T) {
 
       // If dynamic props then warn if it's not constrained
       const record = Record.create(modelConstructor);
-      console.log(record.modelName, config);
 
       if (record.hasDynamicPath) {
         const notCovered = record.dynamicPathComponents.filter(
@@ -44,39 +43,27 @@ export default function API<T>(db: RealTimeDB, modelConstructor: new () => T) {
             !mock ||
             (typeof mock !== "function" && !validMocks.includes(mock as string))
           ) {
-            console.log(
+            console.error(
               `The mock for the "${
                 record.modelName
               }" model has dynamic segments and "${key}" was neither set as a fixed value in the exception parameter [ ${Object.keys(
                 exceptions || {}
               )} ] of generate() nor was the model constrained by a @mock type ${
                 mock ? `[ ${mock} ]` : ""
-              } which is deemed valid: ${validMocks} or bespoke`
+              } which is deemed valid. Valid named mocks are ${JSON.stringify(
+                validMocks
+              )}; all bespoke mocks are accepted as valid.`
             );
           }
         });
       }
 
-      const p = new Parallel<IMockResponse>("Adding Mock Record(s)");
-      for (let i = 0; i < count; i++) {
-        // ADD MOCK RECORD
-        p.add(`record-${record.modelName}-${i}`, relns(await props(record)));
+      let mocks: IMockResponse[] = [];
+      for (const i of Array(count)) {
+        mocks = mocks.concat(await relns(await props(record)));
       }
 
-      const results = await p.isDone();
-      console.log(results);
-
-      return Object.keys(results).reduce((prev, curr) => {
-        const response: IMockResponse = {
-          modelName: results[curr].modelName,
-          pluralName: results[curr].pluralName,
-          id: results[curr].id,
-          compositeKey: results[curr].compositeKey,
-          dbPath: results[curr].dbPath,
-          localPath: results[curr].localPath
-        };
-        return prev.concat(response);
-      }, []);
+      return mocks;
     },
     /**
      * createRelationshipLinks

@@ -1,8 +1,8 @@
 import { model, Model, property, hasMany, fks, mock } from "../../../src";
 import DeepPerson from "./DeepPerson";
 
-@model({ dbOffset: "geo/:vendor" })
-export default class Location extends Model {
+@model({ dbOffset: "vendor/:vendor" })
+export default class Car extends Model {
   // prettier-ignore
   @property @mock("companyName") name: string;
   // prettier-ignore

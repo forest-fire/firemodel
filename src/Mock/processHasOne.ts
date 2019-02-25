@@ -4,6 +4,7 @@ import { IFmModelRelationshipMeta } from "../decorators";
 import { IMockConfig, IMockResponse } from "./types";
 import { Mock } from "../Mock";
 import { Parallel } from "wait-in-parallel";
+import cleanPredecessor from "./cleanPredecessor";
 
 export async function processHasOne<T>(
   source: Record<T>,
@@ -13,33 +14,18 @@ export async function processHasOne<T>(
 ): Promise<IMockResponse> {
   const fkMock = Mock(rel.fkConstructor(), db);
   const fkMockMeta = (await fkMock.generate(1)).pop();
-  console.log(fkMockMeta);
-
-  const p = new Parallel(
-    `Adding hasOne for ${rel.property} on ${source.modelName} to ${
-      fkMockMeta.modelName
-    }`
-  );
-
   const prop: Extract<keyof T, string> = rel.property as any;
-  p.add(
-    `hasOne-${fkMockMeta.id}-${source.modelName}-${prop}`,
-    source.setRelationship(prop, fkMockMeta.compositeKey)
-  );
 
-  // if (config.relationshipBehavior === "link") {
-  //   p.add(
-  //     `hasOne-remove-fk-${fkMockMeta.id}-${fkMockMeta.modelName}`,
-  //     db.remove(fkMockMeta.dbPath.replace(fkMockMeta.id, ""))
-  //   );
+  source.setRelationship(prop, fkMockMeta.compositeKey);
 
-  //   const predecessors = fkMockMeta.dbPath
-  //     .replace(fkMockMeta.id, "")
-  //     .split("/")
-  //     .filter(i => i);
-  //   p.add("cleaning-predecessors", cleanPredecessor(db, predecessors));
-  // }
+  if (config.relationshipBehavior === "link") {
+    const predecessors = fkMockMeta.dbPath
+      .replace(fkMockMeta.id, "")
+      .split("/")
+      .filter(i => i);
+    // console.log(predecessors);
+    await db.remove(fkMockMeta.dbPath);
+  }
 
-  const result = await p.isDone();
   return fkMockMeta;
 }

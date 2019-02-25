@@ -161,7 +161,7 @@ export function model(options: Partial<IFmModelMeta>): ClassDecorator {
           options.audit === "server"
         )
       ) {
-        console.warn(
+        console.log(
           `You set the audit property to "${
             options.audit
           }" which is invalid. Valid properties are true, false, and "server". The audit property will be set to false for now.`
