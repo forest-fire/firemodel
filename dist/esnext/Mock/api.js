@@ -1,13 +1,11 @@
 import mockProperties from "./mockProperties";
 import addRelationships from "./addRelationships";
-import followRelationships from "./followRelationships";
 import { Record } from "../Record";
-import { Parallel } from "wait-in-parallel";
-const config = {
-    relationshipBehavior: "ignore",
-    exceptionPassthrough: false
-};
 export default function API(db, modelConstructor) {
+    const config = {
+        relationshipBehavior: "ignore",
+        exceptionPassthrough: false
+    };
     const MockApi = {
         /**
          * generate
@@ -20,7 +18,6 @@ export default function API(db, modelConstructor) {
         async generate(count, exceptions = {}) {
             const props = mockProperties(db, config, exceptions);
             const relns = addRelationships(db, config, exceptions);
-            const follow = followRelationships(db, config, exceptions);
             // If dynamic props then warn if it's not constrained
             const record = Record.create(modelConstructor);
             if (record.hasDynamicPath) {
@@ -30,27 +27,15 @@ export default function API(db, modelConstructor) {
                     const mock = record.META.property(key).mockType;
                     if (!mock ||
                         (typeof mock !== "function" && !validMocks.includes(mock))) {
-                        console.log(`The mock for the "${record.modelName}" model has dynamic segments and "${key}" was neither set as a fixed value in the exception parameter [ ${Object.keys(exceptions || {})} ] of generate() nor was the model constrained by a @mock type ${mock ? `[ ${mock} ]` : ""} which is deemed valid: ${validMocks} or bespoke`);
+                        console.error(`The mock for the "${record.modelName}" model has dynamic segments and "${key}" was neither set as a fixed value in the exception parameter [ ${Object.keys(exceptions || {})} ] of generate() nor was the model constrained by a @mock type ${mock ? `[ ${mock} ]` : ""} which is deemed valid. Valid named mocks are ${JSON.stringify(validMocks)}; all bespoke mocks are accepted as valid.`);
                     }
                 });
             }
-            const p = new Parallel("Adding Mock Record(s)");
-            for (let i = 0; i < count; i++) {
-                // ADD MOCK RECORD
-                p.add(`record-${i}`, relns(await props(record)));
+            let mocks = [];
+            for (const i of Array(count)) {
+                mocks = mocks.concat(await relns(await props(record)));
             }
-            const results = await p.isDone();
-            return Object.keys(results).reduce((prev, curr) => {
-                const response = {
-                    modelName: results[curr].modelName,
-                    pluralName: results[curr].pluralName,
-                    id: results[curr].id,
-                    compositeKey: results[curr].compositeKey,
-                    dbPath: results[curr].dbPath,
-                    localPath: results[curr].localPath
-                };
-                return prev.concat(response);
-            }, []);
+            return mocks;
         },
         /**
          * createRelationshipLinks
