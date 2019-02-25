@@ -485,7 +485,7 @@ class Record extends FireModel_1.FireModel {
     async clearRelationship(property) {
         this._errorIfNothasOneReln(property, "clearRelationship");
         if (!this.get(property)) {
-            console.warn(`Call to clearRelationship(${property}) on model ${this.modelName} but there was no relationship set. This may be ok.`);
+            console.log(`Call to clearRelationship(${property}) on model ${this.modelName} but there was no relationship set. This may be ok.`);
             return;
         }
         const mps = this.db.multiPathSet("/");
@@ -585,7 +585,6 @@ class Record extends FireModel_1.FireModel {
         const fkModelConstructor = meta.relationship(property).fkConstructor();
         const inverseProperty = meta.relationship(property).inverseProperty;
         const fkRecord = Record.create(fkModelConstructor);
-        // TODO: determine if fk string which has composite key embedded is expected/desired
         /**
          * It was expected that fkRef would be ICompositeKey or a string representing
          * just an ID but it appears it may also be a composite key reference string
@@ -656,9 +655,17 @@ class Record extends FireModel_1.FireModel {
         // INVERSE RELATIONSHIP
         if (inverseProperty) {
             const fkMeta = ModelMeta_1.getModelMeta(fkRecord);
-            const hasRecipricalInverse = fkMeta.relationship(inverseProperty).inverseProperty === property;
+            let hasRecipricalInverse;
+            try {
+                hasRecipricalInverse =
+                    fkMeta.relationship(inverseProperty).inverseProperty === property;
+            }
+            catch (e) {
+                throw common_types_1.createError("record/inverse-property-missing", `When trying to map the model "${this.modelName}" to "${fkRecord.modelName}" there was a problem with inverse properties.`);
+            }
             if (!hasRecipricalInverse) {
-                console.warn(`The FK "${property}" on ${this.modelName} has an inverse property set of "${inverseProperty}" but on the reference model [ ${fkRecord.modelName} ] there is NOT a reciprocal inverse set! [ ${fkMeta.relationship(inverseProperty).inverseProperty
+                // TODO: back to warn?
+                console.log(`The FK "${property}" on ${this.modelName} has an inverse property set of "${inverseProperty}" but on the reference model [ ${fkRecord.modelName} ] there is NOT a reciprocal inverse set! [ ${fkMeta.relationship(inverseProperty).inverseProperty
                     ? fkMeta.relationship(inverseProperty).inverseProperty +
                         " was set instead"
                     : "no inverse set"} ]`);
@@ -683,7 +690,8 @@ class Record extends FireModel_1.FireModel {
         }
         if (typeof this.data[property] === "object" &&
             this.data[property][fkId]) {
-            console.warn(`Attempt to re-add the fk reference "${fkId}", which already exists in "${this.modelName}.${property}"!`);
+            // TODO: back to warn?
+            console.log(`Attempt to re-add the fk reference "${fkId}", which already exists in "${this.modelName}.${property}"!`);
             return;
         }
     }
