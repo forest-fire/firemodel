@@ -3,85 +3,51 @@ import { IDictionary } from "common-types";
 import { Model } from "../Model";
 import { Record } from "../Record";
 import { Parallel } from "wait-in-parallel";
-import { getModelMeta } from "../ModelMeta";
-import { fbKey } from "../index";
-import { pathJoin } from "../path";
-import { createCompositeKeyString } from "../Record/CompositeKey";
-import { IMockConfig } from "./types";
+import { IMockConfig, IMockResponse } from "./types";
+import { processHasMany } from "./processHasMany";
+import { processHasOne } from "./processHasOne";
 
 export default function addRelationships<T extends Model>(
   db: RealTimeDB,
-  config: IMockConfig<T>,
-  exceptions: IDictionary
+  config: IMockConfig,
+  exceptions: IDictionary = {}
 ) {
-  return async (instance: Record<T>): Promise<Record<T>> => {
-    // TODO: I believe all references to "getModelMeta" can be removed now
-    // and replaced with just direct access to instance.META
-    const meta = getModelMeta(instance);
-    const relns = meta.relationships;
-    const p = new Parallel();
-    if (!relns || config.relationshipBehavior === "ignore") {
-      return instance;
-    }
-    const follow = config.relationshipBehavior === "follow";
-    relns.map(rel => {
-      if (
-        !config.cardinality ||
-        Object.keys(config.cardinality).includes(rel.property)
-      ) {
-        if (rel.relType === "hasOne") {
-          const id = fbKey();
-          const prop: Extract<keyof T, string> = rel.property as any;
-          p.add(
-            `hasOne-${id}`,
-            follow
-              ? instance.setRelationship(prop, id)
-              : db.set(
-                  pathJoin(instance.dbPath, prop),
-                  createCompositeKeyString(instance)
-                )
-          );
-        } else {
-          const cardinality = config.cardinality
-            ? typeof config.cardinality[rel.property] === "number"
-              ? config.cardinality[rel.property]
-              : NumberBetween(config.cardinality[rel.property] as any)
-            : 2;
-          for (let i = 0; i < cardinality; i++) {
-            const id = fbKey();
-            const prop: Extract<keyof T, string> = rel.property as any;
+  return async (record: Record<T>): Promise<IMockResponse> => {
+    const relns = record.META.relationships;
+    // const promises: Array<Promise<IMockResponse>> = [];
 
+    if (config.relationshipBehavior !== "ignore") {
+      const p = new Parallel<IMockResponse>("Adding Relationships to Mock");
+      for (const rel of relns) {
+        if (
+          !config.cardinality ||
+          Object.keys(config.cardinality).includes(rel.property)
+        ) {
+          if (rel.relType === "hasOne") {
             p.add(
-              `hasMany-${id}`,
-              follow
-                ? instance.addToRelationship(prop, id)
-                : db.set(
-                    pathJoin(
-                      instance.dbPath,
-                      prop,
-                      createCompositeKeyString(instance)
-                    ),
-                    true
-                  )
+              `hasOne-for-${record.modelName}`,
+              processHasOne<T>(record, rel, config, db)
             );
+            // promises.push(processHasOne<T>(record, rel, config, db));
+          } else {
+            // p.add(
+            //   `hasMany-for-${record.modelName}`,
+            //   processHasMany<T>(record, rel, config, db)
+            // );
           }
         }
       }
-    });
-    try {
-      await p.isDone();
-    } catch (e) {
-      console.log(JSON.stringify(e));
-      throw e;
+      const results = await p.isDoneAsArray();
+      // const results = await Promise.all(promises);
+      console.log(results);
     }
-    instance = await instance.reload();
-
-    return instance;
+    return {
+      id: record.id,
+      compositeKey: record.compositeKey,
+      modelName: record.modelName,
+      pluralName: record.pluralName,
+      dbPath: record.dbPath,
+      localPath: record.localPath
+    };
   };
-}
-
-function NumberBetween(startEnd: [number, number]) {
-  return (
-    Math.floor(Math.random() * (startEnd[1] - startEnd[0] + 1)) + startEnd[0]
-  );
 }

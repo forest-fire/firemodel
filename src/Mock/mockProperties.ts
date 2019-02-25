@@ -8,11 +8,11 @@ import { IMockConfig } from "./types";
 /** adds mock values for all the properties on a given model */
 export default function mockProperties<T extends Model>(
   db: RealTimeDB,
-  config: IMockConfig<T>,
+  config: IMockConfig = { relationshipBehavior: "ignore" },
   exceptions: IDictionary
 ) {
-  return async (instance: Record<T>): Promise<Record<T>> => {
-    const meta = getModelMeta(instance);
+  return async (record: Record<T>): Promise<Record<T>> => {
+    const meta = getModelMeta(record);
     const props = meta.properties;
 
     const recProps: Partial<T> = {};
@@ -20,11 +20,14 @@ export default function mockProperties<T extends Model>(
       const p = prop.property as keyof T;
       recProps[p] = mockValue<T>(db, prop);
     });
+
     const finalized: T = { ...(recProps as any), ...exceptions };
 
-    // write to mock db
-    instance = await instance.addAnother(finalized);
-
-    return instance;
+    // write to mock db and retain a reference to same model
+    record = await record.addAnother(finalized);
+    if (record.modelName === "hobby") {
+      console.log(record.id);
+    }
+    return record;
   };
 }

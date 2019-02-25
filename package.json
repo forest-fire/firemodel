@@ -43,7 +43,7 @@
     "reflect-metadata": "^0.1.13",
     "serialized-query": "^0.4.5",
     "typed-conversions": "^0.8.13",
-    "wait-in-parallel": "^1.1.4"
+    "wait-in-parallel": "^1.2.0"
   },
   "peerDependencies": {
     "firemock": "^0.18.3"

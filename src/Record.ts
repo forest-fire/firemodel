@@ -329,7 +329,7 @@ export class Record<T extends Model> extends FireModel<T> {
 
   public static async remove<T extends Model>(
     model: new () => T,
-    id: string,
+    id: IFkReference,
     /** if there is a known current state of this model you can avoid a DB call to get it */
     currentState?: Record<T>
   ) {
@@ -779,6 +779,7 @@ export class Record<T extends Model> extends FireModel<T> {
       modelName: this.modelName,
       pluralName: this.pluralName,
       key: this.id,
+      compositeKey: this.compositeKey,
       localPath: this.localPath,
       data: this.data.toString()
     };
@@ -970,8 +971,18 @@ export class Record<T extends Model> extends FireModel<T> {
     // INVERSE RELATIONSHIP
     if (inverseProperty) {
       const fkMeta = getModelMeta(fkRecord);
-      const hasRecipricalInverse =
-        fkMeta.relationship(inverseProperty).inverseProperty === property;
+      let hasRecipricalInverse;
+      try {
+        hasRecipricalInverse =
+          fkMeta.relationship(inverseProperty).inverseProperty === property;
+      } catch (e) {
+        throw createError(
+          "record/inverse-property-missing",
+          `When trying to map the model "${this.modelName}" to "${
+            fkMeta.modelName
+          }" there was a problem with inverse properties.`
+        );
+      }
       if (!hasRecipricalInverse) {
         console.warn(
           `The FK "${property}" on ${
@@ -1129,7 +1140,7 @@ export class Record<T extends Model> extends FireModel<T> {
       const value = this.data[prop as keyof T];
 
       if (value ? false : true) {
-        console.log(value, this.id);
+        console.log("ID", this.id, value);
         // TODO: cleanup
         console.log(JSON.stringify(this.db.mock.db, null, 2));
 

@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const Record_1 = require("./Record");
 const serialized_query_1 = require("serialized-query");
+const common_types_1 = require("common-types");
 const FireModel_1 = require("./FireModel");
 const path_1 = require("./path");
 const ModelMeta_1 = require("./ModelMeta");
@@ -79,6 +80,14 @@ class List extends FireModel_1.FireModel {
     }
     static set dispatch(fn) {
         FireModel_1.FireModel.dispatch = fn;
+    }
+    /**
+     * Allows you to build a LIST on a model which has dynamic dbOffsets
+     * by statically initializing the dynamic segments up front
+     */
+    static offsets(offsets) {
+        List._offsets = offsets;
+        return List;
     }
     static create(model, options = {}) {
         return new List(model);
@@ -202,7 +211,10 @@ class List extends FireModel_1.FireModel {
         return this._data.length;
     }
     get dbPath() {
-        return [this.META.dbOffset, this.pluralName].join("/");
+        return [
+            this._injectDynamicDbOffsets(this.META.dbOffset),
+            this.pluralName
+        ].join("/");
     }
     get localPath() {
         const meta = ModelMeta_1.getModelMeta(this._model);
@@ -362,6 +374,19 @@ class List extends FireModel_1.FireModel {
         }
         this._data = await this.db.getList(pathOrQuery);
         return this;
+    }
+    _injectDynamicDbOffsets(dbOffset) {
+        if (dbOffset.indexOf(":") === -1) {
+            return dbOffset;
+        }
+        Object.keys(List._offsets).forEach(prop => {
+            const value = List._offsets[prop];
+            if (!["string", "number"].includes(typeof value)) {
+                throw common_types_1.createError("record/not-allowed", `The dynamic dbOffsest is using the property "${prop}" on ${this.modelName} as a part of the route path but that property must be either a string or a number and instead was a ${typeof prop}`);
+            }
+            dbOffset = dbOffset.replace(`:${prop}`, String(List._offsets[prop]));
+        });
+        return dbOffset;
     }
 }
 exports.List = List;

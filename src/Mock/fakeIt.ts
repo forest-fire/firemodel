@@ -17,13 +17,10 @@ export default function fakeIt(
       return helper.faker.lorem.words(5);
     case "number":
     case "Number":
-      const [min, max] = rest[0];
-      return min && max
-        ? helper.faker.random.number({ min, max })
-        : Boolean(min)
-        ? helper.faker.random.number({ min })
-        : max
-        ? helper.faker.random.number({ max })
+      const options = Array.isArray(rest[0]) ? rest[0][0] : undefined;
+
+      return options && typeof options === "object"
+        ? helper.faker.random.number(options)
         : helper.faker.random.number({ min: 1, max: 100 });
     case "Boolean":
       return Math.random() > 0.49 ? true : false;

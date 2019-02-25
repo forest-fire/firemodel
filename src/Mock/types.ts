@@ -1,4 +1,5 @@
 import { IDictionary } from "common-types";
+import { ICompositeKey } from "../@types/record-types";
 
 export type ICardinalityConfig<T> = {
   [key in keyof T]: [number, number] | number | true
@@ -18,4 +19,13 @@ export interface IMockConfig {
   /** allow the exceptions stated in the Mock to be pass through to all FK's */
   exceptionPassthrough?: boolean;
   cardinality?: IDictionary<number | [number, number] | true>;
+}
+
+export interface IMockResponse {
+  modelName: string;
+  pluralName: string;
+  id: string;
+  compositeKey: ICompositeKey;
+  dbPath: string;
+  localPath: string;
 }

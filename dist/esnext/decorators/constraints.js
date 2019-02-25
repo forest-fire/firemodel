@@ -1,6 +1,6 @@
 import "reflect-metadata";
-import { propertiesByModel } from "./decorator";
 import { propertyReflector } from "./reflector";
+import { propertiesByModel } from "./decorator";
 export function constrainedProperty(options = {}) {
     return propertyReflector(Object.assign({}, options, { isRelationship: false, isProperty: true }), propertiesByModel);
 }
@@ -14,8 +14,8 @@ export function desc(value) {
 export function min(value) {
     return propertyReflector({ min: value }, propertiesByModel);
 }
-export function mock(value) {
-    return propertyReflector({ mockType: value }, propertiesByModel);
+export function mock(value, ...rest) {
+    return propertyReflector({ mockType: value, mockParameters: rest }, propertiesByModel);
 }
 export function max(value) {
     return propertyReflector({ max: value }, propertiesByModel);

@@ -5,13 +5,13 @@ import followRelationships from "./followRelationships";
 import { Record } from "../Record";
 import { Parallel } from "wait-in-parallel";
 import { RealTimeDB } from "abstracted-firebase";
-import { IMockConfig } from "./types";
-const config: IMockConfig = {
-  relationshipBehavior: "ignore",
-  exceptionPassthrough: false
-};
+import { IMockConfig, IMockResponse } from "./types";
 
 export default function API<T>(db: RealTimeDB, modelConstructor: new () => T) {
+  const config: IMockConfig = {
+    relationshipBehavior: "ignore",
+    exceptionPassthrough: false
+  };
   const MockApi = {
     /**
      * generate
@@ -24,22 +24,17 @@ export default function API<T>(db: RealTimeDB, modelConstructor: new () => T) {
     async generate(
       count: number,
       exceptions: IDictionary = {}
-    ): Promise<string[]> {
+    ): Promise<IMockResponse[]> {
       const props = mockProperties<T>(db, config, exceptions);
       const relns = addRelationships<T>(db, config, exceptions);
-      const follow = followRelationships<T>(db, config, exceptions);
 
       // If dynamic props then warn if it's not constrained
       const record = Record.create(modelConstructor);
+      console.log(record.modelName, config);
+
       if (record.hasDynamicPath) {
         const notCovered = record.dynamicPathComponents.filter(
           key => !Object.keys(exceptions).includes(key)
-        );
-        console.log(
-          "not covered: ",
-          notCovered,
-          "exceptions: ",
-          Object.keys(exceptions)
         );
 
         const validMocks = ["sequence", "random"];
@@ -62,18 +57,26 @@ export default function API<T>(db: RealTimeDB, modelConstructor: new () => T) {
         });
       }
 
-      const p = new Parallel<IDictionary & { id: string }>();
+      const p = new Parallel<IMockResponse>("Adding Mock Record(s)");
       for (let i = 0; i < count; i++) {
-        p.add(`record-${i}`, follow(await relns(await props(record))));
+        // ADD MOCK RECORD
+        p.add(`record-${record.modelName}-${i}`, relns(await props(record)));
       }
 
       const results = await p.isDone();
-      return Object.keys(results).reduce(
-        (prev, curr) => {
-          return prev.concat(results[curr].id);
-        },
-        [] as string[]
-      );
+      console.log(results);
+
+      return Object.keys(results).reduce((prev, curr) => {
+        const response: IMockResponse = {
+          modelName: results[curr].modelName,
+          pluralName: results[curr].pluralName,
+          id: results[curr].id,
+          compositeKey: results[curr].compositeKey,
+          dbPath: results[curr].dbPath,
+          localPath: results[curr].localPath
+        };
+        return prev.concat(response);
+      }, []);
     },
     /**
      * createRelationshipLinks

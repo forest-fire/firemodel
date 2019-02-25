@@ -10,7 +10,7 @@ export default class Location extends Model {
   // prettier-ignore
   @property @mock("word") model: string;
   // prettier-ignore
-  @property @mock("number", 1970, 2018) year: string;
+  @property @mock("number", {min: 1970, max: 2018}) year: string;
   // prettier-ignore
   @hasMany(() => DeepPerson, "cars") owners: fks;
 }

@@ -12,5 +12,5 @@ export default class Location extends Model {
   // prettier-ignore
   @property @mock("latitude") latitude: number;
   // prettier-ignore
-  @hasMany(() => DeepPerson, "school") residents: fks;
+  @hasMany(() => DeepPerson, "home") residents: fks;
 }

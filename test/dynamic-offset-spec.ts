@@ -136,7 +136,7 @@ describe("Dynamic offsets work with relationships", () => {
       group: "test"
     })).pop();
 
-    await person.addToRelationship("parents", [motherId, fatherId]);
+    await person.addToRelationship("parents", [motherId.id, fatherId.id]);
   });
 
   it("addToRelationshipo works for M:M (FK has shared dynamic segment; using explicit composite key)", async () => {
@@ -149,11 +149,11 @@ describe("Dynamic offsets work with relationships", () => {
       group: "test"
     })).pop();
     let mother = await Record.get(DeepPerson, {
-      id: motherId,
+      id: motherId.id,
       group: "test"
     });
     let father = await Record.get(DeepPerson, {
-      id: fatherId,
+      id: fatherId.id,
       group: "test"
     });
 
@@ -186,11 +186,11 @@ describe("Dynamic offsets work with relationships", () => {
       group: "test"
     })).pop();
     let mother = await Record.get(DeepPerson, {
-      id: motherId,
+      id: motherId.id,
       group: "test2"
     });
     let father = await Record.get(DeepPerson, {
-      id: fatherId,
+      id: fatherId.id,
       group: "test2"
     });
 
@@ -247,7 +247,8 @@ describe("Dynamic offsets work with relationships", () => {
 
   it("setRelationship works for 1:M (where FK is not on a dynamic path)", async () => {
     let attribute = await Record.add(HumanAttribute, {
-      attribute: "smart"
+      attribute: "smart",
+      category: "abc"
     });
     person.addToRelationship("attributes", attribute.compositeKeyRef);
 
@@ -300,7 +301,34 @@ describe("MOCK uses dynamic dbOffsets", () => {
     db = await DB.connect({ mocking: true });
     FireModel.defaultDb = db;
   });
-  it.only("Mock() generates mocks on dynamic path", async () => {
+
+  it("Mock() by default does not build out relationships", async () => {
+    const results = await Mock(DeepPerson).generate(2, { group: "test" });
+    console.log(JSON.stringify(db.mock.db, null, 2));
+    const first = firstRecord(db.mock.db.test.testing.deeppeople);
+    const last = lastRecord(db.mock.db.test.testing.deeppeople);
+    expect(first.hobbies).is.an("object");
+    expect(Object.keys(first.hobbies)).to.have.lengthOf(0);
+    expect(last.hobbies).is.an("object");
+    expect(Object.keys(last.hobbies)).to.have.lengthOf(0);
+  });
+
+  it.only("Mock() with 'createRelationshipLinks' adds fks but records it points does not exist", async () => {
+    const results = await Mock(DeepPerson)
+      .createRelationshipLinks()
+      .generate(2, { group: "test" });
+    console.log("RESULTS", results);
+
+    console.log(JSON.stringify(db.mock.db, null, 2));
+    const first = firstRecord(db.mock.db.test.testing.deeppeople);
+    const last = lastRecord(db.mock.db.test.testing.deeppeople);
+    expect(first.hobbies).is.an("object");
+    expect(Object.keys(first.hobbies)).to.have.lengthOf(0);
+    expect(last.hobbies).is.an("object");
+    expect(Object.keys(last.hobbies)).to.have.lengthOf(0);
+  });
+
+  it("Mock() generates mocks on dynamic path", async () => {
     await Mock(DeepPerson)
       .followRelationshipLinks()
       .generate(2, { group: "test" });
@@ -323,6 +351,8 @@ describe("MOCK uses dynamic dbOffsets", () => {
       .createRelationshipLinks()
       .generate(2, { group: "test" });
     fkStructuralChecksForHasMany(db.mock.db.test.testing.deeppeople);
+
+    console.log(JSON.stringify(db.mock.db, null, 2));
   });
 
   it("Mock() mocks on dynamic path and creates appropriate FK bi-directionally with using followRelationshipLinks()", async () => {

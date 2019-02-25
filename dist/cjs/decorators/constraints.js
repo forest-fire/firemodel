@@ -1,8 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 require("reflect-metadata");
-const decorator_1 = require("./decorator");
 const reflector_1 = require("./reflector");
+const decorator_1 = require("./decorator");
 function constrainedProperty(options = {}) {
     return reflector_1.propertyReflector(Object.assign({}, options, { isRelationship: false, isProperty: true }), decorator_1.propertiesByModel);
 }
@@ -20,8 +20,8 @@ function min(value) {
     return reflector_1.propertyReflector({ min: value }, decorator_1.propertiesByModel);
 }
 exports.min = min;
-function mock(value) {
-    return reflector_1.propertyReflector({ mockType: value }, decorator_1.propertiesByModel);
+function mock(value, ...rest) {
+    return reflector_1.propertyReflector({ mockType: value, mockParameters: rest }, decorator_1.propertiesByModel);
 }
 exports.mock = mock;
 function max(value) {

@@ -8,6 +8,7 @@ const path_1 = require("./path");
 const ModelMeta_1 = require("./ModelMeta");
 const Audit_1 = require("./Audit");
 const util_1 = require("./util");
+const CompositeKey_1 = require("./Record/CompositeKey");
 class Record extends FireModel_1.FireModel {
     constructor(model, options = {}) {
         super();
@@ -55,12 +56,11 @@ class Record extends FireModel_1.FireModel {
      * this getter will result in an error
      */
     get dbPath() {
-        if (!this.data.id) {
-            throw common_types_1.createError("record/invalid-path", `Invalid Record Path: you can not ask for the dbPath before setting an "id" property.`);
+        if (this.data.id ? false : true) {
+            throw common_types_1.createError("record/not-ready", `you can not ask for the dbPath before setting an "id" property [ ${this.modelName} ]`);
         }
-        const meta = ModelMeta_1.getModelMeta(this);
         return [
-            this._injectDynamicDbOffsets(meta.dbOffset),
+            this._injectDynamicDbOffsets(this.dbOffset),
             this.pluralName,
             this.data.id
         ].join("/");
@@ -73,7 +73,7 @@ class Record extends FireModel_1.FireModel {
     get hasDynamicPath() {
         return this.META.dbOffset.includes(":");
     }
-    get getDynamicPathComponents() {
+    get dynamicPathComponents() {
         if (!this.hasDynamicPath) {
             return [];
         }
@@ -88,6 +88,20 @@ class Record extends FireModel_1.FireModel {
             index = remaining.indexOf(":");
         }
         return results;
+    }
+    /**
+     * A hash of values -- including at least "id" -- which represent
+     * the composite key of a model.
+     */
+    get compositeKey() {
+        return CompositeKey_1.createCompositeKey(this);
+    }
+    /**
+     * a string value which is used in relationships to fully qualify
+     * a composite string (aka, a model which has a dynamic dbOffset)
+     */
+    get compositeKeyRef() {
+        return CompositeKey_1.createCompositeKeyString(this);
     }
     /** The Record's primary key */
     get id() {
@@ -238,7 +252,7 @@ class Record extends FireModel_1.FireModel {
      * Goes out to the database and reloads this record
      */
     async reload() {
-        const reloaded = await Record.get(this._modelConstructor, this.id);
+        const reloaded = await Record.get(this._modelConstructor, this.compositeKey);
         return reloaded;
     }
     /**
@@ -254,6 +268,9 @@ class Record extends FireModel_1.FireModel {
     async addAnother(payload) {
         const newRecord = await Record.add(this._modelConstructor, payload);
         return newRecord;
+    }
+    isSameModelAs(model) {
+        return this._modelConstructor === model;
     }
     /**
      * Allows an empty Record to be initialized to a known state.
@@ -379,13 +396,20 @@ class Record extends FireModel_1.FireModel {
         }
         return;
     }
+    /**
+     * associate
+     *
+     * Associates the current model with another regardless if the cardinality is 1 or M.
+     * If it is a "hasOne" relationship it will proxy this request to setRelationship,
+     * if it is a "hasMany" relationshipo it will proxy this request to addToRelationship
+     */
     async associate(property, refs, optionalValue = true) {
         if (this.META.relationship(property).relType === "hasOne") {
-            if (!Array.isArray(refs)) {
-                this.setRelationship(property, refs, optionalValue);
+            if (!Array.isArray(refs) || refs.length === 1) {
+                this.setRelationship(property, Array.isArray(refs) ? refs[0] : refs, optionalValue);
             }
             else {
-                throw new Error(`Ref ${refs} must not be an array of strings.`);
+                throw common_types_1.createError("record/not-allowed", `There were an array of references [ ${refs} ] for a property "${property}" which is "hasOne".`);
             }
         }
         else if (this.META.relationship(property).relType === "hasMany") {
@@ -404,18 +428,18 @@ class Record extends FireModel_1.FireModel {
      * Adds one or more fk's to a hasMany relationship
      *
      * @param property the property which is acting as a foreign key (array)
-     * @param refs FK reference (or array of FKs) that should be added to reln
-     * @param optionalValue the default behaviour is to add the value TRUE but you can optionally add some additional piece of information here instead.
+     * @param fkRefs FK reference (or array of FKs) that should be added to reln
+     * @param value the default behaviour is to add the value TRUE but you can optionally add some additional piece of information here instead
      */
-    async addToRelationship(property, refs, optionalValue = true) {
+    async addToRelationship(property, fkRefs, value = true) {
         this._errorIfNotHasManyReln(property, "addToRelationship");
-        if (!Array.isArray(refs)) {
-            refs = [refs];
-        }
+        fkRefs = (Array.isArray(fkRefs) ? fkRefs : [fkRefs]);
         const now = new Date().getTime();
         const mps = this.db.multiPathSet("/");
-        refs.map(ref => {
-            this._relationshipMPS(mps, ref, property, optionalValue, now);
+        fkRefs.map(ref => {
+            // adds appropriate paths to the MPS for both this model as well
+            // as the foreign key being discussed
+            this._relationshipMPS(mps, ref, property, value, now);
         });
         mps.add({ path: path_1.pathJoin(this.dbPath, "lastUpdated"), value: now });
         this.dispatch(this._createRecordEvent(this, index_1.FMEvents.RELATIONSHIP_ADDED_LOCALLY, mps.payload));
@@ -434,24 +458,23 @@ class Record extends FireModel_1.FireModel {
      * remove one or more IDs from a hasMany relationship
      *
      * @param property the property which is acting as a FK
-     * @param refs the IDs on the properties FK which should be removed
+     * @param fkRefs the IDs on the properties FK which should be removed
      */
-    async removeFromRelationship(property, refs) {
+    async removeFromRelationship(property, fkRefs) {
         this._errorIfNotHasManyReln(property, "removeFromRelationship");
-        if (!Array.isArray(refs)) {
-            refs = [refs];
-        }
+        fkRefs = (Array.isArray(fkRefs) ? fkRefs : [fkRefs]);
         const now = new Date().getTime();
         const mps = this.db.multiPathSet("/");
         const inverseProperty = this.META.relationship(property).inverseProperty;
         mps.add({ path: path_1.pathJoin(this.dbPath, "lastUpdated"), value: now });
-        refs.map(ref => {
+        fkRefs.map(ref => {
             this._relationshipMPS(mps, ref, property, null, now);
         });
         this.dispatch(this._createRecordEvent(this, index_1.FMEvents.RELATIONSHIP_REMOVED_LOCALLY, mps.payload));
         await mps.execute();
         this.dispatch(this._createRecordEvent(this, index_1.FMEvents.RELATIONSHIP_REMOVED, this.data));
     }
+    // TODO: change this to be for hasOne and hasMany relationships
     /**
      * clearRelationship
      *
@@ -468,7 +491,6 @@ class Record extends FireModel_1.FireModel {
         const mps = this.db.multiPathSet("/");
         this._relationshipMPS(mps, this.get(property), property, null, new Date().getTime());
         this.dispatch(this._createRecordEvent(this, index_1.FMEvents.RELATIONSHIP_REMOVED_LOCALLY, mps.payload));
-        console.log(mps.payload);
         await mps.execute();
         this.dispatch(this._createRecordEvent(this, index_1.FMEvents.RELATIONSHIP_REMOVED, this.data));
     }
@@ -505,6 +527,7 @@ class Record extends FireModel_1.FireModel {
             modelName: this.modelName,
             pluralName: this.pluralName,
             key: this.id,
+            compositeKey: this.compositeKey,
             localPath: this.localPath,
             data: this.data.toString()
         };
@@ -526,59 +549,141 @@ class Record extends FireModel_1.FireModel {
         }
         Audit_1.writeAudit(this.id, this.pluralName, action, changes, Object.assign({}, options, { db: this.db }));
     }
+    _expandFkStringToCompositeNotation(fkRef, dynamicComponents = []) {
+        if (fkRef.indexOf("::") === -1) {
+            return Object.assign({ id: fkRef }, dynamicComponents.reduce((prev, curr) => {
+                return Object.assign({}, prev, { [curr]: this.data[curr] });
+            }, {}));
+        }
+        const id = fkRef.slice(0, fkRef.indexOf("::"));
+        const remaining = fkRef
+            .slice(fkRef.indexOf("::"))
+            .split("::")
+            .filter(i => i)
+            .reduce((prev, curr) => {
+            const [name, value] = curr.split(":");
+            return Object.assign({}, prev, { [name]: value });
+        }, {});
+        return Object.assign({ id }, remaining);
+    }
     /**
      * _relationshipMPS
      *
+     * Sets up and executes a multi-path SET (MPS) with the intent of
+     * updating the FK relationship of a given model as well as reflecting
+     * that change back from the FK to the originating model
+     *
      * @param mps the multi-path selection object
-     * @param ref the FK reference
+     * @param fkRef a FK reference; either a string (representing the ID of other
+     * record) or a composite key (ID plus all dynamic segments)
      * @param property the property on the target record which contains FK(s)
-     * @param value the value to set this FK (null removes)
+     * @param value the value to set this FK (null removes); typically TRUE if setting
      * @param now the current time in miliseconds
      */
-    _relationshipMPS(mps, ref, property, value, now) {
+    _relationshipMPS(mps, fkRef, property, value, now) {
         const meta = ModelMeta_1.getModelMeta(this);
-        const isHasMany = meta.isRelationship(property) &&
-            meta.relationship(property).relType === "hasMany";
-        const pathToThisFkReln = path_1.pathJoin(this.dbPath, property, isHasMany ? ref : "");
         const fkModelConstructor = meta.relationship(property).fkConstructor();
         const inverseProperty = meta.relationship(property).inverseProperty;
         const fkRecord = Record.create(fkModelConstructor);
-        ModelMeta_1.addModelMeta(fkRecord.modelName, fkRecord.META);
-        mps.add({ path: pathToThisFkReln, value: isHasMany ? value : ref });
+        // TODO: determine if fk string which has composite key embedded is expected/desired
+        /**
+         * It was expected that fkRef would be ICompositeKey or a string representing
+         * just an ID but it appears it may also be a composite key reference string
+         */
+        const fkRecordData = typeof fkRef === "object"
+            ? fkRef
+            : this._expandFkStringToCompositeNotation(fkRef, fkRecord.dynamicPathComponents);
+        fkRecord._initialize(Object.assign({}, fkRecord.data, fkRecordData));
+        let fkId;
+        // DEAL WITH DYNAMIC PATHS on FK
+        if (fkRecord.hasDynamicPath) {
+            const fkDynamicProps = fkRecord.dynamicPathComponents;
+            /**
+             * Sometimes the current model has all the properties needed
+             * to populate the FK's dynamic path. This boolean flag indicates
+             * whether that is the case.
+             */
+            const canAutoPopulate = fkDynamicProps.every(p => this.data[p] !== undefined ||
+                this.data[p] !== null)
+                ? true
+                : false;
+            /**
+             * This flag indicates whether the ref passed in just a simple string reference
+             * to the FK model (false) or if it is a hash which represents
+             * the composite FK reference.
+             */
+            const refIsCompositeKey = typeof fkRef === "object" ? true : false;
+            /** a hash of props and values */
+            const selfSourcedDynamicValues = fkRecord.dynamicPathComponents.reduce((prev, curr) => (Object.assign({}, prev, { [curr]: this.data[curr] })), {});
+            const propData = refIsCompositeKey
+                ? fkRef
+                : canAutoPopulate
+                    ? Object.assign({}, selfSourcedDynamicValues, { id: fkRef }) : false;
+            if (!propData) {
+                throw common_types_1.createError("record/insufficient-data", `Attempt to add/remove a FK relationship on ${this.modelName} to ${fkRecord.modelName} failed because there was no way to resolve ${fkRecord.modelName}'s dynamic prefixes: [ ${fkDynamicProps} ]`);
+            }
+            fkId =
+                propData.id +
+                    Object.keys(propData)
+                        .filter(k => k !== "id")
+                        .map(k => `::${k}:${propData[k]}`);
+        }
+        else {
+            // TODO: this probably shouldn't be needed; look to cleanup
+            if (typeof fkRef === "object" &&
+                Object.keys(fkRef).length === 1 &&
+                fkRef.id) {
+                fkRef = fkRef.id;
+            }
+            if (typeof fkRef === "object") {
+                throw common_types_1.createError(`record/invalid-key`, `When attempting to change the relationship between the originating model "${this.modelName}" and the foreign model "${fkRecord.modelName}" the reference to ${fkRecord.modelName} was expressed as Composite Key but ${fkRecord.modelName} does not have any dynamic segments.`);
+            }
+            fkId = fkRef;
+        }
+        const hasManyReln = meta.isRelationship(property) &&
+            meta.relationship(property).relType === "hasMany";
+        const pathToRecordsFkReln = path_1.pathJoin(this.dbPath, // this includes dynamic segments for originating model
+        property, 
+        // we must add the fk id to path (versus value) to make the write non-destructive
+        // to other hasMany keys which already exist
+        hasManyReln ? CompositeKey_1.createCompositeKeyString(fkRecord) : "");
+        // Add paths for primary model to FK in MPS
+        mps.add({
+            path: pathToRecordsFkReln,
+            // if hasMany then just add value, the fk is already part of path
+            value: hasManyReln ? value : fkRecord.compositeKeyRef
+        });
         // INVERSE RELATIONSHIP
         if (inverseProperty) {
             const fkMeta = ModelMeta_1.getModelMeta(fkRecord);
-            const fkInverseHasRecipricalInverse = fkMeta.relationship(inverseProperty).inverseProperty === property;
-            if (!fkInverseHasRecipricalInverse) {
+            const hasRecipricalInverse = fkMeta.relationship(inverseProperty).inverseProperty === property;
+            if (!hasRecipricalInverse) {
                 console.warn(`The FK "${property}" on ${this.modelName} has an inverse property set of "${inverseProperty}" but on the reference model [ ${fkRecord.modelName} ] there is NOT a reciprocal inverse set! [ ${fkMeta.relationship(inverseProperty).inverseProperty
                     ? fkMeta.relationship(inverseProperty).inverseProperty +
                         " was set instead"
                     : "no inverse set"} ]`);
             }
             const pathToInverseFkReln = inverseProperty
-                ? path_1.pathJoin(fkMeta.dbOffset, fkRecord.pluralName, ref, inverseProperty)
+                ? path_1.pathJoin(fkRecord.dbPath, inverseProperty)
                 : null;
             const fkInverseIsHasManyReln = inverseProperty
                 ? fkMeta.relationship(inverseProperty).relType === "hasMany"
                 : false;
+            // Inverse: add to FK the reference back to this record
             mps.add({
-                path: fkInverseIsHasManyReln
-                    ? path_1.pathJoin(pathToInverseFkReln, this.id)
-                    : pathToInverseFkReln,
+                path: pathToInverseFkReln,
                 value: fkInverseIsHasManyReln
-                    ? value // can be null for removal
-                    : value === null
-                        ? null
-                        : this.id
+                    ? { [CompositeKey_1.createCompositeKeyString(this)]: value }
+                    : CompositeKey_1.createCompositeKeyString(this)
             });
             mps.add({
-                path: path_1.pathJoin(fkMeta.dbOffset, fkRecord.pluralName, ref, "lastUpdated"),
+                path: path_1.pathJoin(fkRecord.dbPath, "lastUpdated"),
                 value: now
             });
         }
         if (typeof this.data[property] === "object" &&
-            this.data[property][ref]) {
-            console.warn(`The fk of "${ref}" already exists in "${this.modelName}.${property}"!`);
+            this.data[property][fkId]) {
+            console.warn(`Attempt to re-add the fk reference "${fkId}", which already exists in "${this.modelName}.${property}"!`);
             return;
         }
     }
@@ -643,40 +748,20 @@ class Record extends FireModel_1.FireModel {
      * looks for ":name" property references within the dbOffset and expands them
      */
     _injectDynamicDbOffsets(dbOffset) {
-        this.getDynamicPathComponents.forEach(prop => {
+        this.dynamicPathComponents.forEach(prop => {
             const value = this.data[prop];
-            if (!value) {
-                throw common_types_1.createError("record/invalid-path", `Invalid Record Path: you can not ask for the dbPath on a model like ${this.modelName} which has a dynamic property of "${prop}" before setting that property.`);
+            if (value ? false : true) {
+                console.log("ID", this.id, value);
+                // TODO: cleanup
+                console.log(JSON.stringify(this.db.mock.db, null, 2));
+                throw common_types_1.createError("record/not-ready", `You can not ask for the dbPath on a model like "${this.modelName}" which has a dynamic property of "${prop}" before setting that property [ id: ${this.id} ].`);
             }
-            if (typeof value !== "string" && typeof value !== "number") {
+            if (!["string", "number"].includes(typeof value)) {
                 throw common_types_1.createError("record/not-allowed", `The path is using the property "${prop}" on ${this.modelName} as a part of the route path but that property must be either a string or a number and instead was a ${typeof prop}`);
             }
-            dbOffset = dbOffset.replace(`:${prop}`, String(this.data[prop]));
+            dbOffset = dbOffset.replace(`:${prop}`, String(this.get(prop)));
         });
         return dbOffset;
-        // let remaining = dbOffset;
-        // let index = remaining.indexOf(":");
-        // while (index !== -1) {
-        //   remaining = remaining.slice(index);
-        //   const prop = remaining.replace(/\:(\w+).*/, "$1");
-        //   const value = this.data[prop as keyof T];
-        //   if (!value) {
-        //     throw createError(
-        //       "record/invalid-path",
-        //       `Invalid Record Path: you can not ask for the dbPath which has a dynamic property of "${prop}" before setting that property.`
-        //     );
-        //   }
-        //   if (typeof value !== "string" && typeof value !== "number") {
-        //     throw createError(
-        //       "record/not-allowed",
-        //       `The path is using the property "${prop}" as a part of the route path but that property must be either a string or a number and instead was a ${typeof prop}`
-        //     );
-        //   }
-        //   dbOffset = dbOffset.replace(`:${prop}`, String(value));
-        //   remaining = remaining.replace(`:${prop}`, "");
-        //   index = remaining.indexOf(":");
-        // }
-        // return dbOffset;
     }
     /**
      * Load data from a record in database
