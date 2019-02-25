@@ -8,7 +8,8 @@ import {
   fk,
   hasMany,
   belongsTo,
-  IFmHasMany
+  IFmHasMany,
+  fks
 } from "../../src";
 import { Company } from "./Company";
 import { IDictionary } from "common-types";
@@ -31,11 +32,11 @@ export class Person extends Model {
   // prettier-ignore
   @belongsTo(() => Person, "children") public father?: fk;
   // prettier-ignore
-  @hasMany(() => Person) public children?: IDictionary;
+  @hasMany(() => Person) public children?: fks;
   // prettier-ignore
-  @belongsTo(() => Concert) public concerts?: IDictionary;
+  @belongsTo(() => Concert) public concerts?: fk;
   // prettier-ignore
   @belongsTo(() => Company) public company?: fk;
   // prettier-ignore
-  @hasMany(() => Pay) public pays?: IFmHasMany;
+  @hasMany(() => Pay) public pays?: fks;
 }

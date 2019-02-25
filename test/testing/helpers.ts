@@ -70,7 +70,7 @@ export function ignoreStdout() {
 
 export function captureStdout(): () => any {
   const rStdout: IAsyncStreamCallback = stdout.inspect();
-  const restore = () => {
+  const restore = (): string[] => {
     rStdout.restore();
     console._restored = true;
     return rStdout.output;
@@ -81,7 +81,7 @@ export function captureStdout(): () => any {
 
 export function captureStderr(): () => any {
   const rStderr: IAsyncStreamCallback = stderr.inspect();
-  const restore = () => {
+  const restore = (): string[] => {
     rStderr.restore();
     console._restored = true;
     return rStderr.output;
@@ -136,7 +136,7 @@ export function lastKey<T = any>(listOf: IDictionary<T>) {
 /**
  * The last record in a Hash/Dictionary of records
  */
-export function lastRecord<T = any>(dictionary: IDictionary<T>) {
+export function lastRecord<T = any>(dictionary: IDictionary<T>): T {
   return dictionary[this.lastKey(dictionary)];
 }
 

@@ -169,6 +169,7 @@ module.exports = {
           collapsable: false,
           children: [
             "frontend-state-mgmt",
+            "dynamic-paths",
             "auditing",
             "graphql",
             "dexie",

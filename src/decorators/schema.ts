@@ -103,6 +103,8 @@ export interface IFmModelAttributeBase<T> {
    * would include "telephone", "name", etc.
    */
   mockType?: FmMockType;
+  /** a named mock can optionally recieve a set of parameters as additional input */
+  mockParameters?: any[];
   /** what kind of relationship does this foreign key contain */
   relType?: FmRelationshipType;
   /** if the property is a relationship ... a constructor for the FK's Model */
@@ -159,7 +161,7 @@ export function model(options: Partial<IFmModelMeta>): ClassDecorator {
           options.audit === "server"
         )
       ) {
-        console.warn(
+        console.log(
           `You set the audit property to "${
             options.audit
           }" which is invalid. Valid properties are true, false, and "server". The audit property will be set to false for now.`

@@ -20,6 +20,11 @@ export declare class List<T extends Model> extends FireModel<T> {
      */
     static set<T extends Model>(model: new () => T, payload: IDictionary<T>): Promise<List<T>>;
     static dispatch: IReduxDispatch;
+    /**
+     * Allows you to build a LIST on a model which has dynamic dbOffsets
+     * by statically initializing the dynamic segments up front
+     */
+    static offsets(offsets: IDictionary<string | number>): typeof List;
     static create<T extends Model>(model: new () => T, options?: IModelOptions): List<T>;
     /**
      * Creates a List<T> which is populated with the passed in query
@@ -69,6 +74,7 @@ export declare class List<T extends Model> extends FireModel<T> {
     static inactive<T extends Model>(model: new () => T, howMany: number, options?: IModelOptions): Promise<List<T>>;
     static last<T extends Model>(model: new () => T, howMany: number, options?: IModelOptions): Promise<List<T>>;
     static where<T extends Model, K extends keyof T>(model: new () => T, property: K, value: T[K] | [IComparisonOperator, T[K]], options?: IModelOptions): Promise<List<T>>;
+    private static _offsets;
     private _data;
     constructor(model: new () => T, options?: IModelOptions);
     readonly length: number;
@@ -113,6 +119,7 @@ export declare class List<T extends Model> extends FireModel<T> {
      */
     getData(id: string, defaultIfNotFound?: any): T;
     load(pathOrQuery: string | SerializedQuery<T>): Promise<this>;
+    private _injectDynamicDbOffsets;
 }
 export declare type ListFilterFunction<T> = (fc: T) => boolean;
 export declare type ListMapFunction<T, K = any> = (fc: T) => K;

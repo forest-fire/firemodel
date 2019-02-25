@@ -20,8 +20,7 @@ export class SimplePerson extends Model {
 describe("Mocking:", () => {
   let db: DB;
   beforeEach(async () => {
-    db = new DB({ mocking: true });
-    await db.waitForConnection();
+    db = await DB.connect({ mocking: true });
     List.defaultDb = db;
   });
   it("the auto-mock works for named properties", async () => {
@@ -62,6 +61,7 @@ describe("Mocking:", () => {
     await Mock(FancyPerson, db)
       .createRelationshipLinks()
       .generate(numberOfFolks);
+    console.log(JSON.stringify(db.mock.db, null, 2));
 
     const people = await List.all(FancyPerson);
     expect(people).to.have.lengthOf(numberOfFolks);

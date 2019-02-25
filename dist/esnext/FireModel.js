@@ -118,6 +118,7 @@ export class FireModel {
             model: record.modelName,
             modelConstructor: record._modelConstructor,
             dbPath: record.dbPath,
+            compositeKey: record.compositeKey,
             localPath: record.localPath,
             key: record.id
         };

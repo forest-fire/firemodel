@@ -1,5 +1,6 @@
 import { Record } from "./Record";
 import { SerializedQuery } from "serialized-query";
+import { createError } from "common-types";
 import { FireModel } from "./FireModel";
 import { pathJoin } from "./path";
 import { getModelMeta } from "./ModelMeta";
@@ -77,6 +78,14 @@ export class List extends FireModel {
     }
     static set dispatch(fn) {
         FireModel.dispatch = fn;
+    }
+    /**
+     * Allows you to build a LIST on a model which has dynamic dbOffsets
+     * by statically initializing the dynamic segments up front
+     */
+    static offsets(offsets) {
+        List._offsets = offsets;
+        return List;
     }
     static create(model, options = {}) {
         return new List(model);
@@ -200,7 +209,10 @@ export class List extends FireModel {
         return this._data.length;
     }
     get dbPath() {
-        return [this.META.dbOffset, this.pluralName].join("/");
+        return [
+            this._injectDynamicDbOffsets(this.META.dbOffset),
+            this.pluralName
+        ].join("/");
     }
     get localPath() {
         const meta = getModelMeta(this._model);
@@ -360,6 +372,19 @@ export class List extends FireModel {
         }
         this._data = await this.db.getList(pathOrQuery);
         return this;
+    }
+    _injectDynamicDbOffsets(dbOffset) {
+        if (dbOffset.indexOf(":") === -1) {
+            return dbOffset;
+        }
+        Object.keys(List._offsets).forEach(prop => {
+            const value = List._offsets[prop];
+            if (!["string", "number"].includes(typeof value)) {
+                throw createError("record/not-allowed", `The dynamic dbOffsest is using the property "${prop}" on ${this.modelName} as a part of the route path but that property must be either a string or a number and instead was a ${typeof prop}`);
+            }
+            dbOffset = dbOffset.replace(`:${prop}`, String(List._offsets[prop]));
+        });
+        return dbOffset;
     }
 }
 //# sourceMappingURL=List.js.map

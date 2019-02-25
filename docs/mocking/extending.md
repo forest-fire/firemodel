@@ -12,14 +12,14 @@ Let's explore each of these separately.
 In the auto-mocking section we saw how a property named `name` would be automatically populated with a random name. What if you had a property called `fathersName`? Well that would NOT automatically be given a name but rather just a random string. This is a good example of where _named contexts_ can be leveraged to give the `fathersName` property the same treatment as name.
 
 Here's how we'd do that:
-<!-- prettier-ignore-start -->
+
 ```typescript
 export class Person extends Model {
   @property public name: string;
   @property @mock("name") public fathersName: string;
 }
 ```
-<!-- prettier-ignore-end -->
+
 with this simple addition you've told the mocking engine that the property `fathersName` should be treated as a name. Pretty cool right?
 
 So the obvious next question is ... what named properties are there? Glad you're there keeping me honest. So the answer is:
@@ -28,6 +28,8 @@ So the obvious next question is ... what named properties are there? Glad you're
   - firstName
   - lastName
 - company
+  - companyName
+  - catchPhrase
 - address
   - streetName
   - streetAddress
@@ -45,29 +47,45 @@ So the obvious next question is ... what named properties are there? Glad you're
   - dateFuture
   - dateRecent
   - dateSoon
-- image (alias for `avatar`)
+- images
   - avatar
   - imageAnimal
   - imagePerson
   - imageNature
   - imageTransport
 - phoneNumber
+- lorem
+  - word
+  - words
+  - sentence
+  - slug
+  - paragraph
+  - paragraphs
+  - url
 
-All you need to do is choose any of the above and add the `@mock([named tag])` as a modifier to the property.
+All you need to do is choose any of the above and add the `@mock([named tag])` as a modifier to the property. There are a few more named contexts which take additional params:
+
+- `random` - @mock("random", ...arrayOfThings);
+  - using a normal distribution, chooses one of the array items each time
+- `sequence` = @mock("shuffle", ...arrayOfThings);
+  - sequentially applies each array item and then repeats if none are left
+- `placeImage` - @mock("placeImage", width, heigh, type)
+  - types are "animals", "architecture", "people", "nature", "people", and "tech". Default type is "any"
+- `placeHolder` - @mock("placeHolder", size, backgroundColor, textColor)
+  - *size* can be a single number like "300" which represents both height and width or it can separate height from width with "300x100"
+  - *backgroundColor* and *textColor* are hex values like FFFFFF (white), 0000FF (blue), etc.
 
 ## Bespoke Handling
 
 The named contexts should take you a long way but sometimes not to the finish line. In these situations you can drop out of "configuration" and into code:
 
-<!-- prettier-ignore-start -->
 ```typescript
-const myBespokeHandler: IMockContext = (context) => {
-  return context.faker.
+const myBespokeHandler: IMockHelper = (context) => {
+  return context.faker...
 }
 
 export class Person extends Model {
-  @property public name: string;
-  @property @mock(myBespokeHandler) public fathersName: string;
+  @property name: string;
+  @property @mock(myBespokeHandler) fathersName: string;
 }
 ```
-<!-- prettier-ignore-end -->

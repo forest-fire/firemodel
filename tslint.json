@@ -11,6 +11,7 @@
     "trailing-comma": [false],
     "variable-name": [false],
     "arrow-parens": [false],
-    "no-namespace": [true, "allow-declarations"]
+    "no-namespace": [true, "allow-declarations"],
+    "member-access": [false]
   }
 }

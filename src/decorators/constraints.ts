@@ -1,8 +1,9 @@
 import "reflect-metadata";
-import { IDictionary, PropertyDecorator } from "common-types";
-import { propertyDecorator, propertiesByModel } from "./decorator";
+import { IDictionary } from "common-types";
 import { propertyReflector } from "./reflector";
-import { IFmModelMeta, IFmModelPropertyMeta } from "./schema";
+import { IFmModelPropertyMeta } from "./schema";
+import NamedFakes from "../Mock/NamedFakes";
+import { propertiesByModel } from "./decorator";
 
 export function constrainedProperty(options: IDictionary = {}) {
   return propertyReflector<IFmModelPropertyMeta>(
@@ -37,11 +38,11 @@ export function min(value: number) {
 }
 
 export type MockFunction = (context: import("firemock").MockHelper) => any;
-export type FmMockType = string | MockFunction;
+export type FmMockType = keyof typeof NamedFakes | MockFunction;
 
-export function mock(value: FmMockType) {
+export function mock(value: FmMockType, ...rest: any[]) {
   return propertyReflector<IFmModelPropertyMeta>(
-    { mockType: value },
+    { mockType: value, mockParameters: rest },
     propertiesByModel
   );
 }

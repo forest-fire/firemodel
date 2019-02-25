@@ -85,6 +85,7 @@ describe("Watch →", () => {
     // Initial response is to bring in all records
     // expect(events).to.have.lengthOf(2);
     let eventTypes = new Set(events.map(e => e.type));
+
     expect(eventTypes.size).to.equal(1);
     expect(eventTypes.has(FMEvents.RECORD_ADDED));
     // Now we'll do some more CRUD activities

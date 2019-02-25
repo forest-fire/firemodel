@@ -2,6 +2,7 @@ import { SerializedQuery } from "serialized-query";
 import { Model, FMModelConstructor } from "../Model";
 import { FmRelationshipType } from "../decorators/schema";
 import { IMultiPathUpdates } from "../FireModel";
+import { ICompositeKey } from "../@types/record-types";
 //#region generalized structures
 
 export type Extractable<T, U> = T extends U ? any : never;
@@ -102,6 +103,8 @@ export interface IFMRecordEventCore<T extends Model = Model> {
   modelConstructor: FMModelConstructor<T>;
   /** the path in Firebase where this Record should is stored */
   dbPath: string;
+  /** the composite key that uniquely defines this record */
+  compositeKey: ICompositeKey;
   /** the path in your local state management where this Record should go */
   localPath: string;
   /** an identifier of which active watcher which triggered to create this event, not populated in the case of a client triggered event */
