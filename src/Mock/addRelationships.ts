@@ -7,10 +7,6 @@ import { IMockConfig, IMockResponse } from "./types";
 import { processHasMany } from "./processHasMany";
 import { processHasOne } from "./processHasOne";
 
-function unbox(a: any[]) {
-  return a[0];
-}
-
 export default function addRelationships<T extends Model>(
   db: RealTimeDB,
   config: IMockConfig,
