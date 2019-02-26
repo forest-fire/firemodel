@@ -266,6 +266,7 @@ describe("LIST uses static offsets() with static API methods", () => {
   before(async () => {
     db = await DB.connect({ mocking: true });
     FireModel.defaultDb = db;
+    db.mock.updateDB({});
   });
 
   it("LIST.offsets() returns LIST API", async () => {

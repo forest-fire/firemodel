@@ -17,6 +17,7 @@ describe("Relationship > ", () => {
     db = new DB({ mocking: true });
     await db.waitForConnection();
     FireModel.defaultDb = db;
+    db.mock.updateDB({});
   });
 
   it("using addToRelationship() on a hasMany relationship works", async () => {
@@ -158,4 +159,4 @@ describe("Relationship > ", () => {
   //   expect(eventTypes.has(FMEvents.RELATIONSHIP_ADDED)).to.equal(true);
   //   expect(eventTypes.has(FMEvents.RELATIONSHIP_ADDED_LOCALLY)).to.equal(true);
   // });
-});
+}).timeout(4000);
