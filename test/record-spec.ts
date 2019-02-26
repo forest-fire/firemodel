@@ -204,7 +204,7 @@ describe("Record > ", () => {
     expect(peeps2).to.have.lengthOf(9);
     const ids = peeps2.map(p => p.id);
     expect(ids.includes(id)).to.equal(false);
-  });
+  }).timeout(3000);
 
   it("calling static remove() removes from DB, notifies FE state-mgmt", async () => {
     await Mock(Person, db)
@@ -226,7 +226,7 @@ describe("Record > ", () => {
     expect(peeps2).to.have.lengthOf(9);
     const ids = peeps2.map(p => p.id);
     expect(ids.includes(id)).to.equal(false);
-  });
+  }).timeout(3000);
 
   it("setting an explicit value for plural is picked up by Record", async () => {
     const p = Record.create(Peeps);
@@ -234,4 +234,4 @@ describe("Record > ", () => {
     expect(p.META.plural).to.equal("peeps");
     expect(p.pluralName).to.equal("peeps");
   });
-});
+}).timeout(4000);

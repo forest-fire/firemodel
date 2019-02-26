@@ -1,6 +1,6 @@
 {
   "name": "firemodel",
-  "version": "0.17.1",
+  "version": "0.17.2",
   "description": "Modeling, Access, and Mocking for Firebase Projects",
   "license": "MIT",
   "repository": "https://github.com/forest-fire/firemodel",
@@ -34,19 +34,18 @@
     "docs:build": "vuepress build docs"
   },
   "dependencies": {
-    "abstracted-firebase": "^0.14.5",
+    "abstracted-firebase": "^0.15.0",
     "common-types": "^1.9.6",
-    "firebase-api-surface": "^0.8.5",
     "firebase-key": "^2.0.1",
     "lodash": "^4.17.11",
     "pluralize": "^7.0.0",
     "reflect-metadata": "^0.1.13",
     "serialized-query": "^0.4.5",
     "typed-conversions": "^0.8.13",
-    "wait-in-parallel": "^1.2.0"
+    "wait-in-parallel": "^1.2.2"
   },
   "peerDependencies": {
-    "firemock": "^0.18.3"
+    "firemock": "^0.19.1"
   },
   "devDependencies": {
     "@types/chai": "^4.1.4",
@@ -63,26 +62,25 @@
     "@vuepress/plugin-last-updated": "^1.0.0-alpha.0",
     "@vuepress/plugin-medium-zoom": "^1.0.0-alpha.0",
     "@vuepress/plugin-pwa": "^1.0.0-alpha.0",
-    "abstracted-admin": "^0.14.10",
-    "abstracted-client": "^0.14.16",
+    "abstracted-admin": "^0.15.0",
+    "abstracted-client": "^0.15.0",
     "async-shelljs": "^0.1.2",
     "chai": "^4.2.0",
     "chalk": "^2.4.1",
-    "chance": "^1.0.18",
     "coveralls": "^3.0.3",
     "faker": "^4.1.0",
-    "firemock": "^0.18.3",
+    "firemock": "^0.19.1",
     "js-yaml": "^3.12.1",
     "mocha": "^6.0.1",
     "nyc": "^13.3.0",
     "prettier": "^1.16.4",
-    "rimraf": "^2.6.0",
-    "rollup": "^0.62.0",
-    "rollup-plugin-typescript2": "^0.15.1",
+    "rimraf": "^2.6.3",
+    "rollup": "^1.2.3",
+    "rollup-plugin-typescript2": "^0.19.3",
     "test-console": "^1.1.0",
     "ts-node": "^8.0.2",
     "tslint": "^5.13.0",
-    "tslint-config-prettier": "^1.15.0",
+    "tslint-config-prettier": "^1.18.0",
     "typescript": "^3.3.3",
     "vuepress": "^1.0.0-alpha.39"
   },

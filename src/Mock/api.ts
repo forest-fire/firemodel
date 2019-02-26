@@ -1,9 +1,7 @@
 import { IDictionary } from "common-types";
 import mockProperties from "./mockProperties";
 import addRelationships from "./addRelationships";
-import followRelationships from "./followRelationships";
 import { Record } from "../Record";
-import { Parallel } from "wait-in-parallel";
 import { RealTimeDB } from "abstracted-firebase";
 import { IMockConfig, IMockResponse } from "./types";
 
