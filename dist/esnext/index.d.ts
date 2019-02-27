@@ -7,6 +7,7 @@ export { FireModel } from "./FireModel";
 export { Audit } from "./Audit";
 export { Watch } from "./Watch";
 export { IReduxDispatch, IVuexDispatch, VeuxWrapper } from "./VuexWrapper";
+export * from "./state-mgmt";
 export { fk, pk } from "common-types";
 export { key as fbKey } from "firebase-key";
 export * from "./state-mgmt/index";

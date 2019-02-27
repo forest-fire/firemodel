@@ -3,6 +3,9 @@ import { Model, FMModelConstructor } from "../Model";
 import { FmRelationshipType } from "../decorators/schema";
 import { IMultiPathUpdates } from "../FireModel";
 import { ICompositeKey } from "../@types/record-types";
+import { VuexMutations } from "./VuexMutations";
+
+export { VuexMutations } from "./VuexMutations";
 //#region generalized structures
 
 export type Extractable<T, U> = T extends U ? any : never;
