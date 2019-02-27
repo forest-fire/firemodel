@@ -1,9 +1,22 @@
 module.exports = {
+  plugins: {
+    "@vuepress/pwa": {
+      serviceWorker: true,
+      updatePopup: {
+        message: "New FireModel content is available",
+        buttonText: "Refresh"
+      }
+    },
+    "@vuepress/back-to-top": true,
+    "@vuepress/last-updated": true,
+    "@vuepress/medium-zoom": true
+  },
   title: "FireModel",
   description: "Modeling, Access, and Mocking for Firebase Projects",
   head: [
     ["meta", { name: "apple-mobile-web-app-capable", content: "yes" }],
     ["meta", { name: "application-name", content: "FireModel" }],
+    ["link", { rel: "favicon", href: "icon/icon-48.png" }],
     ["link", { rel: "icon", href: "icon/icon-225.png" }],
     ["link", { rel: "manifest", href: "manifest.json" }],
     [
@@ -89,19 +102,7 @@ module.exports = {
       }
     ]
   ],
-  serviceWorker: true,
-  plugins: {
-    "@vuepress/pwa": {
-      serviceWorker: true,
-      updatePopup: {
-        message: "New content is available",
-        buttonText: "Refresh"
-      }
-    },
-    "@vuepress/back-to-top": true,
-    "@vuepress/last-updated": true,
-    "@vuepress/medium-zoom": true
-  },
+  // serviceWorker: true,
   themeConfig: {
     editLinks: true,
     nav: [
