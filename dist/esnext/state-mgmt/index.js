@@ -1,3 +1,4 @@
+export { VuexMutations } from "./VuexMutations";
 function promoteStringToFMEvents(k) {
     return k;
 }

@@ -1,5 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+var VuexMutations_1 = require("./VuexMutations");
+exports.VuexMutations = VuexMutations_1.VuexMutations;
 function promoteStringToFMEvents(k) {
     return k;
 }

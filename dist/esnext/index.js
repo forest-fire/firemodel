@@ -7,6 +7,7 @@ export { FireModel } from "./FireModel";
 export { Audit } from "./Audit";
 export { Watch } from "./Watch";
 export { VeuxWrapper } from "./VuexWrapper";
+export * from "./state-mgmt";
 export { key as fbKey } from "firebase-key";
 export * from "./state-mgmt/index";
 //# sourceMappingURL=index.js.map

@@ -22,6 +22,7 @@ var Watch_1 = require("./Watch");
 exports.Watch = Watch_1.Watch;
 var VuexWrapper_1 = require("./VuexWrapper");
 exports.VeuxWrapper = VuexWrapper_1.VeuxWrapper;
+__export(require("./state-mgmt"));
 var firebase_key_1 = require("firebase-key");
 exports.fbKey = firebase_key_1.key;
 __export(require("./state-mgmt/index"));

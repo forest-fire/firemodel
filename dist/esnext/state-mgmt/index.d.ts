@@ -3,6 +3,7 @@ import { Model, FMModelConstructor } from "../Model";
 import { FmRelationshipType } from "../decorators/schema";
 import { IMultiPathUpdates } from "../FireModel";
 import { ICompositeKey } from "../@types/record-types";
+export { VuexMutations } from "./VuexMutations";
 export declare type Extractable<T, U> = T extends U ? any : never;
 export declare type NotString<T> = string extends T ? never : any;
 export declare type IFMEventName<T> = string & NotString<T> & Extractable<FMEvents, T>;
