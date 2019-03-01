@@ -146,11 +146,11 @@ function getModelRelationship<T extends Model = Model>(
 export function model(options: Partial<IFmModelMeta>): ClassDecorator {
   let isDirty: boolean = false;
   return (target: any): void => {
-    const original = target;
+    console.log(target, (new target).constructor)
 
     // new constructor
-    const f: any = function(...args: any[]) {
-      const obj = Reflect.construct(original, args);
+    const f: any = function() {
+      const modelObjectWithMetaProperty = target;
       if (options.audit === undefined) {
         options.audit = false;
       }
@@ -170,14 +170,14 @@ export function model(options: Partial<IFmModelMeta>): ClassDecorator {
       }
       const meta: IFmModelMeta = {
         ...options,
-        ...{ isProperty: isProperty(obj) },
-        ...{ property: getModelProperty(obj) },
-        ...{ properties: getProperties(obj) },
-        ...{ isRelationship: isRelationship(obj) },
-        ...{ relationship: getModelRelationship(obj) },
-        ...{ relationships: getRelationships(obj) },
-        ...{ dbIndexes: getDbIndexes(obj) },
-        ...{ pushKeys: getPushKeys(obj) },
+        ...{ isProperty: isProperty(modelObjectWithMetaProperty) },
+        ...{ property: getModelProperty(modelObjectWithMetaProperty) },
+        ...{ properties: getProperties(modelObjectWithMetaProperty) },
+        ...{ isRelationship: isRelationship(modelObjectWithMetaProperty) },
+        ...{ relationship: getModelRelationship(modelObjectWithMetaProperty) },
+        ...{ relationships: getRelationships(modelObjectWithMetaProperty) },
+        ...{ dbIndexes: getDbIndexes(modelObjectWithMetaProperty) },
+        ...{ pushKeys: getPushKeys(modelObjectWithMetaProperty) },
         ...{ dbOffset: options.dbOffset ? options.dbOffset : "" },
         ...{ audit: options.audit ? options.audit : false },
         ...{ plural: options.plural },
@@ -188,9 +188,9 @@ export function model(options: Partial<IFmModelMeta>): ClassDecorator {
         ...{ isDirty }
       };
 
-      addModelMeta(obj.constructor.name.toLowerCase(), meta);
+      addModelMeta(modelObjectWithMetaProperty.constructor.name.toLowerCase(), meta);
 
-      Reflect.defineProperty(obj, "META", {
+      Object.defineProperty(modelObjectWithMetaProperty.prototype, "META", {
         get(): IFmModelMeta {
           return meta;
         },
@@ -206,13 +206,13 @@ export function model(options: Partial<IFmModelMeta>): ClassDecorator {
         configurable: false,
         enumerable: false
       });
-      return obj;
+      return modelObjectWithMetaProperty;
     };
 
     // copy prototype so intanceof operator still works
-    f.prototype = original.prototype;
+    f.prototype = target.prototype;
 
     // return new constructor (will override original)
-    return f;
+    return f();
   };
 }

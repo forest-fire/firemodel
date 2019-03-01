@@ -78,7 +78,8 @@ function propertyMeta<T extends Model = Model>(context: object) {
  * @param model the schema object which is being looked up
  */
 export function getProperties(model: object) {
-  const modelName = model.constructor.name;
+  const modelName = (new model()).constructor.name;
+  console.log(modelName)
   const baseModel = hashToArray(propertiesByModel.Model, "property");
   const subClass =
     modelName === "Model"
