@@ -93,7 +93,6 @@ export function getProperties<T extends Model>(model: T) {
     parent = Object.getPrototypeOf(subClass.constructor);
   }
 
-  // return [...subClass, ...baseModel];
   return properties;
 }
 

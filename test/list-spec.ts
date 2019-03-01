@@ -394,6 +394,6 @@ describe("List class: ", () => {
 
   it('local state includes the postFix default of "all"', async () => {
     const peeps = await List.all(Person);
-    expect(peeps.localPath).to.equal("people.all");
+    expect(peeps.localPath).to.equal("people/all");
   });
 });

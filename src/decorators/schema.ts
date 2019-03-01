@@ -140,6 +140,8 @@ function getModelRelationship<T extends Model = Model>(
   modelKlass: IDictionary<IFmModelRelationshipMeta<T>>
 ) {
   const className = modelKlass.constructor.name;
+  console.log(className);
+
   return (prop: string) => (relationshipsByModel[className] || {})[prop];
 }
 
@@ -176,14 +178,14 @@ export function model(options: Partial<IFmModelMeta> = {}): ClassDecorator {
       }
       const meta: IFmModelMeta = {
         ...options,
-        ...{ isProperty: isProperty(modelObjectWithMetaProperty) },
-        ...{ property: getModelProperty(modelObjectWithMetaProperty) },
+        ...{ isProperty: isProperty(modelOfObject) },
+        ...{ property: getModelProperty(modelOfObject) },
         ...{ properties: getProperties(modelOfObject) },
-        ...{ isRelationship: isRelationship(modelObjectWithMetaProperty) },
-        ...{ relationship: getModelRelationship(modelObjectWithMetaProperty) },
-        ...{ relationships: getRelationships(modelObjectWithMetaProperty) },
-        ...{ dbIndexes: getDbIndexes(modelObjectWithMetaProperty) },
-        ...{ pushKeys: getPushKeys(modelObjectWithMetaProperty) },
+        ...{ isRelationship: isRelationship(modelOfObject) },
+        ...{ relationship: getModelRelationship(modelOfObject) },
+        ...{ relationships: getRelationships(modelOfObject) },
+        ...{ dbIndexes: getDbIndexes(modelOfObject) },
+        ...{ pushKeys: getPushKeys(modelOfObject) },
         ...{ dbOffset: options.dbOffset ? options.dbOffset : "" },
         ...{ audit: options.audit ? options.audit : false },
         ...{ plural: options.plural },
