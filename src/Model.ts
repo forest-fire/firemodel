@@ -5,78 +5,21 @@ export type NonProperties<T> = {
 export type Properties<T> = Pick<T, NonProperties<T>>;
 import { IDictionary, epochWithMilliseconds, datetime } from "common-types";
 import { property, mock } from "./decorators/constraints";
-import { IFmModelMeta } from "./decorators/schema";
+import { model } from "./decorators/model";
 import { index, uniqueIndex } from "./decorators/indexing";
+import { IFmModelMeta } from "./decorators/types";
 
-export interface IModelOptions {
-  logger?: ILogger;
-  db?: import("abstracted-firebase").RealTimeDB;
-}
-export interface IMetaData {
-  attributes: IDictionary;
-  relationships: IDictionary<IRelationship>;
-}
-
-export interface IAuditFilter {
-  /** audit entries since a given unix epoch timestamp */
-  since?: number;
-  /** the last X number of audit entries */
-  last?: number;
-}
-
-export type IComparisonOperator = "=" | ">" | "<";
-export type IConditionAndValue = [
-  IComparisonOperator,
-  boolean | string | number
-];
-export type FirebaseCrudOperations = "push" | "set" | "update" | "remove";
-
-export interface IAuditRecord {
-  crud: FirebaseCrudOperations;
-  when: datetime;
-  schema: string;
-  key: string;
-  info: IDictionary;
-}
-
-export interface ILogger {
-  log: (message: string) => void;
-  warn: (message: string) => void;
-  debug: (message: string) => void;
-  error: (message: string) => void;
-}
-
-export interface IRelationship {
-  cardinality: string;
-  policy: RelationshipPolicy;
-}
-export enum RelationshipPolicy {
-  keys = "keys",
-  lazy = "lazy",
-  inline = "inline"
-}
-export enum RelationshipCardinality {
-  hasMany = "hasMany",
-  belongsTo = "belongsTo"
-}
-
-export type FMModelConstructor<T> = new () => T;
-
-export abstract class Model {
+@model()
+export class Model {
+  // prettier-ignore
   /** The primary-key for the record */
-  @property
-  @uniqueIndex
-  public id?: string;
+  @property @uniqueIndex public id?: string;
+  // prettier-ignore
   /** The last time that a given record was updated */
-  @property
-  @mock("dateRecentMiliseconds")
-  @index
-  public lastUpdated?: epochWithMilliseconds;
+  @property @mock("dateRecentMiliseconds") @index public lastUpdated?: epochWithMilliseconds;
+  // prettier-ignore
   /** The datetime at which this record was first created */
-  @property
-  @mock("datePastMiliseconds")
-  @index
-  public createdAt?: epochWithMilliseconds;
+  @property @mock("datePastMiliseconds") @index public createdAt?: epochWithMilliseconds;
   /** Metadata properties of the given schema */
   public META?: IFmModelMeta;
 }

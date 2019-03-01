@@ -1,6 +1,7 @@
-import { IFmModelMeta, model } from "./decorators/schema";
+import { model } from "./decorators/model";
 import { IDictionary } from "common-types";
 import { Model } from "./Model";
+import { IFmModelMeta } from "./decorators/types";
 
 const meta: IDictionary<IFmModelMeta> = {};
 

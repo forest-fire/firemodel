@@ -1,8 +1,9 @@
 import { SerializedQuery } from "serialized-query";
-import { Model, FMModelConstructor } from "../Model";
-import { FmRelationshipType } from "../decorators/schema";
+import { Model } from "../Model";
 import { IMultiPathUpdates } from "../FireModel";
 import { ICompositeKey } from "../@types/record-types";
+import { FmModelConstructor } from "../@types/general";
+import { FmRelationshipType } from "../decorators/types";
 export { VuexMutations } from "./VuexMutations";
 export declare type Extractable<T, U> = T extends U ? any : never;
 export declare type NotString<T> = string extends T ? never : any;
@@ -75,7 +76,7 @@ export interface IFMRelationshipEvent<T extends Model = Model> extends IFMRecord
     fk: string;
     fkModelName: string;
     fkPluralName: string;
-    fkConstructor?: FMModelConstructor<T>;
+    fkConstructor?: FmModelConstructor<T>;
     fkRelType?: FmRelationshipType;
     fkLocalPath?: string;
 }
@@ -85,7 +86,7 @@ export interface IFMRecordEventCore<T extends Model = Model> {
     /** the name of the Model who's record has changed */
     model: string;
     /** the constructor for the Model of the record which has changed */
-    modelConstructor: FMModelConstructor<T>;
+    modelConstructor: FmModelConstructor<T>;
     /** the path in Firebase where this Record should is stored */
     dbPath: string;
     /** the composite key that uniquely defines this record */

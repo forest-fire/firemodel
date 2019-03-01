@@ -1,8 +1,6 @@
 import { Model } from "../Model";
 import { IDictionary } from "common-types";
-import { IFmModelPropertyMeta, model } from "./schema";
 import { set, get } from "lodash";
-import { pathJoin } from "../path";
 
 export interface IHasPropertyAndType {
   property: string;

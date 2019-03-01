@@ -1,4 +1,4 @@
-import { Model, IModelOptions } from "./Model";
+import { Model } from "./Model";
 import { Record } from "./Record";
 import { SerializedQuery, IComparisonOperator } from "serialized-query";
 
@@ -10,6 +10,7 @@ import { IReduxDispatch } from "./VuexWrapper";
 import { pathJoin } from "./path";
 import { getModelMeta } from "./ModelMeta";
 import { FMEvents, IFMRecordListEvent } from "./state-mgmt";
+import { IModelOptions } from "./@types/general";
 
 const DEFAULT_IF_NOT_FOUND = "__DO_NOT_USE__";
 
@@ -300,13 +301,13 @@ export class List<T extends Model> extends FireModel<T> {
     ].join("/");
   }
 
+  /**
+   * Gives the path in the client state tree to the beginning
+   * where this LIST will reside
+   */
   public get localPath() {
     const meta = getModelMeta(this._model);
-    return pathJoin(
-      meta.localOffset,
-      this.pluralName,
-      meta.localPostfix
-    ).replace(/\//g, ".");
+    return pathJoin(meta.localOffset, this.pluralName, meta.localPostfix);
   }
 
   public get localPathToSince() {
@@ -372,6 +373,8 @@ export class List<T extends Model> extends FireModel<T> {
     value: T[typeof prop],
     defaultIfNotFound = DEFAULT_IF_NOT_FOUND
   ): Record<T> {
+    console.log(prop, this.META.properties);
+
     const list =
       this.META.isProperty(prop) ||
       (this.META.isRelationship(prop) &&

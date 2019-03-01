@@ -1,10 +1,11 @@
-import { Model, IModelOptions } from "./Model";
+import { Model } from "./Model";
 import { Record } from "./Record";
 import { SerializedQuery, IComparisonOperator } from "serialized-query";
 import { epochWithMilliseconds, IDictionary } from "common-types";
 import { FireModel } from "./FireModel";
 import { RealTimeDB } from "abstracted-firebase";
 import { IReduxDispatch } from "./VuexWrapper";
+import { IModelOptions } from "./@types/general";
 export declare class List<T extends Model> extends FireModel<T> {
     /**
      * Sets the default database to be used by all FireModel classes
@@ -79,6 +80,10 @@ export declare class List<T extends Model> extends FireModel<T> {
     constructor(model: new () => T, options?: IModelOptions);
     readonly length: number;
     readonly dbPath: string;
+    /**
+     * Gives the path in the client state tree to the beginning
+     * where this LIST will reside
+     */
     readonly localPath: any;
     readonly localPathToSince: any;
     /** Returns another List with data filtered down by passed in filter function */

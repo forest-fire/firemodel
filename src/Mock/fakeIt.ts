@@ -119,6 +119,8 @@ export default function fakeIt(
       return helper.faker.lorem.paragraphs();
     case "url":
       return helper.faker.internet.url();
+    case "uuid":
+      return helper.faker.random.uuid();
     case "random":
       return helper.faker.random.arrayElement(rest[0]);
     case "sequence":

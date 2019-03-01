@@ -5,8 +5,9 @@ import PropertyNamePatterns from "./PropertyNamePatterns";
 export default function mockValue(db, propMeta, ...rest) {
     if (!db || !(db instanceof RealTimeDB)) {
         const e = new Error(`When trying to Mock the value of "${propMeta.property}" the database reference passed in not a valid instance of the RealTimeDB provided by either 'abstracted-client' or 'abstracted-server' [ ${typeof db}, ${typeof db === "object" ? db.constructor.name : db} ].`);
-        e.name = "FireModel::NotReady";
-        throw e;
+        console.log(e.message);
+        // e.name = "FireModel::NotReady";
+        // throw e;
     }
     // TODO: it appears FireMock is not sending back the proper context
     // so we are overwritting as least some for now

@@ -1,6 +1,6 @@
 import "reflect-metadata";
 import { propertyReflector } from "./reflector";
-import { propertiesByModel } from "./decorator";
+import { propertiesByModel } from "./model-meta/property-store";
 export function constrainedProperty(options = {}) {
     return propertyReflector(Object.assign({}, options, { isRelationship: false, isProperty: true }), propertiesByModel);
 }

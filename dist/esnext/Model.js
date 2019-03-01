@@ -8,35 +8,24 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 import { property, mock } from "./decorators/constraints";
+import { model } from "./decorators/model";
 import { index, uniqueIndex } from "./decorators/indexing";
-export var RelationshipPolicy;
-(function (RelationshipPolicy) {
-    RelationshipPolicy["keys"] = "keys";
-    RelationshipPolicy["lazy"] = "lazy";
-    RelationshipPolicy["inline"] = "inline";
-})(RelationshipPolicy || (RelationshipPolicy = {}));
-export var RelationshipCardinality;
-(function (RelationshipCardinality) {
-    RelationshipCardinality["hasMany"] = "hasMany";
-    RelationshipCardinality["belongsTo"] = "belongsTo";
-})(RelationshipCardinality || (RelationshipCardinality = {}));
-export class Model {
-}
+let Model = class Model {
+};
 __decorate([
-    property,
-    uniqueIndex,
+    property, uniqueIndex,
     __metadata("design:type", String)
 ], Model.prototype, "id", void 0);
 __decorate([
-    property,
-    mock("dateRecentMiliseconds"),
-    index,
+    property, mock("dateRecentMiliseconds"), index,
     __metadata("design:type", Number)
 ], Model.prototype, "lastUpdated", void 0);
 __decorate([
-    property,
-    mock("datePastMiliseconds"),
-    index,
+    property, mock("datePastMiliseconds"), index,
     __metadata("design:type", Number)
 ], Model.prototype, "createdAt", void 0);
+Model = __decorate([
+    model()
+], Model);
+export { Model };
 //# sourceMappingURL=Model.js.map

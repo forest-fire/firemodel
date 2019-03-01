@@ -2,13 +2,7 @@ import "reflect-metadata";
 import { IDictionary } from "common-types";
 import { propertyReflector } from "./reflector";
 import { hashToArray } from "typed-conversions";
-
-export interface IModelIndexMeta {
-  isIndex: boolean;
-  isUniqueIndex: boolean;
-  desc?: string;
-  property: string;
-}
+import { IModelIndexMeta } from "./types";
 
 /** DB Indexes accumlated by index decorators */
 export const indexesForModel: IDictionary<IDictionary<IModelIndexMeta>> = {};

@@ -1,11 +1,12 @@
 import { RealTimeDB } from "abstracted-firebase";
-import { Model, IModelOptions } from "./Model";
+import { Model } from "./Model";
 import { Omit } from "common-types";
 import { FireModel } from "./FireModel";
 import { IReduxDispatch } from "./VuexWrapper";
 import { IFMEventName } from "./state-mgmt/index";
 import { IAuditChange, IAuditOperations } from "./Audit";
 import { IIdWithDynamicPrefix, IFkReference, ICompositeKey } from "./@types/record-types";
+import { IModelOptions } from "./@types/general";
 export declare type ModelOptionalId<T extends Model> = Omit<T, "id"> & {
     id?: string;
 };
@@ -69,6 +70,11 @@ export declare class Record<T extends Model> extends FireModel<T> {
      * depends on appropriate configuration of model to be accurate.
      */
     readonly localPath: any;
+    /**
+     * The path in the local state tree that brings you to
+     * the
+     */
+    readonly localOffset: any;
     readonly existsOnDB: boolean;
     /** indicates whether this record is already being watched locally */
     readonly isBeingWatched: boolean;

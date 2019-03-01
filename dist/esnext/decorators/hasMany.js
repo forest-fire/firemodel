@@ -1,5 +1,5 @@
 import { propertyReflector } from "./reflector";
-import { relationshipsByModel } from "./decorator";
+import { relationshipsByModel } from "./model-meta/relationship-store";
 export function hasMany(fnToModelConstructor, inverse) {
     const payload = {
         isRelationship: true,

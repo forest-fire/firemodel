@@ -1,7 +1,7 @@
 // tslint:disable-next-line:no-implicit-dependencies
 import { RealTimeDB } from "abstracted-firebase";
-import { Model, IModelOptions } from "./Model";
-import { createError, fk, IDictionary, Omit } from "common-types";
+import { Model } from "./Model";
+import { createError, IDictionary, Omit } from "common-types";
 import { key as fbKey } from "firebase-key";
 import { FireModel, IMultiPathUpdates } from "./FireModel";
 import { IReduxDispatch } from "./VuexWrapper";
@@ -19,6 +19,7 @@ import {
   createCompositeKey,
   createCompositeKeyString
 } from "./Record/CompositeKey";
+import { IModelOptions } from "./@types/general";
 
 // TODO: see if there's a way to convert to interface so that design time errors are more clear
 export type ModelOptionalId<T extends Model> = Omit<T, "id"> & { id?: string };
@@ -175,11 +176,19 @@ export class Record<T extends Model> extends FireModel<T> {
         'Invalid Path: you can not ask for the dbPath before setting an "id" property.'
       );
     }
+    return pathJoin(this.localOffset, this.data.id);
+  }
+
+  /**
+   * The path in the local state tree that brings you to
+   * the
+   */
+  public get localOffset() {
     return pathJoin(
       this.data.META.localOffset,
       this.pluralName,
-      this.data.id
-    ).replace(/\//g, ".");
+      this.data.META.localPostfix
+    );
   }
 
   public get existsOnDB() {
@@ -478,6 +487,8 @@ export class Record<T extends Model> extends FireModel<T> {
     if (
       Object.keys(props).some((key: any) => {
         const root = key.split(".")[0];
+        console.log(root, this.META.property(root));
+
         return this.META.property(root).isRelationship;
       })
     ) {

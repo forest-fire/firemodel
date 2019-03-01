@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const reflector_1 = require("./reflector");
-const decorator_1 = require("./decorator");
+const relationship_store_1 = require("./model-meta/relationship-store");
 function belongsTo(fnToModelConstructor, inverse) {
     try {
         const payload = {
@@ -13,7 +13,7 @@ function belongsTo(fnToModelConstructor, inverse) {
         if (inverse) {
             payload.inverseProperty = inverse;
         }
-        return reflector_1.propertyReflector(payload, decorator_1.relationshipsByModel);
+        return reflector_1.propertyReflector(payload, relationship_store_1.relationshipsByModel);
     }
     catch (e) {
         e.name =
