@@ -372,6 +372,8 @@ export class List<T extends Model> extends FireModel<T> {
     value: T[typeof prop],
     defaultIfNotFound = DEFAULT_IF_NOT_FOUND
   ): Record<T> {
+    console.log(prop, this.META.properties);
+
     const list =
       this.META.isProperty(prop) ||
       (this.META.isRelationship(prop) &&

@@ -486,6 +486,8 @@ export class Record<T extends Model> extends FireModel<T> {
     if (
       Object.keys(props).some((key: any) => {
         const root = key.split(".")[0];
+        console.log(root, this.META.property(root));
+
         return this.META.property(root).isRelationship;
       })
     ) {

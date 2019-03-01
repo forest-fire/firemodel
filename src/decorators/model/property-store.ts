@@ -8,14 +8,28 @@ export const propertiesByModel: IDictionary<
   IDictionary<IFmModelPropertyMeta>
 > = {};
 
-/** lookup meta data for schema properties */
-function getModelProperty<T extends Model = Model>(modelKlass: IDictionary) {
-  const className = modelKlass.constructor.name;
+/** allows the addition of meta information to be added to a model's properties */
+export function addPropertyToModelMeta(
+  modelName: string,
+  property: string,
+  meta: IFmModelPropertyMeta
+) {
+  if (!propertiesByModel[modelName]) {
+    propertiesByModel[modelName] = {};
+  }
+  propertiesByModel[modelName][property] = meta;
+}
 
-  return (prop: string) =>
-    (({ ...propertiesByModel[className], ...propertiesByModel.Model } || {})[
-      prop
-    ]);
+/** lookup meta data for schema properties */
+export function getModelProperty<T extends Model = Model>(model: T) {
+  const className = model.constructor.name;
+  const propsForModel = getProperties(model);
+
+  return (prop: string) => {
+    return propsForModel.find(value => {
+      return value.property === prop;
+    });
+  };
 }
 
 /**

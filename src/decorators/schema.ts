@@ -2,15 +2,14 @@ import "reflect-metadata";
 import { IDictionary, ClassDecorator } from "common-types";
 import {
   getRelationships,
-  getProperties,
   getPushKeys,
-  propertiesByModel,
   relationshipsByModel
 } from "./decorator";
 import { Model } from "../Model";
 import { addModelMeta } from "../ModelMeta";
 import { IModelIndexMeta, getDbIndexes } from "./indexing";
 import { FmMockType } from "./constraints";
+import { getModelProperty, getProperties } from "./model/property-store";
 /* tslint:disable:only-arrow-functions */
 
 export type FmRelationshipType = "hasMany" | "hasOne";
@@ -112,16 +111,6 @@ export interface IFmModelAttributeBase<T> {
   fkModelName?: string;
 }
 
-/** lookup meta data for schema properties */
-function getModelProperty<T extends Model = Model>(modelKlass: IDictionary) {
-  const className = modelKlass.constructor.name;
-
-  return (prop: string) =>
-    (({ ...propertiesByModel[className], ...propertiesByModel.Model } || {})[
-      prop
-    ]);
-}
-
 function isProperty(modelKlass: IDictionary) {
   return (prop: string) => {
     const modelProps = getModelProperty(modelKlass)(prop);
@@ -131,8 +120,7 @@ function isProperty(modelKlass: IDictionary) {
 
 function isRelationship(modelKlass: IDictionary) {
   return (prop: string) => {
-    const modelReln = getModelRelationship(modelKlass)(prop);
-    return modelReln ? true : false;
+    return getModelRelationship(modelKlass)(prop) ? true : false;
   };
 }
 
@@ -140,7 +128,11 @@ function getModelRelationship<T extends Model = Model>(
   modelKlass: IDictionary<IFmModelRelationshipMeta<T>>
 ) {
   const className = modelKlass.constructor.name;
-  console.log(className);
+  if (relationshipsByModel[className]) {
+    console.log(relationshipsByModel[className]);
+  } else {
+    console.log("missing: ", className);
+  }
 
   return (prop: string) => (relationshipsByModel[className] || {})[prop];
 }
@@ -148,16 +140,10 @@ function getModelRelationship<T extends Model = Model>(
 export function model(options: Partial<IFmModelMeta> = {}): ClassDecorator {
   let isDirty: boolean = false;
   return (target: any): void => {
-    console.log("\n\nmodel decorator\n", target, new target().constructor);
-
     // Function to add META
     const f: any = function() {
       const modelObjectWithMetaProperty = target;
       const modelOfObject = new modelObjectWithMetaProperty();
-      console.log(
-        modelOfObject.constructor.name,
-        Object.getPrototypeOf(modelOfObject.constructor).name
-      );
 
       if (options.audit === undefined) {
         options.audit = false;

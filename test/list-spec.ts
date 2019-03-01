@@ -338,19 +338,14 @@ describe("List class: ", () => {
     db.mock.queueSchema("person", 1, { name: "foobar" });
     db.mock.queueSchema("person", 3, { age: 12 }).generate();
 
-    const byId = (id: string) => (item: Person) => item.id === id;
-    const byAge = (age: number) => (item: Person) => item.age === age;
+    const people = await List.all(Person);
 
-    const list = await List.all(Person);
-    const firstPersonId = helpers.firstKey(db.mock.db.authenticated.people);
-    expect(list.find(byId(firstPersonId))).is.an("object");
-    expect(list.find(byId(firstPersonId)).data.age).is.equal(
-      list.findWhere("id", firstPersonId).data.age
-    );
-    expect(list.find(byAge(12))).is.an("object");
-    expect(list.find(byAge(12)).data.age).is.equal(
-      list.findWhere("age", 12).data.age
-    );
+    people.map(person => {
+      expect(person.id).to.be.a("string");
+      expect(person.age).to.be.a("number");
+      const foundById = people.findWhere("id", person.id);
+      const foundByAge = people.findWhere("age", person.age);
+    });
   });
 
   it("using remove() able to change local state, db state, and state mgmt", async () => {

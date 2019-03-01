@@ -4,6 +4,7 @@ import { IFmModelPropertyMeta, IFmModelRelationshipMeta } from "./index";
 import { IDictionary } from "common-types";
 import { set, get } from "lodash";
 import { hashToArray } from "typed-conversions";
+import { getProperties, addPropertyToModelMeta } from "./model/property-store";
 
 function push<T extends Model = Model>(
   target: IDictionary,
@@ -17,10 +18,6 @@ function push<T extends Model = Model>(
   }
 }
 
-/** Properties accumlated by propertyDecorators  */
-export const propertiesByModel: IDictionary<
-  IDictionary<IFmModelPropertyMeta>
-> = {};
 /** Relationships accumlated by hasMany/hasOne decorators */
 export const relationshipsByModel: IDictionary<
   IDictionary<IFmModelRelationshipMeta>
@@ -46,12 +43,14 @@ export const propertyDecorator = <T extends Model>(
 
   if (nameValuePairs.isProperty) {
     if (property) {
-      push(propertiesByModel, target.constructor.name, {
-        ...meta,
-        [property]: key
-      });
+      addPropertyToModelMeta(target.constructor.name, property, meta);
+      // push(propertiesByModel, target.constructor.name, {
+      //   ...meta,
+      //   [property]: key
+      // });
     } else {
-      push(propertiesByModel, target.constructor.name, meta);
+      // push(propertiesByModel, target.constructor.name, meta);
+      addPropertyToModelMeta(target.constructor.name, property, meta);
     }
   }
   if (nameValuePairs.isRelationship) {
@@ -70,30 +69,6 @@ export const propertyDecorator = <T extends Model>(
 function propertyMeta<T extends Model = Model>(context: object) {
   return (prop: string): IFmModelPropertyMeta<T> =>
     Reflect.getMetadata(prop, context);
-}
-
-/**
- * Gets all the properties for a given model
- *
- * @param modelConstructor the schema object which is being looked up
- */
-export function getProperties<T extends Model>(model: T) {
-  const modelName = model.constructor.name;
-  const properties =
-    hashToArray(propertiesByModel[modelName], "property") || [];
-  let parent = Object.getPrototypeOf(model.constructor);
-
-  while (parent.name) {
-    const subClass = new parent();
-    const subClassName = subClass.constructor.name;
-    properties.push(
-      ...hashToArray(propertiesByModel[subClassName], "property")
-    );
-
-    parent = Object.getPrototypeOf(subClass.constructor);
-  }
-
-  return properties;
 }
 
 /**
