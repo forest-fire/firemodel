@@ -52,11 +52,13 @@ function propertyMeta(context) {
  */
 function getProperties(model) {
     const modelName = model.constructor.name;
+    const parent = Object.getPrototypeOf(model.constructor).name;
     const baseModel = typed_conversions_1.hashToArray(exports.propertiesByModel.Model, "property");
-    const subClass = modelName === "Model"
+    const modelProps = modelName === "Model"
         ? []
         : typed_conversions_1.hashToArray(exports.propertiesByModel[modelName], "property");
-    return [...subClass, ...baseModel];
+    const subClassProps = parent === "Model" ? [] : typed_conversions_1.hashToArray(exports.propertiesByModel[parent].name);
+    return [...modelProps, ...subClassProps, ...baseModel];
 }
 exports.getProperties = getProperties;
 /**

@@ -130,7 +130,14 @@ class Record extends FireModel_1.FireModel {
         if (!this.data.id) {
             throw new Error('Invalid Path: you can not ask for the dbPath before setting an "id" property.');
         }
-        return path_1.pathJoin(this.data.META.localOffset, this.pluralName, this.data.id).replace(/\//g, ".");
+        return path_1.pathJoin(this.localOffset, this.data.id);
+    }
+    /**
+     * The path in the local state tree that brings you to
+     * the
+     */
+    get localOffset() {
+        return path_1.pathJoin(this.data.META.localOffset, this.pluralName, this.data.META.localPostfix);
     }
     get existsOnDB() {
         return this.data && this.data.id ? true : false;

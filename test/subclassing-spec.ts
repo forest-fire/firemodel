@@ -15,7 +15,7 @@ describe.only("Subclassing Models", () => {
     expect(properties).to.include("priorDeliveryAddress");
   });
 
-  it("Subclass has parents props", async () => {
+  it.only("Subclass has parents props", async () => {
     const customer = Record.create(Customer);
     const properties = customer.META.properties.map(p => p.property);
     console.log(properties);

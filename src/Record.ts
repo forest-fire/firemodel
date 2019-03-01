@@ -175,11 +175,19 @@ export class Record<T extends Model> extends FireModel<T> {
         'Invalid Path: you can not ask for the dbPath before setting an "id" property.'
       );
     }
+    return pathJoin(this.localOffset, this.data.id);
+  }
+
+  /**
+   * The path in the local state tree that brings you to
+   * the
+   */
+  public get localOffset() {
     return pathJoin(
       this.data.META.localOffset,
       this.pluralName,
-      this.data.id
-    ).replace(/\//g, ".");
+      this.data.META.localPostfix
+    );
   }
 
   public get existsOnDB() {

@@ -46,6 +46,7 @@ const NamedFakes = {
     imageTransport: true,
     phoneNumber: true,
     email: true,
+    /** a single word */
     word: true,
     words: true,
     sentence: true,
@@ -53,6 +54,7 @@ const NamedFakes = {
     paragraphs: true,
     slug: true,
     url: true,
+    uuid: true,
     random: true,
     sequence: true,
     placeImage: true,

@@ -79,6 +79,10 @@ export declare class List<T extends Model> extends FireModel<T> {
     constructor(model: new () => T, options?: IModelOptions);
     readonly length: number;
     readonly dbPath: string;
+    /**
+     * Gives the path in the client state tree to the beginning
+     * where this LIST will reside
+     */
     readonly localPath: any;
     readonly localPathToSince: any;
     /** Returns another List with data filtered down by passed in filter function */

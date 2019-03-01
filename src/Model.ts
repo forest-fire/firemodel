@@ -5,7 +5,7 @@ export type NonProperties<T> = {
 export type Properties<T> = Pick<T, NonProperties<T>>;
 import { IDictionary, epochWithMilliseconds, datetime } from "common-types";
 import { property, mock } from "./decorators/constraints";
-import { IFmModelMeta } from "./decorators/schema";
+import { IFmModelMeta, model } from "./decorators/schema";
 import { index, uniqueIndex } from "./decorators/indexing";
 
 export interface IModelOptions {
@@ -60,8 +60,7 @@ export enum RelationshipCardinality {
   belongsTo = "belongsTo"
 }
 
-export type FMModelConstructor<T> = new () => T;
-
+@model()
 export abstract class Model {
   /** The primary-key for the record */
   @property

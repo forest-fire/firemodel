@@ -12,9 +12,9 @@ export declare const propertyDecorator: <T extends Model>(nameValuePairs?: IDict
  *
  * @param model the schema object which is being looked up
  */
-export declare function getProperties(model: object): IFmModelPropertyMeta<Model>[];
+export declare function getProperties(model: object): any[];
 /**
  * Gets all the relationships for a given model
  */
 export declare function getRelationships(model: object): IFmModelRelationshipMeta<Model>[];
-export declare function getPushKeys(target: object): ("id" | "lastUpdated" | "createdAt" | "META")[];
+export declare function getPushKeys(target: object): any[];

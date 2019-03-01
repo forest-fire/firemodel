@@ -44,6 +44,7 @@ declare const NamedFakes: {
     imageTransport: boolean;
     phoneNumber: boolean;
     email: boolean;
+    /** a single word */
     word: boolean;
     words: boolean;
     sentence: boolean;
@@ -51,6 +52,7 @@ declare const NamedFakes: {
     paragraphs: boolean;
     slug: boolean;
     url: boolean;
+    uuid: boolean;
     random: boolean;
     sequence: boolean;
     placeImage: boolean;

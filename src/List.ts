@@ -300,13 +300,13 @@ export class List<T extends Model> extends FireModel<T> {
     ].join("/");
   }
 
+  /**
+   * Gives the path in the client state tree to the beginning
+   * where this LIST will reside
+   */
   public get localPath() {
     const meta = getModelMeta(this._model);
-    return pathJoin(
-      meta.localOffset,
-      this.pluralName,
-      meta.localPostfix
-    ).replace(/\//g, ".");
+    return pathJoin(meta.localOffset, this.pluralName, meta.localPostfix);
   }
 
   public get localPathToSince() {

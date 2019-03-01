@@ -50,11 +50,13 @@ function propertyMeta(context) {
  */
 export function getProperties(model) {
     const modelName = model.constructor.name;
+    const parent = Object.getPrototypeOf(model.constructor).name;
     const baseModel = hashToArray(propertiesByModel.Model, "property");
-    const subClass = modelName === "Model"
+    const modelProps = modelName === "Model"
         ? []
         : hashToArray(propertiesByModel[modelName], "property");
-    return [...subClass, ...baseModel];
+    const subClassProps = parent === "Model" ? [] : hashToArray(propertiesByModel[parent].name);
+    return [...modelProps, ...subClassProps, ...baseModel];
 }
 /**
  * Gets all the relationships for a given model

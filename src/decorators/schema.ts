@@ -143,14 +143,20 @@ function getModelRelationship<T extends Model = Model>(
   return (prop: string) => (relationshipsByModel[className] || {})[prop];
 }
 
-export function model(options: Partial<IFmModelMeta>): ClassDecorator {
+export function model(options: Partial<IFmModelMeta> = {}): ClassDecorator {
   let isDirty: boolean = false;
   return (target: any): void => {
-    console.log(target, (new target).constructor)
+    console.log("\n\nmodel decorator\n", target, new target().constructor);
 
-    // new constructor
+    // Function to add META
     const f: any = function() {
       const modelObjectWithMetaProperty = target;
+      const modelOfObject = new modelObjectWithMetaProperty();
+      console.log(
+        modelOfObject.constructor.name,
+        Object.getPrototypeOf(modelOfObject.constructor).name
+      );
+
       if (options.audit === undefined) {
         options.audit = false;
       }
@@ -172,7 +178,7 @@ export function model(options: Partial<IFmModelMeta>): ClassDecorator {
         ...options,
         ...{ isProperty: isProperty(modelObjectWithMetaProperty) },
         ...{ property: getModelProperty(modelObjectWithMetaProperty) },
-        ...{ properties: getProperties(modelObjectWithMetaProperty) },
+        ...{ properties: getProperties(modelOfObject) },
         ...{ isRelationship: isRelationship(modelObjectWithMetaProperty) },
         ...{ relationship: getModelRelationship(modelObjectWithMetaProperty) },
         ...{ relationships: getRelationships(modelObjectWithMetaProperty) },
@@ -188,7 +194,10 @@ export function model(options: Partial<IFmModelMeta>): ClassDecorator {
         ...{ isDirty }
       };
 
-      addModelMeta(modelObjectWithMetaProperty.constructor.name.toLowerCase(), meta);
+      addModelMeta(
+        modelObjectWithMetaProperty.constructor.name.toLowerCase(),
+        meta
+      );
 
       Object.defineProperty(modelObjectWithMetaProperty.prototype, "META", {
         get(): IFmModelMeta {

@@ -25,8 +25,11 @@ function getModelRelationship(modelKlass) {
 }
 export function model(options) {
     let isDirty = false;
-    return (target) => {
+    function modelDecoration(target) {
         const original = target;
+        const childOfBaseModelClass = Object.getPrototypeOf(target).name === "Model";
+        const newModel = new target();
+        console.log(target, newModel, Object.getPrototypeOf(target).name, options.dbOffset);
         // new constructor
         const f = function (...args) {
             const obj = Reflect.construct(original, args);
@@ -64,6 +67,7 @@ export function model(options) {
         f.prototype = original.prototype;
         // return new constructor (will override original)
         return f;
-    };
+    }
+    return modelDecoration;
 }
 //# sourceMappingURL=schema.js.map

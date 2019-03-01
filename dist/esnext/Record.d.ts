@@ -69,6 +69,11 @@ export declare class Record<T extends Model> extends FireModel<T> {
      * depends on appropriate configuration of model to be accurate.
      */
     readonly localPath: any;
+    /**
+     * The path in the local state tree that brings you to
+     * the
+     */
+    readonly localOffset: any;
     readonly existsOnDB: boolean;
     /** indicates whether this record is already being watched locally */
     readonly isBeingWatched: boolean;

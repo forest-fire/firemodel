@@ -17,8 +17,10 @@ export default function mockValue<T extends Model>(
         typeof db === "object" ? db.constructor.name : db
       } ].`
     );
-    e.name = "FireModel::NotReady";
-    throw e;
+    console.log(e.message);
+
+    // e.name = "FireModel::NotReady";
+    // throw e;
   }
 
   // TODO: it appears FireMock is not sending back the proper context

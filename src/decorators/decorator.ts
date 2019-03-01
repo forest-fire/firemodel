@@ -1,5 +1,5 @@
 import "reflect-metadata";
-import { Model } from "../";
+import { Model } from "../Model";
 import { IFmModelPropertyMeta, IFmModelRelationshipMeta } from "./index";
 import { IDictionary } from "common-types";
 import { set, get } from "lodash";
@@ -75,18 +75,26 @@ function propertyMeta<T extends Model = Model>(context: object) {
 /**
  * Gets all the properties for a given model
  *
- * @param model the schema object which is being looked up
+ * @param modelConstructor the schema object which is being looked up
  */
-export function getProperties(model: object) {
-  const modelName = (new model()).constructor.name;
-  console.log(modelName)
-  const baseModel = hashToArray(propertiesByModel.Model, "property");
-  const subClass =
-    modelName === "Model"
-      ? []
-      : hashToArray(propertiesByModel[modelName], "property");
+export function getProperties<T extends Model>(model: T) {
+  const modelName = model.constructor.name;
+  const properties =
+    hashToArray(propertiesByModel[modelName], "property") || [];
+  let parent = Object.getPrototypeOf(model.constructor);
 
-  return [...subClass, ...baseModel];
+  while (parent.name) {
+    const subClass = new parent();
+    const subClassName = subClass.constructor.name;
+    properties.push(
+      ...hashToArray(propertiesByModel[subClassName], "property")
+    );
+
+    parent = Object.getPrototypeOf(subClass.constructor);
+  }
+
+  // return [...subClass, ...baseModel];
+  return properties;
 }
 
 /**
