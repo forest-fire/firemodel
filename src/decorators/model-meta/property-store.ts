@@ -1,7 +1,7 @@
 import { IDictionary } from "common-types";
-import { IFmModelPropertyMeta } from "../schema";
 import { Model } from "../../Model";
 import { hashToArray } from "typed-conversions";
+import { IFmModelPropertyMeta } from "../types";
 
 /** Properties accumlated by propertyDecorators  */
 export const propertiesByModel: IDictionary<

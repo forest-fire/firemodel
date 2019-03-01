@@ -1,6 +1,5 @@
 import "reflect-metadata";
 import { Model } from "../Model";
-import { IFmModelPropertyMeta, IFmModelRelationshipMeta } from "./index";
 import { IDictionary } from "common-types";
 import { set, get } from "lodash";
 import {
@@ -8,6 +7,7 @@ import {
   addPropertyToModelMeta
 } from "./model-meta/property-store";
 import { addRelationshipToModelMeta } from "./model-meta/relationship-store";
+import { IFmModelPropertyMeta, IFmModelRelationshipMeta } from "./types";
 
 function push<T extends Model = Model>(
   target: IDictionary,

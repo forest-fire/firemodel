@@ -1,7 +1,7 @@
 import { IDictionary } from "common-types";
-import { IFmModelRelationshipMeta } from "../schema";
 import { Model } from "../../Model";
 import { hashToArray } from "typed-conversions";
+import { IFmModelRelationshipMeta } from "../types";
 
 export const relationshipsByModel: IDictionary<
   IDictionary<IFmModelRelationshipMeta>

@@ -1,12 +1,8 @@
 import { Model } from "../Model";
-import { Record } from "../Record";
-import { addModelMeta } from "../ModelMeta";
 import { propertyReflector } from "./reflector";
-import { IFmModelRelationshipMeta } from "./schema";
 import { Omit } from "common-types";
 import { relationshipsByModel } from "./model-meta/relationship-store";
-
-export type IFmHasOne = string;
+import { IFmModelRelationshipMeta } from "./types";
 
 export function belongsTo<T = Model>(
   fnToModelConstructor: () => new () => T,
