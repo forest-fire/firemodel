@@ -2,9 +2,9 @@ import { Model } from "../Model";
 import { Record } from "../Record";
 import { addModelMeta } from "../ModelMeta";
 import { propertyReflector } from "./reflector";
-import { relationshipsByModel } from "./decorator";
 import { IFmModelRelationshipMeta } from "./schema";
 import { Omit } from "common-types";
+import { relationshipsByModel } from "./model-meta/relationship-store";
 
 export type IFmHasOne = string;
 
@@ -13,10 +13,7 @@ export function belongsTo<T = Model>(
   inverse?: string
 ) {
   try {
-    const payload: Omit<
-      IFmModelRelationshipMeta,
-      "type" | "property"
-    > = {
+    const payload: Omit<IFmModelRelationshipMeta, "type" | "property"> = {
       isRelationship: true,
       isProperty: false,
       relType: "hasOne",

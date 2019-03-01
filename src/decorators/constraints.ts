@@ -3,7 +3,7 @@ import { IDictionary } from "common-types";
 import { propertyReflector } from "./reflector";
 import { IFmModelPropertyMeta } from "./schema";
 import NamedFakes from "../Mock/NamedFakes";
-import { propertiesByModel } from "./model/property-store";
+import { propertiesByModel } from "./model-meta/property-store";
 
 export function constrainedProperty(options: IDictionary = {}) {
   return propertyReflector<IFmModelPropertyMeta>(

@@ -1,15 +1,16 @@
 import "reflect-metadata";
 import { IDictionary, ClassDecorator } from "common-types";
-import {
-  getRelationships,
-  getPushKeys,
-  relationshipsByModel
-} from "./decorator";
+import { getPushKeys } from "./decorator";
 import { Model } from "../Model";
 import { addModelMeta } from "../ModelMeta";
 import { IModelIndexMeta, getDbIndexes } from "./indexing";
 import { FmMockType } from "./constraints";
-import { getModelProperty, getProperties } from "./model/property-store";
+import { getModelProperty, getProperties } from "./model-meta/property-store";
+import {
+  getModelRelationship,
+  isRelationship,
+  getRelationships
+} from "./model-meta/relationship-store";
 /* tslint:disable:only-arrow-functions */
 
 export type FmRelationshipType = "hasMany" | "hasOne";
@@ -116,25 +117,6 @@ function isProperty(modelKlass: IDictionary) {
     const modelProps = getModelProperty(modelKlass)(prop);
     return modelProps ? true : false;
   };
-}
-
-function isRelationship(modelKlass: IDictionary) {
-  return (prop: string) => {
-    return getModelRelationship(modelKlass)(prop) ? true : false;
-  };
-}
-
-function getModelRelationship<T extends Model = Model>(
-  modelKlass: IDictionary<IFmModelRelationshipMeta<T>>
-) {
-  const className = modelKlass.constructor.name;
-  if (relationshipsByModel[className]) {
-    console.log(relationshipsByModel[className]);
-  } else {
-    console.log("missing: ", className);
-  }
-
-  return (prop: string) => (relationshipsByModel[className] || {})[prop];
 }
 
 export function model(options: Partial<IFmModelMeta> = {}): ClassDecorator {
