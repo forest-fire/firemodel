@@ -1,10 +1,10 @@
 import { SerializedQuery } from "serialized-query";
 import { Model } from "../Model";
-import { FmRelationshipType } from "../decorators/schema";
 import { IMultiPathUpdates } from "../FireModel";
 import { ICompositeKey } from "../@types/record-types";
 import { VuexMutations } from "./VuexMutations";
 import { FmModelConstructor } from "../@types/general";
+import { FmRelationshipType } from "../decorators/types";
 
 export { VuexMutations } from "./VuexMutations";
 //#region generalized structures

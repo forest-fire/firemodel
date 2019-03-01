@@ -1,10 +1,11 @@
-import { Model, IModelOptions } from "./Model";
+import { Model } from "./Model";
 import { Record } from "./Record";
 import { SerializedQuery, IComparisonOperator } from "serialized-query";
 import { epochWithMilliseconds, IDictionary } from "common-types";
 import { FireModel } from "./FireModel";
 import { RealTimeDB } from "abstracted-firebase";
 import { IReduxDispatch } from "./VuexWrapper";
+import { IModelOptions } from "./@types/general";
 export declare class List<T extends Model> extends FireModel<T> {
     /**
      * Sets the default database to be used by all FireModel classes

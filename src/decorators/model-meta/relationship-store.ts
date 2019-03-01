@@ -25,16 +25,12 @@ export function isRelationship(modelKlass: IDictionary) {
   };
 }
 
-export function getModelRelationship<T extends Model = Model>(
-  model: IDictionary<IFmModelRelationshipMeta<T>>
-) {
+export function getModelRelationship<T extends Model>(model: T) {
   const relnsForModel = getRelationships(model);
   const className = model.constructor.name;
 
   return (prop: string) => {
     return relnsForModel.find(value => {
-      console.log(value);
-
       return value.property === prop;
     });
   };

@@ -1,5 +1,5 @@
-import { IFmModelMeta } from "./decorators/schema";
 import { IDictionary } from "common-types";
+import { IFmModelMeta } from "./decorators/types";
 declare const meta: IDictionary<IFmModelMeta>;
 export declare function addModelMeta(modelName: keyof typeof meta, props: IFmModelMeta): void;
 /**

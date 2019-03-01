@@ -1,10 +1,9 @@
 import { Model } from "./Model";
-import { IFmModelMeta, IFmModelPropertyMeta } from "./index";
 declare type Record<T> = import("./Record").Record<T>;
 import { IDictionary } from "common-types";
 import { IFMRecordEvent, FMEvents, NotString, Extractable } from "./state-mgmt";
 import { IReduxDispatch } from "./VuexWrapper";
-import { IFmModelRelationshipMeta } from "./decorators/schema";
+import { IFmModelMeta, IFmModelPropertyMeta, IFmModelRelationshipMeta } from "./decorators/types";
 declare type RealTimeDB = import("abstracted-firebase").RealTimeDB;
 export declare class FireModel<T extends Model> {
     static auditLogs: string;

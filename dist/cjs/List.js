@@ -272,6 +272,7 @@ class List extends FireModel_1.FireModel {
      * it is stated
      */
     findWhere(prop, value, defaultIfNotFound = DEFAULT_IF_NOT_FOUND) {
+        console.log(prop, this.META.properties);
         const list = this.META.isProperty(prop) ||
             (this.META.isRelationship(prop) &&
                 this.META.relationship(prop).relType === "hasOne")

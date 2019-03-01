@@ -3,29 +3,30 @@ import { IDictionary, ClassDecorator } from "common-types";
 import { getPushKeys } from "./decorator";
 import { addModelMeta } from "../ModelMeta";
 import { getDbIndexes } from "./indexing";
-import { getModelProperty, getProperties } from "./model-meta/property-store";
+import {
+  getModelProperty,
+  getProperties,
+  isProperty
+} from "./model-meta/property-store";
 import {
   getModelRelationship,
   isRelationship,
   getRelationships
 } from "./model-meta/relationship-store";
 import { IFmModelMeta } from "./types";
+import { Model } from "../Model";
+import { FmModelConstructor } from "../@types/general";
 /* tslint:disable:only-arrow-functions */
 
-function isProperty(modelKlass: IDictionary) {
-  return (prop: string) => {
-    const modelProps = getModelProperty(modelKlass)(prop);
-    return modelProps ? true : false;
-  };
-}
-
-export function model(options: Partial<IFmModelMeta> = {}): ClassDecorator {
+export function model(options: Partial<IFmModelMeta> = {}) {
   let isDirty: boolean = false;
-  return (target: any): void => {
-    // Function to add META
-    const f: any = function() {
-      const modelObjectWithMetaProperty = target;
-      const modelOfObject = new modelObjectWithMetaProperty();
+
+  return function decorateModel<T extends Model>(
+    target: FmModelConstructor<T>
+  ) {
+    // Function to add META to the model
+    function addMetaProperty() {
+      const modelOfObject = new target();
 
       if (options.audit === undefined) {
         options.audit = false;
@@ -64,12 +65,9 @@ export function model(options: Partial<IFmModelMeta> = {}): ClassDecorator {
         ...{ isDirty }
       };
 
-      addModelMeta(
-        modelObjectWithMetaProperty.constructor.name.toLowerCase(),
-        meta
-      );
+      addModelMeta(target.constructor.name.toLowerCase(), meta);
 
-      Object.defineProperty(modelObjectWithMetaProperty.prototype, "META", {
+      Object.defineProperty(target.prototype, "META", {
         get(): IFmModelMeta {
           return meta;
         },
@@ -85,13 +83,13 @@ export function model(options: Partial<IFmModelMeta> = {}): ClassDecorator {
         configurable: false,
         enumerable: false
       });
-      return modelObjectWithMetaProperty;
-    };
+      return target;
+    }
 
     // copy prototype so intanceof operator still works
-    f.prototype = target.prototype;
+    addMetaProperty.prototype = target.prototype;
 
     // return new constructor (will override original)
-    return f();
+    return addMetaProperty();
   };
 }

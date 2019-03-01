@@ -1,8 +1,8 @@
 import { Record } from "../Record";
 import { IDictionary, Omit } from "common-types";
 import { propertyReflector } from "./reflector";
-import { IFmModelRelationshipMeta } from "./schema";
 import { relationshipsByModel } from "./model-meta/relationship-store";
+import { IFmModelRelationshipMeta } from "./types";
 
 export type IFmHasMany<T = true> = IDictionary<T>;
 

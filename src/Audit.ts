@@ -1,4 +1,4 @@
-import { Model, IModelOptions } from "./Model";
+import { Model } from "./Model";
 import { epochWithMilliseconds } from "common-types";
 import { FireModel } from "./FireModel";
 import { pathJoin } from "./path";
@@ -6,6 +6,7 @@ import { AuditList } from "./AuditList";
 import { Parallel } from "wait-in-parallel";
 import { fbKey } from "./index";
 import { AuditRecord } from "./AuditRecord";
+import { IModelOptions } from "./@types";
 
 export interface IAuditLogItem {
   createdAt: epochWithMilliseconds;

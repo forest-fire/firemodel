@@ -1,12 +1,15 @@
 import { Model } from "./Model";
-import { IFmModelMeta, IFmModelPropertyMeta } from "./index";
 // prettier-ignore
 type Record<T> = import("./Record").Record<T>;
 import { IDictionary } from "common-types";
 import { IFMRecordEvent, FMEvents, NotString, Extractable } from "./state-mgmt";
 import { IReduxDispatch } from "./VuexWrapper";
 import { getModelMeta } from "./ModelMeta";
-import { IFmModelRelationshipMeta } from "./decorators/schema";
+import {
+  IFmModelMeta,
+  IFmModelPropertyMeta,
+  IFmModelRelationshipMeta
+} from "./decorators/types";
 // tslint:disable-next-line:no-var-requires
 const pluralize = require("pluralize");
 const defaultDispatch = (context: IDictionary) => "";

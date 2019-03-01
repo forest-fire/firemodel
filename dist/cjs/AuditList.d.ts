@@ -1,7 +1,8 @@
 import { IAuditLogItem } from "./Audit";
 import { epochWithMilliseconds } from "common-types";
-import { Model, IModelOptions } from "./Model";
+import { Model } from "./Model";
 import { AuditBase } from "./AuditBase";
+import { IModelOptions } from "./@types";
 export declare class AuditList<T extends Model> extends AuditBase<T> {
     constructor(modelKlass: new () => T, options?: IModelOptions);
     first(howMany: number, offset?: number): Promise<IAuditLogItem[]>;

@@ -13,5 +13,5 @@ var indexing_1 = require("./indexing");
 exports.index = indexing_1.index;
 exports.uniqueIndex = indexing_1.uniqueIndex;
 __export(require("./constraints"));
-__export(require("./schema"));
+__export(require("./model"));
 //# sourceMappingURL=index.js.map

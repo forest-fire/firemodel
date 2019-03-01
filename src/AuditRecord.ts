@@ -1,10 +1,11 @@
 import { IAuditLogItem } from "./Audit";
 import { epochWithMilliseconds } from "common-types";
-import { Model, IModelOptions } from "./Model";
+import { Model } from "./Model";
 import { AuditBase } from "./AuditBase";
 import { SerializedQuery } from "serialized-query";
 import { pathJoin } from "./path";
 import { Parallel } from "wait-in-parallel";
+import { IModelOptions } from "./@types";
 
 export class AuditRecord<T extends Model> extends AuditBase {
   constructor(

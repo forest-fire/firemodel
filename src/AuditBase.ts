@@ -1,9 +1,10 @@
-import { Model, IModelOptions } from "./Model";
+import { Model } from "./Model";
 import { FireModel } from "./FireModel";
 import { Record } from "./Record";
 import { pathJoin } from "./path";
 import { RealTimeDB } from "abstracted-firebase";
 import { SerializedQuery } from "serialized-query";
+import { IModelOptions } from "./@types";
 
 export class AuditBase<T extends Model = Model> {
   protected _modelKlass: new () => T;

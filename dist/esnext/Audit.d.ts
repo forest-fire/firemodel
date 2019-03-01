@@ -1,7 +1,8 @@
-import { Model, IModelOptions } from "./Model";
+import { Model } from "./Model";
 import { epochWithMilliseconds } from "common-types";
 import { AuditList } from "./AuditList";
 import { AuditRecord } from "./AuditRecord";
+import { IModelOptions } from "./@types";
 export interface IAuditLogItem {
     createdAt: epochWithMilliseconds;
     recordId: string;

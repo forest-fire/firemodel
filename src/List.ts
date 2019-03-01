@@ -1,4 +1,4 @@
-import { Model, IModelOptions } from "./Model";
+import { Model } from "./Model";
 import { Record } from "./Record";
 import { SerializedQuery, IComparisonOperator } from "serialized-query";
 
@@ -10,6 +10,7 @@ import { IReduxDispatch } from "./VuexWrapper";
 import { pathJoin } from "./path";
 import { getModelMeta } from "./ModelMeta";
 import { FMEvents, IFMRecordListEvent } from "./state-mgmt";
+import { IModelOptions } from "./@types/general";
 
 const DEFAULT_IF_NOT_FOUND = "__DO_NOT_USE__";
 

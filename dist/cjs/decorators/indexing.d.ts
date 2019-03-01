@@ -1,11 +1,6 @@
 import "reflect-metadata";
 import { IDictionary } from "common-types";
-export interface IModelIndexMeta {
-    isIndex: boolean;
-    isUniqueIndex: boolean;
-    desc?: string;
-    property: string;
-}
+import { IModelIndexMeta } from "./types";
 /** DB Indexes accumlated by index decorators */
 export declare const indexesForModel: IDictionary<IDictionary<IModelIndexMeta>>;
 /**

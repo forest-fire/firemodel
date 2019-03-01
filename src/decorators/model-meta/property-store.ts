@@ -3,6 +3,12 @@ import { Model } from "../../Model";
 import { hashToArray } from "typed-conversions";
 import { IFmModelPropertyMeta } from "../types";
 
+export function isProperty(modelKlass: IDictionary) {
+  return (prop: string) => {
+    return getModelProperty(modelKlass)(prop) ? true : false;
+  };
+}
+
 /** Properties accumlated by propertyDecorators  */
 export const propertiesByModel: IDictionary<
   IDictionary<IFmModelPropertyMeta>

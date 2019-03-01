@@ -1,11 +1,12 @@
 import { RealTimeDB } from "abstracted-firebase";
-import { Model, IModelOptions } from "./Model";
+import { Model } from "./Model";
 import { Omit } from "common-types";
 import { FireModel } from "./FireModel";
 import { IReduxDispatch } from "./VuexWrapper";
 import { IFMEventName } from "./state-mgmt/index";
 import { IAuditChange, IAuditOperations } from "./Audit";
 import { IIdWithDynamicPrefix, IFkReference, ICompositeKey } from "./@types/record-types";
+import { IModelOptions } from "./@types/general";
 export declare type ModelOptionalId<T extends Model> = Omit<T, "id"> & {
     id?: string;
 };

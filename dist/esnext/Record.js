@@ -348,6 +348,7 @@ export class Record extends FireModel {
         // can not update relationship properties
         if (Object.keys(props).some((key) => {
             const root = key.split(".")[0];
+            console.log(root, this.META.property(root));
             return this.META.property(root).isRelationship;
         })) {
             const relProps = Object.keys(props).filter((p) => this.META.property(p).isRelationship);

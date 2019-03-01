@@ -1,8 +1,9 @@
 import { epochWithMilliseconds, Omit } from "common-types";
-import { Model, IComparisonOperator, IModelOptions } from "./Model";
+import { Model } from "./Model";
 import { SerializedQuery } from "serialized-query";
 import { IReduxDispatch } from "./VuexWrapper";
 declare type RealTimeDB = import("abstracted-firebase").RealTimeDB;
+import { IModelOptions, IComparisonOperator } from "./@types/general";
 export declare type IWatchEventClassification = "child" | "value";
 export declare type IQuerySetter = (q: SerializedQuery) => void;
 export declare type IWatchListQueries = "all" | "first" | "last" | "since" | "dormantSince" | "where" | "fromQuery" | "after" | "before" | "recent" | "inactive";

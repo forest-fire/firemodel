@@ -1,7 +1,7 @@
 // tslint:disable-next-line:no-implicit-dependencies
 import { RealTimeDB } from "abstracted-firebase";
-import { Model, IModelOptions } from "./Model";
-import { createError, fk, IDictionary, Omit } from "common-types";
+import { Model } from "./Model";
+import { createError, IDictionary, Omit } from "common-types";
 import { key as fbKey } from "firebase-key";
 import { FireModel, IMultiPathUpdates } from "./FireModel";
 import { IReduxDispatch } from "./VuexWrapper";
@@ -19,6 +19,7 @@ import {
   createCompositeKey,
   createCompositeKeyString
 } from "./Record/CompositeKey";
+import { IModelOptions } from "./@types/general";
 
 // TODO: see if there's a way to convert to interface so that design time errors are more clear
 export type ModelOptionalId<T extends Model> = Omit<T, "id"> & { id?: string };

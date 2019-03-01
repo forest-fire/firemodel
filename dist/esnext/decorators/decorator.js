@@ -1,6 +1,7 @@
 import "reflect-metadata";
 import { set, get } from "lodash";
-import { hashToArray } from "typed-conversions";
+import { getProperties, addPropertyToModelMeta } from "./model-meta/property-store";
+import { addRelationshipToModelMeta } from "./model-meta/relationship-store";
 function push(target, path, value) {
     if (Array.isArray(get(target, path))) {
         get(target, path).push(value);
@@ -9,10 +10,6 @@ function push(target, path, value) {
         set(target, path, [value]);
     }
 }
-/** Properties accumlated by propertyDecorators  */
-export const propertiesByModel = {};
-/** Relationships accumlated by hasMany/hasOne decorators */
-export const relationshipsByModel = {};
 export const propertyDecorator = (nameValuePairs = {}, 
 /**
  * if you want to set the property being decorated's name
@@ -20,51 +17,20 @@ export const propertyDecorator = (nameValuePairs = {},
  */
 property) => (target, key) => {
     const reflect = Reflect.getMetadata("design:type", target, key) || {};
-    const meta = Object.assign({}, Reflect.getMetadata(key, target), { type: reflect.name }, nameValuePairs);
-    Reflect.defineMetadata(key, meta, target);
     if (nameValuePairs.isProperty) {
-        if (property) {
-            push(propertiesByModel, target.constructor.name, Object.assign({}, meta, { [property]: key }));
-        }
-        else {
-            push(propertiesByModel, target.constructor.name, meta);
-        }
+        const meta = Object.assign({}, Reflect.getMetadata(key, target), { type: reflect.name }, nameValuePairs);
+        Reflect.defineMetadata(key, meta, target);
+        addPropertyToModelMeta(target.constructor.name, property, meta);
     }
     if (nameValuePairs.isRelationship) {
-        if (property) {
-            push(relationshipsByModel, target.constructor.name, Object.assign({}, meta, { [property]: key }));
-        }
-        else {
-            push(relationshipsByModel, target.constructor.name, meta);
-        }
+        const meta = Object.assign({}, Reflect.getMetadata(key, target), { type: reflect.name }, nameValuePairs);
+        Reflect.defineMetadata(key, meta, target);
+        addRelationshipToModelMeta(target.constructor.name, property, meta);
     }
 };
 /** lookup meta data for schema properties */
 function propertyMeta(context) {
     return (prop) => Reflect.getMetadata(prop, context);
-}
-/**
- * Gets all the properties for a given model
- *
- * @param model the schema object which is being looked up
- */
-export function getProperties(model) {
-    const modelName = model.constructor.name;
-    const parent = Object.getPrototypeOf(model.constructor).name;
-    const baseModel = hashToArray(propertiesByModel.Model, "property");
-    const modelProps = modelName === "Model"
-        ? []
-        : hashToArray(propertiesByModel[modelName], "property");
-    const subClassProps = parent === "Model" ? [] : hashToArray(propertiesByModel[parent].name);
-    return [...modelProps, ...subClassProps, ...baseModel];
-}
-/**
- * Gets all the relationships for a given model
- */
-export function getRelationships(model) {
-    const modelName = model.constructor.name;
-    const modelRelationships = relationshipsByModel[modelName];
-    return hashToArray(modelRelationships, "property");
 }
 export function getPushKeys(target) {
     const props = getProperties(target);
