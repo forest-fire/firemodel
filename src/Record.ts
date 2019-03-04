@@ -1230,13 +1230,25 @@ export class Record<T extends Model> extends FireModel<T> {
     }
     const paths: IMultiPathUpdates[] = [{ path: "/", value: this._data }];
     this.isDirty = true;
+
     this.dispatch(
       this._createRecordEvent(this, FMEvents.RECORD_ADDED_LOCALLY, paths)
     );
 
     const mps = this.db.multiPathSet(this.dbPath);
     paths.map(path => mps.add(path));
-    await mps.execute();
+    console.log(mps.fullPaths);
+
+    try {
+      await mps.execute();
+    } catch (e) {
+      if (e.code === "PERMISSION_DENIED") {
+        this.dispatch(
+          this._createRecordEvent(this, FMEvents.PERMISSION_DENIED, paths)
+        );
+      }
+      throw e;
+    }
     this.isDirty = false;
 
     if (!FireModel.isBeingWatched(this.dbPath)) {

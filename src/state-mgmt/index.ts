@@ -41,6 +41,10 @@ export enum FMEvents {
   RECORD_REMOVED_LOCALLY = "@firemodel/RECORD_REMOVED_LOCALLY",
   /** A record has been removed from a given Model list being watched */
   RECORD_REMOVED = "@firemodel/RECORD_REMOVED",
+  /** An attempt to access the database was refused to lack of permissions */
+  PERMISSION_DENIED = "@firemodel/PERMISSION_DENIED",
+  /** The optimistic local change now needs to be rolled back due to failure in Firebase */
+  RECORD_LOCAL_ROLLBACK = "@firemodel/RECORD_LOCAL_ROLLBACK",
   /** Indicates that a given model's "since" property has been updated */
   SINCE_UPDATED = "@firemodel/SINCE_UPDATED",
 
