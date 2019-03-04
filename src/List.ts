@@ -145,7 +145,7 @@ export class List<T extends Model> extends FireModel<T> {
     model: new () => T,
     options: IModelOptions = {}
   ): Promise<List<T>> {
-    const query = new SerializedQuery().orderByChild("lastUpdated");
+    const query = new SerializedQuery<T>().orderByChild("lastUpdated");
     const list = await List.fromQuery<T>(model, query, options);
 
     return list;
@@ -164,7 +164,7 @@ export class List<T extends Model> extends FireModel<T> {
     howMany: number,
     options: IModelOptions = {}
   ): Promise<List<T>> {
-    const query = new SerializedQuery()
+    const query = new SerializedQuery<T>()
       .orderByChild("createdAt")
       .limitToLast(howMany);
     const list = await List.fromQuery(model, query, options);
@@ -188,7 +188,7 @@ export class List<T extends Model> extends FireModel<T> {
     offset: number = 0,
     options: IModelOptions = {}
   ): Promise<List<T>> {
-    const query = new SerializedQuery()
+    const query = new SerializedQuery<T>()
       .orderByChild("lastUpdated")
       .limitToFirst(howMany);
     const list = await List.fromQuery(model, query, options);
@@ -231,7 +231,7 @@ export class List<T extends Model> extends FireModel<T> {
     howMany: number,
     options: IModelOptions = {}
   ): Promise<List<T>> {
-    const query = new SerializedQuery()
+    const query = new SerializedQuery<T>()
       .orderByChild("lastUpdated")
       .limitToLast(howMany);
     const list = await List.fromQuery(model, query, options);
@@ -244,7 +244,7 @@ export class List<T extends Model> extends FireModel<T> {
     howMany: number,
     options: IModelOptions = {}
   ): Promise<List<T>> {
-    const query = new SerializedQuery()
+    const query = new SerializedQuery<T>()
       .orderByChild("createdAt")
       .limitToFirst(howMany);
     const list = await List.fromQuery(model, query, options);
@@ -264,7 +264,7 @@ export class List<T extends Model> extends FireModel<T> {
       val = value[1];
       operation = value[0];
     }
-    const query = new SerializedQuery()
+    const query = new SerializedQuery<T>()
       .orderByChild(property)
       .where(operation, val);
     const list = await List.fromQuery(model, query, options);

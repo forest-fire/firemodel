@@ -112,9 +112,8 @@ export class Watch {
         };
         return {
             watchId: hash,
-            dbPath: this._query.path,
             localPath: this._localPath,
-            query: this._query
+            query: this._query.identity
         };
     }
     /**
