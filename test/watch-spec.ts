@@ -22,15 +22,15 @@ describe("Watch →", () => {
 
   it("Watching a Record gives back a hashCode which can be looked up", async () => {
     FireModel.defaultDb = await DB.connect({ mocking: true });
-    const hashCode = Watch.record(Person, "12345")
+    const { watchId } = Watch.record(Person, "12345")
       .dispatch(() => "")
       .start();
-    expect(hashCode).to.be.a("string");
+    expect(watchId).to.be.a("string");
 
-    expect(Watch.lookup(hashCode)).to.be.an("object");
-    expect(Watch.lookup(hashCode)).to.haveOwnProperty("eventType");
-    expect(Watch.lookup(hashCode)).to.haveOwnProperty("query");
-    expect(Watch.lookup(hashCode)).to.haveOwnProperty("createdAt");
+    expect(Watch.lookup(watchId)).to.be.an("object");
+    expect(Watch.lookup(watchId)).to.haveOwnProperty("eventType");
+    expect(Watch.lookup(watchId)).to.haveOwnProperty("query");
+    expect(Watch.lookup(watchId)).to.haveOwnProperty("createdAt");
   });
 
   it("Watching CRUD actions on Record", async () => {
@@ -107,8 +107,8 @@ describe("Watch →", () => {
     Watch.reset();
     FireModel.dispatch = () => "";
     expect(Watch.watchCount).to.equal(0);
-    const hc1 = Watch.record(Person, "989898").start();
-    const hc2 = Watch.record(Person, "45645645").start();
+    const { watchId: hc1 } = Watch.record(Person, "989898").start();
+    const { watchId: hc2 } = Watch.record(Person, "45645645").start();
     expect(Watch.watchCount).to.equal(2);
     Watch.stop(hc1);
     expect(Watch.watchCount).to.equal(1);
