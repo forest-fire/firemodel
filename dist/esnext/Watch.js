@@ -110,7 +110,12 @@ export class Watch {
             dbPath: this._query.path,
             createdAt: new Date().getTime()
         };
-        return hash;
+        return {
+            watchId: hash,
+            dbPath: this._query.path,
+            localPath: this._localPath,
+            query: this._query
+        };
     }
     /**
      * allows you to state an explicit dispatch function which will be called

@@ -14,11 +14,11 @@ So how do we express our interest in these events?
 const dispatch: IFMRecordEvent = (payload) => console.log(payload);
 
 // Listen for changes on a single record
-const hashId = Watch.record(Person, "1234")
+const watch1 = Watch.record(Person, "1234")
   .dispatch(dispatch)
   .start();
 // Listen for changes on a list of records
-const hashId2 = Watch.list(Person)
+const watch2 = Watch.list(Person)
   .since(134123543)
   .dispatch(dispatch)
   .start();
@@ -26,7 +26,7 @@ const hashId2 = Watch.list(Person)
 
 With these watchers in place we will be called back on `dispatch()` whenever an event fires. 
 
-> **Note:** you _do not_ have to specify the dispatch on calls to `Watch` so long as your dispatch function has been set on `FireModel.dispatch`. 
+> **Note:** you _do not_ have to specify the dispatch on calls to `Watch` so long as your dispatch function has been set on `FireModel.dispatch`.
 
 ### FireModel Events
 
@@ -40,7 +40,7 @@ There are three category of events you'll get from your Watchers:
 | *RECORD_MOVED* |                      | FIREBASE_CONNECTED    |
 |                |                      | FIREBASE_DISCONNECTED |
 
-The lifecycle events are quite "meta" in that they will not have much of a direct impact on local state but rather just help to trace the sequence of events. The *record* and *relationship* events, however, have very clear impact on state. 
+The lifecycle events are quite "meta" in that they will not have much of a direct impact on local state but rather just help to trace the sequence of events. The *record* and *relationship* events, however, have very clear impact on state.
 
 > If you are using Typescript you can import the `FMEvents` enumeration for easy access to each event type
 
@@ -89,9 +89,9 @@ export interface IFMRelationshipEvent extends IFMRecordEvent<T> {
 If at some later point you decide that one of you watchers is no longer of interest you can remove individual watchers by capturing a returned hash key like so:
 
 ```typescript
-const hashId = Watch(Record.get(Person, "1234"));
+const { watchId } = Watch(Record.get(Person, "1234"));
 /** passage of time */
-Watch.stop(hashId);
+Watch.stop(watchId);
 ```
 
 If you want to cancel all current watchers you can do this with:
@@ -104,4 +104,3 @@ Watch.stop();
 ## Upward and Onward
 
 We've talked about _what_ watching is and _how_ it works mechanistically but we've not really discussed a practical manner of using it. Don't worry kind reader, we'll get there next in the Advanced topic section under [Frontend State Management](./frontend-state-mgmt.html) ... but first a moment from our sponsors.
-

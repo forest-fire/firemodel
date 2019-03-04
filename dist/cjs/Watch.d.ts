@@ -4,6 +4,7 @@ import { SerializedQuery } from "serialized-query";
 import { IReduxDispatch } from "./VuexWrapper";
 declare type RealTimeDB = import("abstracted-firebase").RealTimeDB;
 import { IModelOptions, IComparisonOperator } from "./@types/general";
+import { IWatcherResult } from "./@types/watcher-types";
 export declare type IWatchEventClassification = "child" | "value";
 export declare type IQuerySetter = (q: SerializedQuery) => void;
 export declare type IWatchListQueries = "all" | "first" | "last" | "since" | "dormantSince" | "where" | "fromQuery" | "after" | "before" | "recent" | "inactive";
@@ -39,7 +40,7 @@ export declare class Watch {
     protected _pluralName: string;
     protected _localPath: string;
     /** executes the watcher so that it becomes actively watched */
-    start(): string;
+    start(): IWatcherResult;
     /**
      * allows you to state an explicit dispatch function which will be called
      * when this watcher detects a change; by default it will use the "default dispatch"
