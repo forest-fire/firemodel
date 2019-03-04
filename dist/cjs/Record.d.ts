@@ -72,7 +72,8 @@ export declare class Record<T extends Model> extends FireModel<T> {
     readonly localPath: any;
     /**
      * The path in the local state tree that brings you to
-     * the
+     * the record; this is differnt when retrieved from a
+     * Record versus a List.
      */
     readonly localOffset: any;
     readonly existsOnDB: boolean;
