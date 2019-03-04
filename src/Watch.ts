@@ -137,7 +137,7 @@ export class Watch {
     }
     o._eventType = "child";
     const lst = List.create(modelConstructor);
-    o._query = new SerializedQuery(lst.dbPath);
+    o._query = new SerializedQuery<T>(lst.dbPath);
     o._modelName = lst.modelName;
     o._pluralName = lst.pluralName;
     o._localPath = lst.localPath;
@@ -184,9 +184,8 @@ export class Watch {
 
     return {
       watchId: hash,
-      dbPath: this._query.path as string,
       localPath: this._localPath,
-      query: this._query
+      query: this._query.identity
     };
   }
 
