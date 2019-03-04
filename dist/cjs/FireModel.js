@@ -53,7 +53,9 @@ class FireModel {
      * The name of the model; typically a "sigular" name
      */
     get modelName() {
-        return this._model.constructor.name.toLowerCase();
+        const name = this._model.constructor.name;
+        const pascal = name.slice(0, 1).toLowerCase() + name.slice(1);
+        return pascal;
     }
     /**
      * The plural name of the model (which plays a role in storage of state in both
