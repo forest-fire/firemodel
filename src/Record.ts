@@ -181,14 +181,11 @@ export class Record<T extends Model> extends FireModel<T> {
 
   /**
    * The path in the local state tree that brings you to
-   * the
+   * the record; this is differnt when retrieved from a
+   * Record versus a List.
    */
   public get localOffset() {
-    return pathJoin(
-      this.data.META.localOffset,
-      this.pluralName,
-      this.data.META.localPostfix
-    );
+    return pathJoin(this.data.META.localOffset, this.modelName);
   }
 
   public get existsOnDB() {

@@ -8,6 +8,7 @@ type RealTimeDB = import("abstracted-firebase").RealTimeDB;
 import { ModelDispatchTransformer } from "./ModelDispatchTransformer";
 import { List } from "./List";
 import { IModelOptions, IComparisonOperator } from "./@types/general";
+import { IWatcherResult } from "./@types/watcher-types";
 
 export type IWatchEventClassification = "child" | "value";
 export type IQuerySetter = (q: SerializedQuery) => void;
@@ -152,7 +153,7 @@ export class Watch {
   protected _localPath: string;
 
   /** executes the watcher so that it becomes actively watched */
-  public start() {
+  public start(): IWatcherResult {
     const hash = "w" + String(this._query.hashCode());
 
     const dispatch = ModelDispatchTransformer({
@@ -181,7 +182,12 @@ export class Watch {
       createdAt: new Date().getTime()
     };
 
-    return hash;
+    return {
+      watchId: hash,
+      dbPath: this._query.path as string,
+      localPath: this._localPath,
+      query: this._query
+    };
   }
 
   /**
