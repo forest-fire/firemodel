@@ -66,6 +66,10 @@ describe("Watch →", () => {
       events.push(event);
     };
     await realDB.remove("/authenticated/people");
+    Watch.list(Person)
+      .all()
+      .dispatch(cb)
+      .start();
     await Record.add(Person, {
       id: "1234",
       name: "Richard",
@@ -77,14 +81,11 @@ describe("Watch →", () => {
       age: 33
     });
 
-    Watch.list(Person)
-      .all()
-      .dispatch(cb)
-      .start();
     await wait(500);
     // Initial response is to bring in all records
     // expect(events).to.have.lengthOf(2);
     let eventTypes = new Set(events.map(e => e.type));
+    console.log(eventTypes);
 
     expect(eventTypes.size).to.equal(1);
     expect(eventTypes.has(FMEvents.RECORD_ADDED));

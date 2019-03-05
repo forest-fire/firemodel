@@ -10,24 +10,13 @@ import {
   IFmModelPropertyMeta,
   IFmModelRelationshipMeta
 } from "./decorators/types";
+import { ILocalStateManagement } from "./@types";
 // tslint:disable-next-line:no-var-requires
 const pluralize = require("pluralize");
 const defaultDispatch = (context: IDictionary) => "";
 type RealTimeDB = import("abstracted-firebase").RealTimeDB;
 
 export class FireModel<T extends Model> {
-  //#region STATIC INTERFACE
-  public static auditLogs: string = "/auditing";
-
-  public static isBeingWatched(path: string): boolean {
-    // TODO: implement this!
-    return false;
-  }
-  private static _defaultDb: RealTimeDB;
-  private static _dispatchActive: boolean = false;
-  /** the dispatch function used to interact with frontend frameworks */
-  private static _dispatch: IReduxDispatch = defaultDispatch;
-
   public static get defaultDb() {
     return FireModel._defaultDb;
   }
@@ -68,15 +57,6 @@ export class FireModel<T extends Model> {
   public static get dispatch() {
     return FireModel._dispatch;
   }
-
-  //#endregion
-
-  //#region OBJECT INTERFACE
-
-  /** the data structure/model that this class operates around */
-  protected _model: T;
-  protected _modelConstructor: new () => T;
-  protected _db: RealTimeDB;
 
   //#endregion
 
@@ -160,6 +140,40 @@ export class FireModel<T extends Model> {
   public get pushKeys() {
     return (this._model as Model).META.pushKeys;
   }
+
+  public static auditLogs: string = "/auditing";
+  //#region STATIC INTERFACE
+
+  /**
+   * Allows apps to configure a mapping between models and where
+   * they will be stored in the local state management framework
+   */
+  public static set localState(config: IDictionary<ILocalStateManagement>) {
+    FireModel._localState = config;
+  }
+
+  public static get localState() {
+    return FireModel._localState;
+  }
+
+  public static isBeingWatched(path: string): boolean {
+    // TODO: implement this!
+    return false;
+  }
+  private static _localState: IDictionary<ILocalStateManagement>;
+  private static _defaultDb: RealTimeDB;
+  private static _dispatchActive: boolean = false;
+  /** the dispatch function used to interact with frontend frameworks */
+  private static _dispatch: IReduxDispatch = defaultDispatch;
+
+  //#endregion
+
+  //#region OBJECT INTERFACE
+
+  /** the data structure/model that this class operates around */
+  protected _model: T;
+  protected _modelConstructor: new () => T;
+  protected _db: RealTimeDB;
 
   //#endregion
 

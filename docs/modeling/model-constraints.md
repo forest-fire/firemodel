@@ -5,7 +5,7 @@ sidebarDepth: 3
 
 ## Normal Usage
 
-Our first example was pretty basic and in our second one we're only going to add a bit but they are important changes to grok:
+Our first example was pretty basic and in our second one we're only going to add a bit but they are important changes to understand:
 
 ```typescript
 @model(

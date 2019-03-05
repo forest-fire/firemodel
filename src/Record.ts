@@ -171,6 +171,9 @@ export class Record<T extends Model> extends FireModel<T> {
    * depends on appropriate configuration of model to be accurate.
    */
   public get localPath() {
+    if (FireModel.localState[this.modelName]) {
+      return FireModel.localState[this.modelName].localPath;
+    }
     if (!this.data.id) {
       throw new Error(
         'Invalid Path: you can not ask for the dbPath before setting an "id" property.'
@@ -1237,7 +1240,6 @@ export class Record<T extends Model> extends FireModel<T> {
 
     const mps = this.db.multiPathSet(this.dbPath);
     paths.map(path => mps.add(path));
-    console.log(mps.fullPaths);
 
     try {
       await mps.execute();

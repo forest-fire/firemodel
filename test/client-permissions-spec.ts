@@ -21,7 +21,7 @@ describe("Validating client permissions with an anonymous user", () => {
     FireModel.defaultDb = db;
   });
 
-  it.only("Writing to an area without permissions fails and rolls local changes back", async () => {
+  it("Writing to an area without permissions fails and rolls local changes back", async () => {
     const events: IDictionary = [];
     const dispatch = (payload: IDictionary) => {
       events.push(payload);

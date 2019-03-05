@@ -4,6 +4,7 @@ import { IDictionary } from "common-types";
 import { IFirebaseWatchEvent } from "abstracted-firebase";
 import { FMEvents } from "./state-mgmt";
 
+// TODO: This looks ugly, find time to refactor
 /**
  * Contextualizes dispatches from abstracted-firebase into Model aware messages
  */
