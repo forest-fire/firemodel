@@ -3,7 +3,7 @@ sidebarDepth: 3
 ---
 # Model Constraints
 
-## Normal Usage
+## Outline
 
 Our first example was pretty basic and in our second one we're only going to add a bit but they are important changes to understand:
 
@@ -20,7 +20,7 @@ export class Person extends Model {
 }
 ```
 
-Maybe not surprisingly the "model constaints" are meta properties about your model as a whole (versus on a specific property). Let's review these options:
+Maybe not surprisingly the "model constaints" are meta properties about your model as a whole (versus on a specific property). Let's review the options highlighted above ...
 
 ### Database Offseting
 

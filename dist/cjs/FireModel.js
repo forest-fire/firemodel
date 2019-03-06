@@ -5,10 +5,6 @@ const ModelMeta_1 = require("./ModelMeta");
 const pluralize = require("pluralize");
 const defaultDispatch = (context) => "";
 class FireModel {
-    static isBeingWatched(path) {
-        // TODO: implement this!
-        return false;
-    }
     static get defaultDb() {
         return FireModel._defaultDb;
     }
@@ -111,6 +107,11 @@ class FireModel {
     get pushKeys() {
         return this._model.META.pushKeys;
     }
+    //#region STATIC INTERFACE
+    static isBeingWatched(path) {
+        // TODO: implement this!
+        return false;
+    }
     //#endregion
     //#region PROTECTED INTERFACE
     /**
@@ -142,7 +143,6 @@ class FireModel {
         }, []);
     }
 }
-//#region STATIC INTERFACE
 FireModel.auditLogs = "/auditing";
 FireModel._dispatchActive = false;
 /** the dispatch function used to interact with frontend frameworks */

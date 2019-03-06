@@ -85,7 +85,6 @@ export declare class List<T extends Model> extends FireModel<T> {
      * where this LIST will reside
      */
     readonly localPath: any;
-    readonly localPathToSince: any;
     /** Returns another List with data filtered down by passed in filter function */
     filter(f: ListFilterFunction<T>): List<T>;
     /** Returns another List with data filtered down by passed in filter function */

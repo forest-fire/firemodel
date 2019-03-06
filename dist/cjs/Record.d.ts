@@ -43,11 +43,20 @@ export declare class Record<T extends Model> extends FireModel<T> {
     readonly dbPath: string;
     /**
      * provides a boolean flag which indicates whether the underlying
-     * model as a "dynamic path" which ultimately comes from a dynamic
+     * model has a "dynamic path" which ultimately comes from a dynamic
      * component in the "dbOffset" property defined in the model decorator
      */
     readonly hasDynamicPath: boolean;
+    /**
+     * An array of "dynamic properties" that are derived fom the "dbOffset" to
+     * produce the "dbPath"
+     */
     readonly dynamicPathComponents: string[];
+    /**
+     * the list of dynamic properties in the "localPrefix"
+     * which must be resolved to achieve the "localPath"
+     */
+    readonly localDynamicComponents: string[];
     /**
      * A hash of values -- including at least "id" -- which represent
      * the composite key of a model.
@@ -67,15 +76,16 @@ export declare class Record<T extends Model> extends FireModel<T> {
     readonly dbOffset: string;
     /**
      * returns the record's location in the frontend state management framework;
-     * depends on appropriate configuration of model to be accurate.
+     * this can include dynamic properties characterized in the path string by
+     * leading ":" character.
      */
-    readonly localPath: any;
+    readonly localPath: string;
     /**
      * The path in the local state tree that brings you to
      * the record; this is differnt when retrieved from a
      * Record versus a List.
      */
-    readonly localOffset: any;
+    readonly localPrefix: string;
     readonly existsOnDB: boolean;
     /** indicates whether this record is already being watched locally */
     readonly isBeingWatched: boolean;
@@ -241,7 +251,7 @@ export declare class Record<T extends Model> extends FireModel<T> {
         pluralName: any;
         key: string;
         compositeKey: ICompositeKey;
-        localPath: any;
+        localPath: string;
         data: string;
     };
     protected _writeAudit(action: IAuditOperations, changes?: IAuditChange[], options?: IModelOptions): void;
@@ -266,10 +276,11 @@ export declare class Record<T extends Model> extends FireModel<T> {
     protected _errorIfNothasOneReln(property: Extract<keyof T, string>, fn: string): void;
     protected _errorIfNotHasManyReln(property: Extract<keyof T, string>, fn: string): void;
     protected _updateProps<K extends IFMEventName<K>>(actionTypeStart: K, actionTypeEnd: K, changed: Partial<T>): Promise<void>;
+    private _findDynamicComponents;
     /**
-     * looks for ":name" property references within the dbOffset and expands them
+     * looks for ":name" property references within the dbOffset or localPrefix and expands them
      */
-    private _injectDynamicDbOffsets;
+    private _injectDynamicPathProperties;
     /**
      * Load data from a record in database
      */
