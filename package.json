@@ -64,7 +64,7 @@
     "@vuepress/plugin-medium-zoom": "^1.0.0-alpha.0",
     "@vuepress/plugin-pwa": "^1.0.0-alpha.0",
     "abstracted-admin": "^0.15.3",
-    "abstracted-client": "^0.15.7",
+    "abstracted-client": "^0.15.10",
     "async-shelljs": "^0.1.2",
     "chai": "^4.2.0",
     "chalk": "^2.4.1",

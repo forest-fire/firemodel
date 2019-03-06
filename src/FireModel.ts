@@ -144,23 +144,10 @@ export class FireModel<T extends Model> {
   public static auditLogs: string = "/auditing";
   //#region STATIC INTERFACE
 
-  /**
-   * Allows apps to configure a mapping between models and where
-   * they will be stored in the local state management framework
-   */
-  public static set localState(config: IDictionary<ILocalStateManagement>) {
-    FireModel._localState = config;
-  }
-
-  public static get localState() {
-    return FireModel._localState;
-  }
-
   public static isBeingWatched(path: string): boolean {
     // TODO: implement this!
     return false;
   }
-  private static _localState: IDictionary<ILocalStateManagement>;
   private static _defaultDb: RealTimeDB;
   private static _dispatchActive: boolean = false;
   /** the dispatch function used to interact with frontend frameworks */

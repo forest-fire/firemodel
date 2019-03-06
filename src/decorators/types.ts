@@ -9,7 +9,7 @@ export interface IFmModelMeta<T extends Model = any> {
   /** Optionally specify an explicit string for the plural name */
   plural?: string;
   /** Optionally specify a root path where the local store will put this schema */
-  localOffset?: string;
+  localPrefix?: string;
   /** Optionally specify a post-fix to the path where lists of records will be stored; by default this is set to "all" */
   localPostfix?: string;
   /** provides a boolean flag on whether the stated name is a property */

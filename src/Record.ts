@@ -171,15 +171,12 @@ export class Record<T extends Model> extends FireModel<T> {
    * depends on appropriate configuration of model to be accurate.
    */
   public get localPath() {
-    if (FireModel.localState[this.modelName]) {
-      return FireModel.localState[this.modelName].localPath;
-    }
     if (!this.data.id) {
       throw new Error(
         'Invalid Path: you can not ask for the dbPath before setting an "id" property.'
       );
     }
-    return pathJoin(this.localOffset, this.data.id);
+    return pathJoin(this.localPrefix, this.data.id);
   }
 
   /**
@@ -187,8 +184,8 @@ export class Record<T extends Model> extends FireModel<T> {
    * the record; this is differnt when retrieved from a
    * Record versus a List.
    */
-  public get localOffset() {
-    return pathJoin(this.data.META.localOffset, this.modelName);
+  public get localPrefix() {
+    return pathJoin(this.data.META.localPrefix, this.modelName);
   }
 
   public get existsOnDB() {
