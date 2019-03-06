@@ -1267,10 +1267,10 @@
   dependencies:
     lodash.throttle "^4.1.1"
 
-"@vuepress/plugin-back-to-top@^1.0.0-alpha.0":
-  version "1.0.0-alpha.0"
-  resolved "https://registry.yarnpkg.com/@vuepress/plugin-back-to-top/-/plugin-back-to-top-1.0.0-alpha.0.tgz#401513b39d5dd081f49404c35ab6f51002c1cca0"
-  integrity sha512-Ll7AdL/Lnnqft73NVJlnlZQeWurJ4U6dfeBsbcJjnywrldQ3M4nVdXWxXVCpMOILxpIuzEPhS60sudk93rVtgQ==
+"@vuepress/plugin-back-to-top@^1.0.0-alpha.42":
+  version "1.0.0-alpha.42"
+  resolved "https://registry.yarnpkg.com/@vuepress/plugin-back-to-top/-/plugin-back-to-top-1.0.0-alpha.42.tgz#9bd01b6ab42845c4b63dd1fffa9ef88662bab6fd"
+  integrity sha512-lszoZ/TTTkGhhRxlPvOiDsjjs6zBfQ02zI9SmWe269rhC1l3MAy4evwPRil8E2vcDtX3ldJzudcevSi07Fa2dw==
   dependencies:
     lodash.debounce "^4.0.8"
 
@@ -1281,13 +1281,6 @@
   dependencies:
     markdown-it-container "^2.0.0"
 
-"@vuepress/plugin-last-updated@^1.0.0-alpha.0":
-  version "1.0.0-alpha.0"
-  resolved "https://registry.yarnpkg.com/@vuepress/plugin-last-updated/-/plugin-last-updated-1.0.0-alpha.0.tgz#e4d4d8665dea30f8213f4525d88921abee1cdafc"
-  integrity sha512-7g4/cJHTNlV2319YjZUgu4U10aiGwJcPBYbVyLtaL5AMox7YWDD/L89pscUgVdkK6hMx5HYADa81GgCSivj1eg==
-  dependencies:
-    cross-spawn "^6.0.5"
-
 "@vuepress/plugin-last-updated@^1.0.0-alpha.42":
   version "1.0.0-alpha.42"
   resolved "https://registry.yarnpkg.com/@vuepress/plugin-last-updated/-/plugin-last-updated-1.0.0-alpha.42.tgz#51b888da72ad6bb8d7912275f9604232c756743b"
@@ -1295,10 +1288,10 @@
   dependencies:
     cross-spawn "^6.0.5"
 
-"@vuepress/plugin-medium-zoom@^1.0.0-alpha.0":
-  version "1.0.0-alpha.0"
-  resolved "https://registry.yarnpkg.com/@vuepress/plugin-medium-zoom/-/plugin-medium-zoom-1.0.0-alpha.0.tgz#efb6bd10d41c64161e3e25d6108fe527ebd4abad"
-  integrity sha512-yAvRhoMRH0OSKqYna/fvfxgFQ6kp/8AmdrPiZRB2POGbHcP+I6igoqAlxGO+5h9l25e94XGwoCTFTJu8m2uuCw==
+"@vuepress/plugin-medium-zoom@^1.0.0-alpha.42":
+  version "1.0.0-alpha.42"
+  resolved "https://registry.yarnpkg.com/@vuepress/plugin-medium-zoom/-/plugin-medium-zoom-1.0.0-alpha.42.tgz#e34e27f8d28627758c0ac772706c29b3d60227a6"
+  integrity sha512-b2RQM8KkAEjrsqHZ5348h+bGZ4v9taGfRxqm5i660DWbVKiJl6Qvw80sxH4KCQhrQfU9qs72Ke0jAnYITmhN0Q==
   dependencies:
     medium-zoom "^0.4.0"
 
@@ -1309,12 +1302,12 @@
   dependencies:
     nprogress "^0.2.0"
 
-"@vuepress/plugin-pwa@^1.0.0-alpha.0":
-  version "1.0.0-alpha.0"
-  resolved "https://registry.yarnpkg.com/@vuepress/plugin-pwa/-/plugin-pwa-1.0.0-alpha.0.tgz#6726f6ae2ec4e30f72f5583d42f6f9c79711180e"
-  integrity sha512-xPaqjsTMTyVZj94J7OavhydY7nhkQk3R6MB7vN57Jd/cj/YGnI7vItjcsWpiqA+94UTMBBRaHe0bN81ju+SQ/g==
+"@vuepress/plugin-pwa@^1.0.0-alpha.42":
+  version "1.0.0-alpha.42"
+  resolved "https://registry.yarnpkg.com/@vuepress/plugin-pwa/-/plugin-pwa-1.0.0-alpha.42.tgz#90a1c9a9503e16c3fc51430f66f437ec0e5878e4"
+  integrity sha512-vD4IkjFiw99sPD3jOUdmZonwu3h7H+Jti5KGG8eLKVzV9i2fW0hQ43P0tnKYxLOFADwF+ySjFuryiL6zoV8zYw==
   dependencies:
-    "@vuepress/shared-utils" "^1.0.0-alpha.0"
+    "@vuepress/shared-utils" "^1.0.0-alpha.42"
     register-service-worker "^1.5.2"
     workbox-build "^3.1.0"
 
@@ -1329,17 +1322,6 @@
   version "1.0.0-alpha.42"
   resolved "https://registry.yarnpkg.com/@vuepress/plugin-search/-/plugin-search-1.0.0-alpha.42.tgz#cebdea26da1872071fa651865d128cff7c67e30b"
   integrity sha512-FcXTFc1qmT92BHI+4TmKOP7CuSIVsX+ld6f5CIBT0xjQbd6fROcrOIG+uvztKLANqpby5+fyJt20UWBdjJ4Gkw==
-
-"@vuepress/shared-utils@^1.0.0-alpha.0":
-  version "1.0.0-alpha.0"
-  resolved "https://registry.yarnpkg.com/@vuepress/shared-utils/-/shared-utils-1.0.0-alpha.0.tgz#9bc363bfa01c0474f222e8420be53886469a5cf8"
-  integrity sha512-jCuwcNwRki8KHaXxuxlGAPuTzeGvgxgb7lm4qHEYp/1YX+2uYi7S4xGFtjMPfpAj2dFAA2n55tG7xvRebST/Tw==
-  dependencies:
-    chalk "^2.3.2"
-    escape-html "^1.0.3"
-    fs-extra "^5.0.0"
-    globby "^8.0.1"
-    hash-sum "^1.0.2"
 
 "@vuepress/shared-utils@^1.0.0-alpha.42":
   version "1.0.0-alpha.42"
@@ -9122,7 +9104,7 @@ vuepress-html-webpack-plugin@^3.2.0:
     toposort "^1.0.0"
     util.promisify "1.0.0"
 
-vuepress@^1.0.0-alpha.40:
+vuepress@^1.0.0-alpha.42:
   version "1.0.0-alpha.42"
   resolved "https://registry.yarnpkg.com/vuepress/-/vuepress-1.0.0-alpha.42.tgz#b2356c958d1492c4ab88a0499ffbbb5877b7a9dc"
   integrity sha512-zO8N7laeid06xkiOV0a6fqa7Aj821cIrbiJuwoBm1P6EZbIGUO4mRnJB5b/csK+I0GVAELxv8dLR5aifTgHRYA==

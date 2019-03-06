@@ -42,9 +42,9 @@ export class Anything extends Model {}
 
 in the dynamic prefix example, it is assumed that the model has a property named `foo` and that the records will be stored in the database according to the value of the `foo` property. Why this functionality has been provided is due to a limitation of the Firebase Real Time database, to understand more see below in the "Getting around the Firebase Query Limitation" section.
 
-### Local State Management
+### Frontend State Management
 
-The `localPrefix` / `localPostfix` properties are used to help get `Watch` events into the right part of the client state management tree. To understand how they effect to the resultant **localPath** values found in the _dispatched_ events we need to distinguish between the `Watch` of a Record versus a List. So, given a model defined as:
+The `localPrefix` / `localPostfix` properties are used to help get `Watch` events into the right part of the client state management tree. To understand how they effect to the resultant **localPath** values found in the _dispatched_ events we need to distinguish between the `Watch` of a **Record** versus a **List**. So, given a model defined as:
 
 ```typescript
 @model({ dbPrefix: "foo/bar", dbPostFix: "baz" })
@@ -77,7 +77,7 @@ In this case, there may be several records returned initially as a RECORD_ADDED 
 }
 ```
 
-Unfortunately our use of an _explicit_ value for `localPostfix` is maybe a bit confusing. Typically you would NOT set this value and then the type of list query type would determine the postfix for you. So in our example where we used `.all()` the postfix string becomes "all" and the localPath becomes `foo/bar/people/all`. Alternatively if you'd choosen to query the LIST with `.recent()` then that would translate into a path of `foo/bar/people/recent`.
+Unfortunately our use of an _explicit_ value for `localPostfix` is maybe a bit confusing. Typically you would NOT set this value and then the type of list query type would determine the postfix for you. The default value for postfix is "all" and the localPath becomes `foo/bar/people/all`.
 
 This fits into a very standard convention you find on a lot of frontend state management frameworks which allows for the primary "data" for a given model to be offset on `.all` or comparable which allows the base node (aka, `foo/bar/people` in this example) to contain getters which modify or filter the base data. This base node can also contain various meta attributes. For instance, let's assume you have a product catalog that is divided by region but a customer travels between two of these regions. You might imagine the following state tree:
 
@@ -90,13 +90,12 @@ products: {
 }
 ```
 
-Where you are populating the `all` property with:
+Where you are populating the `products/all` property with:
 
 ```typescript
 Watch.list(Product).where("region", currentRegion).start();
 Watch.list(Product).where("region", previousRegion").start();
 ```
-
 
 ### Other Model Constraints
 
