@@ -58,34 +58,32 @@ export class Record extends FireModel {
             throw createError("record/not-ready", `you can not ask for the dbPath before setting an "id" property [ ${this.modelName} ]`);
         }
         return [
-            this._injectDynamicDbOffsets(this.dbOffset),
+            this._injectDynamicPathProperties(this.dbOffset),
             this.pluralName,
             this.data.id
         ].join("/");
     }
     /**
      * provides a boolean flag which indicates whether the underlying
-     * model as a "dynamic path" which ultimately comes from a dynamic
+     * model has a "dynamic path" which ultimately comes from a dynamic
      * component in the "dbOffset" property defined in the model decorator
      */
     get hasDynamicPath() {
         return this.META.dbOffset.includes(":");
     }
+    /**
+     * An array of "dynamic properties" that are derived fom the "dbOffset" to
+     * produce the "dbPath"
+     */
     get dynamicPathComponents() {
-        if (!this.hasDynamicPath) {
-            return [];
-        }
-        const results = [];
-        let remaining = this.dbOffset;
-        let index = remaining.indexOf(":");
-        while (index !== -1) {
-            remaining = remaining.slice(index);
-            const prop = remaining.replace(/\:(\w+).*/, "$1");
-            results.push(prop);
-            remaining = remaining.replace(`:${prop}`, "");
-            index = remaining.indexOf(":");
-        }
-        return results;
+        return this._findDynamicComponents(this.META.dbOffset);
+    }
+    /**
+     * the list of dynamic properties in the "localPrefix"
+     * which must be resolved to achieve the "localPath"
+     */
+    get localDynamicComponents() {
+        return this._findDynamicComponents(this.META.localPrefix);
     }
     /**
      * A hash of values -- including at least "id" -- which represent
@@ -122,21 +120,23 @@ export class Record extends FireModel {
     }
     /**
      * returns the record's location in the frontend state management framework;
-     * depends on appropriate configuration of model to be accurate.
+     * this can include dynamic properties characterized in the path string by
+     * leading ":" character.
      */
     get localPath() {
-        if (!this.data.id) {
-            throw new Error('Invalid Path: you can not ask for the dbPath before setting an "id" property.');
-        }
-        return pathJoin(this.localOffset, this.data.id);
+        let path = this.localPrefix;
+        this.localDynamicComponents.forEach(prop => {
+            path = path.replace(`:${prop}`, this.get(prop));
+        });
+        return path;
     }
     /**
      * The path in the local state tree that brings you to
      * the record; this is differnt when retrieved from a
      * Record versus a List.
      */
-    get localOffset() {
-        return pathJoin(this.data.META.localOffset, this.modelName);
+    get localPrefix() {
+        return this.data.META.localPrefix;
     }
     get existsOnDB() {
         return this.data && this.data.id ? true : false;
@@ -759,24 +759,37 @@ export class Record extends FireModel {
             this.dispatch(this._createRecordEvent(this, actionTypeEnd, this.data));
         }
     }
+    _findDynamicComponents(path = "") {
+        if (!path.includes(":")) {
+            return [];
+        }
+        const results = [];
+        let remaining = path;
+        let index = remaining.indexOf(":");
+        while (index !== -1) {
+            remaining = remaining.slice(index);
+            const prop = remaining.replace(/\:(\w+).*/, "$1");
+            results.push(prop);
+            remaining = remaining.replace(`:${prop}`, "");
+            index = remaining.indexOf(":");
+        }
+        return results;
+    }
     /**
-     * looks for ":name" property references within the dbOffset and expands them
+     * looks for ":name" property references within the dbOffset or localPrefix and expands them
      */
-    _injectDynamicDbOffsets(dbOffset) {
+    _injectDynamicPathProperties(path, forProp = "dbOffset") {
         this.dynamicPathComponents.forEach(prop => {
             const value = this.data[prop];
             if (value ? false : true) {
-                console.log("ID", this.id, value);
-                // TODO: cleanup
-                console.log(JSON.stringify(this.db.mock.db, null, 2));
-                throw createError("record/not-ready", `You can not ask for the dbPath on a model like "${this.modelName}" which has a dynamic property of "${prop}" before setting that property [ id: ${this.id} ].`);
+                throw createError("record/not-ready", `You can not ask for the ${forProp} on a model like "${this.modelName}" which has a dynamic property of "${prop}" before setting that property [ id: ${this.id} ].`);
             }
             if (!["string", "number"].includes(typeof value)) {
                 throw createError("record/not-allowed", `The path is using the property "${prop}" on ${this.modelName} as a part of the route path but that property must be either a string or a number and instead was a ${typeof prop}`);
             }
-            dbOffset = dbOffset.replace(`:${prop}`, String(this.get(prop)));
+            path = path.replace(`:${prop}`, String(this.get(prop)));
         });
-        return dbOffset;
+        return path;
     }
     /**
      * Load data from a record in database
@@ -820,7 +833,15 @@ export class Record extends FireModel {
         this.dispatch(this._createRecordEvent(this, FMEvents.RECORD_ADDED_LOCALLY, paths));
         const mps = this.db.multiPathSet(this.dbPath);
         paths.map(path => mps.add(path));
-        await mps.execute();
+        try {
+            await mps.execute();
+        }
+        catch (e) {
+            if (e.code === "PERMISSION_DENIED") {
+                this.dispatch(this._createRecordEvent(this, FMEvents.PERMISSION_DENIED, paths));
+            }
+            throw e;
+        }
         this.isDirty = false;
         if (!FireModel.isBeingWatched(this.dbPath)) {
             this.dispatch(this._createRecordEvent(this, FMEvents.RECORD_ADDED, this.data));

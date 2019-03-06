@@ -6,8 +6,6 @@ import { Mock } from "../src/Mock";
 import { FancyPerson } from "./testing/FancyPerson";
 import { Car } from "./testing/Car";
 import { Company } from "./testing/Company";
-import * as helpers from "./testing/helpers";
-import { Record } from "../src/Record";
 const expect = chai.expect;
 
 @model({})
@@ -61,7 +59,6 @@ describe("Mocking:", () => {
     await Mock(FancyPerson, db)
       .createRelationshipLinks()
       .generate(numberOfFolks);
-    console.log(JSON.stringify(db.mock.db, null, 2));
 
     const people = await List.all(FancyPerson);
     expect(people).to.have.lengthOf(numberOfFolks);

@@ -90,7 +90,7 @@ export class Record<T extends Model> extends FireModel<T> {
     }
 
     return [
-      this._injectDynamicDbOffsets(this.dbOffset),
+      this._injectDynamicPathProperties(this.dbOffset),
       this.pluralName,
       this.data.id
     ].join("/");
@@ -98,31 +98,27 @@ export class Record<T extends Model> extends FireModel<T> {
 
   /**
    * provides a boolean flag which indicates whether the underlying
-   * model as a "dynamic path" which ultimately comes from a dynamic
+   * model has a "dynamic path" which ultimately comes from a dynamic
    * component in the "dbOffset" property defined in the model decorator
    */
   public get hasDynamicPath() {
     return this.META.dbOffset.includes(":");
   }
 
+  /**
+   * An array of "dynamic properties" that are derived fom the "dbOffset" to
+   * produce the "dbPath"
+   */
   public get dynamicPathComponents() {
-    if (!this.hasDynamicPath) {
-      return [];
-    }
+    return this._findDynamicComponents(this.META.dbOffset);
+  }
 
-    const results: string[] = [];
-    let remaining = this.dbOffset;
-    let index = remaining.indexOf(":");
-
-    while (index !== -1) {
-      remaining = remaining.slice(index);
-      const prop = remaining.replace(/\:(\w+).*/, "$1");
-      results.push(prop);
-      remaining = remaining.replace(`:${prop}`, "");
-      index = remaining.indexOf(":");
-    }
-
-    return results;
+  /**
+   * the list of dynamic properties in the "localPrefix"
+   * which must be resolved to achieve the "localPath"
+   */
+  public get localDynamicComponents() {
+    return this._findDynamicComponents(this.META.localPrefix);
   }
 
   /**
@@ -168,15 +164,15 @@ export class Record<T extends Model> extends FireModel<T> {
 
   /**
    * returns the record's location in the frontend state management framework;
-   * depends on appropriate configuration of model to be accurate.
+   * this can include dynamic properties characterized in the path string by
+   * leading ":" character.
    */
   public get localPath() {
-    if (!this.data.id) {
-      throw new Error(
-        'Invalid Path: you can not ask for the dbPath before setting an "id" property.'
-      );
-    }
-    return pathJoin(this.localOffset, this.data.id);
+    let path = this.localPrefix;
+    this.localDynamicComponents.forEach(prop => {
+      path = path.replace(`:${prop}`, this.get(prop as any));
+    });
+    return path;
   }
 
   /**
@@ -184,8 +180,8 @@ export class Record<T extends Model> extends FireModel<T> {
    * the record; this is differnt when retrieved from a
    * Record versus a List.
    */
-  public get localOffset() {
-    return pathJoin(this.data.META.localOffset, this.modelName);
+  public get localPrefix() {
+    return this.data.META.localPrefix;
   }
 
   public get existsOnDB() {
@@ -1142,21 +1138,39 @@ export class Record<T extends Model> extends FireModel<T> {
     }
   }
 
+  private _findDynamicComponents(path: string = "") {
+    if (!path.includes(":")) {
+      return [];
+    }
+    const results: string[] = [];
+    let remaining = path;
+    let index = remaining.indexOf(":");
+
+    while (index !== -1) {
+      remaining = remaining.slice(index);
+      const prop = remaining.replace(/\:(\w+).*/, "$1");
+      results.push(prop);
+      remaining = remaining.replace(`:${prop}`, "");
+      index = remaining.indexOf(":");
+    }
+
+    return results;
+  }
+
   /**
-   * looks for ":name" property references within the dbOffset and expands them
+   * looks for ":name" property references within the dbOffset or localPrefix and expands them
    */
-  private _injectDynamicDbOffsets(dbOffset: string) {
+  private _injectDynamicPathProperties(
+    path: string,
+    forProp: "dbOffset" | "localPath" = "dbOffset"
+  ) {
     this.dynamicPathComponents.forEach(prop => {
       const value = this.data[prop as keyof T];
 
       if (value ? false : true) {
-        console.log("ID", this.id, value);
-        // TODO: cleanup
-        console.log(JSON.stringify(this.db.mock.db, null, 2));
-
         throw createError(
           "record/not-ready",
-          `You can not ask for the dbPath on a model like "${
+          `You can not ask for the ${forProp} on a model like "${
             this.modelName
           }" which has a dynamic property of "${prop}" before setting that property [ id: ${
             this.id
@@ -1171,13 +1185,10 @@ export class Record<T extends Model> extends FireModel<T> {
           } as a part of the route path but that property must be either a string or a number and instead was a ${typeof prop}`
         );
       }
-      dbOffset = dbOffset.replace(
-        `:${prop}`,
-        String(this.get(prop as keyof T))
-      );
+      path = path.replace(`:${prop}`, String(this.get(prop as keyof T)));
     });
 
-    return dbOffset;
+    return path;
   }
 
   /**
@@ -1230,13 +1241,24 @@ export class Record<T extends Model> extends FireModel<T> {
     }
     const paths: IMultiPathUpdates[] = [{ path: "/", value: this._data }];
     this.isDirty = true;
+
     this.dispatch(
       this._createRecordEvent(this, FMEvents.RECORD_ADDED_LOCALLY, paths)
     );
 
     const mps = this.db.multiPathSet(this.dbPath);
     paths.map(path => mps.add(path));
-    await mps.execute();
+
+    try {
+      await mps.execute();
+    } catch (e) {
+      if (e.code === "PERMISSION_DENIED") {
+        this.dispatch(
+          this._createRecordEvent(this, FMEvents.PERMISSION_DENIED, paths)
+        );
+      }
+      throw e;
+    }
     this.isDirty = false;
 
     if (!FireModel.isBeingWatched(this.dbPath)) {

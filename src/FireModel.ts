@@ -10,24 +10,13 @@ import {
   IFmModelPropertyMeta,
   IFmModelRelationshipMeta
 } from "./decorators/types";
+import { ILocalStateManagement } from "./@types";
 // tslint:disable-next-line:no-var-requires
 const pluralize = require("pluralize");
 const defaultDispatch = (context: IDictionary) => "";
 type RealTimeDB = import("abstracted-firebase").RealTimeDB;
 
 export class FireModel<T extends Model> {
-  //#region STATIC INTERFACE
-  public static auditLogs: string = "/auditing";
-
-  public static isBeingWatched(path: string): boolean {
-    // TODO: implement this!
-    return false;
-  }
-  private static _defaultDb: RealTimeDB;
-  private static _dispatchActive: boolean = false;
-  /** the dispatch function used to interact with frontend frameworks */
-  private static _dispatch: IReduxDispatch = defaultDispatch;
-
   public static get defaultDb() {
     return FireModel._defaultDb;
   }
@@ -71,22 +60,16 @@ export class FireModel<T extends Model> {
 
   //#endregion
 
-  //#region OBJECT INTERFACE
-
-  /** the data structure/model that this class operates around */
-  protected _model: T;
-  protected _modelConstructor: new () => T;
-  protected _db: RealTimeDB;
-
-  //#endregion
-
   //#region PUBLIC INTERFACE
 
   /**
    * The name of the model; typically a "sigular" name
    */
   public get modelName() {
-    return this._model.constructor.name.toLowerCase();
+    const name = this._model.constructor.name;
+    const pascal = name.slice(0, 1).toLowerCase() + name.slice(1);
+
+    return pascal;
   }
 
   /**
@@ -157,6 +140,27 @@ export class FireModel<T extends Model> {
   public get pushKeys() {
     return (this._model as Model).META.pushKeys;
   }
+
+  public static auditLogs: string = "/auditing";
+  //#region STATIC INTERFACE
+
+  public static isBeingWatched(path: string): boolean {
+    // TODO: implement this!
+    return false;
+  }
+  private static _defaultDb: RealTimeDB;
+  private static _dispatchActive: boolean = false;
+  /** the dispatch function used to interact with frontend frameworks */
+  private static _dispatch: IReduxDispatch = defaultDispatch;
+
+  //#endregion
+
+  //#region OBJECT INTERFACE
+
+  /** the data structure/model that this class operates around */
+  protected _model: T;
+  protected _modelConstructor: new () => T;
+  protected _db: RealTimeDB;
 
   //#endregion
 

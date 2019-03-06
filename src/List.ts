@@ -306,15 +306,8 @@ export class List<T extends Model> extends FireModel<T> {
    * where this LIST will reside
    */
   public get localPath() {
-    const meta = getModelMeta(this._model);
-    return pathJoin(meta.localOffset, this.pluralName, meta.localPostfix);
-  }
-
-  public get localPathToSince() {
-    const lp = this.META.localPostfix
-      ? this.localPath.replace(`/${this.META.localPostfix}`, "")
-      : this.localPath;
-    return pathJoin(lp, "since");
+    const meta = this._model.META;
+    return pathJoin(meta.localPrefix, this.pluralName, meta.localPostfix);
   }
 
   /** Returns another List with data filtered down by passed in filter function */

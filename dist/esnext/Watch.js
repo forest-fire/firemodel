@@ -90,12 +90,14 @@ export class Watch {
     /** executes the watcher so that it becomes actively watched */
     start() {
         const hash = "w" + String(this._query.hashCode());
+        const scope = this._eventType === "value" ? "record" : "list";
         const dispatch = ModelDispatchTransformer({
             watcherHash: hash,
             watcherDbPath: this._query.path,
             watcherLocalPath: this._localPath,
             modelName: this._modelName,
-            pluralName: this._pluralName
+            pluralName: this._pluralName,
+            scope
         })(this._dispatcher || FireModel.dispatch);
         if (this._eventType === "value") {
             this.db.watch(this._query, "value", dispatch);

@@ -3,7 +3,6 @@ import { SerializedQuery } from "serialized-query";
 import { createError } from "common-types";
 import { FireModel } from "./FireModel";
 import { pathJoin } from "./path";
-import { getModelMeta } from "./ModelMeta";
 import { FMEvents } from "./state-mgmt";
 const DEFAULT_IF_NOT_FOUND = "__DO_NOT_USE__";
 function addTimestamps(obj) {
@@ -219,14 +218,8 @@ export class List extends FireModel {
      * where this LIST will reside
      */
     get localPath() {
-        const meta = getModelMeta(this._model);
-        return pathJoin(meta.localOffset, this.pluralName, meta.localPostfix);
-    }
-    get localPathToSince() {
-        const lp = this.META.localPostfix
-            ? this.localPath.replace(`/${this.META.localPostfix}`, "")
-            : this.localPath;
-        return pathJoin(lp, "since");
+        const meta = this._model.META;
+        return pathJoin(meta.localPrefix, this.pluralName, meta.localPostfix);
     }
     /** Returns another List with data filtered down by passed in filter function */
     filter(f) {

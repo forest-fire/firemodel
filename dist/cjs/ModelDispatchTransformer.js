@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const state_mgmt_1 = require("./state-mgmt");
+// TODO: This looks ugly, find time to refactor
 /**
  * Contextualizes dispatches from abstracted-firebase into Model aware messages
  */

@@ -80,7 +80,7 @@ describe("Relationship > ", () => {
     expect(localEvent.paths).to.have.lengthOf(4);
     const paths = localEvent.paths.map(i => i.path);
     expect(paths.filter(i => i.includes("car-offset"))).to.have.lengthOf(2);
-    expect(paths.filter(i => i.includes("fancypeople"))).to.have.lengthOf(2);
+    expect(paths.filter(i => i.includes("fancyPeople"))).to.have.lengthOf(2);
 
     expect(paths).to.include("/car-offset/cars/car12345/lastUpdated");
     expect(paths).to.include("/car-offset/cars/car12345/owner");

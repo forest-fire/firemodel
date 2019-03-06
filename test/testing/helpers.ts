@@ -40,22 +40,28 @@ export async function timeout(ms: number) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-export function setupEnv() {
-  if (!process.env.AWS_STAGE) {
-    process.env.AWS_STAGE = "test";
-  }
-  const current = process.env;
-  const yamlConfig: IDictionary = yaml.safeLoad(
-    fs.readFileSync("./env.yml", "utf8")
-  );
-  const combined = {
-    ...yamlConfig[process.env.AWS_STAGE],
-    ...process.env
-  };
+let envIsSetup = false;
 
-  console.log(`Loading ENV for "${process.env.AWS_STAGE}"`);
-  Object.keys(combined).forEach(key => (process.env[key] = combined[key]));
-  return combined;
+export function setupEnv() {
+  if (!envIsSetup) {
+    if (!process.env.AWS_STAGE) {
+      process.env.AWS_STAGE = "test";
+    }
+    const current = process.env;
+    const yamlConfig: IDictionary = yaml.safeLoad(
+      fs.readFileSync("./env.yml", "utf8")
+    );
+    const combined = {
+      ...yamlConfig[process.env.AWS_STAGE],
+      ...process.env
+    };
+
+    console.log(`Loading ENV for "${process.env.AWS_STAGE}"`);
+    Object.keys(combined).forEach(key => (process.env[key] = combined[key]));
+    envIsSetup = true;
+
+    return combined;
+  }
 }
 
 export function ignoreStdout() {

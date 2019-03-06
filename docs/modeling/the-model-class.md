@@ -22,7 +22,7 @@ export interface ISchemaOptions<T extends Model = any> {
   /** Optionally specify a root path to store this schema under */
   dbOffset?: string;
   /** Optionally specify a root path where the local store will put this schema */
-  localOffset?: string;
+  localPrefix?: string;
   property?: (prop: keyof T) => ISchemaMetaProperties<T>;
   audit?: boolean;
   /** A list of all properties and associated meta-data for the given schema */

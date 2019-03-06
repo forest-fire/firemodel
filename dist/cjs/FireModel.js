@@ -5,10 +5,6 @@ const ModelMeta_1 = require("./ModelMeta");
 const pluralize = require("pluralize");
 const defaultDispatch = (context) => "";
 class FireModel {
-    static isBeingWatched(path) {
-        // TODO: implement this!
-        return false;
-    }
     static get defaultDb() {
         return FireModel._defaultDb;
     }
@@ -53,7 +49,9 @@ class FireModel {
      * The name of the model; typically a "sigular" name
      */
     get modelName() {
-        return this._model.constructor.name.toLowerCase();
+        const name = this._model.constructor.name;
+        const pascal = name.slice(0, 1).toLowerCase() + name.slice(1);
+        return pascal;
     }
     /**
      * The plural name of the model (which plays a role in storage of state in both
@@ -109,6 +107,11 @@ class FireModel {
     get pushKeys() {
         return this._model.META.pushKeys;
     }
+    //#region STATIC INTERFACE
+    static isBeingWatched(path) {
+        // TODO: implement this!
+        return false;
+    }
     //#endregion
     //#region PROTECTED INTERFACE
     /**
@@ -140,7 +143,6 @@ class FireModel {
         }, []);
     }
 }
-//#region STATIC INTERFACE
 FireModel.auditLogs = "/auditing";
 FireModel._dispatchActive = false;
 /** the dispatch function used to interact with frontend frameworks */

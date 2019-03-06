@@ -26,7 +26,7 @@ export class ContainedKlass {
 }
 
 /** a schema class */
-@model({ dbOffset: "authenticated", localOffset: "foobar" })
+@model({ dbOffset: "authenticated", localPrefix: "foobar" })
 export class Klass extends SubKlass {
   // prettier-ignore
   @desc("who doesn't love a foobar?") @property @length(15) public foobar: string;

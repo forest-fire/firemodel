@@ -6,12 +6,6 @@ import { IReduxDispatch } from "./VuexWrapper";
 import { IFmModelMeta, IFmModelPropertyMeta, IFmModelRelationshipMeta } from "./decorators/types";
 declare type RealTimeDB = import("abstracted-firebase").RealTimeDB;
 export declare class FireModel<T extends Model> {
-    static auditLogs: string;
-    static isBeingWatched(path: string): boolean;
-    private static _defaultDb;
-    private static _dispatchActive;
-    /** the dispatch function used to interact with frontend frameworks */
-    private static _dispatch;
     /**
     * Any FireModel transaction needs to connect to the database
     * via a passed-in reference to "abstracted-client" or "abstracted-admin"
@@ -33,10 +27,6 @@ export declare class FireModel<T extends Model> {
     * a write based transaction has modified state.
     */
     static dispatch: IReduxDispatch;
-    /** the data structure/model that this class operates around */
-    protected _model: T;
-    protected _modelConstructor: new () => T;
-    protected _db: RealTimeDB;
     /**
      * The name of the model; typically a "sigular" name
      */
@@ -64,6 +54,16 @@ export declare class FireModel<T extends Model> {
     /** the connected real-time database */
     readonly db: RealTimeDB;
     readonly pushKeys: string[];
+    static auditLogs: string;
+    static isBeingWatched(path: string): boolean;
+    private static _defaultDb;
+    private static _dispatchActive;
+    /** the dispatch function used to interact with frontend frameworks */
+    private static _dispatch;
+    /** the data structure/model that this class operates around */
+    protected _model: T;
+    protected _modelConstructor: new () => T;
+    protected _db: RealTimeDB;
     /**
      * Creates a Redux-styled event
      */

@@ -1267,10 +1267,10 @@
   dependencies:
     lodash.throttle "^4.1.1"
 
-"@vuepress/plugin-back-to-top@^1.0.0-alpha.0":
-  version "1.0.0-alpha.0"
-  resolved "https://registry.yarnpkg.com/@vuepress/plugin-back-to-top/-/plugin-back-to-top-1.0.0-alpha.0.tgz#401513b39d5dd081f49404c35ab6f51002c1cca0"
-  integrity sha512-Ll7AdL/Lnnqft73NVJlnlZQeWurJ4U6dfeBsbcJjnywrldQ3M4nVdXWxXVCpMOILxpIuzEPhS60sudk93rVtgQ==
+"@vuepress/plugin-back-to-top@^1.0.0-alpha.42":
+  version "1.0.0-alpha.42"
+  resolved "https://registry.yarnpkg.com/@vuepress/plugin-back-to-top/-/plugin-back-to-top-1.0.0-alpha.42.tgz#9bd01b6ab42845c4b63dd1fffa9ef88662bab6fd"
+  integrity sha512-lszoZ/TTTkGhhRxlPvOiDsjjs6zBfQ02zI9SmWe269rhC1l3MAy4evwPRil8E2vcDtX3ldJzudcevSi07Fa2dw==
   dependencies:
     lodash.debounce "^4.0.8"
 
@@ -1281,13 +1281,6 @@
   dependencies:
     markdown-it-container "^2.0.0"
 
-"@vuepress/plugin-last-updated@^1.0.0-alpha.0":
-  version "1.0.0-alpha.0"
-  resolved "https://registry.yarnpkg.com/@vuepress/plugin-last-updated/-/plugin-last-updated-1.0.0-alpha.0.tgz#e4d4d8665dea30f8213f4525d88921abee1cdafc"
-  integrity sha512-7g4/cJHTNlV2319YjZUgu4U10aiGwJcPBYbVyLtaL5AMox7YWDD/L89pscUgVdkK6hMx5HYADa81GgCSivj1eg==
-  dependencies:
-    cross-spawn "^6.0.5"
-
 "@vuepress/plugin-last-updated@^1.0.0-alpha.42":
   version "1.0.0-alpha.42"
   resolved "https://registry.yarnpkg.com/@vuepress/plugin-last-updated/-/plugin-last-updated-1.0.0-alpha.42.tgz#51b888da72ad6bb8d7912275f9604232c756743b"
@@ -1295,10 +1288,10 @@
   dependencies:
     cross-spawn "^6.0.5"
 
-"@vuepress/plugin-medium-zoom@^1.0.0-alpha.0":
-  version "1.0.0-alpha.0"
-  resolved "https://registry.yarnpkg.com/@vuepress/plugin-medium-zoom/-/plugin-medium-zoom-1.0.0-alpha.0.tgz#efb6bd10d41c64161e3e25d6108fe527ebd4abad"
-  integrity sha512-yAvRhoMRH0OSKqYna/fvfxgFQ6kp/8AmdrPiZRB2POGbHcP+I6igoqAlxGO+5h9l25e94XGwoCTFTJu8m2uuCw==
+"@vuepress/plugin-medium-zoom@^1.0.0-alpha.42":
+  version "1.0.0-alpha.42"
+  resolved "https://registry.yarnpkg.com/@vuepress/plugin-medium-zoom/-/plugin-medium-zoom-1.0.0-alpha.42.tgz#e34e27f8d28627758c0ac772706c29b3d60227a6"
+  integrity sha512-b2RQM8KkAEjrsqHZ5348h+bGZ4v9taGfRxqm5i660DWbVKiJl6Qvw80sxH4KCQhrQfU9qs72Ke0jAnYITmhN0Q==
   dependencies:
     medium-zoom "^0.4.0"
 
@@ -1309,12 +1302,12 @@
   dependencies:
     nprogress "^0.2.0"
 
-"@vuepress/plugin-pwa@^1.0.0-alpha.0":
-  version "1.0.0-alpha.0"
-  resolved "https://registry.yarnpkg.com/@vuepress/plugin-pwa/-/plugin-pwa-1.0.0-alpha.0.tgz#6726f6ae2ec4e30f72f5583d42f6f9c79711180e"
-  integrity sha512-xPaqjsTMTyVZj94J7OavhydY7nhkQk3R6MB7vN57Jd/cj/YGnI7vItjcsWpiqA+94UTMBBRaHe0bN81ju+SQ/g==
+"@vuepress/plugin-pwa@^1.0.0-alpha.42":
+  version "1.0.0-alpha.42"
+  resolved "https://registry.yarnpkg.com/@vuepress/plugin-pwa/-/plugin-pwa-1.0.0-alpha.42.tgz#90a1c9a9503e16c3fc51430f66f437ec0e5878e4"
+  integrity sha512-vD4IkjFiw99sPD3jOUdmZonwu3h7H+Jti5KGG8eLKVzV9i2fW0hQ43P0tnKYxLOFADwF+ySjFuryiL6zoV8zYw==
   dependencies:
-    "@vuepress/shared-utils" "^1.0.0-alpha.0"
+    "@vuepress/shared-utils" "^1.0.0-alpha.42"
     register-service-worker "^1.5.2"
     workbox-build "^3.1.0"
 
@@ -1329,17 +1322,6 @@
   version "1.0.0-alpha.42"
   resolved "https://registry.yarnpkg.com/@vuepress/plugin-search/-/plugin-search-1.0.0-alpha.42.tgz#cebdea26da1872071fa651865d128cff7c67e30b"
   integrity sha512-FcXTFc1qmT92BHI+4TmKOP7CuSIVsX+ld6f5CIBT0xjQbd6fROcrOIG+uvztKLANqpby5+fyJt20UWBdjJ4Gkw==
-
-"@vuepress/shared-utils@^1.0.0-alpha.0":
-  version "1.0.0-alpha.0"
-  resolved "https://registry.yarnpkg.com/@vuepress/shared-utils/-/shared-utils-1.0.0-alpha.0.tgz#9bc363bfa01c0474f222e8420be53886469a5cf8"
-  integrity sha512-jCuwcNwRki8KHaXxuxlGAPuTzeGvgxgb7lm4qHEYp/1YX+2uYi7S4xGFtjMPfpAj2dFAA2n55tG7xvRebST/Tw==
-  dependencies:
-    chalk "^2.3.2"
-    escape-html "^1.0.3"
-    fs-extra "^5.0.0"
-    globby "^8.0.1"
-    hash-sum "^1.0.2"
 
 "@vuepress/shared-utils@^1.0.0-alpha.42":
   version "1.0.0-alpha.42"
@@ -1555,10 +1537,10 @@ abstracted-admin@^0.15.3:
     serialized-query "^0.4.9"
     typed-conversions "^0.8.13"
 
-abstracted-client@^0.15.7:
-  version "0.15.7"
-  resolved "https://registry.yarnpkg.com/abstracted-client/-/abstracted-client-0.15.7.tgz#c5715da39e318e87f593b6940bb28affe850445a"
-  integrity sha512-wmrVI1/C7UQHvJbKqvtfDo9o51VwnNMV7cmq6g/XpmWRp8RTfqmU03Q1yU9bX0EEplH43WpNhg9wpfufJ5ukWw==
+abstracted-client@^0.15.10:
+  version "0.15.10"
+  resolved "https://registry.yarnpkg.com/abstracted-client/-/abstracted-client-0.15.10.tgz#d9417c1cced59df58b4fee38c722ee880a7fbd18"
+  integrity sha512-QCu0B4J/wbopUTGQP8PApxbOFLaN4Fs1xGyP0G61IY2DNcEoAjJn69Wblrckpc/8k70S2dlcpVazK3wZX5rMZA==
   dependencies:
     "@firebase/app" "^0.3.9"
     "@firebase/app-types" "^0.3.4"
@@ -1566,16 +1548,16 @@ abstracted-client@^0.15.7:
     "@firebase/auth-types" "^0.5.3"
     "@firebase/database" "^0.3.12"
     "@firebase/database-types" "^0.3.5"
-    abstracted-firebase "^0.15.5"
+    abstracted-firebase "^0.15.7"
     common-types "^1.9.6"
     events "^3.0.0"
     firebase "^5.8.4"
     lodash.first "^3.0.0"
     lodash.last "^3.0.0"
-    serialized-query "^0.4.5"
+    serialized-query "^0.4.9"
     typed-conversions "^0.8.13"
 
-abstracted-firebase@^0.15.5, abstracted-firebase@^0.15.7:
+abstracted-firebase@^0.15.7:
   version "0.15.7"
   resolved "https://registry.yarnpkg.com/abstracted-firebase/-/abstracted-firebase-0.15.7.tgz#e7b2e5a5f695fd121d55ffc6245549e5e682a047"
   integrity sha512-Ft/7Ly0RW2PjPmCYFCcI5qC6HiJaw8pSChKUAqKFoVn0tFDTfNRl2FkzZ+7whNn8Eap2mU7ul5Ys09KuM/iwkg==
@@ -7953,7 +7935,7 @@ serialize-javascript@^1.3.0, serialize-javascript@^1.4.0:
   resolved "https://registry.yarnpkg.com/serialize-javascript/-/serialize-javascript-1.6.1.tgz#4d1f697ec49429a847ca6f442a2a755126c4d879"
   integrity sha512-A5MOagrPFga4YaKQSWHryl7AXvbQkEqpw4NNYMTNYUNV51bA8ABHgYFpqKx+YFFrw59xMV1qGH1R4AgoNIVgCw==
 
-serialized-query@^0.4.5, serialized-query@^0.4.9:
+serialized-query@^0.4.9:
   version "0.4.9"
   resolved "https://registry.yarnpkg.com/serialized-query/-/serialized-query-0.4.9.tgz#777ed05612399660b5cac232a785f9a670e69d11"
   integrity sha512-OjUoYqkJPDmJfETcN+XC59h1u+71FcK6H8W/phaeKHhnt5wh1Hh2jcKEQEfDVb3mvXwUydCnFZaU8nHXljqlpA==
@@ -9122,7 +9104,7 @@ vuepress-html-webpack-plugin@^3.2.0:
     toposort "^1.0.0"
     util.promisify "1.0.0"
 
-vuepress@^1.0.0-alpha.40:
+vuepress@^1.0.0-alpha.42:
   version "1.0.0-alpha.42"
   resolved "https://registry.yarnpkg.com/vuepress/-/vuepress-1.0.0-alpha.42.tgz#b2356c958d1492c4ab88a0499ffbbb5877b7a9dc"
   integrity sha512-zO8N7laeid06xkiOV0a6fqa7Aj821cIrbiJuwoBm1P6EZbIGUO4mRnJB5b/csK+I0GVAELxv8dLR5aifTgHRYA==
