@@ -1,6 +1,6 @@
 export * from "./decorators";
 export { Model } from "./Model";
-export { Record } from "./Record";
+export * from "./Record";
 export { List } from "./List";
 export { Mock } from "./Mock";
 export { FireModel } from "./FireModel";
@@ -15,3 +15,4 @@ export { fk, pk } from "common-types";
 export { key as fbKey } from "firebase-key";
 
 export * from "./state-mgmt/index";
+export * from "./CompositeKey";

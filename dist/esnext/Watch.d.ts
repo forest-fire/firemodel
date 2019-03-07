@@ -1,14 +1,15 @@
-import { epochWithMilliseconds, Omit } from "common-types";
+import { epochWithMilliseconds, IDictionary, Omit } from "common-types";
 import { Model } from "./Model";
 import { SerializedQuery } from "serialized-query";
 import { IReduxDispatch } from "./VuexWrapper";
 declare type RealTimeDB = import("abstracted-firebase").RealTimeDB;
-import { IModelOptions, IComparisonOperator } from "./@types/general";
-import { IWatcherResult } from "./@types/watcher-types";
+import { IModelOptions, IComparisonOperator, FmModelConstructor } from "./@types/general";
+import { IPrimaryKey } from "./@types/record-types";
 export declare type IWatchEventClassification = "child" | "value";
 export declare type IQuerySetter = (q: SerializedQuery) => void;
 export declare type IWatchListQueries = "all" | "first" | "last" | "since" | "dormantSince" | "where" | "fromQuery" | "after" | "before" | "recent" | "inactive";
 export interface IWatcherItem {
+    watcherId: string;
     eventType: string;
     query: SerializedQuery;
     createdAt: number;
@@ -18,6 +19,8 @@ export interface IWatcherItem {
 export declare class Watch {
     static defaultDb: RealTimeDB;
     static dispatch: IReduxDispatch;
+    static readonly inventory: IDictionary<IWatcherItem>;
+    static toJSON(): IDictionary<IWatcherItem>;
     /**
      * lookup
      *
@@ -29,18 +32,22 @@ export declare class Watch {
     static lookup(hashCode: string): IWatcherItem;
     static readonly watchCount: number;
     static reset(): void;
+    /** stops watching either a specific watcher or ALL if no hash code is provided */
     static stop(hashCode?: string, oneOffDB?: RealTimeDB): void;
-    static record<T extends Model>(modelClass: new () => T, recordId: string, options?: IModelOptions): Pick<Watch, "start" | "dispatch">;
+    static record<T extends Model>(modelConstructor: new () => T, pk: IPrimaryKey, options?: IModelOptions): Pick<Watch, "start" | "dispatch">;
     static list<T extends Model>(modelConstructor: new () => T, options?: IModelOptions): Pick<Watch, IWatchListQueries>;
     protected _query: SerializedQuery;
+    protected _modelConstructor: FmModelConstructor<any>;
     protected _eventType: IWatchEventClassification;
     protected _dispatcher: IReduxDispatch;
     protected _db: RealTimeDB;
     protected _modelName: string;
     protected _pluralName: string;
     protected _localPath: string;
+    protected _localPostfix: string;
+    protected _dynamicProperties: string[];
     /** executes the watcher so that it becomes actively watched */
-    start(): IWatcherResult;
+    start(): IWatcherItem;
     /**
      * allows you to state an explicit dispatch function which will be called
      * when this watcher detects a change; by default it will use the "default dispatch"

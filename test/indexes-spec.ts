@@ -1,7 +1,7 @@
 // tslint:disable:no-implicit-dependencies
 import * as chai from "chai";
 import { Person as AuditedPerson } from "./testing/AuditedPerson";
-import { Record } from "../src/Record";
+import { Record } from "../src";
 import { Car } from "./testing/Car";
 const expect = chai.expect;
 

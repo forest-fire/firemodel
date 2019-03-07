@@ -4,7 +4,7 @@ import { IDictionary } from "common-types";
  */
 export declare type IVuexDispatch = (type: string, payload: IDictionary) => void;
 /** the normal call signature of a redux dispatch call */
-export declare type IReduxDispatch = (payload: IDictionary) => void;
+export declare type IReduxDispatch<T = IDictionary> = (payload: T) => void;
 /**
  * The structure of a Redux action message)
  */

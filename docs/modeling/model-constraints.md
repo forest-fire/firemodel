@@ -3,7 +3,7 @@ sidebarDepth: 3
 ---
 # Model Constraints
 
-## Outline
+## Overview``
 
 Our first example was pretty basic and in our second one we're only going to add a bit but they are important changes to understand:
 
@@ -47,7 +47,7 @@ in the dynamic prefix example, it is assumed that the model has a property named
 The `localPrefix` / `localPostfix` properties are used to help get `Watch` events into the right part of the client state management tree. To understand how they effect to the resultant **localPath** values found in the _dispatched_ events we need to distinguish between the `Watch` of a **Record** versus a **List**. So, given a model defined as:
 
 ```typescript
-@model({ dbPrefix: "foo/bar", dbPostFix: "baz" })
+@model({ localPrefix: "foo/bar", localPostfix: "baz" })
 export default class Person extends Model {...}
 ```
 
@@ -60,6 +60,8 @@ await Watch.record(Person, "1234").start();
 The resulting dispatches (e.g., RECORD_ADDED, RECORD_CHANGED, etc.) will have a `localPath` property of: `/foo/bar`. This may be suprising at first but it makes sense when you consider that in a majority of cases you are watching on a record (versus a list) when you only want a single record of that type.
 
 Bear in mind that there could be some edge cases where this isn't the case and for these you should use a dynamic notation on one of the properties of the model (typically the "id"). By example if the `localPrefix` had been `foo/bar/:id` then it would have resolved the `dbPath` to `foo/bar/1234`.
+
+> Note: if _no_ `localPrefix` is set for a given model and there is a _record_ based watcher placed on the database, the `localPath` will be set to the singular model name
 
 In all Record-based Watch's the `localPostfix` property is ignored but List-based Watch's are a bit different. Using our example above as the template, imagine:
 
@@ -102,7 +104,7 @@ Watch.list(Product).where("region", previousRegion").start();
 1. `plural` - by default **FireModel** will pluralize your model name using standard rules. It should get it right most of the time but if you want to override this you can here. The reason the plural name is brought up is that the plural name is used in the storage path for both Firebase and your frontend state management.
 2. `audit` - in cases where the given model hold very sensitive data you may want to opt-in to having all changes _audited_. For more on this see the [Auditing subsection](../using/auditing.html) in the Using section.
 
-## Getting around a Firebase Query Limitation
+## Addressing a FB Query Limitation
 
 ### The Problem Statement
 

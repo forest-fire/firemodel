@@ -49,7 +49,7 @@ export declare class FireModel<T extends Model> {
      * meta information -- contained on the given model
      */
     readonly relationships: IFmModelRelationshipMeta[];
-    readonly dispatch: IReduxDispatch;
+    readonly dispatch: IReduxDispatch<IDictionary<any>>;
     readonly dispatchIsActive: boolean;
     /** the connected real-time database */
     readonly db: RealTimeDB;

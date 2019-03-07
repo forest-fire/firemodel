@@ -30,6 +30,7 @@ export interface IRecordOptions {
 export declare class Record<T extends Model> extends FireModel<T> {
     static defaultDb: RealTimeDB;
     static dispatch: IReduxDispatch;
+    static dynamicPathProperties<T extends Model = Model>(model: new () => T): string[];
     readonly data: Readonly<T>;
     /**
     * deprecated
@@ -96,6 +97,13 @@ export declare class Record<T extends Model> extends FireModel<T> {
      * conjunction with the Record's initialize() method
      */
     static create<T extends Model>(model: new () => T, options?: IRecordOptions): Record<T>;
+    /**
+     * Creates an empty record and then inserts all values
+     * provided.
+     */
+    static local<T extends Model>(model: new () => T, values: Partial<T>, options?: IRecordOptions & {
+        ignoreEmptyValues?: boolean;
+    }): Record<T>;
     /**
      * add
      *
@@ -193,8 +201,9 @@ export declare class Record<T extends Model> extends FireModel<T> {
      *
      * @param prop the property on the record to be changed
      * @param value the new value to set to
+     * @param silent a flag to indicate whether the change to the prop should be updated to the database
      */
-    set<K extends keyof T>(prop: K, value: T[K]): Promise<void>;
+    set<K extends keyof T>(prop: K, value: T[K], silent?: boolean): Promise<void>;
     /**
      * associate
      *

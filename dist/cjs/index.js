@@ -6,8 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 __export(require("./decorators"));
 var Model_1 = require("./Model");
 exports.Model = Model_1.Model;
-var Record_1 = require("./Record");
-exports.Record = Record_1.Record;
+__export(require("./Record"));
 var List_1 = require("./List");
 exports.List = List_1.List;
 var Mock_1 = require("./Mock");
@@ -27,4 +26,5 @@ exports.pathJoin = path_1.pathJoin;
 var firebase_key_1 = require("firebase-key");
 exports.fbKey = firebase_key_1.key;
 __export(require("./state-mgmt/index"));
+__export(require("./CompositeKey"));
 //# sourceMappingURL=index.js.map

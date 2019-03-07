@@ -1,5 +1,5 @@
 // tslint:disable:no-implicit-dependencies
-import { Record } from "../src/Record";
+import { Record, fks } from "../src";
 import { DB } from "abstracted-client";
 import * as chai from "chai";
 const expect = chai.expect;
@@ -9,7 +9,6 @@ import { FancyPerson } from "./testing/FancyPerson";
 import { IFMRecordEvent, FMEvents } from "../src/state-mgmt";
 import { List } from "../src/List";
 import { Company } from "./testing/Company";
-import { fks } from "../src";
 
 const addFatherAndChildren = async () => {
   const bob = await Record.add(FancyPerson, {

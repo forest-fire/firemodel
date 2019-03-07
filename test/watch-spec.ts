@@ -1,5 +1,5 @@
 // tslint:disable:no-implicit-dependencies
-import { Record } from "../src/Record";
+import { Record } from "../src";
 import { DB } from "abstracted-client";
 import { DB as Admin } from "abstracted-admin";
 import * as chai from "chai";
@@ -11,13 +11,18 @@ import { setupEnv } from "./testing/helpers";
 import { IReduxAction } from "../src/VuexWrapper";
 import { FMEvents } from "../src/state-mgmt";
 import { wait } from "common-types";
+import { watch } from "fs";
 
 setupEnv();
 
-describe("Watch →", () => {
+describe.only("Watch →", () => {
   let realDB: Admin;
   before(async () => {
     realDB = await Admin.connect();
+    FireModel.defaultDb = realDB;
+  });
+  afterEach(async () => {
+    Watch.stop();
   });
 
   it("Watching a Record gives back a hashCode which can be looked up", async () => {
@@ -39,10 +44,15 @@ describe("Watch →", () => {
     const cb = (event: IReduxAction) => {
       events.push(event);
     };
-
-    Watch.record(Person, "1234")
+    const w = await Watch.record(Person, "1234")
       .dispatch(cb)
       .start();
+
+    expect(Watch.inventory[w.watchId]).to.be.an("object");
+    expect(Watch.inventory[w.watchId].eventType).to.equal("value");
+    expect(Watch.inventory[w.watchId].dbPath).to.equal(
+      "authenticated/people/1234"
+    );
 
     await FireModel.defaultDb.remove("/authenticated/people/1234");
     await FireModel.defaultDb.set("/authenticated/people/1234", {
@@ -52,8 +62,8 @@ describe("Watch →", () => {
     await FireModel.defaultDb.update("/authenticated/people/1234", {
       age: 23
     });
-    const eventTypes = new Set(events.map(e => e.type));
 
+    const eventTypes = new Set(events.map(e => e.type));
     expect(eventTypes.size).to.equal(2);
     expect(eventTypes.has(FMEvents.RECORD_CHANGED)).to.equal(true);
     expect(eventTypes.has(FMEvents.RECORD_REMOVED)).to.equal(true);
@@ -85,7 +95,6 @@ describe("Watch →", () => {
     // Initial response is to bring in all records
     // expect(events).to.have.lengthOf(2);
     let eventTypes = new Set(events.map(e => e.type));
-    console.log(eventTypes);
 
     expect(eventTypes.size).to.equal(1);
     expect(eventTypes.has(FMEvents.RECORD_ADDED));
@@ -121,6 +130,4 @@ describe("Watch →", () => {
       expect(e.name).to.equal("FireModel::InvalidHashcode");
     }
   });
-
-  // Watch.list(Person).since();
 });
