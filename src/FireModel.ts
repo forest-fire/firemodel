@@ -174,15 +174,16 @@ export class FireModel<T extends Model> {
   >(record: Record<T>, type: K, pathsOrValue: IMultiPathUpdates[] | T) {
     const payload: Partial<IFMRecordEvent<T>> = {
       type,
-      model: record.modelName,
+      modelName: record.modelName,
       modelConstructor: record._modelConstructor,
       dbPath: record.dbPath,
       compositeKey: record.compositeKey,
-      localPath: record.localPath,
+      localPath: record.localPath || record.modelName,
       key: record.id
     };
     if (Array.isArray(pathsOrValue)) {
       payload.paths = pathsOrValue;
+      payload.localPath = record.localPath || record.modelName;
     } else {
       payload.value = pathsOrValue;
     }

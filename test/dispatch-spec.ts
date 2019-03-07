@@ -66,7 +66,7 @@ describe("Dispatch →", () => {
     expect(event.paths).to.equal(paths);
     expect(event.paths).to.have.lengthOf(2);
 
-    expect(event.model).to.equal("person");
+    expect(event.modelName).to.equal("person");
   });
 
   it("set() immediately changes value on Record", async () => {

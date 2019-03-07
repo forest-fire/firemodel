@@ -1,7 +1,5 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-var VuexMutations_1 = require("./VuexMutations");
-exports.VuexMutations = VuexMutations_1.VuexMutations;
 function promoteStringToFMEvents(k) {
     return k;
 }
@@ -50,6 +48,8 @@ var FMEvents;
     FMEvents["RELATIONSHIP_ADDED_LOCALLY"] = "@firemodel/RELATIONSHIP_ADDED_LOCALLY";
     FMEvents["APP_CONNECTED"] = "@firemodel/APP_CONNECTED";
     FMEvents["APP_DISCONNECTED"] = "@firemodel/APP_DISCONNECTED";
+    FMEvents["ERROR_UNKNOWN_EVENT"] = "@firemodel/UNKNOWN_EVENT";
+    FMEvents["ERROR_OTHER"] = "@firemodel/OTHER_ERROR";
 })(FMEvents = exports.FMEvents || (exports.FMEvents = {}));
 //#endregion
 //#region specific events

@@ -1,4 +1,3 @@
-export { VuexMutations } from "./VuexMutations";
 function promoteStringToFMEvents(k) {
     return k;
 }
@@ -47,6 +46,8 @@ export var FMEvents;
     FMEvents["RELATIONSHIP_ADDED_LOCALLY"] = "@firemodel/RELATIONSHIP_ADDED_LOCALLY";
     FMEvents["APP_CONNECTED"] = "@firemodel/APP_CONNECTED";
     FMEvents["APP_DISCONNECTED"] = "@firemodel/APP_DISCONNECTED";
+    FMEvents["ERROR_UNKNOWN_EVENT"] = "@firemodel/UNKNOWN_EVENT";
+    FMEvents["ERROR_OTHER"] = "@firemodel/OTHER_ERROR";
 })(FMEvents || (FMEvents = {}));
 //#endregion
 //#region specific events

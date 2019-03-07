@@ -2,11 +2,10 @@ import { SerializedQuery } from "serialized-query";
 import { Model } from "../Model";
 import { IMultiPathUpdates } from "../FireModel";
 import { ICompositeKey } from "../@types/record-types";
-import { VuexMutations } from "./VuexMutations";
 import { FmModelConstructor } from "../@types/general";
 import { FmRelationshipType } from "../decorators/types";
+import { IFirebaseWatchEvent } from "abstracted-firebase";
 
-export { VuexMutations } from "./VuexMutations";
 //#region generalized structures
 
 export type Extractable<T, U> = T extends U ? any : never;
@@ -64,7 +63,10 @@ export enum FMEvents {
   RELATIONSHIP_ADDED_LOCALLY = "@firemodel/RELATIONSHIP_ADDED_LOCALLY",
 
   APP_CONNECTED = "@firemodel/APP_CONNECTED",
-  APP_DISCONNECTED = "@firemodel/APP_DISCONNECTED"
+  APP_DISCONNECTED = "@firemodel/APP_DISCONNECTED",
+
+  ERROR_UNKNOWN_EVENT = "@firemodel/UNKNOWN_EVENT",
+  ERROR_OTHER = "@firemodel/OTHER_ERROR"
 }
 
 export interface IFMChangedPath {
@@ -93,8 +95,9 @@ export interface IFMRecordListEvent<T extends Model = Model> {
 }
 
 export interface IFMRelationshipEvent<T extends Model = Model>
-  extends IFMRecordEventCore<T> {
+  extends IFmDispatchWatchContext<T> {
   fk: string;
+  fkCompositeKey: ICompositeKey;
   fkModelName: string;
   fkPluralName: string;
   fkConstructor?: FmModelConstructor<T>;
@@ -102,35 +105,54 @@ export interface IFMRelationshipEvent<T extends Model = Model>
   fkLocalPath?: string;
 }
 
-export interface IFMRecordEventCore<T extends Model = Model> {
-  /** the unique identifier of the event type/kind */
-  type: string;
+/**
+ * When the watch is setup by the Watch() function, context about the
+ * model, etc. is captured so that dispatch can include this information
+ * along with what was sent by Firebase itself. This additional "context"
+ * is defined as IFmDispatchWatchContext
+ */
+export interface IFmDispatchWatchContext<T extends Model = Model> {
   /** the name of the Model who's record has changed */
-  model: string;
+  modelName: string;
+  /** plural name of the model */
+  pluralName: string;
   /** the constructor for the Model of the record which has changed */
   modelConstructor: FmModelConstructor<T>;
-  /** the path in Firebase where this Record should is stored */
-  dbPath: string;
-  /** the composite key that uniquely defines this record */
-  compositeKey: ICompositeKey;
+  /** dynamic path properties on the database */
+  dynamicPathProperties: string[];
+  /** the query the watcher is based on */
+  query: SerializedQuery;
   /** the path in your local state management where this Record should go */
   localPath: string;
-  /** an identifier of which active watcher which triggered to create this event, not populated in the case of a client triggered event */
-  watcherHash?: string;
-  /** the Record's "id" property */
-  key: string;
+  /** the "postFix" for local names; this is only presented when watcher is coming from a LIST */
+  localPostfix?: string;
+  /**
+   * indicates whether watcher involved in firing this event
+   * was a RECORD or LIST
+   */
+  watcherSource: "list" | "record";
+  /**
+   * an identifier of which active watcher which triggered to create this event,
+   * not populated in the case of a client triggered event
+   */
+  watcherId?: string;
   /** the key/ID the previous state; provided only on child_moved and child_changed */
-  prevKey?: string;
+  previousChildKey?: string;
 }
 
 export interface IFMRecordClientEvent<T extends Model = Model>
-  extends IFMRecordEventCore<T> {
+  extends IFmDispatchWatchContext<T> {
   /** paths that will be updated; this is only provided on client originated events */
   paths?: IMultiPathUpdates[];
+  dbPath: string;
+  compositeKey: ICompositeKey;
+  key: string;
+  type: string;
+  model: string;
 }
 
 export interface IFMRecordExternalEvent<T extends Model = Model>
-  extends IFMRecordEventCore<T> {
+  extends IFmDispatchWatchContext<T> {
   /** the value of the Record after the change */
   value: T;
 }
@@ -153,6 +175,13 @@ export interface IFMChildAction extends IFMAction {
 export interface IFMValueAction extends IFMAction {
   model: string;
   query: SerializedQuery | null;
+}
+
+export interface IFmContextualizedWatchEvent<T = any>
+  extends IFmDispatchWatchContext<T>,
+    IFirebaseWatchEvent {
+  type: FMEvents;
+  compositeKey: ICompositeKey;
 }
 //#endregion
 

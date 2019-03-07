@@ -1,10 +1,12 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+const common_types_1 = require("common-types");
 const serialized_query_1 = require("serialized-query");
 const FireModel_1 = require("./FireModel");
 const Record_1 = require("./Record");
 const ModelDispatchTransformer_1 = require("./ModelDispatchTransformer");
 const List_1 = require("./List");
+const state_mgmt_1 = require("./state-mgmt");
 /** a cache of all the watched  */
 let watcherPool = {};
 class Watch {
@@ -13,6 +15,12 @@ class Watch {
     }
     static set dispatch(d) {
         FireModel_1.FireModel.dispatch = d;
+    }
+    static get inventory() {
+        return watcherPool;
+    }
+    static toJSON() {
+        return Watch.inventory;
     }
     /**
      * lookup
@@ -37,6 +45,7 @@ class Watch {
     static reset() {
         watcherPool = {};
     }
+    /** stops watching either a specific watcher or ALL if no hash code is provided */
     static stop(hashCode, oneOffDB) {
         const codes = new Set(Object.keys(watcherPool));
         const db = oneOffDB || FireModel_1.FireModel.defaultDb;
@@ -62,18 +71,23 @@ class Watch {
             delete watcherPool[hashCode];
         }
     }
-    static record(modelClass, recordId, options = {}) {
+    static record(modelConstructor, pk, options = {}) {
+        if (!pk) {
+            throw common_types_1.createError("firemodel/watch", `Attempt made to watch a RECORD but no primary key was provided!`);
+        }
         const o = new Watch();
         if (o.db) {
             o._db = options.db;
         }
         o._eventType = "value";
-        const r = Record_1.Record.create(modelClass);
-        r._initialize({ id: recordId });
+        const r = Record_1.Record.local(modelConstructor, typeof pk === "string" ? { id: pk } : pk);
         o._query = new serialized_query_1.SerializedQuery(`${r.dbPath}`);
+        o._modelConstructor = modelConstructor;
         o._modelName = r.modelName;
         o._pluralName = r.pluralName;
         o._localPath = r.localPath;
+        o._localPostfix = r.META.localPostfix;
+        o._dynamicProperties = r.dynamicPathComponents;
         return o;
     }
     static list(modelConstructor, options = {}) {
@@ -83,42 +97,54 @@ class Watch {
         }
         o._eventType = "child";
         const lst = List_1.List.create(modelConstructor);
+        o._modelConstructor = modelConstructor;
         o._query = new serialized_query_1.SerializedQuery(lst.dbPath);
         o._modelName = lst.modelName;
         o._pluralName = lst.pluralName;
         o._localPath = lst.localPath;
+        o._localPostfix = lst.META.localPostfix;
+        o._dynamicProperties = Record_1.Record.dynamicPathProperties(modelConstructor);
         return o;
     }
     /** executes the watcher so that it becomes actively watched */
     start() {
-        const hash = "w" + String(this._query.hashCode());
-        const scope = this._eventType === "value" ? "record" : "list";
-        const dispatch = ModelDispatchTransformer_1.ModelDispatchTransformer({
-            watcherHash: hash,
-            watcherDbPath: this._query.path,
-            watcherLocalPath: this._localPath,
+        const watcherId = "w" + String(this._query.hashCode());
+        const construct = this._modelConstructor;
+        // create a dispatch function with context
+        const dispatchCallback = ModelDispatchTransformer_1.ModelDispatchTransformer({
+            watcherId,
+            modelConstructor: this._modelConstructor,
+            query: this._query,
+            dynamicPathProperties: this._dynamicProperties,
+            localPath: this._localPath,
+            localPostfix: this._localPostfix,
             modelName: this._modelName,
             pluralName: this._pluralName,
-            scope
+            watcherSource: "value" ? "record" : "list"
         })(this._dispatcher || FireModel_1.FireModel.dispatch);
-        if (this._eventType === "value") {
-            this.db.watch(this._query, "value", dispatch);
+        try {
+            if (this._eventType === "value") {
+                this.db.watch(this._query, "value", dispatchCallback);
+            }
+            else {
+                this.db.watch(this._query, ["child_added", "child_changed", "child_moved", "child_removed"], dispatchCallback);
+            }
         }
-        else {
-            this.db.watch(this._query, ["child_added", "child_changed", "child_moved", "child_removed"], dispatch);
+        catch (e) {
+            console.log(e);
         }
-        watcherPool[hash] = {
+        const watcherItem = {
+            watcherId,
             eventType: this._eventType,
-            dispatch: this._dispatcher,
+            dispatch: this._dispatcher || FireModel_1.FireModel.dispatch,
             query: this._query,
             dbPath: this._query.path,
             createdAt: new Date().getTime()
         };
-        return {
-            watchId: hash,
-            localPath: this._localPath,
-            query: this._query.identity
-        };
+        watcherPool[watcherId] = watcherItem;
+        // dispatch meta
+        (this._dispatcher || FireModel_1.FireModel.dispatch)(Object.assign({ type: state_mgmt_1.FMEvents.WATCHER_STARTED }, watcherItem));
+        return watcherItem;
     }
     /**
      * allows you to state an explicit dispatch function which will be called

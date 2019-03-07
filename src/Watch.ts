@@ -1,4 +1,9 @@
-import { epochWithMilliseconds, IDictionary, Omit } from "common-types";
+import {
+  epochWithMilliseconds,
+  IDictionary,
+  Omit,
+  createError
+} from "common-types";
 import { Model } from "./Model";
 import { SerializedQuery } from "serialized-query";
 import { IReduxDispatch } from "./VuexWrapper";
@@ -7,8 +12,13 @@ import { Record } from "./Record";
 type RealTimeDB = import("abstracted-firebase").RealTimeDB;
 import { ModelDispatchTransformer } from "./ModelDispatchTransformer";
 import { List } from "./List";
-import { IModelOptions, IComparisonOperator } from "./@types/general";
-import { IWatcherResult } from "./@types/watcher-types";
+import {
+  IModelOptions,
+  IComparisonOperator,
+  FmModelConstructor
+} from "./@types/general";
+import { IPrimaryKey } from "./@types/record-types";
+import { FMEvents } from "./state-mgmt";
 
 export type IWatchEventClassification = "child" | "value";
 export type IQuerySetter = (q: SerializedQuery) => void;
@@ -27,6 +37,7 @@ export type IWatchListQueries =
   | "inactive";
 
 export interface IWatcherItem {
+  watcherId: string;
   eventType: string;
   query: SerializedQuery;
   createdAt: number;
@@ -44,6 +55,14 @@ export class Watch {
 
   public static set dispatch(d: IReduxDispatch) {
     FireModel.dispatch = d;
+  }
+
+  public static get inventory() {
+    return watcherPool;
+  }
+
+  public static toJSON() {
+    return Watch.inventory;
   }
 
   /**
@@ -74,6 +93,7 @@ export class Watch {
     watcherPool = {};
   }
 
+  /** stops watching either a specific watcher or ALL if no hash code is provided */
   public static stop(hashCode?: string, oneOffDB?: RealTimeDB) {
     const codes = new Set(Object.keys(watcherPool));
     const db = oneOffDB || FireModel.defaultDb;
@@ -108,21 +128,33 @@ export class Watch {
   }
 
   public static record<T extends Model>(
-    modelClass: new () => T,
-    recordId: string,
+    modelConstructor: new () => T,
+    pk: IPrimaryKey,
     options: IModelOptions = {}
   ) {
+    if (!pk) {
+      throw createError(
+        "firemodel/watch",
+        `Attempt made to watch a RECORD but no primary key was provided!`
+      );
+    }
     const o = new Watch();
     if (o.db) {
       o._db = options.db;
     }
     o._eventType = "value";
-    const r = Record.create(modelClass);
-    r._initialize({ id: recordId } as any);
+    const r = Record.local(
+      modelConstructor,
+      typeof pk === "string" ? { id: pk } : (pk as any)
+    );
+
     o._query = new SerializedQuery(`${r.dbPath}`);
+    o._modelConstructor = modelConstructor;
     o._modelName = r.modelName;
     o._pluralName = r.pluralName;
     o._localPath = r.localPath;
+    o._localPostfix = r.META.localPostfix;
+    o._dynamicProperties = r.dynamicPathComponents;
 
     return o as Omit<Watch, IWatchListQueries | "toString">;
   }
@@ -137,58 +169,75 @@ export class Watch {
     }
     o._eventType = "child";
     const lst = List.create(modelConstructor);
+    o._modelConstructor = modelConstructor;
     o._query = new SerializedQuery<T>(lst.dbPath);
     o._modelName = lst.modelName;
     o._pluralName = lst.pluralName;
     o._localPath = lst.localPath;
+    o._localPostfix = lst.META.localPostfix;
+    o._dynamicProperties = Record.dynamicPathProperties(modelConstructor);
     return o as Pick<Watch, IWatchListQueries>;
   }
 
   protected _query: SerializedQuery;
+  protected _modelConstructor: FmModelConstructor<any>;
   protected _eventType: IWatchEventClassification;
   protected _dispatcher: IReduxDispatch;
   protected _db: RealTimeDB;
   protected _modelName: string;
   protected _pluralName: string;
   protected _localPath: string;
+  protected _localPostfix: string;
+  protected _dynamicProperties: string[];
 
   /** executes the watcher so that it becomes actively watched */
-  public start(): IWatcherResult {
-    const hash = "w" + String(this._query.hashCode());
-
-    const scope = this._eventType === "value" ? "record" : "list";
-    const dispatch = ModelDispatchTransformer({
-      watcherHash: hash,
-      watcherDbPath: this._query.path as string,
-      watcherLocalPath: this._localPath,
+  public start(): IWatcherItem {
+    const watcherId = "w" + String(this._query.hashCode());
+    const construct = this._modelConstructor;
+    type ModelType = typeof construct;
+    // create a dispatch function with context
+    const dispatchCallback = ModelDispatchTransformer<ModelType>({
+      watcherId,
+      modelConstructor: this._modelConstructor,
+      query: this._query,
+      dynamicPathProperties: this._dynamicProperties,
+      localPath: this._localPath,
+      localPostfix: this._localPostfix,
       modelName: this._modelName,
       pluralName: this._pluralName,
-      scope
+      watcherSource: "value" ? "record" : "list"
     })(this._dispatcher || FireModel.dispatch);
 
-    if (this._eventType === "value") {
-      this.db.watch(this._query, "value", dispatch);
-    } else {
-      this.db.watch(
-        this._query,
-        ["child_added", "child_changed", "child_moved", "child_removed"],
-        dispatch
-      );
+    try {
+      if (this._eventType === "value") {
+        this.db.watch(this._query, "value", dispatchCallback);
+      } else {
+        this.db.watch(
+          this._query,
+          ["child_added", "child_changed", "child_moved", "child_removed"],
+          dispatchCallback
+        );
+      }
+    } catch (e) {
+      console.log(e);
     }
 
-    watcherPool[hash] = {
+    const watcherItem: IWatcherItem = {
+      watcherId,
       eventType: this._eventType,
-      dispatch: this._dispatcher,
+      dispatch: this._dispatcher || FireModel.dispatch,
       query: this._query,
       dbPath: this._query.path as string,
       createdAt: new Date().getTime()
     };
 
-    return {
-      watchId: hash,
-      localPath: this._localPath,
-      query: this._query.identity
-    };
+    watcherPool[watcherId] = watcherItem;
+    // dispatch meta
+    (this._dispatcher || FireModel.dispatch)({
+      type: FMEvents.WATCHER_STARTED,
+      ...watcherItem
+    });
+    return watcherItem;
   }
 
   /**

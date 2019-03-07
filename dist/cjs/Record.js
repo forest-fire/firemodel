@@ -8,7 +8,7 @@ const path_1 = require("./path");
 const ModelMeta_1 = require("./ModelMeta");
 const Audit_1 = require("./Audit");
 const util_1 = require("./util");
-const CompositeKey_1 = require("./Record/CompositeKey");
+const CompositeKey_1 = require("./CompositeKey");
 class Record extends FireModel_1.FireModel {
     constructor(model, options = {}) {
         super();
@@ -34,6 +34,9 @@ class Record extends FireModel_1.FireModel {
     }
     static set dispatch(fn) {
         FireModel_1.FireModel.dispatch = fn;
+    }
+    static dynamicPathProperties(model) {
+        return Record.create(model).dynamicPathComponents;
     }
     get data() {
         return this._data;
@@ -161,6 +164,22 @@ class Record extends FireModel_1.FireModel {
             throw e;
         }
         return r;
+    }
+    /**
+     * Creates an empty record and then inserts all values
+     * provided.
+     */
+    static local(model, values, options = {}) {
+        const rec = Record.create(model, options);
+        if (!options.ignoreEmptyValues &&
+            (!values || Object.keys(values).length === 0)) {
+            throw common_types_1.createError(`firemodel/record::local`, "You used the static Record.local() method but passed nothing into the 'values' property! If you just want to skip this error then you can set the options to { ignoreEmptyValues: true } or just use the Record.create() method.");
+        }
+        if (values) {
+            // silently set all values
+            Object.keys(values).forEach(key => rec.set(key, values[key], true));
+        }
+        return rec;
     }
     /**
      * add
@@ -387,8 +406,9 @@ class Record extends FireModel_1.FireModel {
      *
      * @param prop the property on the record to be changed
      * @param value the new value to set to
+     * @param silent a flag to indicate whether the change to the prop should be updated to the database
      */
-    async set(prop, value) {
+    async set(prop, value, silent = false) {
         if (this.META.property(prop).isRelationship) {
             const e = new Error(`You can not "set" the property "${prop}" because it is configured as a relationship!`);
             e.name = "FireModel::NotAllowed";
@@ -399,9 +419,14 @@ class Record extends FireModel_1.FireModel {
             [prop]: value,
             lastUpdated
         };
-        await this._updateProps(index_1.FMEvents.RECORD_CHANGED_LOCALLY, index_1.FMEvents.RECORD_CHANGED, changed);
-        if (this.META.audit) {
-            // TODO: implement for auditing
+        if (!silent) {
+            await this._updateProps(index_1.FMEvents.RECORD_CHANGED_LOCALLY, index_1.FMEvents.RECORD_CHANGED, changed);
+            if (this.META.audit) {
+                // TODO: implement for auditing
+            }
+        }
+        else {
+            this._data[prop] = value;
         }
         return;
     }

@@ -15,10 +15,7 @@ import {
   IFkReference,
   ICompositeKey
 } from "./@types/record-types";
-import {
-  createCompositeKey,
-  createCompositeKeyString
-} from "./Record/CompositeKey";
+import { createCompositeKey, createCompositeKeyString } from "./CompositeKey";
 import { IModelOptions } from "./@types/general";
 
 // TODO: see if there's a way to convert to interface so that design time errors are more clear
@@ -54,6 +51,12 @@ export class Record<T extends Model> extends FireModel<T> {
 
   public static set dispatch(fn: IReduxDispatch) {
     FireModel.dispatch = fn;
+  }
+
+  public static dynamicPathProperties<T extends Model = Model>(
+    model: new () => T
+  ) {
+    return Record.create(model).dynamicPathComponents;
   }
 
   public get data() {
@@ -212,6 +215,36 @@ export class Record<T extends Model> extends FireModel<T> {
     }
 
     return r;
+  }
+
+  /**
+   * Creates an empty record and then inserts all values
+   * provided.
+   */
+  public static local<T extends Model>(
+    model: new () => T,
+    values: Partial<T>,
+    options: IRecordOptions & { ignoreEmptyValues?: boolean } = {}
+  ) {
+    const rec = Record.create(model, options as IRecordOptions);
+    if (
+      !options.ignoreEmptyValues &&
+      (!values || Object.keys(values).length === 0)
+    ) {
+      throw createError(
+        `firemodel/record::local`,
+        "You used the static Record.local() method but passed nothing into the 'values' property! If you just want to skip this error then you can set the options to { ignoreEmptyValues: true } or just use the Record.create() method."
+      );
+    }
+
+    if (values) {
+      // silently set all values
+      Object.keys(values).forEach(key =>
+        rec.set(key as keyof T, values[key as keyof typeof values], true)
+      );
+    }
+
+    return rec;
   }
 
   /**
@@ -539,8 +572,13 @@ export class Record<T extends Model> extends FireModel<T> {
    *
    * @param prop the property on the record to be changed
    * @param value the new value to set to
+   * @param silent a flag to indicate whether the change to the prop should be updated to the database
    */
-  public async set<K extends keyof T>(prop: K, value: T[K]) {
+  public async set<K extends keyof T>(
+    prop: K,
+    value: T[K],
+    silent: boolean = false
+  ) {
     if (this.META.property(prop).isRelationship) {
       const e = new Error(
         `You can not "set" the property "${prop}" because it is configured as a relationship!`
@@ -553,13 +591,18 @@ export class Record<T extends Model> extends FireModel<T> {
       [prop]: value,
       lastUpdated
     };
-    await this._updateProps(
-      FMEvents.RECORD_CHANGED_LOCALLY,
-      FMEvents.RECORD_CHANGED,
-      changed
-    );
-    if (this.META.audit) {
-      // TODO: implement for auditing
+
+    if (!silent) {
+      await this._updateProps(
+        FMEvents.RECORD_CHANGED_LOCALLY,
+        FMEvents.RECORD_CHANGED,
+        changed
+      );
+      if (this.META.audit) {
+        // TODO: implement for auditing
+      }
+    } else {
+      this._data[prop] = value;
     }
 
     return;
