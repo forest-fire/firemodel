@@ -4,7 +4,7 @@ import { IMultiPathUpdates } from "../FireModel";
 import { ICompositeKey } from "../@types/record-types";
 import { FmModelConstructor } from "../@types/general";
 import { FmRelationshipType } from "../decorators/types";
-import { IFirebaseWatchEvent } from "abstracted-firebase";
+import { IValueBasedWatchEvent } from "abstracted-firebase";
 export declare type Extractable<T, U> = T extends U ? any : never;
 export declare type NotString<T> = string extends T ? never : any;
 export declare type IFMEventName<T> = string & NotString<T> & Extractable<FMEvents, T>;
@@ -149,7 +149,7 @@ export interface IFMValueAction extends IFMAction {
     model: string;
     query: SerializedQuery | null;
 }
-export interface IFmContextualizedWatchEvent<T = any> extends IFmDispatchWatchContext<T>, IFirebaseWatchEvent {
+export interface IFmContextualizedWatchEvent<T = any> extends IFmDispatchWatchContext<T>, IValueBasedWatchEvent {
     type: FMEvents;
     compositeKey: ICompositeKey;
 }

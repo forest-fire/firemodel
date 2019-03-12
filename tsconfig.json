@@ -11,13 +11,9 @@
     "emitDecoratorMetadata": true,
     "outDir": "./lib",
     "removeComments": false,
-    "typeRoots": ["./node_modules/@types"]
+    "typeRoots": ["./node_modules/@types", "manual_typings"],
+    "baseUrl": ".",
+    "paths": { "lodash/*": ["node_modules/@types/lodash-es/*"] }
   },
-  "include": ["./src/**/*", "test/**/*-spec.ts"],
-  "exclude": [
-    "node_modules/**/*",
-    "node_modules/firemock/**",
-    "node_modules/@firebase/**/*.d.ts",
-    "node_modules/@firebase/auth-types/index.d.ts"
-  ]
+  "include": ["./src/**/*", "test/**/*-spec.ts"]
 }

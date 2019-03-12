@@ -43,4 +43,7 @@ exports.ModelDispatchTransformer = (context) => (clientHandler) => {
         return clientHandler(contextualizedEvent);
     };
 };
+function isValueBasedEvent(evt, context) {
+    return evt.eventType === "value";
+}
 //# sourceMappingURL=ModelDispatchTransformer.js.map
