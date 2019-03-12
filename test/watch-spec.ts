@@ -15,7 +15,7 @@ import { watch } from "fs";
 
 setupEnv();
 
-describe.only("Watch →", () => {
+describe("Watch →", () => {
   let realDB: Admin;
   before(async () => {
     realDB = await Admin.connect();
@@ -27,15 +27,15 @@ describe.only("Watch →", () => {
 
   it("Watching a Record gives back a hashCode which can be looked up", async () => {
     FireModel.defaultDb = await DB.connect({ mocking: true });
-    const { watchId } = Watch.record(Person, "12345")
+    const { watcherId } = Watch.record(Person, "12345")
       .dispatch(() => "")
       .start();
-    expect(watchId).to.be.a("string");
+    expect(watcherId).to.be.a("string");
 
-    expect(Watch.lookup(watchId)).to.be.an("object");
-    expect(Watch.lookup(watchId)).to.haveOwnProperty("eventType");
-    expect(Watch.lookup(watchId)).to.haveOwnProperty("query");
-    expect(Watch.lookup(watchId)).to.haveOwnProperty("createdAt");
+    expect(Watch.lookup(watcherId)).to.be.an("object");
+    expect(Watch.lookup(watcherId)).to.haveOwnProperty("eventType");
+    expect(Watch.lookup(watcherId)).to.haveOwnProperty("query");
+    expect(Watch.lookup(watcherId)).to.haveOwnProperty("createdAt");
   });
 
   it("Watching CRUD actions on Record", async () => {
@@ -48,9 +48,9 @@ describe.only("Watch →", () => {
       .dispatch(cb)
       .start();
 
-    expect(Watch.inventory[w.watchId]).to.be.an("object");
-    expect(Watch.inventory[w.watchId].eventType).to.equal("value");
-    expect(Watch.inventory[w.watchId].dbPath).to.equal(
+    expect(Watch.inventory[w.watcherId]).to.be.an("object");
+    expect(Watch.inventory[w.watcherId].eventType).to.equal("value");
+    expect(Watch.inventory[w.watcherId].dbPath).to.equal(
       "authenticated/people/1234"
     );
 
@@ -64,9 +64,11 @@ describe.only("Watch →", () => {
     });
 
     const eventTypes = new Set(events.map(e => e.type));
-    expect(eventTypes.size).to.equal(2);
+
+    expect(eventTypes.size).to.equal(3);
     expect(eventTypes.has(FMEvents.RECORD_CHANGED)).to.equal(true);
     expect(eventTypes.has(FMEvents.RECORD_REMOVED)).to.equal(true);
+    expect(eventTypes.has(FMEvents.WATCHER_STARTED)).to.equal(true);
   });
 
   it("Watching CRUD actions on List", async () => {
@@ -95,8 +97,10 @@ describe.only("Watch →", () => {
     // Initial response is to bring in all records
     // expect(events).to.have.lengthOf(2);
     let eventTypes = new Set(events.map(e => e.type));
+    console.log(eventTypes);
 
-    expect(eventTypes.size).to.equal(1);
+    expect(eventTypes.size).to.equal(2);
+    expect(eventTypes.has(FMEvents.WATCHER_STARTED));
     expect(eventTypes.has(FMEvents.RECORD_ADDED));
     // Now we'll do some more CRUD activities
     await FireModel.defaultDb.set("/authenticated/people/1234", {
@@ -117,8 +121,8 @@ describe.only("Watch →", () => {
     Watch.reset();
     FireModel.dispatch = () => "";
     expect(Watch.watchCount).to.equal(0);
-    const { watchId: hc1 } = Watch.record(Person, "989898").start();
-    const { watchId: hc2 } = Watch.record(Person, "45645645").start();
+    const { watcherId: hc1 } = Watch.record(Person, "989898").start();
+    const { watcherId: hc2 } = Watch.record(Person, "45645645").start();
     expect(Watch.watchCount).to.equal(2);
     Watch.stop(hc1);
     expect(Watch.watchCount).to.equal(1);

@@ -1,6 +1,6 @@
 import { IReduxDispatch } from "./VuexWrapper";
 import { IDictionary } from "common-types";
-import { IFirebaseWatchEvent } from "abstracted-firebase";
+import { IFirebaseWatchEvent, IFirebaseWatchContext, IValueBasedWatchEvent } from "abstracted-firebase";
 import {
   FMEvents,
   IFmDispatchWatchContext,
@@ -23,7 +23,7 @@ export const ModelDispatchTransformer = <T>(
     e.name = "FireModel::NotAllowed";
     throw e;
   }
-  return (event: IFirebaseWatchEvent) => {
+  return (event: IValueBasedWatchEvent) => {
     const typeLookup: IDictionary = {
       child_added: FMEvents.RECORD_ADDED,
       child_removed: FMEvents.RECORD_REMOVED,
@@ -62,3 +62,11 @@ export const ModelDispatchTransformer = <T>(
     return clientHandler(contextualizedEvent);
   };
 };
+
+
+function isValueBasedEvent(
+  evt: IFirebaseWatchEvent,
+  context: IFirebaseWatchContext
+): evt is IValueBasedWatchEvent {
+  return evt.eventType === "value";
+}

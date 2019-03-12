@@ -4,7 +4,10 @@ import { IMultiPathUpdates } from "../FireModel";
 import { ICompositeKey } from "../@types/record-types";
 import { FmModelConstructor } from "../@types/general";
 import { FmRelationshipType } from "../decorators/types";
-import { IFirebaseWatchEvent } from "abstracted-firebase";
+import {
+  IFirebaseWatchEvent,
+  IValueBasedWatchEvent
+} from "abstracted-firebase";
 
 //#region generalized structures
 
@@ -179,7 +182,7 @@ export interface IFMValueAction extends IFMAction {
 
 export interface IFmContextualizedWatchEvent<T = any>
   extends IFmDispatchWatchContext<T>,
-    IFirebaseWatchEvent {
+    IValueBasedWatchEvent {
   type: FMEvents;
   compositeKey: ICompositeKey;
 }

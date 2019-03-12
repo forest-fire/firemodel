@@ -3,7 +3,7 @@ function __export(m) {
     for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
 }
 Object.defineProperty(exports, "__esModule", { value: true });
-__export(require("./decorators"));
+__export(require("./decorators/index"));
 var Model_1 = require("./Model");
 exports.Model = Model_1.Model;
 __export(require("./Record"));
@@ -19,8 +19,8 @@ var Watch_1 = require("./Watch");
 exports.Watch = Watch_1.Watch;
 var VuexWrapper_1 = require("./VuexWrapper");
 exports.VeuxWrapper = VuexWrapper_1.VeuxWrapper;
-__export(require("./state-mgmt"));
-__export(require("./@types"));
+__export(require("./state-mgmt/index"));
+__export(require("./@types/index"));
 var path_1 = require("./path");
 exports.pathJoin = path_1.pathJoin;
 var firebase_key_1 = require("firebase-key");
