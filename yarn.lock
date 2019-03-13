@@ -8729,12 +8729,13 @@ vuex-class@^0.3.1:
   resolved "https://registry.yarnpkg.com/vuex-class/-/vuex-class-0.3.1.tgz#3c0b946bcff4cf2be1904de5b0cab1a3dd5c41d5"
   integrity sha512-d7Hc+ItQx6p9E/2mEWiyrvyEuo7Uj0mq4VNImd7dmxTelnkhOavKPMEG1Xdypug2RlPEYv0920IOa3hdVZ+4AA==
 
-wait-in-parallel@^1.2.2:
-  version "1.2.2"
-  resolved "https://registry.yarnpkg.com/wait-in-parallel/-/wait-in-parallel-1.2.2.tgz#6af2e59201e838cc938858246b9ec39e0c2813fb"
-  integrity sha512-4OeErj1EvzC5D/V1MYSXJQGw+pimEGMXpAIW4juhYpYexKCYatYdpb37Fk/g9NkVcaYXu2d5auWYmOqx91P9JA==
+wait-in-parallel@^1.2.4:
+  version "1.2.4"
+  resolved "https://registry.yarnpkg.com/wait-in-parallel/-/wait-in-parallel-1.2.4.tgz#447c8824f7bbbf2fc76bce13d90524d8e82f024b"
+  integrity sha512-npbJRIzP4TUVaIuqhxaj3D/iKM9HfXgFInpOvryNCSHE4pu5iCNhnmogV8ssUuDv3jCJd1FdHRjk8aujYoo7ng==
   dependencies:
     common-types "^1.9.6s"
+    lodash.first "^3.0.0"
     typed-conversions "^0.7.4"
 
 walkdir@0.0.12:
