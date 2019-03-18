@@ -34,7 +34,7 @@
     "docs:build": "vuepress build docs"
   },
   "dependencies": {
-    "abstracted-firebase": "^0.16.3",
+    "abstracted-firebase": "^0.16.4",
     "common-types": "^1.9.7",
     "firebase-key": "^2.0.1",
     "get-value": "^3.0.1",

@@ -579,7 +579,9 @@ export class Record<T extends Model> extends FireModel<T> {
     value: T[K],
     silent: boolean = false
   ) {
-    if (this.META.property(prop).isRelationship) {
+    const meta =
+      this.META.property(prop) || getModelMeta(this._modelConstructor);
+    if (meta.isRelationship) {
       const e = new Error(
         `You can not "set" the property "${prop}" because it is configured as a relationship!`
       );
@@ -1032,18 +1034,18 @@ export class Record<T extends Model> extends FireModel<T> {
       }
       if (!hasRecipricalInverse) {
         // TODO: back to warn?
-        console.log(
-          `The FK "${property}" on ${
-            this.modelName
-          } has an inverse property set of "${inverseProperty}" but on the reference model [ ${
-            fkRecord.modelName
-          } ] there is NOT a reciprocal inverse set! [ ${
-            fkMeta.relationship(inverseProperty).inverseProperty
-              ? fkMeta.relationship(inverseProperty).inverseProperty +
-                " was set instead"
-              : "no inverse set"
-          } ]`
-        );
+        // console.log(
+        //   `The FK "${property}" on ${
+        //     this.modelName
+        //   } has an inverse property set of "${inverseProperty}" but on the reference model [ ${
+        //     fkRecord.modelName
+        //   } ] there is NOT a reciprocal inverse set! [ ${
+        //     fkMeta.relationship(inverseProperty).inverseProperty
+        //       ? fkMeta.relationship(inverseProperty).inverseProperty +
+        //         " was set instead"
+        //       : "no inverse set"
+        //   } ]`
+        // );
       }
       const pathToInverseFkReln = inverseProperty
         ? pathJoin(fkRecord.dbPath, inverseProperty)

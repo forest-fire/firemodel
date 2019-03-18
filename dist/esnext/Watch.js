@@ -2,7 +2,7 @@ import { createError } from "common-types";
 import { SerializedQuery } from "serialized-query";
 import { FireModel } from "./FireModel";
 import { Record } from "./Record";
-import { ModelDispatchTransformer } from "./ModelDispatchTransformer";
+import { ModelDispatchTransformer } from "./watching/ModelDispatchTransformer";
 import { List } from "./List";
 import { FMEvents } from "./state-mgmt";
 /** a cache of all the watched  */
@@ -124,14 +124,14 @@ export class Watch {
         })(this._dispatcher || FireModel.dispatch);
         try {
             if (this._eventType === "value") {
-                this.db.watch(this._query, "value", dispatchCallback);
+                this.db.watch(this._query, ["value"], dispatchCallback);
             }
             else {
                 this.db.watch(this._query, ["child_added", "child_changed", "child_moved", "child_removed"], dispatchCallback);
             }
         }
         catch (e) {
-            console.log(e);
+            console.log(`Problem starting watcher [${watcherId}]: `, e);
         }
         const watcherItem = {
             watcherId,

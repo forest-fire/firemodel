@@ -126,8 +126,13 @@ export class FireModel {
             key: record.id
         };
         if (Array.isArray(pathsOrValue)) {
-            payload.paths = pathsOrValue;
-            payload.localPath = record.localPath || record.modelName;
+            if (pathsOrValue.length === 1 && pathsOrValue[0].path === "/") {
+                payload.value = pathsOrValue[0].value;
+            }
+            else {
+                payload.paths = pathsOrValue;
+                payload.localPath = record.localPath || record.modelName;
+            }
         }
         else {
             payload.value = pathsOrValue;
