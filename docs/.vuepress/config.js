@@ -194,7 +194,8 @@ module.exports = {
             "/mocking/",
             "configure-mocking",
             "extending",
-            "relationships"
+            "relationships",
+            "auth-mocking"
           ]
         },
         {
