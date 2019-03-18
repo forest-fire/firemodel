@@ -34,7 +34,7 @@ export declare class Watch {
     static reset(): void;
     /** stops watching either a specific watcher or ALL if no hash code is provided */
     static stop(hashCode?: string, oneOffDB?: RealTimeDB): void;
-    static record<T extends Model>(modelConstructor: new () => T, pk: IPrimaryKey, options?: IModelOptions): Pick<Watch, IWatchListQueries>;
+    static record<T extends Model>(modelConstructor: new () => T, pk: IPrimaryKey, options?: IModelOptions): Pick<Watch, "start" | "dispatch">;
     static list<T extends Model>(modelConstructor: new () => T, options?: IModelOptions): Pick<Watch, IWatchListQueries>;
     protected _query: SerializedQuery;
     protected _modelConstructor: FmModelConstructor<any>;

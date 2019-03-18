@@ -34,11 +34,12 @@ clientHandler) => {
         const contextualizedEvent = Object.assign({}, context, event, {
             compositeKey,
             type: event.eventType === "value"
-                ? event.value === null
+                ? event.value === null || event.paths === null
                     ? FMEvents.RECORD_REMOVED
                     : FMEvents.RECORD_CHANGED
                 : typeLookup[event.eventType]
         });
+        // console.log(contextualizedEvent, event.value);
         return clientHandler(contextualizedEvent);
     };
 };
