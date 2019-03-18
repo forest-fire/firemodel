@@ -147,11 +147,20 @@ describe("relationship decorators: ", () => {
     expect(props).to.include("concerts");
     expect(props).to.include("employerId");
 
+    person.META.relationships.map(p => {
+      if (p.relType === "hasOne") {
+        expect(p.type).to.equal("String");
+      }
+      if (p.relType === "hasMany") {
+        expect(p.type).to.equal("Object");
+      }
+    });
+
     const mother = person.META.relationships.filter(
       i => i.property === "mother"
     )[0];
+
     expect(mother.inverseProperty).to.equal("children");
-    expect(mother.type).to.equal("Object"); // this is the Firebase Object notation of an array
   });
 
   it("@properties show up on Model", async () => {

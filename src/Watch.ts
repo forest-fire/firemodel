@@ -158,7 +158,7 @@ export class Watch {
     o._localPostfix = r.META.localPostfix;
     o._dynamicProperties = r.dynamicPathComponents;
 
-    return o as Pick<Watch, IWatchListQueries>;
+    return o as Omit<Watch, IWatchListQueries | "toString">;
   }
 
   public static list<T extends Model>(

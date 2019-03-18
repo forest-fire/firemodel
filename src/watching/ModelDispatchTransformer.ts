@@ -3,7 +3,8 @@ import { IDictionary, createError } from "common-types";
 import {
   IFirebaseWatchEvent,
   IFirebaseWatchContext,
-  IValueBasedWatchEvent
+  IValueBasedWatchEvent,
+  IPathBasedWatchEvent
 } from "abstracted-firebase";
 import {
   FMEvents,
@@ -31,7 +32,7 @@ export const ModelDispatchTransformer = <T>(
     throw e;
   }
 
-  return (event: IValueBasedWatchEvent) => {
+  return (event: IValueBasedWatchEvent & IPathBasedWatchEvent) => {
     const typeLookup: IDictionary = {
       child_added: FMEvents.RECORD_ADDED,
       child_removed: FMEvents.RECORD_REMOVED,
@@ -56,6 +57,7 @@ export const ModelDispatchTransformer = <T>(
         } model: ${e.message}`
       );
     }
+
     const contextualizedEvent: IFmContextualizedWatchEvent<T> = {
       ...context,
       ...event,
@@ -63,12 +65,13 @@ export const ModelDispatchTransformer = <T>(
         compositeKey,
         type:
           event.eventType === "value"
-            ? event.value === null
+            ? event.value === null || event.paths === null
               ? FMEvents.RECORD_REMOVED
               : FMEvents.RECORD_CHANGED
             : typeLookup[event.eventType as keyof typeof typeLookup]
       }
     };
+    // console.log(contextualizedEvent, event.value);
 
     return clientHandler(contextualizedEvent);
   };

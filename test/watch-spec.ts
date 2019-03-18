@@ -44,9 +44,8 @@ describe("Watch →", () => {
     const cb = (event: IReduxAction) => {
       events.push(event);
     };
-    const w = await Watch.record(Person, "1234")
-      .dispatch(cb)
-      .start();
+    FireModel.dispatch = cb;
+    const w = await Watch.record(Person, "1234").start();
 
     expect(Watch.inventory[w.watcherId]).to.be.an("object");
     expect(Watch.inventory[w.watcherId].eventType).to.equal("value");
