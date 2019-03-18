@@ -143,6 +143,8 @@ export class Watch {
       o._db = options.db;
     }
     o._eventType = "value";
+    o._watcherSource = "record";
+
     const r = Record.local(
       modelConstructor,
       typeof pk === "string" ? { id: pk } : (pk as any)
@@ -168,6 +170,7 @@ export class Watch {
       o._db = options.db;
     }
     o._eventType = "child";
+    o._watcherSource = "list";
     const lst = List.create(modelConstructor);
     o._modelConstructor = modelConstructor;
     o._query = new SerializedQuery<T>(lst.dbPath);
@@ -189,6 +192,7 @@ export class Watch {
   protected _localPath: string;
   protected _localPostfix: string;
   protected _dynamicProperties: string[];
+  protected _watcherSource: "record" | "list";
 
   /** executes the watcher so that it becomes actively watched */
   public start(): IWatcherItem {
@@ -205,7 +209,7 @@ export class Watch {
       localPostfix: this._localPostfix,
       modelName: this._modelName,
       pluralName: this._pluralName,
-      watcherSource: "value" ? "record" : "list"
+      watcherSource: this._watcherSource
     })(this._dispatcher || FireModel.dispatch);
 
     try {

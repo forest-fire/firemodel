@@ -1,4 +1,5 @@
-import { set, get } from "lodash";
+import get from "get-value";
+import set from "set-value";
 function push(target, path, value) {
     set(target, path, value);
 }

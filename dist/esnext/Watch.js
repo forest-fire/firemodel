@@ -78,6 +78,7 @@ export class Watch {
             o._db = options.db;
         }
         o._eventType = "value";
+        o._watcherSource = "record";
         const r = Record.local(modelConstructor, typeof pk === "string" ? { id: pk } : pk);
         o._query = new SerializedQuery(`${r.dbPath}`);
         o._modelConstructor = modelConstructor;
@@ -94,6 +95,7 @@ export class Watch {
             o._db = options.db;
         }
         o._eventType = "child";
+        o._watcherSource = "list";
         const lst = List.create(modelConstructor);
         o._modelConstructor = modelConstructor;
         o._query = new SerializedQuery(lst.dbPath);
@@ -118,7 +120,7 @@ export class Watch {
             localPostfix: this._localPostfix,
             modelName: this._modelName,
             pluralName: this._pluralName,
-            watcherSource: "value" ? "record" : "list"
+            watcherSource: this._watcherSource
         })(this._dispatcher || FireModel.dispatch);
         try {
             if (this._eventType === "value") {

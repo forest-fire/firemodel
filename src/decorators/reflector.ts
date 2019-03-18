@@ -1,6 +1,7 @@
 import { Model } from "../Model";
 import { IDictionary } from "common-types";
-import { set, get } from "lodash";
+import get from "get-value";
+import set from "set-value";
 
 export interface IHasPropertyAndType {
   property: string;
