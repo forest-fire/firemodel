@@ -1,13 +1,18 @@
-import { IReduxDispatch } from "./VuexWrapper";
-import { IDictionary } from "common-types";
-import { IFirebaseWatchEvent, IFirebaseWatchContext, IValueBasedWatchEvent } from "abstracted-firebase";
+import { IReduxDispatch } from "../VuexWrapper";
+import { IDictionary, createError } from "common-types";
+import {
+  IFirebaseWatchEvent,
+  IFirebaseWatchContext,
+  IValueBasedWatchEvent,
+  IPathBasedWatchEvent
+} from "abstracted-firebase";
 import {
   FMEvents,
   IFmDispatchWatchContext,
   IFmContextualizedWatchEvent
-} from "./state-mgmt";
-import { Record } from "./Record";
-import { IFmRecordEvent } from "./@types/watcher-types";
+} from "../state-mgmt";
+import { Record } from "../Record";
+import { IFmRecordEvent } from "../@types/watcher-types";
 
 // TODO: This looks ugly, find time to refactor
 /**
@@ -15,7 +20,10 @@ import { IFmRecordEvent } from "./@types/watcher-types";
  */
 export const ModelDispatchTransformer = <T>(
   context: IFmDispatchWatchContext<T>
-) => (clientHandler: IReduxDispatch<IFmContextualizedWatchEvent<T>>) => {
+) => (
+  /** a generic redux dispatch function; called by database on event */
+  clientHandler: IReduxDispatch<IFmContextualizedWatchEvent<T>>
+) => {
   if (typeof clientHandler !== "function") {
     const e = new Error(
       `A watcher is being setup but the dispatch function is not valid or not set!`
@@ -23,12 +31,14 @@ export const ModelDispatchTransformer = <T>(
     e.name = "FireModel::NotAllowed";
     throw e;
   }
-  return (event: IValueBasedWatchEvent) => {
+
+  return (event: IValueBasedWatchEvent & IPathBasedWatchEvent) => {
     const typeLookup: IDictionary = {
       child_added: FMEvents.RECORD_ADDED,
       child_removed: FMEvents.RECORD_REMOVED,
       child_changed: FMEvents.RECORD_CHANGED,
-      child_moved: FMEvents.RECORD_MOVED
+      child_moved: FMEvents.RECORD_MOVED,
+      value: FMEvents.RECORD_CHANGED
     };
 
     const recId =
@@ -40,11 +50,14 @@ export const ModelDispatchTransformer = <T>(
     try {
       compositeKey = rec.compositeKey;
     } catch (e) {
-      if (e.code === "record/not-ready") {
-        // TODO: this may need checking
-        compositeKey = { id: "" };
-      }
+      throw createError(
+        `firemodel/composite-key`,
+        `There was a problem getting the composite key for a ${
+          rec.modelName
+        } model: ${e.message}`
+      );
     }
+
     const contextualizedEvent: IFmContextualizedWatchEvent<T> = {
       ...context,
       ...event,
@@ -52,17 +65,17 @@ export const ModelDispatchTransformer = <T>(
         compositeKey,
         type:
           event.eventType === "value"
-            ? event.value === null
+            ? event.value === null || event.paths === null
               ? FMEvents.RECORD_REMOVED
               : FMEvents.RECORD_CHANGED
             : typeLookup[event.eventType as keyof typeof typeLookup]
       }
     };
+    // console.log(contextualizedEvent, event.value);
 
     return clientHandler(contextualizedEvent);
   };
 };
-
 
 function isValueBasedEvent(
   evt: IFirebaseWatchEvent,

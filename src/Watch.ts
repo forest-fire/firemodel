@@ -10,7 +10,7 @@ import { IReduxDispatch } from "./VuexWrapper";
 import { FireModel } from "./FireModel";
 import { Record } from "./Record";
 type RealTimeDB = import("abstracted-firebase").RealTimeDB;
-import { ModelDispatchTransformer } from "./ModelDispatchTransformer";
+import { ModelDispatchTransformer } from "./watching/ModelDispatchTransformer";
 import { List } from "./List";
 import {
   IModelOptions,
@@ -214,7 +214,7 @@ export class Watch {
 
     try {
       if (this._eventType === "value") {
-        this.db.watch(this._query, "value", dispatchCallback);
+        this.db.watch(this._query, ["value"], dispatchCallback);
       } else {
         this.db.watch(
           this._query,
@@ -223,7 +223,7 @@ export class Watch {
         );
       }
     } catch (e) {
-      console.log(e);
+      console.log(`Problem starting watcher [${watcherId}]: `, e);
     }
 
     const watcherItem: IWatcherItem = {

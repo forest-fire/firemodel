@@ -9,6 +9,7 @@ export interface IFmRecordEvent<T extends Model = Model> {
     dynamicPathProperties: string[];
     eventType: IFmEventType;
     key: string;
+    dbPath: string;
     localPath: string;
     localPostfix?: string | "all";
     modelConstructor: FmModelConstructor<T>;
@@ -19,6 +20,8 @@ export interface IFmRecordEvent<T extends Model = Model> {
     targetType: "path" | "query";
     type: FMEvents.RECORD_ADDED | FMEvents.RECORD_ADDED_LOCALLY | FMEvents.RECORD_CHANGED | FMEvents.RECORD_CHANGED_LOCALLY | FMEvents.RECORD_MOVED | FMEvents.RECORD_REMOVED | FMEvents.RECORD_REMOVED_LOCALLY;
     value: T;
+    /** the value prior to the change; this is typically set for local events only */
+    priorValue?: T;
     watcherId: string;
     watcherSource: "record" | "list";
 }
