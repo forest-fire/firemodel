@@ -219,7 +219,7 @@ export class List extends FireModel {
      */
     get localPath() {
         const meta = this._model.META;
-        return pathJoin(meta.localPrefix, this.pluralName, meta.localPostfix);
+        return pathJoin(meta.localPrefix, this.pluralName);
     }
     /** Returns another List with data filtered down by passed in filter function */
     filter(f) {
