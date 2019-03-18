@@ -1492,10 +1492,10 @@ abstracted-client@^0.16.3:
     serialized-query "^0.5.0"
     typed-conversions "^0.10.1"
 
-abstracted-firebase@^0.16.2:
-  version "0.16.2"
-  resolved "https://registry.yarnpkg.com/abstracted-firebase/-/abstracted-firebase-0.16.2.tgz#f5ed35257af318d4ade6835933cdad6de7a2ecbd"
-  integrity sha512-dheTIvguszGze0bDuCO3jGA2hakekeslYe9irq4wao9oTh9PBc8cjZW6mWS8TNgNGBYhWUzaoVN8TC4dxpWb7g==
+abstracted-firebase@^0.16.2, abstracted-firebase@^0.16.4:
+  version "0.16.4"
+  resolved "https://registry.yarnpkg.com/abstracted-firebase/-/abstracted-firebase-0.16.4.tgz#7efa02170382d5daee4345f2782c09cbda5d4e37"
+  integrity sha512-Gq6nNrlN0zeSclraQEqJH0CjAQkyC1p9cL5+xhQIinBGhajmbEaBT+n1KKAp31tpyt9Fup3VraPZtyYjodS0dA==
   dependencies:
     "@firebase/auth-types" "^0.5.4"
     "@firebase/database-types" "^0.3.7"
