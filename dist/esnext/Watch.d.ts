@@ -46,6 +46,7 @@ export declare class Watch {
     protected _localPath: string;
     protected _localPostfix: string;
     protected _dynamicProperties: string[];
+    protected _watcherSource: "record" | "list";
     /** executes the watcher so that it becomes actively watched */
     start(): IWatcherItem;
     /**

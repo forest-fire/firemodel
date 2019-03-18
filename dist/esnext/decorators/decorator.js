@@ -1,5 +1,6 @@
 import "reflect-metadata";
-import { set, get } from "lodash";
+import get from "get-value";
+import set from "set-value";
 import { getProperties, addPropertyToModelMeta } from "./model-meta/property-store";
 import { addRelationshipToModelMeta } from "./model-meta/relationship-store";
 function push(target, path, value) {

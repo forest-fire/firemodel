@@ -9,11 +9,11 @@
     "noImplicitAny": true,
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
-    "outDir": "./lib",
+    "outDir": "./dist/cjs",
     "removeComments": false,
-    "typeRoots": ["./node_modules/@types", "manual_typings"],
-    "baseUrl": ".",
-    "paths": { "lodash/*": ["node_modules/@types/lodash-es/*"] }
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "typeRoots": ["./node_modules/@types"]
   },
-  "include": ["./src/**/*", "test/**/*-spec.ts"]
+  "include": ["src/**/*", "test/**/*-spec.ts"]
 }
