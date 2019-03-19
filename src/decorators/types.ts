@@ -65,6 +65,8 @@ export interface IFmModelPropertyMeta<T extends Model = Model>
   isProperty?: boolean;
   /** is this property an array which is added to using firebase pushkeys? */
   pushKey?: boolean;
+  /** a default value for the property if it is not already set */
+  defaultValue?: any;
 }
 
 export type FMPropertyType = "string" | "number" | "object" | "array";
