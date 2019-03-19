@@ -14,4 +14,5 @@ exports.index = indexing_1.index;
 exports.uniqueIndex = indexing_1.uniqueIndex;
 __export(require("./constraints"));
 __export(require("./model"));
+__export(require("./defaultValue"));
 //# sourceMappingURL=index.js.map

@@ -99,7 +99,7 @@ export declare class Record<T extends Model> extends FireModel<T> {
     static create<T extends Model>(model: new () => T, options?: IRecordOptions): Record<T>;
     /**
      * Creates an empty record and then inserts all values
-     * provided.
+     * provided along with default values provided in META.
      */
     static local<T extends Model>(model: new () => T, values: Partial<T>, options?: IRecordOptions & {
         ignoreEmptyValues?: boolean;

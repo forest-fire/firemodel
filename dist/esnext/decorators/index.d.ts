@@ -4,3 +4,4 @@ export { index, uniqueIndex } from "./indexing";
 export * from "./constraints";
 export * from "./model";
 export * from "./types";
+export * from "./defaultValue";

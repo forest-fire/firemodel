@@ -167,7 +167,7 @@ class Record extends FireModel_1.FireModel {
     }
     /**
      * Creates an empty record and then inserts all values
-     * provided.
+     * provided along with default values provided in META.
      */
     static local(model, values, options = {}) {
         const rec = Record.create(model, options);
@@ -178,6 +178,13 @@ class Record extends FireModel_1.FireModel {
         if (values) {
             // silently set all values
             Object.keys(values).forEach(key => rec.set(key, values[key], true));
+            const defaultValues = rec.META.properties.filter(i => i.defaultValue !== undefined);
+            // also include "default values"
+            defaultValues.forEach((i) => {
+                if (rec.get(i.property) === undefined) {
+                    rec.set(i.property, i.defaultValue, true);
+                }
+            });
         }
         return rec;
     }
@@ -198,6 +205,12 @@ class Record extends FireModel_1.FireModel {
                 payload.id = firebase_key_1.key();
             }
             r._initialize(payload);
+            const defaultValues = r.META.properties.filter(i => i.defaultValue !== undefined);
+            defaultValues.forEach((i) => {
+                if (r.get(i.property) === undefined) {
+                    r.set(i.property, i.defaultValue, true);
+                }
+            });
             await r._adding();
         }
         catch (e) {

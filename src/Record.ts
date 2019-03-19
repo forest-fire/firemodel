@@ -220,7 +220,7 @@ export class Record<T extends Model> extends FireModel<T> {
 
   /**
    * Creates an empty record and then inserts all values
-   * provided.
+   * provided along with default values provided in META.
    */
   public static local<T extends Model>(
     model: new () => T,
@@ -243,6 +243,15 @@ export class Record<T extends Model> extends FireModel<T> {
       Object.keys(values).forEach(key =>
         rec.set(key as keyof T, values[key as keyof typeof values], true)
       );
+      const defaultValues = rec.META.properties.filter(
+        i => i.defaultValue !== undefined
+      );
+      // also include "default values"
+      defaultValues.forEach((i: IFmModelPropertyMeta<T>) => {
+        if (rec.get(i.property) === undefined) {
+          rec.set(i.property, i.defaultValue, true);
+        }
+      });
     }
 
     return rec;
