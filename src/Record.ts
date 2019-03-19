@@ -17,6 +17,7 @@ import {
 } from "./@types/record-types";
 import { createCompositeKey, createCompositeKeyString } from "./CompositeKey";
 import { IModelOptions } from "./@types/general";
+import { IFmModelPropertyMeta } from ".";
 
 // TODO: see if there's a way to convert to interface so that design time errors are more clear
 export type ModelOptionalId<T extends Model> = Omit<T, "id"> & { id?: string };
@@ -219,7 +220,7 @@ export class Record<T extends Model> extends FireModel<T> {
 
   /**
    * Creates an empty record and then inserts all values
-   * provided.
+   * provided along with default values provided in META.
    */
   public static local<T extends Model>(
     model: new () => T,
@@ -242,6 +243,15 @@ export class Record<T extends Model> extends FireModel<T> {
       Object.keys(values).forEach(key =>
         rec.set(key as keyof T, values[key as keyof typeof values], true)
       );
+      const defaultValues = rec.META.properties.filter(
+        i => i.defaultValue !== undefined
+      );
+      // also include "default values"
+      defaultValues.forEach((i: IFmModelPropertyMeta<T>) => {
+        if (rec.get(i.property) === undefined) {
+          rec.set(i.property, i.defaultValue, true);
+        }
+      });
     }
 
     return rec;
@@ -261,13 +271,21 @@ export class Record<T extends Model> extends FireModel<T> {
     payload: ModelOptionalId<T>,
     options: IRecordOptions = {}
   ) {
-    let r;
+    let r: Record<T>;
     try {
       r = Record.create(model, options);
       if (!payload.id) {
         (payload as T).id = fbKey();
       }
       r._initialize(payload as T);
+      const defaultValues = r.META.properties.filter(
+        i => i.defaultValue !== undefined
+      );
+      defaultValues.forEach((i: IFmModelPropertyMeta<T>) => {
+        if (r.get(i.property) === undefined) {
+          r.set(i.property, i.defaultValue, true);
+        }
+      });
       await r._adding();
     } catch (e) {
       const err = new Error(`Problem adding new Record: ${e.message}`);
