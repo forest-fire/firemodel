@@ -3,7 +3,7 @@ import { Model } from "./Model";
 import { Omit } from "common-types";
 import { FireModel } from "./FireModel";
 import { IReduxDispatch } from "./VuexWrapper";
-import { IFMEventName } from "./state-mgmt/index";
+import { IFMEventName, IFmCrudOperations, IFmDispatchOptions } from "./state-mgmt/index";
 import { IAuditChange, IAuditOperations } from "./Audit";
 import { IIdWithDynamicPrefix, IFkReference, ICompositeKey } from "./@types/record-types";
 import { IModelOptions } from "./@types/general";
@@ -152,6 +152,7 @@ export declare class Record<T extends Model> extends FireModel<T> {
     private _writeOperations;
     private _data?;
     constructor(model: new () => T, options?: IRecordOptions);
+    readonly modelConstructor: new () => T;
     /**
      * Goes out to the database and reloads this record
      */
@@ -166,7 +167,7 @@ export declare class Record<T extends Model> extends FireModel<T> {
      *
      * @param payload the payload of the new record
      */
-    addAnother(payload: T): Promise<Record<T>>;
+    addAnother(payload: T, options?: IRecordOptions): Promise<Record<T>>;
     isSameModelAs(model: new () => any): boolean;
     /**
      * Allows an empty Record to be initialized to a known state.
@@ -284,7 +285,31 @@ export declare class Record<T extends Model> extends FireModel<T> {
     protected _relationshipMPS(mps: any, fkRef: IFkReference, property: Extract<keyof T, string>, value: any, now: number): void;
     protected _errorIfNothasOneReln(property: Extract<keyof T, string>, fn: string): void;
     protected _errorIfNotHasManyReln(property: Extract<keyof T, string>, fn: string): void;
-    protected _updateProps<K extends IFMEventName<K>>(actionTypeStart: K, actionTypeEnd: K, changed: Partial<T>): Promise<void>;
+    /**
+     * updates properties on a given Record while firing
+     * two-phase commit EVENTs to dispatch:
+     *
+     *  local: `RECORD_[ADDED,CHANGED,REMOVED]_LOCALLY`
+     *  server: `RECORD_[ADDED,CHANGED,REMOVED]_CONFIRMATION`
+     *
+     * Note: if there is an error a
+     * `RECORD_[ADDED,CHANGED,REMOVED]_ROLLBACK` event will be sent
+     * to dispatch instead of the server dispatch message
+     * illustrated above.
+     *
+     * Another concept that is sometimes not clear ... when a
+     * successful transaction is achieved you will by default get
+     * both sides of the two-phase commit. If you have a watcher
+     * watching this same path then that watcher will also get
+     * a dispatch message sent.
+     *
+     * If you only want to hear about Firebase's acceptance of the
+     * record from a watcher then you can opt-out by setting the
+     * { silentAcceptance: true } parameter in options. If you don't
+     * want either side of the two phase commit sent to dispatch
+     * you can mute both with { silent: true }
+     */
+    protected _localCrudOperation<K extends IFMEventName<K>>(crudAction: IFmCrudOperations, changed: Partial<T>, options?: IFmDispatchOptions): Promise<void>;
     private _findDynamicComponents;
     /**
      * looks for ":name" property references within the dbOffset or localPrefix and expands them

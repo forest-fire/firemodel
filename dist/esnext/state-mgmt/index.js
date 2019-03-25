@@ -12,16 +12,30 @@ export var FMEvents;
     FMEvents["LIST_CLEAR"] = "@firemodel/LIST_CLEAR";
     /** A record has been added locally */
     FMEvents["RECORD_ADDED_LOCALLY"] = "@firemodel/RECORD_ADDED_LOCALLY";
+    /** A record which was added locally has now been confirmed by Firebase */
+    FMEvents["RECORD_ADDED_CONFIRMATION"] = "@firemodel/RECORD_ADDED_CONFIRMATION";
+    /** A record added locally failed to be saved to Firebase */
+    FMEvents["RECORD_ADDED_ROLLBACK"] = "@firemodel/RECORD_ADDED_ROLLBACK";
     /** A record has been added to a given Model list being watched */
     FMEvents["RECORD_ADDED"] = "@firemodel/RECORD_ADDED";
     /** A record has been updated locally */
     FMEvents["RECORD_CHANGED_LOCALLY"] = "@firemodel/RECORD_CHANGED_LOCALLY";
+    /** a record changed locally has now been confirmed by Firebase */
+    FMEvents["RECORD_CHANGED_CONFIRMATION"] = "@firemodel/RECORD_CHANGED_CONFIRMATION";
+    /** A record changed locally failed to be saved to Firebase */
+    FMEvents["RECORD_CHANGED_ROLLBACK"] = "@firemodel/RECORD_CHANGED_ROLLBACK";
     /** A record has been updated on Firebase */
     FMEvents["RECORD_CHANGED"] = "@firemodel/RECORD_CHANGED";
-    /** for client originated events touching relationships (as external events would come back as an event per model) */
+    /**
+     * for client originated events touching relationships (as external events would come back as an event per model)
+     */
     FMEvents["RECORD_MOVED"] = "@firemodel/RECORD_MOVED";
     /** A record has been removed from a given Model list being watched */
     FMEvents["RECORD_REMOVED_LOCALLY"] = "@firemodel/RECORD_REMOVED_LOCALLY";
+    /** a record removed locally has now been confirmed by Firebase */
+    FMEvents["RECORD_REMOVED_CONFIRMATION"] = "@firemodel/RECORD_REMOVED_LOCALLY";
+    /** A record removed locally failed to be saved to Firebase */
+    FMEvents["RECORD_REMOVED_ROLLBACK"] = "@firemodel/RECORD_REMOVED_LOCALLY";
     /** A record has been removed from a given Model list being watched */
     FMEvents["RECORD_REMOVED"] = "@firemodel/RECORD_REMOVED";
     /** An attempt to access the database was refused to lack of permissions */

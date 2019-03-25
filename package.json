@@ -1,6 +1,6 @@
 {
   "name": "firemodel",
-  "version": "0.22.4",
+  "version": "0.23.0",
   "description": "Modeling, Access, and Mocking for Firebase Projects",
   "license": "MIT",
   "repository": "https://github.com/forest-fire/firemodel",
@@ -35,7 +35,7 @@
     "docs:build": "vuepress build docs"
   },
   "dependencies": {
-    "abstracted-firebase": "^0.16.4",
+    "abstracted-firebase": "^0.17.0",
     "common-types": "^1.9.7",
     "firebase-key": "^2.0.1",
     "get-value": "^3.0.1",
@@ -47,7 +47,7 @@
     "wait-in-parallel": "^1.2.6"
   },
   "peerDependencies": {
-    "firemock": "^0.19.1"
+    "firemock": "^0.20.7"
   },
   "devDependencies": {
     "@types/chai": "^4.1.4",
@@ -62,18 +62,18 @@
     "@types/rimraf": "^2.0.2",
     "@types/set-value": "^2.0.0",
     "@types/stack-trace": "^0.0.28",
-    "@vuepress/plugin-back-to-top": "^1.0.0-alpha.42",
-    "@vuepress/plugin-last-updated": "^1.0.0-alpha.42",
-    "@vuepress/plugin-medium-zoom": "^1.0.0-alpha.42",
-    "@vuepress/plugin-pwa": "^1.0.0-alpha.42",
-    "abstracted-admin": "^0.16.3",
-    "abstracted-client": "^0.16.3",
+    "@vuepress/plugin-back-to-top": "^1.0.0-alpha.44",
+    "@vuepress/plugin-last-updated": "^1.0.0-alpha.44",
+    "@vuepress/plugin-medium-zoom": "^1.0.0-alpha.44",
+    "@vuepress/plugin-pwa": "^1.0.0-alpha.44",
+    "abstracted-admin": "^0.17.0",
+    "abstracted-client": "^0.17.0",
     "async-shelljs": "^0.1.2",
     "chai": "^4.2.0",
     "chalk": "^2.4.1",
     "coveralls": "^3.0.3",
     "faker": "^4.1.0",
-    "firemock": "^0.19.1",
+    "firemock": "^0.20.7",
     "js-yaml": "^3.12.1",
     "mocha": "^6.0.1",
     "nyc": "^13.3.0",

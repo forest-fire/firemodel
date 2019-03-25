@@ -27,14 +27,7 @@ export interface IFmRecordEvent<T extends Model = Model> {
   previousChildKey?: string;
   query: SerializedQuery;
   targetType: "path" | "query";
-  type:
-    | FMEvents.RECORD_ADDED
-    | FMEvents.RECORD_ADDED_LOCALLY
-    | FMEvents.RECORD_CHANGED
-    | FMEvents.RECORD_CHANGED_LOCALLY
-    | FMEvents.RECORD_MOVED
-    | FMEvents.RECORD_REMOVED
-    | FMEvents.RECORD_REMOVED_LOCALLY;
+  type: FMEvents;
   value: T;
   /** the value prior to the change; this is typically set for local events only */
   priorValue?: T;
