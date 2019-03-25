@@ -7,14 +7,15 @@ import "reflect-metadata";
 import { Person } from "./testing/person";
 import * as helpers from "./testing/helpers";
 import { FireModel } from "../src/FireModel";
-import { Car } from "./testing/permissions/Car";
-import { IDictionary } from "common-types";
 
 helpers.setupEnv();
 const db = new DB();
 FireModel.defaultDb = db;
 
 describe("Tests using REAL db →", () => {
+  before(async () => {
+    await db.waitForConnection();
+  });
   it("List.since() works", async () => {
     try {
       await Record.add(Person, {

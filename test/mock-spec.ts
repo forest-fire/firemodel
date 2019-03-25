@@ -1,13 +1,25 @@
 // tslint:disable:no-implicit-dependencies
-import { Model, model, List, property } from "../src";
+import {
+  Model,
+  model,
+  List,
+  property,
+  FireModel,
+  Watch,
+  Record,
+  FMEvents
+} from "../src";
 import { DB } from "abstracted-admin";
 import * as chai from "chai";
 import { Mock } from "../src/Mock";
 import { FancyPerson } from "./testing/FancyPerson";
 import { Car } from "./testing/Car";
 import { Company } from "./testing/Company";
+import { IReduxAction } from "../src/VuexWrapper";
+import { IDictionary, wait } from "common-types";
+import * as helpers from "./testing/helpers";
 const expect = chai.expect;
-
+helpers.setupEnv();
 @model({})
 export class SimplePerson extends Model {
   @property public name: string;
@@ -17,9 +29,17 @@ export class SimplePerson extends Model {
 
 describe("Mocking:", () => {
   let db: DB;
+  let realDb: DB;
+  before(async () => {
+    realDb = await DB.connect();
+  });
+  after(async () => {
+    const fancy = Record.create(FancyPerson);
+    await realDb.remove(fancy.dbOffset);
+  });
   beforeEach(async () => {
     db = await DB.connect({ mocking: true });
-    List.defaultDb = db;
+    FireModel.defaultDb = db;
   });
   it("the auto-mock works for named properties", async () => {
     await Mock(SimplePerson, db).generate(10);
@@ -104,5 +124,95 @@ describe("Mocking:", () => {
     const people = await List.all(FancyPerson);
 
     expect(people).to.have.lengthOf(numberOfFolks);
+  });
+
+  it("Adding a record fires local events as expected", async () => {
+    const events: IDictionary[] = [];
+    FireModel.dispatch = (e: IReduxAction) => events.push(e);
+    await Record.add(FancyPerson, {
+      name: "Bob Barker"
+    });
+    expect(events).to.have.lengthOf(2);
+    const types = events.map(e => e.type);
+    expect(types).to.include("@firebase/RECORD_ADD_LOCALLY");
+    expect(types).to.include("@firebase/RECORD_ADD_CONFIRMATION");
+  });
+
+  it("Mocking data does not fire fire local events (RECORD_ADD_LOCALLY, RECORD_ADD_CONFIRMATION) to dispatch", async () => {
+    const events: IDictionary[] = [];
+    FireModel.dispatch = (e: IReduxAction) => events.push(e);
+    await Mock(FancyPerson).generate(10);
+    expect(events).to.have.lengthOf(0);
+  });
+
+  it("Adding a record with {silent: true} raises an error in real db", async () => {
+    FireModel.defaultDb = realDb;
+    const events: IDictionary[] = [];
+    FireModel.dispatch = (e: IReduxAction) => events.push(e);
+
+    try {
+      await Record.add(
+        FancyPerson,
+        {
+          name: "Bob Barker"
+        },
+        { silent: true }
+      );
+    } catch (e) {
+      expect(e.name).to.equal("FireModel::Forbidden");
+      expect(events).to.have.lengthOf(0);
+    }
+  });
+
+  it("Adding a record with a watcher fires both watcher event and LOCAL events [ real db ]", async () => {
+    FireModel.defaultDb = realDb;
+    const events: IDictionary[] = [];
+    FireModel.dispatch = (e: IReduxAction) => events.push(e);
+    const w = await Watch.list(FancyPerson)
+      .all()
+      .start();
+
+    // await Mock(FancyPerson).generate(1);
+    await Record.add(FancyPerson, {
+      name: "Bob Barker"
+    });
+    await wait(5); // ensures that DB event has time to fire
+
+    const eventTypes: Set<string> = new Set();
+    events.forEach(e => eventTypes.add(e.type));
+    console.log(eventTypes);
+
+    expect(Array.from(eventTypes)).to.include("@firemodel/WATCHER_ADDED");
+    expect(Array.from(eventTypes)).to.include(
+      "@firemodel/RECORD_ADDED_LOCALLY"
+    );
+    expect(Array.from(eventTypes)).to.include(
+      "@firemodel/RECORD_ADDED_CONFIRMATION"
+    );
+    expect(Array.from(eventTypes)).to.include("@firemodel/RECORD_ADDED");
+    const locally = events.find(e => e.type === FMEvents.RECORD_ADDED_LOCALLY);
+    const confirm = events.find(
+      e => e.type === FMEvents.RECORD_ADDED_CONFIRMATION
+    );
+    expect(locally).to.haveOwnProperty("transactionId");
+    expect(confirm).to.haveOwnProperty("transactionId");
+    expect(locally.transactionId).to.equal(confirm.transactionId);
+  });
+
+  it.only("Mocking data does fire watcher events that are listening when mocks are generated [ mock db ]", async () => {
+    const events: IDictionary[] = [];
+    FireModel.dispatch = (e: IReduxAction) => events.push(e);
+    const w = await Watch.list(FancyPerson)
+      .all()
+      .start();
+
+    await Mock(FancyPerson).generate(1);
+    await wait(250);
+
+    const eventTypes: Set<string> = new Set();
+    events.forEach(e => eventTypes.add(e.type));
+    expect(Array.from(eventTypes)).to.include("@firemodel/RECORD_ADDED");
+    console.log(events);
+    expect(events).to.have.lengthOf(1);
   });
 });

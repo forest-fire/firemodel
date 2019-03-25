@@ -1,18 +1,9 @@
-export default function createWatchEvent(type, recordContext) {
-    // const payload: Partial<IFMRecordEvent<T>> = {
-    //   type,
-    //   modelName: record.modelName,
-    //   modelConstructor: record._modelConstructor,
-    //   dbPath: record.dbPath,
-    //   compositeKey: record.compositeKey,
-    //   localPath: record.localPath,
-    //   key: record.id
-    // };
-    // if (Array.isArray(pathsOrValue)) {
-    //   payload.paths = pathsOrValue;
-    // } else {
-    //   payload.value = pathsOrValue;
-    // }
-    // return payload as IFMRecordEvent<T>;
+/**
+ * expands a locally originated event into a full featured
+ * dispatch event with desired META from the model
+ */
+export function createWatchEvent(type, record, event) {
+    const payload = Object.assign({ type, key: record.id, modelName: record.modelName, pluralName: record.pluralName, modelConstructor: record.modelConstructor, dynamicPathProperties: record.dynamicPathComponents, compositeKey: record.compositeKey, dbPath: record.dbPath, localPath: record.localPath || "", localPostfix: record.META.localPostfix }, event);
+    return payload;
 }
 //# sourceMappingURL=createWatchEvent.js.map

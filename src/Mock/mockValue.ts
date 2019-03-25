@@ -3,6 +3,7 @@ import { RealTimeDB } from "abstracted-firebase";
 import fakeIt from "./fakeIt";
 import NamedFakes from "./NamedFakes";
 import PropertyNamePatterns from "./PropertyNamePatterns";
+import { MockHelper } from "firemock";
 
 export default function mockValue<T extends Model>(
   db: RealTimeDB,
@@ -19,15 +20,11 @@ export default function mockValue<T extends Model>(
     );
     console.log(e.message);
 
-    // e.name = "FireModel::NotReady";
-    // throw e;
+    e.name = "FireModel::NotReady";
+    throw e;
   }
 
-  // TODO: it appears FireMock is not sending back the proper context
-  // so we are overwritting as least some for now
-  const helper = db.mock.getMockHelper();
-  helper.context = propMeta;
-
+  const helper = new MockHelper(propMeta);
   const { type, mockType, mockParameters } = propMeta;
 
   if (mockType) {

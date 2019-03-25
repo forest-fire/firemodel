@@ -16,6 +16,8 @@ export default function mockProperties<T extends Model>(
     const props = meta.properties;
 
     const recProps: Partial<T> = {};
+    // below is needed to import faker library
+    await db.mock.getMockHelper();
     props.map(prop => {
       const p = prop.property as keyof T;
       recProps[p] = mockValue<T>(db, prop);
@@ -24,7 +26,9 @@ export default function mockProperties<T extends Model>(
     const finalized: T = { ...(recProps as any), ...exceptions };
 
     // write to mock db and retain a reference to same model
-    record = await record.addAnother(finalized);
+    record = await Record.add(record.modelConstructor, finalized, {
+      silent: true
+    });
 
     return record;
   };

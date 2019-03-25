@@ -4,6 +4,7 @@ const common_types_1 = require("common-types");
 const firebase_key_1 = require("firebase-key");
 const FireModel_1 = require("./FireModel");
 const index_1 = require("./state-mgmt/index");
+const createWatchEvent_1 = require("./watching/createWatchEvent");
 const path_1 = require("./path");
 const ModelMeta_1 = require("./ModelMeta");
 const Audit_1 = require("./Audit");
@@ -211,7 +212,7 @@ class Record extends FireModel_1.FireModel {
                     r.set(i.property, i.defaultValue, true);
                 }
             });
-            await r._adding();
+            await r._adding(options);
         }
         catch (e) {
             const err = new Error(`Problem adding new Record: ${e.message}`);
@@ -288,6 +289,9 @@ class Record extends FireModel_1.FireModel {
         await record.remove();
         return record;
     }
+    get modelConstructor() {
+        return this._modelConstructor;
+    }
     /**
      * Goes out to the database and reloads this record
      */
@@ -305,8 +309,8 @@ class Record extends FireModel_1.FireModel {
      *
      * @param payload the payload of the new record
      */
-    async addAnother(payload) {
-        const newRecord = await Record.add(this._modelConstructor, payload);
+    async addAnother(payload, options = {}) {
+        const newRecord = await Record.add(this._modelConstructor, payload, options);
         return newRecord;
     }
     isSameModelAs(model) {
@@ -393,7 +397,7 @@ class Record extends FireModel_1.FireModel {
         }
         const lastUpdated = new Date().getTime();
         const changed = Object.assign({}, props, { lastUpdated });
-        await this._updateProps(index_1.FMEvents.RECORD_CHANGED_LOCALLY, index_1.FMEvents.RECORD_CHANGED, changed);
+        await this._localCrudOperation("update" /* update */, changed);
         return;
     }
     /**
@@ -434,7 +438,9 @@ class Record extends FireModel_1.FireModel {
             lastUpdated
         };
         if (!silent) {
-            await this._updateProps(index_1.FMEvents.RECORD_CHANGED_LOCALLY, index_1.FMEvents.RECORD_CHANGED, changed);
+            await this._localCrudOperation("update" /* update */, changed, {
+                silent
+            });
             if (this.META.audit) {
                 // TODO: implement for auditing
             }
@@ -765,18 +771,90 @@ class Record extends FireModel_1.FireModel {
             throw e;
         }
     }
-    async _updateProps(actionTypeStart, actionTypeEnd, changed) {
+    /**
+     * updates properties on a given Record while firing
+     * two-phase commit EVENTs to dispatch:
+     *
+     *  local: `RECORD_[ADDED,CHANGED,REMOVED]_LOCALLY`
+     *  server: `RECORD_[ADDED,CHANGED,REMOVED]_CONFIRMATION`
+     *
+     * Note: if there is an error a
+     * `RECORD_[ADDED,CHANGED,REMOVED]_ROLLBACK` event will be sent
+     * to dispatch instead of the server dispatch message
+     * illustrated above.
+     *
+     * Another concept that is sometimes not clear ... when a
+     * successful transaction is achieved you will by default get
+     * both sides of the two-phase commit. If you have a watcher
+     * watching this same path then that watcher will also get
+     * a dispatch message sent.
+     *
+     * If you only want to hear about Firebase's acceptance of the
+     * record from a watcher then you can opt-out by setting the
+     * { silentAcceptance: true } parameter in options. If you don't
+     * want either side of the two phase commit sent to dispatch
+     * you can mute both with { silent: true }
+     */
+    async _localCrudOperation(crudAction, changed, options = {}) {
+        options = Object.assign({ silent: false, silentAcceptance: false }, options);
+        const transactionId = "t-" +
+            Math.random()
+                .toString(36)
+                .substr(2, 5) +
+            "-" +
+            Math.random()
+                .toString(36)
+                .substr(2, 5);
+        const lookup = {
+            add: [
+                index_1.FMEvents.RECORD_ADDED_LOCALLY,
+                index_1.FMEvents.RECORD_ADDED_CONFIRMATION,
+                index_1.FMEvents.RECORD_ADDED_ROLLBACK
+            ],
+            update: [
+                index_1.FMEvents.RECORD_CHANGED_LOCALLY,
+                index_1.FMEvents.RECORD_CHANGED_CONFIRMATION,
+                index_1.FMEvents.RECORD_CHANGED_ROLLBACK
+            ],
+            remove: [
+                index_1.FMEvents.RECORD_REMOVED_LOCALLY,
+                index_1.FMEvents.RECORD_REMOVED_CONFIRMATION,
+                index_1.FMEvents.RECORD_REMOVED_ROLLBACK
+            ]
+        };
+        const [actionTypeStart, actionTypeEnd, actionTypeFailure] = lookup[crudAction];
         this.isDirty = true;
         const priorValues = {};
         Object.keys(changed).map((prop) => {
-            priorValues[prop] = this._data[prop];
+            priorValues[prop] = this._data[prop] || null;
             this._data[prop] = changed[prop];
         });
         const paths = this._getPaths(changed);
-        this.dispatch(this._createRecordEvent(this, actionTypeStart, paths));
+        const event = {
+            transactionId,
+            crudAction,
+            value: this.data
+            // paths
+        };
+        if (crudAction === "update") {
+            event.changed = changed;
+        }
+        if (!options.silent) {
+            this.dispatch(createWatchEvent_1.createWatchEvent(actionTypeStart, this, event));
+        }
         const mps = this.db.multiPathSet(this.dbPath);
         paths.map(path => mps.add(path));
-        await mps.execute();
+        try {
+            await mps.execute();
+        }
+        catch (e) {
+            this.dispatch(createWatchEvent_1.createWatchEvent(actionTypeFailure, this, {
+                transactionId,
+                crudAction,
+                value: this.data
+                // paths
+            }));
+        }
         this.isDirty = false;
         this._data.lastUpdated = new Date().getTime();
         if (this.META.audit === true) {
@@ -802,10 +880,15 @@ class Record extends FireModel_1.FireModel {
             }, []);
             Audit_1.writeAudit(this.id, this.pluralName, action, util_1.updateToAuditChanges(changed, priorValues), { db: this.db });
         }
-        // if this path is being watched we should avoid
-        // sending a duplicative event
-        if (!this.isBeingWatched) {
-            this.dispatch(this._createRecordEvent(this, actionTypeEnd, this.data));
+        console.log("watched", options);
+        if (!options.silent && !options.silentAcceptance) {
+            this.dispatch(createWatchEvent_1.createWatchEvent(actionTypeEnd, this, {
+                transactionId,
+                crudAction,
+                value: this.data,
+                // paths,
+                changed
+            }));
         }
     }
     _findDynamicComponents(path = "") {
@@ -859,7 +942,7 @@ class Record extends FireModel_1.FireModel {
         }
         return this;
     }
-    async _adding() {
+    async _adding(options) {
         if (!this.id) {
             this.id = firebase_key_1.key();
         }
@@ -879,22 +962,7 @@ class Record extends FireModel_1.FireModel {
         }
         const paths = [{ path: "/", value: this._data }];
         this.isDirty = true;
-        this.dispatch(this._createRecordEvent(this, index_1.FMEvents.RECORD_ADDED_LOCALLY, paths));
-        const mps = this.db.multiPathSet(this.dbPath);
-        paths.map(path => mps.add(path));
-        try {
-            await mps.execute();
-        }
-        catch (e) {
-            if (e.code === "PERMISSION_DENIED") {
-                this.dispatch(this._createRecordEvent(this, index_1.FMEvents.PERMISSION_DENIED, paths));
-            }
-            throw e;
-        }
-        this.isDirty = false;
-        if (!FireModel_1.FireModel.isBeingWatched(this.dbPath)) {
-            this.dispatch(this._createRecordEvent(this, index_1.FMEvents.RECORD_ADDED, this.data));
-        }
+        await this._localCrudOperation("add" /* add */, this.data, options);
         return this;
     }
 }
