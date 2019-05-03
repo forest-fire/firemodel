@@ -7,6 +7,9 @@ import { IModelOptions, IComparisonOperator, FmModelConstructor } from "./@types
 import { IPrimaryKey } from "./@types/record-types";
 export declare type IWatchEventClassification = "child" | "value";
 export declare type IQuerySetter = (q: SerializedQuery) => void;
+export interface ISuperset<T> extends IDictionary {
+    foo?: string;
+}
 export declare type IWatchListQueries = "all" | "first" | "last" | "since" | "dormantSince" | "where" | "fromQuery" | "after" | "before" | "recent" | "inactive";
 export interface IWatcherItem {
     watcherId: string;
@@ -48,6 +51,7 @@ export declare class Watch<T extends Model = Model> {
     protected _localPostfix: string;
     protected _dynamicProperties: string[];
     protected _watcherSource: "record" | "list";
+    protected _classProperties: string[];
     /** executes the watcher so that it becomes actively watched */
     start(): IWatcherItem;
     /**
@@ -143,7 +147,7 @@ export declare class Watch<T extends Model = Model> {
      *
      * @param query
      */
-    fromQuery<T extends Model>(inputQuery: SerializedQuery): Omit<Watch, IWatchListQueries | "toString">;
+    fromQuery(inputQuery: SerializedQuery): Omit<Watch, IWatchListQueries | "toString">;
     /**
      * all
      *

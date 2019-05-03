@@ -5,6 +5,7 @@ import { Record } from "./Record";
 import { ModelDispatchTransformer } from "./watching/ModelDispatchTransformer";
 import { List } from "./List";
 import { FMEvents } from "./state-mgmt";
+import { getAllPropertiesFromClassStructure } from "./util";
 /** a cache of all the watched  */
 let watcherPool = {};
 export class Watch {
@@ -102,6 +103,7 @@ export class Watch {
         o._modelName = lst.modelName;
         o._pluralName = lst.pluralName;
         o._localPath = lst.localPath;
+        o._classProperties = getAllPropertiesFromClassStructure(new o._modelConstructor());
         o._localPostfix = lst.META.localPostfix;
         o._dynamicProperties = Record.dynamicPathProperties(modelConstructor);
         return o;
@@ -325,6 +327,9 @@ export class Watch {
             val = value[1];
             operation = value[0];
         }
+        this._query = new SerializedQuery()
+            .orderByChild(property)
+            .where(operation, val);
         return this;
     }
     toString() {

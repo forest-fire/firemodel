@@ -19,9 +19,14 @@ import {
 } from "./@types/general";
 import { IPrimaryKey } from "./@types/record-types";
 import { FMEvents } from "./state-mgmt";
+import { getAllPropertiesFromClassStructure } from "./util";
 
 export type IWatchEventClassification = "child" | "value";
 export type IQuerySetter = (q: SerializedQuery) => void;
+
+export interface ISuperset<T> extends IDictionary {
+  foo?: string;
+}
 
 export type IWatchListQueries =
   | "all"
@@ -178,6 +183,9 @@ export class Watch<T extends Model = Model> {
     o._modelName = lst.modelName;
     o._pluralName = lst.pluralName;
     o._localPath = lst.localPath;
+    o._classProperties = getAllPropertiesFromClassStructure(
+      new o._modelConstructor()
+    );
     o._localPostfix = lst.META.localPostfix;
     o._dynamicProperties = Record.dynamicPathProperties(modelConstructor);
     return o as Pick<Watch, IWatchListQueries>;
@@ -194,6 +202,7 @@ export class Watch<T extends Model = Model> {
   protected _localPostfix: string;
   protected _dynamicProperties: string[];
   protected _watcherSource: "record" | "list";
+  protected _classProperties: string[];
 
   /** executes the watcher so that it becomes actively watched */
   public start(): IWatcherItem {
@@ -434,7 +443,7 @@ export class Watch<T extends Model = Model> {
    *
    * @param query
    */
-  public fromQuery<T extends Model>(
+  public fromQuery(
     inputQuery: SerializedQuery
   ): Omit<Watch, IWatchListQueries | "toString"> {
     this._query = inputQuery;
@@ -475,6 +484,9 @@ export class Watch<T extends Model = Model> {
       val = value[1];
       operation = value[0];
     }
+    this._query = new SerializedQuery<T>()
+      .orderByChild(property)
+      .where(operation, val);
     return this;
   }
 
