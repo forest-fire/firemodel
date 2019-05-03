@@ -5,6 +5,11 @@ import { AuditBase } from "./AuditBase";
 import { IModelOptions } from "./@types";
 export declare class AuditRecord<T extends Model> extends AuditBase {
     constructor(modelKlass: new () => T, id: string, options?: IModelOptions);
+    /**
+     * Queries the database for the first _x_ audit records [`howMany`] of
+     * a given Record type. You can also optionally specify an offset to
+     * start at [`startAt`].
+     */
     first(howMany: number, startAt?: string): Promise<IAuditLogItem[]>;
     last(howMany: number, startAt?: string): Promise<IAuditLogItem[]>;
     since(when: epochWithMilliseconds | string): Promise<IAuditLogItem[]>;

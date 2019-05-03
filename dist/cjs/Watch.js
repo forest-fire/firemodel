@@ -124,6 +124,7 @@ class Watch {
             pluralName: this._pluralName,
             watcherSource: this._watcherSource
         })(this._dispatcher || FireModel_1.FireModel.dispatch);
+        console.log('watching on ', this._localPath);
         try {
             if (this._eventType === "value") {
                 this.db.watch(this._query, ["value"], dispatchCallback);

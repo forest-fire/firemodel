@@ -1,6 +1,6 @@
 import { RealTimeDB } from "abstracted-firebase";
 import { Model } from "./Model";
-import { Omit } from "common-types";
+import { Omit, Nullable } from "common-types";
 import { FireModel } from "./FireModel";
 import { IReduxDispatch } from "./VuexWrapper";
 import { IFMEventName, IFmCrudOperations, IFmDispatchOptions } from "./state-mgmt/index";
@@ -49,6 +49,8 @@ export declare class Record<T extends Model> extends FireModel<T> {
      */
     readonly hasDynamicPath: boolean;
     /**
+     * **dynamicPathComponents**
+     *
      * An array of "dynamic properties" that are derived fom the "dbOffset" to
      * produce the "dbPath"
      */
@@ -123,7 +125,7 @@ export declare class Record<T extends Model> extends FireModel<T> {
      * @param payload the data for the new record
      * @param options
      */
-    static update<T extends Model>(model: new () => T, id: string, updates: Partial<T>, options?: IRecordOptions): Promise<Record<T>>;
+    static update<T extends Model>(model: new () => T, id: string, updates: Nullable<Partial<T>>, options?: IRecordOptions): Promise<Record<T>>;
     /**
      * load
      *
@@ -191,7 +193,7 @@ export declare class Record<T extends Model> extends FireModel<T> {
      */
     update(props: Partial<T>): Promise<void>;
     /**
-     * remove
+     * **remove**
      *
      * Removes the active record from the database and dispatches the change to
      * FE State Mgmt.
@@ -309,7 +311,7 @@ export declare class Record<T extends Model> extends FireModel<T> {
      * want either side of the two phase commit sent to dispatch
      * you can mute both with { silent: true }
      */
-    protected _localCrudOperation<K extends IFMEventName<K>>(crudAction: IFmCrudOperations, changed: Partial<T>, options?: IFmDispatchOptions): Promise<void>;
+    protected _localCrudOperation<K extends IFMEventName<K>>(crudAction: IFmCrudOperations, propertyValues: Partial<T>, options?: IFmDispatchOptions): Promise<void>;
     private _findDynamicComponents;
     /**
      * looks for ":name" property references within the dbOffset or localPrefix and expands them

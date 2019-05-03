@@ -191,7 +191,7 @@ export declare class Record<T extends Model> extends FireModel<T> {
      */
     update(props: Partial<T>): Promise<void>;
     /**
-     * remove
+     * **remove**
      *
      * Removes the active record from the database and dispatches the change to
      * FE State Mgmt.
@@ -309,7 +309,7 @@ export declare class Record<T extends Model> extends FireModel<T> {
      * want either side of the two phase commit sent to dispatch
      * you can mute both with { silent: true }
      */
-    protected _localCrudOperation<K extends IFMEventName<K>>(crudAction: IFmCrudOperations, changed: Partial<T>, options?: IFmDispatchOptions): Promise<void>;
+    protected _localCrudOperation<K extends IFMEventName<K>>(crudAction: IFmCrudOperations, propertyValues: Partial<T>, options?: IFmDispatchOptions): Promise<void>;
     private _findDynamicComponents;
     /**
      * looks for ":name" property references within the dbOffset or localPrefix and expands them

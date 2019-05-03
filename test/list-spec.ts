@@ -15,6 +15,7 @@ describe("List class: ", () => {
   beforeEach(async () => {
     db = new DB({ mocking: true });
     await db.waitForConnection();
+    await db.mock.importFakerLibrary();
     FireModel.defaultDb = db;
   });
   it("can instantiate with new operator", () => {
@@ -356,9 +357,9 @@ describe("List class: ", () => {
     const id = peeps.data[1].id;
     const removed = await peeps.removeById(id);
     expect(peeps).to.have.lengthOf(9);
-    const eventTypes = events.map(e => e.type);
+    const eventTypes = new Set(events.map(e => e.type));
 
-    expect(eventTypes).to.contain(FMEvents.RECORD_REMOVED);
+    expect(eventTypes).to.contain(FMEvents.RECORD_REMOVED_CONFIRMATION);
     expect(eventTypes).to.contain(FMEvents.RECORD_REMOVED_LOCALLY);
     expect(eventTypes).to.contain(FMEvents.RECORD_LIST);
 
@@ -383,7 +384,7 @@ describe("List class: ", () => {
     expect(ids.has(newRec.id)).to.equal(true);
 
     const eventTypes = events.map(e => e.type);
-    expect(eventTypes).to.contain(FMEvents.RECORD_ADDED);
+    expect(eventTypes).to.contain(FMEvents.RECORD_ADDED_CONFIRMATION);
     expect(eventTypes).to.contain(FMEvents.RECORD_ADDED_LOCALLY);
   });
 

@@ -100,10 +100,21 @@ export declare class List<T extends Model> extends FireModel<T> {
      */
     findWhere(prop: keyof T, value: T[typeof prop], defaultIfNotFound?: string): Record<T>;
     /**
-     * provides a map over the data structured managed by the List; there will be no mutations to the
-     * data managed by the list
+     * provides a `map` function over the records managed by the List; there
+     * will be no mutations to the data managed by the list
      */
     map<K = any>(f: ListMapFunction<T, K>): K[];
+    /**
+     * provides a `forEach` function to iterate over the records managed by the List
+     */
+    forEach<K = any>(f: ListMapFunction<T, K>): void;
+    /**
+     * runs a `reducer` function across all records in the list
+     */
+    reduce<K = any>(f: ListReduceFunction<T, K>, initialValue?: {}): {};
+    /**
+     * Gives access to the List's array of records
+     */
     readonly data: T[];
     /**
      * Returns the Record object with the given ID, errors if not found (name: NotFound)
@@ -127,3 +138,4 @@ export declare class List<T extends Model> extends FireModel<T> {
 }
 export declare type ListFilterFunction<T> = (fc: T) => boolean;
 export declare type ListMapFunction<T, K = any> = (fc: T) => K;
+export declare type ListReduceFunction<T, K = any> = (accumulator: Partial<K>, record: T) => K;

@@ -3,6 +3,7 @@ import { SerializedQuery } from "serialized-query";
 import { createError } from "common-types";
 import { FireModel } from "./FireModel";
 import { pathJoin } from "./path";
+import { getModelMeta } from "./ModelMeta";
 import { FMEvents } from "./state-mgmt";
 const DEFAULT_IF_NOT_FOUND = "__DO_NOT_USE__";
 function addTimestamps(obj) {
@@ -208,10 +209,8 @@ export class List extends FireModel {
         return this._data.length;
     }
     get dbPath() {
-        return [
-            this._injectDynamicDbOffsets(this.META.dbOffset),
-            this.pluralName
-        ].join("/");
+        const dbOffset = this._model.META.dbOffset || getModelMeta(this._model).dbOffset;
+        return [this._injectDynamicDbOffsets(dbOffset), this.pluralName].join("/");
     }
     /**
      * Gives the path in the client state tree to the beginning
@@ -289,12 +288,27 @@ export class List extends FireModel {
         }
     }
     /**
-     * provides a map over the data structured managed by the List; there will be no mutations to the
-     * data managed by the list
+     * provides a `map` function over the records managed by the List; there
+     * will be no mutations to the data managed by the list
      */
     map(f) {
         return this.data.map(f);
     }
+    /**
+     * provides a `forEach` function to iterate over the records managed by the List
+     */
+    forEach(f) {
+        this.data.forEach(f);
+    }
+    /**
+     * runs a `reducer` function across all records in the list
+     */
+    reduce(f, initialValue = {}) {
+        return this.data.reduce(f, initialValue);
+    }
+    /**
+     * Gives access to the List's array of records
+     */
     get data() {
         return this._data;
     }
@@ -323,7 +337,7 @@ export class List extends FireModel {
         const rec = this.findById(id, null);
         if (!rec) {
             if (!ignoreOnNotFound) {
-                const e = new Error(`Could not remove "${id}" in list of ${this.pluralName} as the ID was not found!`);
+                const e = createError(`firemodel/not-allowed`, `Could not remove "${id}" in list of ${this.pluralName} as the ID was not found!`);
                 e.name = "NotFound";
                 throw e;
             }

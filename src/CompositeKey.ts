@@ -2,7 +2,9 @@ import { IDictionary } from "common-types";
 import { Record, Model } from "./index";
 import { ICompositeKey } from "./@types/record-types";
 
-export function createCompositeKey(rec: Record<Model>): ICompositeKey {
+export function createCompositeKey<T extends Model = Model>(
+  rec: Record<T>
+): ICompositeKey {
   const model = rec.data;
   return {
     ...{ id: rec.id },
@@ -20,7 +22,9 @@ export function createCompositeKey(rec: Record<Model>): ICompositeKey {
  * Creates a string based composite key if the passed in record
  * has dynamic path segments; if not it will just return the "id"
  */
-export function createCompositeKeyString(rec: Record<Model>) {
+export function createCompositeKeyString<T extends Model = Model>(
+  rec: Record<T>
+) {
   const cKey: IDictionary = createCompositeKey(rec);
   return rec.hasDynamicPath
     ? cKey.id +

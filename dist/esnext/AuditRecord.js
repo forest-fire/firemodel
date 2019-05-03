@@ -8,6 +8,11 @@ export class AuditRecord extends AuditBase {
         this._recordId = id;
         this._query = new SerializedQuery();
     }
+    /**
+     * Queries the database for the first _x_ audit records [`howMany`] of
+     * a given Record type. You can also optionally specify an offset to
+     * start at [`startAt`].
+     */
     async first(howMany, startAt) {
         this._query = this._query.setPath(this.byId);
         this._query = this._query.orderByKey().limitToLast(howMany);

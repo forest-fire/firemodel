@@ -1,7 +1,7 @@
 // tslint:disable-next-line:no-implicit-dependencies
 import { RealTimeDB } from "abstracted-firebase";
 import { Model } from "./Model";
-import { createError, IDictionary, Omit } from "common-types";
+import { createError, IDictionary, Omit, Nullable } from "common-types";
 import { key as fbKey } from "firebase-key";
 import { FireModel, IMultiPathUpdates } from "./FireModel";
 import { IReduxDispatch } from "./VuexWrapper";
@@ -119,6 +119,8 @@ export class Record<T extends Model> extends FireModel<T> {
   }
 
   /**
+   * **dynamicPathComponents**
+   *
    * An array of "dynamic properties" that are derived fom the "dbOffset" to
    * produce the "dbPath"
    */
@@ -139,7 +141,7 @@ export class Record<T extends Model> extends FireModel<T> {
    * the composite key of a model.
    */
   public get compositeKey(): ICompositeKey {
-    return createCompositeKey(this);
+    return createCompositeKey<T>(this);
   }
 
   /**
@@ -147,7 +149,7 @@ export class Record<T extends Model> extends FireModel<T> {
    * a composite string (aka, a model which has a dynamic dbOffset)
    */
   public get compositeKeyRef() {
-    return createCompositeKeyString(this);
+    return createCompositeKeyString<T>(this);
   }
 
   /** The Record's primary key */
@@ -306,18 +308,19 @@ export class Record<T extends Model> extends FireModel<T> {
   }
 
   /**
-   * update
+   * **update**
    *
-   * update an existing record in the database
+   * update an existing record in the database with a dictionary of prop/value pairs
    *
-   * @param schema the schema of the record
-   * @param payload the data for the new record
+   * @param model the _model_ type being updated
+   * @param id the `id` for the model being updated
+   * @param updates properties to update; this is a non-destructive operation so properties not expressed will remain unchanged. Also, because values are _nullable_ you can set a property to `null` to REMOVE it from the database.
    * @param options
    */
   public static async update<T extends Model>(
     model: new () => T,
     id: string,
-    updates: Partial<T>,
+    updates: Nullable<Partial<T>>,
     options: IRecordOptions = {}
   ) {
     let r;
@@ -410,13 +413,6 @@ export class Record<T extends Model> extends FireModel<T> {
 
   constructor(model: new () => T, options: IRecordOptions = {}) {
     super();
-    if (!model) {
-      const e = new Error(
-        `You can not construct a Record instance without passing in a Model's constructor! `
-      );
-      e.name = "FireModel::Forbidden";
-      throw e;
-    }
     this._modelConstructor = model;
     this._model = new model();
     this._data = new model();
@@ -543,7 +539,7 @@ export class Record<T extends Model> extends FireModel<T> {
    *
    * @param props a hash of name value pairs which represent the props being updated and their new values
    */
-  public async update(props: Partial<T>) {
+  public async update(props: Nullable<Partial<T>>) {
     // can not update relationship properties
     if (
       Object.keys(props).some((key: any) => {
@@ -567,7 +563,7 @@ export class Record<T extends Model> extends FireModel<T> {
 
     const lastUpdated = new Date().getTime();
     const changed: any = {
-      ...(props as IDictionary),
+      ...props,
       lastUpdated
     };
     await this._localCrudOperation(IFmCrudOperations.update, changed);
@@ -576,26 +572,15 @@ export class Record<T extends Model> extends FireModel<T> {
   }
 
   /**
-   * remove
+   * **remove**
    *
    * Removes the active record from the database and dispatches the change to
    * FE State Mgmt.
    */
   public async remove() {
     this.isDirty = true;
-    this.dispatch(
-      this._createRecordEvent(this, FMEvents.RECORD_REMOVED_LOCALLY, [
-        { path: this.dbPath, value: null }
-      ])
-    );
-    await this.db.remove(this.dbPath);
-    if (this.META.audit === true) {
-      this._writeAudit("removed", []);
-    }
+    await this._localCrudOperation(IFmCrudOperations.remove, {});
     this.isDirty = false;
-    this.dispatch(
-      this._createRecordEvent(this, FMEvents.RECORD_REMOVED, this.data)
-    );
   }
 
   /**
@@ -1175,7 +1160,7 @@ export class Record<T extends Model> extends FireModel<T> {
    */
   protected async _localCrudOperation<K extends IFMEventName<K>>(
     crudAction: IFmCrudOperations,
-    changed: Partial<T>,
+    propertyValues: Partial<T>,
     options: IFmDispatchOptions = {}
   ) {
     options = {
@@ -1214,11 +1199,11 @@ export class Record<T extends Model> extends FireModel<T> {
 
     this.isDirty = true;
     const priorValues: Partial<T> = {};
-    Object.keys(changed).map((prop: Extract<string, keyof T>) => {
+    Object.keys(propertyValues).map((prop: Extract<string, keyof T>) => {
       priorValues[prop] = this._data[prop] || null;
-      this._data[prop] = changed[prop];
+      this._data[prop] = propertyValues[prop];
     });
-    const paths = this._getPaths(changed);
+    const paths = this._getPaths(propertyValues);
 
     const event: IFmLocalEventPayload<T> = {
       transactionId,
@@ -1227,16 +1212,73 @@ export class Record<T extends Model> extends FireModel<T> {
       // paths
     };
     if (crudAction === "update") {
-      event.changed = changed;
+      event.changed = propertyValues;
     }
     if (!options.silent) {
       this.dispatch(createWatchEvent(actionTypeStart, this, event));
     }
 
-    const mps = this.db.multiPathSet(this.dbPath);
-    paths.map(path => mps.add(path));
     try {
-      await mps.execute();
+      if (crudAction === "remove") {
+        this.db.remove(this.dbPath);
+      } else {
+        const mps = this.db.multiPathSet(this.dbPath);
+        paths.map(path => mps.add(path));
+        await mps.execute();
+      }
+      this.isDirty = false;
+      this._data.lastUpdated = new Date().getTime();
+
+      if (this.META.audit === true) {
+        const changes = Object.keys(propertyValues).reduce<IAuditChange[]>(
+          (prev: IAuditChange[], curr: Extract<keyof T, string>) => {
+            const after = propertyValues[curr];
+            const before = priorValues[curr];
+            const propertyAction = !before
+              ? "added"
+              : !after
+              ? "removed"
+              : "updated";
+            const payload: IAuditChange = {
+              before,
+              after,
+              property: curr,
+              action: propertyAction
+            };
+            prev.push(payload);
+            return prev;
+          },
+          []
+        );
+
+        const pastTense = {
+          add: "added",
+          update: "updated",
+          remove: "removed"
+        };
+
+        await writeAudit(
+          this.id,
+          this.pluralName,
+          pastTense[crudAction] as IAuditOperations,
+          updateToAuditChanges(propertyValues, priorValues),
+          { db: this.db }
+        );
+      }
+
+      // console.log("watched", options);
+
+      if (!options.silent && !options.silentAcceptance) {
+        this.dispatch(
+          createWatchEvent(actionTypeEnd, this, {
+            transactionId,
+            crudAction,
+            value: this.data,
+            // paths,
+            changed: propertyValues
+          })
+        );
+      }
     } catch (e) {
       this.dispatch(
         createWatchEvent(actionTypeFailure, this, {
@@ -1244,57 +1286,6 @@ export class Record<T extends Model> extends FireModel<T> {
           crudAction,
           value: this.data
           // paths
-        })
-      );
-    }
-    this.isDirty = false;
-    this._data.lastUpdated = new Date().getTime();
-    if (this.META.audit === true) {
-      const action = Object.keys(priorValues).every(
-        (i: Extract<keyof T, string>) => !priorValues[i]
-      )
-        ? "added"
-        : "updated";
-      const changes = Object.keys(changed).reduce<IAuditChange[]>(
-        (prev: IAuditChange[], curr: Extract<keyof T, string>) => {
-          const after = changed[curr];
-          const before = priorValues[curr];
-          const propertyAction = !before
-            ? "added"
-            : !after
-            ? "removed"
-            : "updated";
-          const payload: IAuditChange = {
-            before,
-            after,
-            property: curr,
-            action: propertyAction
-          };
-          prev.push(payload);
-          return prev;
-        },
-        []
-      );
-
-      writeAudit(
-        this.id,
-        this.pluralName,
-        action,
-        updateToAuditChanges(changed, priorValues),
-        { db: this.db }
-      );
-    }
-
-    console.log("watched", options);
-
-    if (!options.silent && !options.silentAcceptance) {
-      this.dispatch(
-        createWatchEvent(actionTypeEnd, this, {
-          transactionId,
-          crudAction,
-          value: this.data,
-          // paths,
-          changed
         })
       );
     }
@@ -1385,18 +1376,15 @@ export class Record<T extends Model> extends FireModel<T> {
     if (!this.id) {
       this.id = fbKey();
     }
-    if (this.META.audit === true) {
-      // TODO: Fix
-      this._writeAudit("added", []);
-    }
     const now = new Date().getTime();
     if (!this.get("createdAt")) {
       this._data.createdAt = now;
     }
     this._data.lastUpdated = now;
     if (!this.db) {
-      const e = new Error(
-        `Attempt to save Record failed as the Database has not been connected yet. Try settingFireModel first.`
+      const e = createError(
+        "firemodel/db-not-ready",
+        `Attempt to save Record failed as the Database has not been connected yet. Try setting FireModel's defaultDb first.`
       );
       e.name = "FiremodelError";
       throw e;

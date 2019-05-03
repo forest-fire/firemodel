@@ -1,7 +1,6 @@
 import { Model } from "./Model";
 import { Record } from "./Record";
 import { SerializedQuery, IComparisonOperator } from "serialized-query";
-
 import { epochWithMilliseconds, IDictionary, createError } from "common-types";
 import { FireModel } from "./FireModel";
 // tslint:disable-next-line:no-implicit-dependencies
@@ -295,10 +294,9 @@ export class List<T extends Model> extends FireModel<T> {
   }
 
   public get dbPath() {
-    return [
-      this._injectDynamicDbOffsets(this.META.dbOffset),
-      this.pluralName
-    ].join("/");
+    const dbOffset =
+      this._model.META.dbOffset || getModelMeta(this._model).dbOffset;
+    return [this._injectDynamicDbOffsets(dbOffset), this.pluralName].join("/");
   }
 
   /**
@@ -306,7 +304,7 @@ export class List<T extends Model> extends FireModel<T> {
    * where this LIST will reside
    */
   public get localPath() {
-    const meta = this._model.META;
+    const meta = this._model.META || getModelMeta(this._model);
     return pathJoin(meta.localPrefix, this.pluralName, meta.localPostfix);
   }
 
@@ -401,13 +399,30 @@ export class List<T extends Model> extends FireModel<T> {
   }
 
   /**
-   * provides a map over the data structured managed by the List; there will be no mutations to the
-   * data managed by the list
+   * provides a `map` function over the records managed by the List; there
+   * will be no mutations to the data managed by the list
    */
   public map<K = any>(f: ListMapFunction<T, K>) {
     return this.data.map(f);
   }
 
+  /**
+   * provides a `forEach` function to iterate over the records managed by the List
+   */
+  public forEach<K = any>(f: ListMapFunction<T, K>) {
+    this.data.forEach(f);
+  }
+
+  /**
+   * runs a `reducer` function across all records in the list
+   */
+  public reduce<K = any>(f: ListReduceFunction<T, K>, initialValue = {}) {
+    return this.data.reduce(f, initialValue);
+  }
+
+  /**
+   * Gives access to the List's array of records
+   */
   public get data() {
     return this._data;
   }
@@ -444,7 +459,8 @@ export class List<T extends Model> extends FireModel<T> {
     const rec = this.findById(id, null);
     if (!rec) {
       if (!ignoreOnNotFound) {
-        const e = new Error(
+        const e = createError(
+          `firemodel/not-allowed`,
           `Could not remove "${id}" in list of ${
             this.pluralName
           } as the ID was not found!`
@@ -525,3 +541,7 @@ export class List<T extends Model> extends FireModel<T> {
 
 export type ListFilterFunction<T> = (fc: T) => boolean;
 export type ListMapFunction<T, K = any> = (fc: T) => K;
+export type ListReduceFunction<T, K = any> = (
+  accumulator: Partial<K>,
+  record: T
+) => K;
