@@ -5,6 +5,7 @@ import { Record } from "./Record";
 import { ModelDispatchTransformer } from "./watching/ModelDispatchTransformer";
 import { List } from "./List";
 import { FMEvents } from "./state-mgmt";
+import { getAllPropertiesFromClassStructure } from "./util";
 /** a cache of all the watched  */
 let watcherPool = {};
 export class Watch {
@@ -102,7 +103,8 @@ export class Watch {
         o._modelName = lst.modelName;
         o._pluralName = lst.pluralName;
         o._localPath = lst.localPath;
-        o._localPostfix = lst.META.localPostfix;
+        o._classProperties = getAllPropertiesFromClassStructure(new o._modelConstructor());
+        o._localPostfix = lst.localPostfix;
         o._dynamicProperties = Record.dynamicPathProperties(modelConstructor);
         return o;
     }
@@ -139,6 +141,7 @@ export class Watch {
             dispatch: this._dispatcher || FireModel.dispatch,
             query: this._query,
             dbPath: this._query.path,
+            localPath: this._localPath,
             createdAt: new Date().getTime()
         };
         watcherPool[watcherId] = watcherItem;
@@ -318,11 +321,17 @@ export class Watch {
      */
     where(property, value) {
         let operation = "=";
-        let val = value;
+        let val;
         if (Array.isArray(value)) {
             val = value[1];
             operation = value[0];
         }
+        else {
+            val = value;
+        }
+        this._query = new SerializedQuery()
+            .orderByChild(property)
+            .where(operation, val);
         return this;
     }
     toString() {

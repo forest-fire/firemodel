@@ -7,6 +7,9 @@ import { IModelOptions, IComparisonOperator, FmModelConstructor } from "./@types
 import { IPrimaryKey } from "./@types/record-types";
 export declare type IWatchEventClassification = "child" | "value";
 export declare type IQuerySetter = (q: SerializedQuery) => void;
+export interface ISuperset<T> extends IDictionary {
+    foo?: string;
+}
 export declare type IWatchListQueries = "all" | "first" | "last" | "since" | "dormantSince" | "where" | "fromQuery" | "after" | "before" | "recent" | "inactive";
 export interface IWatcherItem {
     watcherId: string;
@@ -15,8 +18,9 @@ export interface IWatcherItem {
     createdAt: number;
     dispatch: IReduxDispatch;
     dbPath: string;
+    localPath: string;
 }
-export declare class Watch {
+export declare class Watch<T extends Model = Model> {
     static defaultDb: RealTimeDB;
     static dispatch: IReduxDispatch;
     static readonly inventory: IDictionary<IWatcherItem>;
@@ -34,8 +38,8 @@ export declare class Watch {
     static reset(): void;
     /** stops watching either a specific watcher or ALL if no hash code is provided */
     static stop(hashCode?: string, oneOffDB?: RealTimeDB): void;
-    static record<T extends Model>(modelConstructor: new () => T, pk: IPrimaryKey, options?: IModelOptions): Pick<Watch, "start" | "dispatch">;
-    static list<T extends Model>(modelConstructor: new () => T, options?: IModelOptions): Pick<Watch, IWatchListQueries>;
+    static record<T extends Model>(modelConstructor: new () => T, pk: IPrimaryKey, options?: IModelOptions): Pick<Watch<Model>, "start" | "dispatch">;
+    static list<T extends Model>(modelConstructor: new () => T, options?: IModelOptions): Pick<Watch<Model>, IWatchListQueries>;
     protected _query: SerializedQuery;
     protected _modelConstructor: FmModelConstructor<any>;
     protected _eventType: IWatchEventClassification;
@@ -47,6 +51,7 @@ export declare class Watch {
     protected _localPostfix: string;
     protected _dynamicProperties: string[];
     protected _watcherSource: "record" | "list";
+    protected _classProperties: string[];
     /** executes the watcher so that it becomes actively watched */
     start(): IWatcherItem;
     /**
@@ -142,7 +147,7 @@ export declare class Watch {
      *
      * @param query
      */
-    fromQuery<T extends Model>(inputQuery: SerializedQuery): Omit<Watch, IWatchListQueries | "toString">;
+    fromQuery(inputQuery: SerializedQuery): Omit<Watch, IWatchListQueries | "toString">;
     /**
      * all
      *
@@ -160,7 +165,7 @@ export declare class Watch {
      * @param property the property which the comparison operater is being compared to
      * @param value either just a value (in which case "equality" is the operator), or a tuple with operator followed by value (e.g., [">", 34])
      */
-    where<T extends Model, K extends keyof T>(property: K, value: T[K] | [IComparisonOperator, T[K]]): Omit<Watch, IWatchListQueries | "toString">;
+    where<K extends keyof T>(property: K, value: T[K] | [IComparisonOperator, T[K]]): Omit<Watch, IWatchListQueries | "toString">;
     toString(): string;
     protected readonly db: RealTimeDB;
 }

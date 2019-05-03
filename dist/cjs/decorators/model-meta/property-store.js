@@ -14,6 +14,7 @@ function addPropertyToModelMeta(modelName, property, meta) {
     if (!exports.propertiesByModel[modelName]) {
         exports.propertiesByModel[modelName] = {};
     }
+    // TODO: investigate why we need to genericize to model (from <T>)
     exports.propertiesByModel[modelName][property] = meta;
 }
 exports.addPropertyToModelMeta = addPropertyToModelMeta;

@@ -1,5 +1,8 @@
 import { IDictionary } from "common-types";
 import { IAuditChange } from "./Audit";
+import { Model } from "./Model";
+import { hashToArray } from "typed-conversions";
+import { propertiesByModel } from "./decorators/model-meta/property-store";
 
 export function normalized(...args: string[]) {
   return args
@@ -44,4 +47,23 @@ export function updateToAuditChanges<T = any>(
     },
     []
   );
+}
+
+export function getAllPropertiesFromClassStructure<T extends Model>(model: T) {
+  const modelName = model.constructor.name;
+  const properties =
+    hashToArray(propertiesByModel[modelName], "property") || [];
+  let parent = Object.getPrototypeOf(model.constructor);
+
+  while (parent.name) {
+    const subClass = new parent();
+    const subClassName = subClass.constructor.name;
+    properties.push(
+      ...hashToArray(propertiesByModel[subClassName], "property")
+    );
+
+    parent = Object.getPrototypeOf(subClass.constructor);
+  }
+
+  return properties.map(p => p.property);
 }

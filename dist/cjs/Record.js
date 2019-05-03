@@ -17,11 +17,6 @@ class Record extends FireModel_1.FireModel {
         //#region INSTANCE DEFINITION
         this._existsOnDB = false;
         this._writeOperations = [];
-        if (!model) {
-            const e = new Error(`You can not construct a Record instance without passing in a Model's constructor! `);
-            e.name = "FireModel::Forbidden";
-            throw e;
-        }
         this._modelConstructor = model;
         this._model = new model();
         this._data = new model();
@@ -78,6 +73,8 @@ class Record extends FireModel_1.FireModel {
         return this.META.dbOffset.includes(":");
     }
     /**
+     * **dynamicPathComponents**
+     *
      * An array of "dynamic properties" that are derived fom the "dbOffset" to
      * produce the "dbPath"
      */
@@ -134,7 +131,7 @@ class Record extends FireModel_1.FireModel {
         this.localDynamicComponents.forEach(prop => {
             path = path.replace(`:${prop}`, this.get(prop));
         });
-        return path;
+        return path_1.pathJoin(path, this.pluralName);
     }
     /**
      * The path in the local state tree that brings you to
@@ -222,12 +219,13 @@ class Record extends FireModel_1.FireModel {
         return r;
     }
     /**
-     * update
+     * **update**
      *
-     * update an existing record in the database
+     * update an existing record in the database with a dictionary of prop/value pairs
      *
-     * @param schema the schema of the record
-     * @param payload the data for the new record
+     * @param model the _model_ type being updated
+     * @param id the `id` for the model being updated
+     * @param updates properties to update; this is a non-destructive operation so properties not expressed will remain unchanged. Also, because values are _nullable_ you can set a property to `null` to REMOVE it from the database.
      * @param options
      */
     static async update(model, id, updates, options = {}) {
@@ -401,22 +399,15 @@ class Record extends FireModel_1.FireModel {
         return;
     }
     /**
-     * remove
+     * **remove**
      *
      * Removes the active record from the database and dispatches the change to
      * FE State Mgmt.
      */
     async remove() {
         this.isDirty = true;
-        this.dispatch(this._createRecordEvent(this, index_1.FMEvents.RECORD_REMOVED_LOCALLY, [
-            { path: this.dbPath, value: null }
-        ]));
-        await this.db.remove(this.dbPath);
-        if (this.META.audit === true) {
-            this._writeAudit("removed", []);
-        }
+        await this._localCrudOperation("remove" /* remove */, {});
         this.isDirty = false;
-        this.dispatch(this._createRecordEvent(this, index_1.FMEvents.RECORD_REMOVED, this.data));
     }
     /**
      * Changes the local state of a property on the record
@@ -795,7 +786,7 @@ class Record extends FireModel_1.FireModel {
      * want either side of the two phase commit sent to dispatch
      * you can mute both with { silent: true }
      */
-    async _localCrudOperation(crudAction, changed, options = {}) {
+    async _localCrudOperation(crudAction, propertyValues, options = {}) {
         options = Object.assign({ silent: false, silentAcceptance: false }, options);
         const transactionId = "t-" +
             Math.random()
@@ -825,11 +816,11 @@ class Record extends FireModel_1.FireModel {
         const [actionTypeStart, actionTypeEnd, actionTypeFailure] = lookup[crudAction];
         this.isDirty = true;
         const priorValues = {};
-        Object.keys(changed).map((prop) => {
+        Object.keys(propertyValues).map((prop) => {
             priorValues[prop] = this._data[prop] || null;
-            this._data[prop] = changed[prop];
+            this._data[prop] = propertyValues[prop];
         });
-        const paths = this._getPaths(changed);
+        const paths = this._getPaths(propertyValues);
         const event = {
             transactionId,
             crudAction,
@@ -837,15 +828,57 @@ class Record extends FireModel_1.FireModel {
             // paths
         };
         if (crudAction === "update") {
-            event.changed = changed;
+            event.changed = propertyValues;
         }
         if (!options.silent) {
             this.dispatch(createWatchEvent_1.createWatchEvent(actionTypeStart, this, event));
         }
-        const mps = this.db.multiPathSet(this.dbPath);
-        paths.map(path => mps.add(path));
         try {
-            await mps.execute();
+            if (crudAction === "remove") {
+                this.db.remove(this.dbPath);
+            }
+            else {
+                const mps = this.db.multiPathSet(this.dbPath);
+                paths.map(path => mps.add(path));
+                await mps.execute();
+            }
+            this.isDirty = false;
+            this._data.lastUpdated = new Date().getTime();
+            if (this.META.audit === true) {
+                const changes = Object.keys(propertyValues).reduce((prev, curr) => {
+                    const after = propertyValues[curr];
+                    const before = priorValues[curr];
+                    const propertyAction = !before
+                        ? "added"
+                        : !after
+                            ? "removed"
+                            : "updated";
+                    const payload = {
+                        before,
+                        after,
+                        property: curr,
+                        action: propertyAction
+                    };
+                    prev.push(payload);
+                    return prev;
+                }, []);
+                const pastTense = {
+                    add: "added",
+                    update: "updated",
+                    remove: "removed"
+                };
+                await Audit_1.writeAudit(this.id, this.pluralName, pastTense[crudAction], util_1.updateToAuditChanges(propertyValues, priorValues), { db: this.db });
+            }
+            // console.log("watched", options);
+            if (!options.silent && !options.silentAcceptance) {
+                this.dispatch(createWatchEvent_1.createWatchEvent(actionTypeEnd, this, {
+                    transactionId,
+                    crudAction,
+                    value: this.data,
+                    // paths,
+                    changed: propertyValues
+                }));
+            }
         }
         catch (e) {
             this.dispatch(createWatchEvent_1.createWatchEvent(actionTypeFailure, this, {
@@ -853,41 +886,6 @@ class Record extends FireModel_1.FireModel {
                 crudAction,
                 value: this.data
                 // paths
-            }));
-        }
-        this.isDirty = false;
-        this._data.lastUpdated = new Date().getTime();
-        if (this.META.audit === true) {
-            const action = Object.keys(priorValues).every((i) => !priorValues[i])
-                ? "added"
-                : "updated";
-            const changes = Object.keys(changed).reduce((prev, curr) => {
-                const after = changed[curr];
-                const before = priorValues[curr];
-                const propertyAction = !before
-                    ? "added"
-                    : !after
-                        ? "removed"
-                        : "updated";
-                const payload = {
-                    before,
-                    after,
-                    property: curr,
-                    action: propertyAction
-                };
-                prev.push(payload);
-                return prev;
-            }, []);
-            Audit_1.writeAudit(this.id, this.pluralName, action, util_1.updateToAuditChanges(changed, priorValues), { db: this.db });
-        }
-        console.log("watched", options);
-        if (!options.silent && !options.silentAcceptance) {
-            this.dispatch(createWatchEvent_1.createWatchEvent(actionTypeEnd, this, {
-                transactionId,
-                crudAction,
-                value: this.data,
-                // paths,
-                changed
             }));
         }
     }
@@ -946,17 +944,13 @@ class Record extends FireModel_1.FireModel {
         if (!this.id) {
             this.id = firebase_key_1.key();
         }
-        if (this.META.audit === true) {
-            // TODO: Fix
-            this._writeAudit("added", []);
-        }
         const now = new Date().getTime();
         if (!this.get("createdAt")) {
             this._data.createdAt = now;
         }
         this._data.lastUpdated = now;
         if (!this.db) {
-            const e = new Error(`Attempt to save Record failed as the Database has not been connected yet. Try settingFireModel first.`);
+            const e = common_types_1.createError("firemodel/db-not-ready", `Attempt to save Record failed as the Database has not been connected yet. Try setting FireModel's defaultDb first.`);
             e.name = "FiremodelError";
             throw e;
         }

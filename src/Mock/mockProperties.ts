@@ -17,7 +17,6 @@ export default function mockProperties<T extends Model>(
 
     const recProps: Partial<T> = {};
     // below is needed to import faker library
-    await db.mock.getMockHelper();
     props.map(prop => {
       const p = prop.property as keyof T;
       recProps[p] = mockValue<T>(db, prop);

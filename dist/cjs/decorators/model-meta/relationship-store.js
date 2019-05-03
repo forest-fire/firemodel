@@ -7,6 +7,7 @@ function addRelationshipToModelMeta(modelName, property, meta) {
     if (!exports.relationshipsByModel[modelName]) {
         exports.relationshipsByModel[modelName] = {};
     }
+    // TODO: investigate why we need to genericize to model (from <T>)
     exports.relationshipsByModel[modelName][property] = meta;
 }
 exports.addRelationshipToModelMeta = addRelationshipToModelMeta;

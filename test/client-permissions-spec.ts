@@ -40,7 +40,7 @@ describe("Validating client permissions with an anonymous user", () => {
     }
 
     expect(
-      events.filter((i: any) => i.type === "@firemodel/PERMISSION_DENIED")
+      events.filter((i: any) => i.type === "@firemodel/RECORD_ADDED_ROLLBACK")
     ).to.have.lengthOf(1);
   });
 });

@@ -134,8 +134,9 @@ describe("Mocking:", () => {
     });
     expect(events).to.have.lengthOf(2);
     const types = events.map(e => e.type);
-    expect(types).to.include("@firebase/RECORD_ADD_LOCALLY");
-    expect(types).to.include("@firebase/RECORD_ADD_CONFIRMATION");
+
+    expect(types).to.include(FMEvents.RECORD_ADDED_LOCALLY);
+    expect(types).to.include(FMEvents.RECORD_ADDED_CONFIRMATION);
   });
 
   it("Mocking data does not fire fire local events (RECORD_ADD_LOCALLY, RECORD_ADD_CONFIRMATION) to dispatch", async () => {
@@ -180,9 +181,8 @@ describe("Mocking:", () => {
 
     const eventTypes: Set<string> = new Set();
     events.forEach(e => eventTypes.add(e.type));
-    console.log(eventTypes);
 
-    expect(Array.from(eventTypes)).to.include("@firemodel/WATCHER_ADDED");
+    expect(Array.from(eventTypes)).to.include(FMEvents.RECORD_ADDED);
     expect(Array.from(eventTypes)).to.include(
       "@firemodel/RECORD_ADDED_LOCALLY"
     );
@@ -199,7 +199,7 @@ describe("Mocking:", () => {
     expect(locally.transactionId).to.equal(confirm.transactionId);
   });
 
-  it.only("Mocking data does fire watcher events that are listening when mocks are generated [ mock db ]", async () => {
+  it.only("Mocking data does NOT fire watcher events but adding a record DOES [ mock db ]", async () => {
     const events: IDictionary[] = [];
     FireModel.dispatch = (e: IReduxAction) => events.push(e);
     const w = await Watch.list(FancyPerson)
@@ -208,11 +208,15 @@ describe("Mocking:", () => {
 
     await Mock(FancyPerson).generate(1);
     await wait(250);
-
     const eventTypes: Set<string> = new Set();
     events.forEach(e => eventTypes.add(e.type));
-    expect(Array.from(eventTypes)).to.include("@firemodel/RECORD_ADDED");
-    console.log(events);
+    expect(Array.from(eventTypes)).to.not.include("@firemodel/RECORD_ADDED");
     expect(events).to.have.lengthOf(1);
+
+    await Record.add(FancyPerson, {
+      name: "Bob the Builder"
+    });
+
+    expect(Array.from(eventTypes)).to.include("@firemodel/RECORD_ADDED");
   });
 });

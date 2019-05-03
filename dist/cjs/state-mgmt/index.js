@@ -35,7 +35,7 @@ var FMEvents;
     /** A record has been removed from a given Model list being watched */
     FMEvents["RECORD_REMOVED_LOCALLY"] = "@firemodel/RECORD_REMOVED_LOCALLY";
     /** a record removed locally has now been confirmed by Firebase */
-    FMEvents["RECORD_REMOVED_CONFIRMATION"] = "@firemodel/RECORD_REMOVED_LOCALLY";
+    FMEvents["RECORD_REMOVED_CONFIRMATION"] = "@firemodel/RECORD_REMOVED_CONFIRMATION";
     /** A record removed locally failed to be saved to Firebase */
     FMEvents["RECORD_REMOVED_ROLLBACK"] = "@firemodel/RECORD_REMOVED_LOCALLY";
     /** A record has been removed from a given Model list being watched */

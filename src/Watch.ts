@@ -19,9 +19,14 @@ import {
 } from "./@types/general";
 import { IPrimaryKey } from "./@types/record-types";
 import { FMEvents } from "./state-mgmt";
+import { getAllPropertiesFromClassStructure } from "./util";
 
 export type IWatchEventClassification = "child" | "value";
 export type IQuerySetter = (q: SerializedQuery) => void;
+
+export interface ISuperset<T> extends IDictionary {
+  foo?: string;
+}
 
 export type IWatchListQueries =
   | "all"
@@ -43,12 +48,13 @@ export interface IWatcherItem {
   createdAt: number;
   dispatch: IReduxDispatch;
   dbPath: string;
+  localPath: string;
 }
 
 /** a cache of all the watched  */
 let watcherPool: IDictionary<IWatcherItem> = {};
 
-export class Watch {
+export class Watch<T extends Model = Model> {
   public static set defaultDb(db: RealTimeDB) {
     FireModel.defaultDb = db;
   }
@@ -165,7 +171,7 @@ export class Watch {
     modelConstructor: new () => T,
     options: IModelOptions = {}
   ) {
-    const o = new Watch();
+    const o = new Watch<T>();
     if (options.db) {
       o._db = options.db;
     }
@@ -177,7 +183,10 @@ export class Watch {
     o._modelName = lst.modelName;
     o._pluralName = lst.pluralName;
     o._localPath = lst.localPath;
-    o._localPostfix = lst.META.localPostfix;
+    o._classProperties = getAllPropertiesFromClassStructure(
+      new o._modelConstructor()
+    );
+    o._localPostfix = lst.localPostfix;
     o._dynamicProperties = Record.dynamicPathProperties(modelConstructor);
     return o as Pick<Watch, IWatchListQueries>;
   }
@@ -193,6 +202,7 @@ export class Watch {
   protected _localPostfix: string;
   protected _dynamicProperties: string[];
   protected _watcherSource: "record" | "list";
+  protected _classProperties: string[];
 
   /** executes the watcher so that it becomes actively watched */
   public start(): IWatcherItem {
@@ -232,6 +242,7 @@ export class Watch {
       dispatch: this._dispatcher || FireModel.dispatch,
       query: this._query,
       dbPath: this._query.path as string,
+      localPath: this._localPath,
       createdAt: new Date().getTime()
     };
 
@@ -430,7 +441,7 @@ export class Watch {
    *
    * @param query
    */
-  public fromQuery<T extends Model>(
+  public fromQuery(
     inputQuery: SerializedQuery
   ): Omit<Watch, IWatchListQueries | "toString"> {
     this._query = inputQuery;
@@ -461,16 +472,21 @@ export class Watch {
    * @param property the property which the comparison operater is being compared to
    * @param value either just a value (in which case "equality" is the operator), or a tuple with operator followed by value (e.g., [">", 34])
    */
-  public where<T extends Model, K extends keyof T>(
+  public where<K extends keyof T>(
     property: K,
     value: T[K] | [IComparisonOperator, T[K]]
   ): Omit<Watch, IWatchListQueries | "toString"> {
     let operation: IComparisonOperator = "=";
-    let val = value;
+    let val;
     if (Array.isArray(value)) {
       val = value[1];
       operation = value[0];
+    } else {
+      val = value;
     }
+    this._query = new SerializedQuery<T>()
+      .orderByChild(property)
+      .where(operation, val);
     return this;
   }
 

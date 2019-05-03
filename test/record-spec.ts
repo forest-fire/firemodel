@@ -49,7 +49,7 @@ describe("Record > ", () => {
     });
     expect(events).to.have.lengthOf(2);
     const eventTypes = new Set(events.map(e => e.type));
-    expect(eventTypes.has(FMEvents.RECORD_ADDED)).to.equal(true);
+    expect(eventTypes.has(FMEvents.RECORD_ADDED_CONFIRMATION)).to.equal(true);
     expect(eventTypes.has(FMEvents.RECORD_ADDED_LOCALLY)).to.equal(true);
   });
 
@@ -195,12 +195,16 @@ describe("Record > ", () => {
     const events: IFMRecordEvent[] = [];
     FireModel.dispatch = (evt: IFMRecordEvent) => events.push(evt);
     await person.remove();
+
     expect(events).to.have.lengthOf(2);
     const eventTypes = new Set(events.map(e => e.type));
     expect(eventTypes.has(FMEvents.RECORD_REMOVED_LOCALLY)).is.equal(true);
-    expect(eventTypes.has(FMEvents.RECORD_REMOVED)).is.equal(true);
+    expect(eventTypes.has(FMEvents.RECORD_REMOVED_CONFIRMATION)).is.equal(true);
 
     const peeps2 = await List.all(Person);
+    console.log("person id", id);
+    console.log(peeps2.map(i => i.id));
+
     expect(peeps2).to.have.lengthOf(9);
     const ids = peeps2.map(p => p.id);
     expect(ids.includes(id)).to.equal(false);

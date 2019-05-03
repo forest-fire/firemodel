@@ -7,6 +7,7 @@ const Record_1 = require("./Record");
 const ModelDispatchTransformer_1 = require("./watching/ModelDispatchTransformer");
 const List_1 = require("./List");
 const state_mgmt_1 = require("./state-mgmt");
+const util_1 = require("./util");
 /** a cache of all the watched  */
 let watcherPool = {};
 class Watch {
@@ -104,7 +105,8 @@ class Watch {
         o._modelName = lst.modelName;
         o._pluralName = lst.pluralName;
         o._localPath = lst.localPath;
-        o._localPostfix = lst.META.localPostfix;
+        o._classProperties = util_1.getAllPropertiesFromClassStructure(new o._modelConstructor());
+        o._localPostfix = lst.localPostfix;
         o._dynamicProperties = Record_1.Record.dynamicPathProperties(modelConstructor);
         return o;
     }
@@ -141,6 +143,7 @@ class Watch {
             dispatch: this._dispatcher || FireModel_1.FireModel.dispatch,
             query: this._query,
             dbPath: this._query.path,
+            localPath: this._localPath,
             createdAt: new Date().getTime()
         };
         watcherPool[watcherId] = watcherItem;
@@ -320,11 +323,17 @@ class Watch {
      */
     where(property, value) {
         let operation = "=";
-        let val = value;
+        let val;
         if (Array.isArray(value)) {
             val = value[1];
             operation = value[0];
         }
+        else {
+            val = value;
+        }
+        this._query = new serialized_query_1.SerializedQuery()
+            .orderByChild(property)
+            .where(operation, val);
         return this;
     }
     toString() {

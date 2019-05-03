@@ -1,6 +1,6 @@
 {
   "name": "firemodel",
-  "version": "0.23.0",
+  "version": "0.23.1",
   "description": "Modeling, Access, and Mocking for Firebase Projects",
   "license": "MIT",
   "repository": "https://github.com/forest-fire/firemodel",
@@ -36,7 +36,7 @@
   },
   "dependencies": {
     "abstracted-firebase": "^0.17.0",
-    "common-types": "^1.9.7",
+    "common-types": "^1.10.2",
     "firebase-key": "^2.0.1",
     "get-value": "^3.0.1",
     "pluralize": "^7.0.0",

@@ -97,26 +97,13 @@ describe("Dispatch →", () => {
 
     // 1st EVENT (local change)
     let event = events[0];
+
     expect(event.type).to.equal(FMEvents.RECORD_CHANGED_LOCALLY);
-    expect(event.paths).to.have.lengthOf(2);
-    event.paths.map(p => {
-      switch (p.path.replace(/^\//, "")) {
-        case "name":
-          expect(p.value).to.equal("Carol");
-          break;
-        case "lastUpdated":
-          expect(p.value)
-            .to.be.a("number")
-            .and.lessThan(new Date().getTime());
-          break;
-        default:
-          throw new Error(`Unexpected property path [ ${p.path} ] on set()`);
-      }
-    });
+    expect(event.value.name).to.equal("Carol");
+
     // 2nd EVENT
     event = events[1];
-    expect(event.type).to.equal(FMEvents.RECORD_CHANGED);
-    expect(event.paths).to.be.a("undefined");
+    expect(event.type).to.equal(FMEvents.RECORD_CHANGED_CONFIRMATION);
     expect(event.value).to.be.an("object");
     expect(event.value.name).to.equal("Carol");
     expect(event.value.age).to.equal(18);

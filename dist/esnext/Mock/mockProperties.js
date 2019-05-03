@@ -8,7 +8,6 @@ export default function mockProperties(db, config = { relationshipBehavior: "ign
         const props = meta.properties;
         const recProps = {};
         // below is needed to import faker library
-        await db.mock.getMockHelper();
         props.map(prop => {
             const p = prop.property;
             recProps[p] = mockValue(db, prop);
