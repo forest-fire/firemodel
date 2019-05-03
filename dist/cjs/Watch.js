@@ -324,10 +324,13 @@ class Watch {
      */
     where(property, value) {
         let operation = "=";
-        let val = value;
+        let val;
         if (Array.isArray(value)) {
             val = value[1];
             operation = value[0];
+        }
+        else {
+            val = value;
         }
         this._query = new serialized_query_1.SerializedQuery()
             .orderByChild(property)

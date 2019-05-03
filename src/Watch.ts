@@ -479,10 +479,12 @@ export class Watch<T extends Model = Model> {
     value: T[K] | [IComparisonOperator, T[K]]
   ): Omit<Watch, IWatchListQueries | "toString"> {
     let operation: IComparisonOperator = "=";
-    let val = value;
+    let val;
     if (Array.isArray(value)) {
       val = value[1];
       operation = value[0];
+    } else {
+      val = value;
     }
     this._query = new SerializedQuery<T>()
       .orderByChild(property)
