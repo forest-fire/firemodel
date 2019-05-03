@@ -15,15 +15,17 @@ export const propertiesByModel: IDictionary<
 > = {};
 
 /** allows the addition of meta information to be added to a model's properties */
-export function addPropertyToModelMeta(
+export function addPropertyToModelMeta<T extends Model = Model>(
   modelName: string,
   property: string,
-  meta: IFmModelPropertyMeta
+  meta: IFmModelPropertyMeta<T>
 ) {
   if (!propertiesByModel[modelName]) {
     propertiesByModel[modelName] = {};
   }
-  propertiesByModel[modelName][property] = meta;
+
+  // TODO: investigate why we need to genericize to model (from <T>)
+  propertiesByModel[modelName][property] = meta as IFmModelPropertyMeta<Model>;
 }
 
 /** lookup meta data for schema properties */

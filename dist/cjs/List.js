@@ -219,7 +219,7 @@ class List extends FireModel_1.FireModel {
      * where this LIST will reside
      */
     get localPath() {
-        const meta = this._model.META;
+        const meta = this._model.META || ModelMeta_1.getModelMeta(this._model);
         return path_1.pathJoin(meta.localPrefix, this.pluralName, meta.localPostfix);
     }
     /** Returns another List with data filtered down by passed in filter function */

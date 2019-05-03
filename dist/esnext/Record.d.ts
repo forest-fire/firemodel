@@ -117,12 +117,13 @@ export declare class Record<T extends Model> extends FireModel<T> {
      */
     static add<T extends Model>(model: new () => T, payload: ModelOptionalId<T>, options?: IRecordOptions): Promise<Record<T>>;
     /**
-     * update
+     * **update**
      *
-     * update an existing record in the database
+     * update an existing record in the database with a dictionary of prop/value pairs
      *
-     * @param schema the schema of the record
-     * @param payload the data for the new record
+     * @param model the _model_ type being updated
+     * @param id the `id` for the model being updated
+     * @param updates properties to update; this is a non-destructive operation so properties not expressed will remain unchanged. Also, because values are _nullable_ you can set a property to `null` to REMOVE it from the database.
      * @param options
      */
     static update<T extends Model>(model: new () => T, id: string, updates: Nullable<Partial<T>>, options?: IRecordOptions): Promise<Record<T>>;
@@ -191,7 +192,7 @@ export declare class Record<T extends Model> extends FireModel<T> {
      *
      * @param props a hash of name value pairs which represent the props being updated and their new values
      */
-    update(props: Partial<T>): Promise<void>;
+    update(props: Nullable<Partial<T>>): Promise<void>;
     /**
      * **remove**
      *

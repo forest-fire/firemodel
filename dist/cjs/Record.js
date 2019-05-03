@@ -17,11 +17,6 @@ class Record extends FireModel_1.FireModel {
         //#region INSTANCE DEFINITION
         this._existsOnDB = false;
         this._writeOperations = [];
-        if (!model) {
-            const e = new Error(`You can not construct a Record instance without passing in a Model's constructor! `);
-            e.name = "FireModel::Forbidden";
-            throw e;
-        }
         this._modelConstructor = model;
         this._model = new model();
         this._data = new model();
@@ -78,6 +73,8 @@ class Record extends FireModel_1.FireModel {
         return this.META.dbOffset.includes(":");
     }
     /**
+     * **dynamicPathComponents**
+     *
      * An array of "dynamic properties" that are derived fom the "dbOffset" to
      * produce the "dbPath"
      */
@@ -222,12 +219,13 @@ class Record extends FireModel_1.FireModel {
         return r;
     }
     /**
-     * update
+     * **update**
      *
-     * update an existing record in the database
+     * update an existing record in the database with a dictionary of prop/value pairs
      *
-     * @param schema the schema of the record
-     * @param payload the data for the new record
+     * @param model the _model_ type being updated
+     * @param id the `id` for the model being updated
+     * @param updates properties to update; this is a non-destructive operation so properties not expressed will remain unchanged. Also, because values are _nullable_ you can set a property to `null` to REMOVE it from the database.
      * @param options
      */
     static async update(model, id, updates, options = {}) {

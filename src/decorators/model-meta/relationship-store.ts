@@ -8,15 +8,18 @@ export const relationshipsByModel: IDictionary<
 > = {};
 
 /** allows the addition of meta information to be added to a model's relationships */
-export function addRelationshipToModelMeta(
+export function addRelationshipToModelMeta<T extends Model = Model>(
   modelName: string,
   property: string,
-  meta: IFmModelRelationshipMeta
+  meta: IFmModelRelationshipMeta<T>
 ) {
   if (!relationshipsByModel[modelName]) {
     relationshipsByModel[modelName] = {};
   }
-  relationshipsByModel[modelName][property] = meta;
+  // TODO: investigate why we need to genericize to model (from <T>)
+  relationshipsByModel[modelName][property] = meta as IFmModelRelationshipMeta<
+    Model
+  >;
 }
 
 export function isRelationship(modelKlass: IDictionary) {

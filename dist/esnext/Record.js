@@ -217,12 +217,13 @@ export class Record extends FireModel {
         return r;
     }
     /**
-     * update
+     * **update**
      *
-     * update an existing record in the database
+     * update an existing record in the database with a dictionary of prop/value pairs
      *
-     * @param schema the schema of the record
-     * @param payload the data for the new record
+     * @param model the _model_ type being updated
+     * @param id the `id` for the model being updated
+     * @param updates properties to update; this is a non-destructive operation so properties not expressed will remain unchanged. Also, because values are _nullable_ you can set a property to `null` to REMOVE it from the database.
      * @param options
      */
     static async update(model, id, updates, options = {}) {

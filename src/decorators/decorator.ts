@@ -41,7 +41,7 @@ export const propertyDecorator = <T extends Model>(
       ...nameValuePairs
     };
     Reflect.defineMetadata(key, meta, target);
-    addPropertyToModelMeta(target.constructor.name, property, meta);
+    addPropertyToModelMeta<T>(target.constructor.name, property, meta);
   }
 
   if (nameValuePairs.isRelationship) {

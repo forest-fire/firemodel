@@ -122,7 +122,7 @@ export class Watch {
             pluralName: this._pluralName,
             watcherSource: this._watcherSource
         })(this._dispatcher || FireModel.dispatch);
-        console.log('watching on ', this._localPath);
+        console.log("watching on ", this._localPath);
         try {
             if (this._eventType === "value") {
                 this.db.watch(this._query, ["value"], dispatchCallback);
@@ -140,6 +140,7 @@ export class Watch {
             dispatch: this._dispatcher || FireModel.dispatch,
             query: this._query,
             dbPath: this._query.path,
+            localPath: this._localPath,
             createdAt: new Date().getTime()
         };
         watcherPool[watcherId] = watcherItem;

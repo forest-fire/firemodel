@@ -15,6 +15,7 @@ export interface IWatcherItem {
     createdAt: number;
     dispatch: IReduxDispatch;
     dbPath: string;
+    localPath: string;
 }
 export declare class Watch {
     static defaultDb: RealTimeDB;

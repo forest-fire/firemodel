@@ -11,6 +11,7 @@ export function addPropertyToModelMeta(modelName, property, meta) {
     if (!propertiesByModel[modelName]) {
         propertiesByModel[modelName] = {};
     }
+    // TODO: investigate why we need to genericize to model (from <T>)
     propertiesByModel[modelName][property] = meta;
 }
 /** lookup meta data for schema properties */
