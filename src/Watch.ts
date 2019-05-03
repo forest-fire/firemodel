@@ -49,7 +49,7 @@ export interface IWatcherItem {
 /** a cache of all the watched  */
 let watcherPool: IDictionary<IWatcherItem> = {};
 
-export class Watch {
+export class Watch<T extends Model = Model> {
   public static set defaultDb(db: RealTimeDB) {
     FireModel.defaultDb = db;
   }
@@ -465,7 +465,7 @@ export class Watch {
    * @param property the property which the comparison operater is being compared to
    * @param value either just a value (in which case "equality" is the operator), or a tuple with operator followed by value (e.g., [">", 34])
    */
-  public where<T extends Model, K extends keyof T>(
+  public where<K extends keyof T>(
     property: K,
     value: T[K] | [IComparisonOperator, T[K]]
   ): Omit<Watch, IWatchListQueries | "toString"> {
