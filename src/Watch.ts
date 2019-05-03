@@ -166,7 +166,7 @@ export class Watch<T extends Model = Model> {
     modelConstructor: new () => T,
     options: IModelOptions = {}
   ) {
-    const o = new Watch();
+    const o = new Watch<T>();
     if (options.db) {
       o._db = options.db;
     }
