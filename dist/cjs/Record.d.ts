@@ -82,7 +82,7 @@ export declare class Record<T extends Model> extends FireModel<T> {
      * this can include dynamic properties characterized in the path string by
      * leading ":" character.
      */
-    readonly localPath: string;
+    readonly localPath: any;
     /**
      * The path in the local state tree that brings you to
      * the record; this is differnt when retrieved from a
@@ -264,7 +264,7 @@ export declare class Record<T extends Model> extends FireModel<T> {
         pluralName: any;
         key: string;
         compositeKey: ICompositeKey;
-        localPath: string;
+        localPath: any;
         data: string;
     };
     protected _writeAudit(action: IAuditOperations, changes?: IAuditChange[], options?: IModelOptions): void;

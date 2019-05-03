@@ -187,7 +187,7 @@ export class Record<T extends Model> extends FireModel<T> {
     this.localDynamicComponents.forEach(prop => {
       path = path.replace(`:${prop}`, this.get(prop as any));
     });
-    return path;
+    return pathJoin(path, this.pluralName);
   }
 
   /**

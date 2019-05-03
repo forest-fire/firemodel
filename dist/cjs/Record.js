@@ -131,7 +131,7 @@ class Record extends FireModel_1.FireModel {
         this.localDynamicComponents.forEach(prop => {
             path = path.replace(`:${prop}`, this.get(prop));
         });
-        return path;
+        return path_1.pathJoin(path, this.pluralName);
     }
     /**
      * The path in the local state tree that brings you to

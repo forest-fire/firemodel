@@ -217,10 +217,23 @@ class List extends FireModel_1.FireModel {
     /**
      * Gives the path in the client state tree to the beginning
      * where this LIST will reside
+     *
+     * Includes `localPrefix` and `pluralName`, but does not include `localPostfix`
      */
     get localPath() {
         const meta = this._model.META || ModelMeta_1.getModelMeta(this._model);
-        return path_1.pathJoin(meta.localPrefix, this.pluralName, meta.localPostfix);
+        return path_1.pathJoin(meta.localPrefix, this.pluralName);
+    }
+    /**
+     * Used with local state management tools, it provides a postfix to the state tree path
+     * The default is `all` and it will probably be used in most cases
+     *
+     * e.g. If the model is called `Tree` then your records will be stored at `trees/all`
+     * (assuming the default `all` postfix)
+     */
+    get localPostfix() {
+        const meta = this._model.META || ModelMeta_1.getModelMeta(this._model);
+        return meta.localPostfix;
     }
     /** Returns another List with data filtered down by passed in filter function */
     filter(f) {

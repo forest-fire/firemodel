@@ -186,7 +186,7 @@ export class Watch<T extends Model = Model> {
     o._classProperties = getAllPropertiesFromClassStructure(
       new o._modelConstructor()
     );
-    o._localPostfix = lst.META.localPostfix;
+    o._localPostfix = lst.localPostfix;
     o._dynamicProperties = Record.dynamicPathProperties(modelConstructor);
     return o as Pick<Watch, IWatchListQueries>;
   }
@@ -221,8 +221,6 @@ export class Watch<T extends Model = Model> {
       pluralName: this._pluralName,
       watcherSource: this._watcherSource
     })(this._dispatcher || FireModel.dispatch);
-
-    console.log("watching on ", this._localPath);
 
     try {
       if (this._eventType === "value") {

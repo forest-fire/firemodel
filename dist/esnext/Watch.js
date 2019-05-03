@@ -104,7 +104,7 @@ export class Watch {
         o._pluralName = lst.pluralName;
         o._localPath = lst.localPath;
         o._classProperties = getAllPropertiesFromClassStructure(new o._modelConstructor());
-        o._localPostfix = lst.META.localPostfix;
+        o._localPostfix = lst.localPostfix;
         o._dynamicProperties = Record.dynamicPathProperties(modelConstructor);
         return o;
     }
@@ -124,7 +124,6 @@ export class Watch {
             pluralName: this._pluralName,
             watcherSource: this._watcherSource
         })(this._dispatcher || FireModel.dispatch);
-        console.log("watching on ", this._localPath);
         try {
             if (this._eventType === "value") {
                 this.db.watch(this._query, ["value"], dispatchCallback);

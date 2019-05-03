@@ -83,8 +83,18 @@ export declare class List<T extends Model> extends FireModel<T> {
     /**
      * Gives the path in the client state tree to the beginning
      * where this LIST will reside
+     *
+     * Includes `localPrefix` and `pluralName`, but does not include `localPostfix`
      */
     readonly localPath: any;
+    /**
+     * Used with local state management tools, it provides a postfix to the state tree path
+     * The default is `all` and it will probably be used in most cases
+     *
+     * e.g. If the model is called `Tree` then your records will be stored at `trees/all`
+     * (assuming the default `all` postfix)
+     */
+    readonly localPostfix: string;
     /** Returns another List with data filtered down by passed in filter function */
     filter(f: ListFilterFunction<T>): List<T>;
     /** Returns another List with data filtered down by passed in filter function */
