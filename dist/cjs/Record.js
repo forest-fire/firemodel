@@ -867,7 +867,7 @@ class Record extends FireModel_1.FireModel {
         }
         if (watchers.length === 0) {
             event.watcherSource = "unknown";
-            if (FireModel_1.FireModel.dispatch) {
+            if (!FireModel_1.FireModel.isDefaultDispatch) {
                 console.log(`An "${crudAction}" action was executed on "${this.modelName}::${this.id}" but while there WAS a dispatch function registered, there were no watchers covering this DB path [ ${this.dbPath} ]`);
             }
             if (!options.silent) {

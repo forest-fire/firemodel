@@ -1262,7 +1262,7 @@ export class Record<T extends Model> extends FireModel<T> {
     }
     if (watchers.length === 0) {
       event.watcherSource = "unknown";
-      if (FireModel.dispatch) {
+      if (!FireModel.isDefaultDispatch) {
         console.log(
           `An "${crudAction}" action was executed on "${this.modelName}::${
             this.id
