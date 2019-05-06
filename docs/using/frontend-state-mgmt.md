@@ -1,112 +1,118 @@
 # Frontend State Mgmt
 
-Without really meaning to start the conversation, the [Watching Firebase](./watching.html) section  brought up the idea of a "dispatch" function which gets called when a change takes place in Firebase which is being _watched_ by the client. For those of you familiar with Redux and/or Vuex (probably MobX too) there is shared nominclature in having a "dispatch" function. That's good as it suggests a possibly easy integration but that's just a part of the picture so let's explore the whole space.
+When working with modern frontend frameworks like Vue and React it is likely we are using a front-end _state management framework_ like **Redux** or **Vuex**. These frameworks work really well with a "real time database" like Firebase and can be integrated very simply.
 
-Ultimately the goal we're trying to achieve is to find a low friction way of ensuring that the local datastore is kept optimistically up-to-date with changes in state. Changes that originate both from the client and external to the client.
+Without really meaning to start the conversation of frontend state management, the [Watching Firebase](./watching.html) section brought up the idea of a `dispatch()` function which gets called when a change takes place. For those of you familiar with Redux or Vuex there is shared nominclature in having a "dispatch" function and that is in fact where we'll start when talking about integration.
 
-> what we mean by "optimistically" is discussed in greater length further on
+When integrating state into a frontend state management frameworks broadly there are three things we will need to do:
 
-## Integrating State
+- **Dispatch** - connect your frontend framework's _dispatch_ to FireModel
+- **Actions** - ensure we have all the required FireModel _Actions_ defined in our local store
+- **Mutations** - ensure all the _Mutations_ committed by the Actions are available to change state
 
-When we concern ourselves with integrating state into modern state management frameworks we'll use Redux and Vuex as exemplars but I believe most are very similar (but don't want to step outside my understanding). Broadly there are two things we will need to do:
+Our examples and nomenclature will be assuming **Vuex** but **Redux** should be almost identical (and likely most other frontend state management tools too).
 
-- **Dispatch** - dispatch Firebase events that we've either originated (via `Record` or `List`) or become aware of (via `Watch`) into the state management frameworks via their provided callback method.
-- **State Mutation** - we then must create synchronous functions that convert the *event* into a state change.
+## Dispatch
 
-### Dispatch
+The good news is integrating your framework's `dispatch` into FireModel is _super_ easy:
 
-Integrating both phases of state change into your state management framework are accomplished **with a single line of code!**
+### Vuex (` src/main.ts `)
 
-#### Redux
-```typescript{3}
-import { dispatch } from './store';
-import { Record } from 'firemodel';
-Record.dispatch = dispatch;
-```
-
-#### Vuex
-```typescript{3}
+```typescript
 import { dispatch } from './store';
 import { Record, VeuxWrapper } from 'firemodel';
 Record.dispatch = VuexWrapper(dispatch);
 ```
 
-That's it. Now Firemodel events will be fired right into your frontend framework.
+> **Note:** The [`VuexWrapper`](https://github.com/forest-fire/firemodel/blob/master/src/VuexWrapper.ts) is just a simple mapper which addresses the mild variant between Redux and Vuex's callback requirements.
 
-> The [`VuexWrapper`](https://github.com/forest-fire/firemodel/blob/master/src/VuexWrapper.ts) is just a simple mapper which addresses the mild variant between Redux and Vuex's callback requirements. 
-
-### State Mutation
-
-Assuming you followed the instructions above regarding _dispatch_, your state management framework is getting actions but it's not actually modifying state yet. In Redux you'd write *reducers* to do this, in Veux you'd write *mutations*.
-
-You are free to write your own reducers/mutations that trigger off the **FireModel** events but you don't need to because we ship with a set that should suit 95% of use cases. Here's how you'd setup your store in Vuex:
+### Redux
 
 ```typescript
-import Vuex from "vuex";
-const store = new Vuex.Store({
-  modules: {
-    "@firemodel": VuexMutations,
-    ... 
+import { dispatch } from './store';
+import { Record } from 'firemodel';
+Record.dispatch = dispatch;
+```
+
+At this point, any time a FireModel mutation is fired it will be fired _into_ Vuex/Redux.
+
+## Events, Actions and Mutations
+
+Assuming you followed the instructions above regarding _dispatch_, your state management framework will now be getting *Events* sent to it from **FireModel**. These events will have a `type` which must be matched by an Action in your local store. Further, Actions do not modify state directly, instead they call *mutation* functions (or *reducers* in Redux parlance). The diagram below shows the high-level flow:
+
+<process-flow>graph LR; subgraph FireModel; FireEvent("Firebase Event")-->|from watch|Event;LocalEvent("Local Event")-->|from crud|Event;ServerConfirm("Server Confirmation")-->|from crud|Event; end; subgraph StateMgmt; Event-->Dispatch["dispatch(event)"];Dispatch-->|calls|Action; Action-->Trigger["commit()"]; Trigger-->|calls|Mutation["Mutation Fn"]; Action-.->Trigger2["commit()"];Trigger2-.->|calls|Mutation2["Mutation Fn"]; end;</process-flow>
+
+So if you're following along, you'll expect that the responsibility for writing the database Actions and Mutations would fall to you as the consumer of this library and you _can_ do this if you choose but in 99% of cases you should instead use the `vuex-plugin-firemodel` which provides both for you automatically. See the next section for more details.
+
+## FireModel Plugin
+
+Because the **FireModel** events provide a lot of surrounding meta information, it is possible to build a generic set of _Actions_ and _Mutations_ which handle all the database events which **FireModel** will fire.
+
+If you're using Vuex, please install the [`vuex-plugin-firemodel`](https://github.com/forest-fire/vuex-plugin-firemodel) npm module into your frontend application and add it to your store:
+
+### `src/store.ts`
+
+```typescript
+import FirePlugin from 'vuex-plugin-firemodel';
+const store = new Vuex.Store<IRootState>({
+  /** your config goes here */
+  plugins: {
+    FirePlugin,
+    /** other plugins */
   },
-  ...
-});
-
-Vue.use(Vuex);
-new Vue({
-  el: "#app",
-  router,
-  store,
-  template: "<App/>",
-  components: { App }
-});
+})
 ```
 
-> **Note:** for now I've only written for Vuex as that's currently focus but please send me a PR for a Redux, Mobx, etc. version; I'm sure the translation would be relatively trivial
+At this point you will _already_ have handlers for all of the **FireModel** actions (see [action types](/using/dispatch-and-events.html#enumerating-events)) but mutations must be defined *within* the modules of your state tree. If you aren't clear on the use of "modules" in Vuex please review that first before continuing.
 
-In many cases you may write your own but the structure and context of **FireModel** means we can ship with reducers which may just work for you "out of the box".  
+Let's explore an example of how this could be configured. In our example we'll have a **FireModel** `Model` called `UserProfile` and in our local state tree we want to save the logged in user to the state tree at `/userProfile`. This means we must define a Vuex module called `userProfile` and it would be defined something like this:
 
-
-
-
-
-
-## Being Optimistic
-
-What is meant by _being optimistic_ is simply that when a client originates a change, the client should be able to respond to that change immediately even though a full round-trip to the database is needed before this change is formally accepted. That means that there is a lifecycle of client-originated change that looks like this:
-
-![](../images/OptimisticState.jpg)
-
-This contrasts with changes in state that originate externally:
-
-![](../images/ExternalStateChange.jpg)
-
-Let's walk the client-originated event through a quick "for instance":
-
-- let's say the client decides to change a `Person`'s "favoriteColor" from *blue* to *orange*
-- they set the state locally with something like:
-
-  ```typescript
-  const dude = Record.get(Person, "1234");
-  console.log(dude.data.favoriteColor); // blue
-  await dude.set('favoriteColor', "orange");
-  ```
-- immediately an event is fired where the change is announced to `dispatch` (note: the `source` property is to "client" to indicate that the event originated from the client not the database)
-- at the same time the `set` operation is sent to Firebase so the client's desire will eventually be achieved
-- the `await` instruction in the code waits until Firebase confirms it has accepted the change and if it does the Record class looks to see if there is a watcher on this record. 
-  - If there is then it exits; 
-  - if there isn't then it fires another event to `dispatch` to indicate the server's acceptance (aka, same payload as first time but `source` is now "database")
-
-**FireModel**'s provides means for two ways to understand where in that cycle a change is. The first way is just recognizing the async/await state of write ops on `Record` or `List` classes:
+### `src/store/userProfile.ts`
 
 ```typescript
-// Record example
-const bobby = await Record.get(Person, "1234");
-bobby.set('favoriteColor', 'orange');
-await bobby.update()
-// List example
-const folks = await List.recent(Person, 25);
-await folks.add({ name: "Donald Duck", age: 12 });
+import UserProfile from "../models/UserProfile";
+import { firemodelMutations } from "vuex-plugin-firemodel";
+
+/**
+ * the default state for UserProfile
+ */
+export const state: UserProfile = {
+  name: '',
+  uid: '',
+}
+
+export const getters: GetterTree<IUserProfileState, IRootState> = {
+  ...
+}
+
+const mutations: MutationTree<IUserProfileState> = {
+  ...firemodelMutations<UserProfile>(),
+}
+
+const vuexModule: Module<IUserProfileState, IRootState> = {
+  state,
+  mutations,
+  getters,
+  namespaced: true,
+}
+
+export default vuexModule
 ```
 
-the `update` and `add` operations are asynchronous so waiting for it means you are waiting from the start of phase 1 to the conclusion of phase 2. This may be true but it has no real bearing on a frontend state management's state. That is the topic for the next section ... integrating state.
+and then ensure that your root store configuration includes this module:
 
+### `src/store.ts`
+
+```typescript
+import FirePlugin from 'vuex-plugin-firemodel';
+import userAuth from './store/userAuth';
+
+const store = new Vuex.Store<IRootState>({
+  modules: {
+    userAuth
+  },
+  plugins: {
+    FirePlugin
+  }
+})
+```

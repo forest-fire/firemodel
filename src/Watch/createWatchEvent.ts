@@ -1,31 +1,7 @@
-import {
-  FMEvents,
-  IFMRecordEvent,
-  IFmCrudOperations,
-  IFMRecordClientEvent
-} from "../state-mgmt";
+import { FMEvents, IFMRecordEvent, IFMRecordClientEvent } from "../state-mgmt";
 
-import { Record } from "../";
-import { IMultiPathUpdates } from "../FireModel";
-import { IDictionary } from "common-types";
-
-// TODO: come back and type this
-// export interface IWatchEventChanges<T, K extends keyof T> {
-//   [prop: K]: T[K];
-// }
-
-export interface IFmLocalEventPayload<T> {
-  transactionId: string;
-  crudAction?: IFmCrudOperations;
-  value: T;
-  paths?: IMultiPathUpdates[];
-  changed?: IDictionary;
-  priorValue?: T;
-
-  errorCode?: string | number;
-  errorMessage?: string;
-}
-
+import { Record } from "..";
+import { IFmEvent } from "./types";
 /**
  * expands a locally originated event into a full featured
  * dispatch event with desired META from the model
@@ -33,7 +9,7 @@ export interface IFmLocalEventPayload<T> {
 export function createWatchEvent<T>(
   type: FMEvents,
   record: Record<T>,
-  event: IFmLocalEventPayload<T>
+  event: IFmEvent<T>
 ) {
   const payload: IFMRecordClientEvent<T> = {
     type,

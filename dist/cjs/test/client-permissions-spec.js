@@ -44,7 +44,7 @@ describe("Validating client permissions with an anonymous user", () => {
         catch (e) {
             expect(e.code).to.equal("PERMISSION_DENIED");
         }
-        expect(events.filter((i) => i.type === "@firemodel/PERMISSION_DENIED")).to.have.lengthOf(1);
+        expect(events.filter((i) => i.type === "@firemodel/RECORD_ADDED_ROLLBACK")).to.have.lengthOf(1);
     });
 });
 //# sourceMappingURL=client-permissions-spec.js.map

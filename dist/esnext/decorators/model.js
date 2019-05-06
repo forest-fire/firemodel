@@ -22,6 +22,11 @@ export function model(options = {}) {
             }
             const meta = Object.assign({}, options, { isProperty: isProperty(modelOfObject) }, { property: getModelProperty(modelOfObject) }, { properties: getProperties(modelOfObject) }, { isRelationship: isRelationship(modelOfObject) }, { relationship: getModelRelationship(modelOfObject) }, { relationships: getRelationships(modelOfObject) }, { dbIndexes: getDbIndexes(modelOfObject) }, { pushKeys: getPushKeys(modelOfObject) }, { dbOffset: options.dbOffset ? options.dbOffset : "" }, { audit: options.audit ? options.audit : false }, { plural: options.plural }, {
                 localPostfix: options.localPostfix === undefined ? "all" : options.localPostfix
+            }, {
+                localModelName: options.localModelName === undefined
+                    ? modelOfObject.constructor.name.slice(0, 1).toLowerCase() +
+                        modelOfObject.constructor.name.slice(1)
+                    : options.localModelName
             }, { isDirty });
             addModelMeta(target.constructor.name.toLowerCase(), meta);
             Object.defineProperty(target.prototype, "META", {

@@ -62,6 +62,13 @@ export function model(options: Partial<IFmModelMeta> = {}) {
           localPostfix:
             options.localPostfix === undefined ? "all" : options.localPostfix
         },
+        ...{
+          localModelName:
+            options.localModelName === undefined
+              ? modelOfObject.constructor.name.slice(0, 1).toLowerCase() +
+                modelOfObject.constructor.name.slice(1)
+              : options.localModelName
+        },
         ...{ isDirty }
       };
 

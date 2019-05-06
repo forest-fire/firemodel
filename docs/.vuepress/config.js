@@ -162,6 +162,7 @@ module.exports = {
             "writing",
             "relationships",
             "watching",
+            "dispatch-and-events",
             "review-of-objects"
           ]
         },

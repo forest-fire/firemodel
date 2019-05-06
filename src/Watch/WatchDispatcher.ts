@@ -12,15 +12,14 @@ import {
   IFmContextualizedWatchEvent
 } from "../state-mgmt";
 import { Record } from "../Record";
-import { IFmRecordEvent } from "../@types/watcher-types";
+import { hasInitialized } from "./watchInitialization";
 
-// TODO: This looks ugly, find time to refactor
 /**
- * Contextualizes dispatches from abstracted-firebase into Model aware messages
+ * **watchDispatcher**
+ *
+ * Wraps up context captured at watch conception with
  */
-export const ModelDispatchTransformer = <T>(
-  context: IFmDispatchWatchContext<T>
-) => (
+export const WatchDispatcher = <T>(context: IFmDispatchWatchContext<T>) => (
   /** a generic redux dispatch function; called by database on event */
   clientHandler: IReduxDispatch<IFmContextualizedWatchEvent<T>>
 ) => {
@@ -33,6 +32,8 @@ export const ModelDispatchTransformer = <T>(
   }
 
   return (event: IValueBasedWatchEvent & IPathBasedWatchEvent) => {
+    hasInitialized[context.watcherId] = true;
+
     const typeLookup: IDictionary = {
       child_added: FMEvents.RECORD_ADDED,
       child_removed: FMEvents.RECORD_REMOVED,
@@ -59,19 +60,18 @@ export const ModelDispatchTransformer = <T>(
     }
 
     const contextualizedEvent: IFmContextualizedWatchEvent<T> = {
-      ...context,
-      ...event,
       ...{
-        compositeKey,
         type:
           event.eventType === "value"
             ? event.value === null || event.paths === null
               ? FMEvents.RECORD_REMOVED
               : FMEvents.RECORD_CHANGED
-            : typeLookup[event.eventType as keyof typeof typeLookup]
-      }
+            : typeLookup[event.eventType as keyof typeof typeLookup],
+        compositeKey
+      },
+      ...context,
+      ...event
     };
-    // console.log(contextualizedEvent, event.value);
 
     return clientHandler(contextualizedEvent);
   };

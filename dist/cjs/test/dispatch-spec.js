@@ -11,6 +11,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const src_1 = require("../src");
 const chai = __importStar(require("chai"));
 const person_1 = require("./testing/person");
+const PersonWithLocal_1 = require("./testing/PersonWithLocal");
+const PersonWithLocalAndPrefix_1 = require("./testing/PersonWithLocalAndPrefix");
 const state_mgmt_1 = require("../src/state-mgmt");
 const abstracted_admin_1 = require("abstracted-admin");
 const helpers_1 = require("./testing/helpers");
@@ -87,25 +89,10 @@ describe("Dispatch →", () => {
         // 1st EVENT (local change)
         let event = events[0];
         expect(event.type).to.equal(state_mgmt_1.FMEvents.RECORD_CHANGED_LOCALLY);
-        expect(event.paths).to.have.lengthOf(2);
-        event.paths.map(p => {
-            switch (p.path.replace(/^\//, "")) {
-                case "name":
-                    expect(p.value).to.equal("Carol");
-                    break;
-                case "lastUpdated":
-                    expect(p.value)
-                        .to.be.a("number")
-                        .and.lessThan(new Date().getTime());
-                    break;
-                default:
-                    throw new Error(`Unexpected property path [ ${p.path} ] on set()`);
-            }
-        });
+        expect(event.value.name).to.equal("Carol");
         // 2nd EVENT
         event = events[1];
-        expect(event.type).to.equal(state_mgmt_1.FMEvents.RECORD_CHANGED);
-        expect(event.paths).to.be.a("undefined");
+        expect(event.type).to.equal(state_mgmt_1.FMEvents.RECORD_CHANGED_CONFIRMATION);
         expect(event.value).to.be.an("object");
         expect(event.value.name).to.equal("Carol");
         expect(event.value.age).to.equal(18);
@@ -130,6 +117,57 @@ describe("Dispatch →", () => {
         });
         expect(events).to.have.lengthOf(4);
         expect(types.size).to.equal(2);
+    });
+    it("By default the localPath is the singular modelName", async () => {
+        const events = [];
+        const types = new Set();
+        const vueDispatch = (type, payload) => {
+            types.add(type);
+            events.push(Object.assign({}, payload, { type }));
+        };
+        const person = await src_1.Record.add(person_1.Person, {
+            name: "Jane",
+            age: 18
+        });
+        src_1.Record.dispatch = VuexWrapper_1.VeuxWrapper(vueDispatch);
+        await person.update({
+            age: 12
+        });
+        events.forEach(event => expect(event.localPath).to.equal(event.modelName));
+    });
+    it("When @model decorator and setting localModelName we can override the localPath", async () => {
+        const events = [];
+        const types = new Set();
+        const vueDispatch = (type, payload) => {
+            types.add(type);
+            events.push(Object.assign({}, payload, { type }));
+        };
+        const person = await src_1.Record.add(PersonWithLocal_1.PersonWithLocal, {
+            name: "Jane",
+            age: 18
+        });
+        src_1.Record.dispatch = VuexWrapper_1.VeuxWrapper(vueDispatch);
+        await person.update({
+            age: 12
+        });
+        events.forEach(event => expect(event.localPath).to.equal(person.META.localModelName));
+    });
+    it("The localPath combines both the `localModelName` and the `localPrefix`", async () => {
+        const events = [];
+        const types = new Set();
+        const vueDispatch = (type, payload) => {
+            types.add(type);
+            events.push(Object.assign({}, payload, { type }));
+        };
+        const person = await src_1.Record.add(PersonWithLocalAndPrefix_1.PersonWithLocalAndPrefix, {
+            name: "Jane",
+            age: 18
+        });
+        src_1.Record.dispatch = VuexWrapper_1.VeuxWrapper(vueDispatch);
+        await person.update({
+            age: 12
+        });
+        events.forEach(event => expect(event.localPath).to.equal(person.META.localPrefix + "/" + person.META.localModelName));
     });
 });
 //# sourceMappingURL=dispatch-spec.js.map

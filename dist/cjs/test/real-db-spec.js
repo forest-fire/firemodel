@@ -20,6 +20,9 @@ helpers.setupEnv();
 const db = new abstracted_admin_1.DB();
 FireModel_1.FireModel.defaultDb = db;
 describe("Tests using REAL db →", () => {
+    before(async () => {
+        await db.waitForConnection();
+    });
     it("List.since() works", async () => {
         try {
             await src_1.Record.add(person_1.Person, {

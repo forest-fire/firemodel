@@ -5,24 +5,11 @@ import { IReduxDispatch } from "./VuexWrapper";
 declare type RealTimeDB = import("abstracted-firebase").RealTimeDB;
 import { IModelOptions, IComparisonOperator, FmModelConstructor } from "./@types/general";
 import { IPrimaryKey } from "./@types/record-types";
-export declare type IWatchEventClassification = "child" | "value";
-export declare type IQuerySetter = (q: SerializedQuery) => void;
-export interface ISuperset<T> extends IDictionary {
-    foo?: string;
-}
-export declare type IWatchListQueries = "all" | "first" | "last" | "since" | "dormantSince" | "where" | "fromQuery" | "after" | "before" | "recent" | "inactive";
-export interface IWatcherItem {
-    watcherId: string;
-    eventType: string;
-    query: SerializedQuery;
-    createdAt: number;
-    dispatch: IReduxDispatch;
-    dbPath: string;
-    localPath: string;
-}
+import { IWatcherItem, IWatchListQueries, IWatchEventClassification } from "./Watch/types";
 export declare class Watch<T extends Model = Model> {
     static defaultDb: RealTimeDB;
     static dispatch: IReduxDispatch;
+    /** returns a full list of all watchers */
     static readonly inventory: IDictionary<IWatcherItem>;
     static toJSON(): IDictionary<IWatcherItem>;
     /**
@@ -46,22 +33,34 @@ export declare class Watch<T extends Model = Model> {
     protected _dispatcher: IReduxDispatch;
     protected _db: RealTimeDB;
     protected _modelName: string;
+    protected _localModelName: string;
     protected _pluralName: string;
     protected _localPath: string;
     protected _localPostfix: string;
     protected _dynamicProperties: string[];
     protected _watcherSource: "record" | "list";
     protected _classProperties: string[];
-    /** executes the watcher so that it becomes actively watched */
-    start(): IWatcherItem;
     /**
+     * **start**
+     *
+     * executes the watcher so that it becomes actively watched
+     *
+     * @param once optionally state a function callback to be called when
+     * the response for the given watcher's query has been fetched. This is
+     * useful as it indicates when the local state has been synced with the
+     * server state
+     */
+    start(once?: (evt: any) => void): Promise<IWatcherItem>;
+    /**
+     * **dispatch**
+     *
      * allows you to state an explicit dispatch function which will be called
      * when this watcher detects a change; by default it will use the "default dispatch"
      * set on FireModel.dispatch.
      */
     dispatch(d: IReduxDispatch): Omit<Watch, IWatchListQueries | "toString" | "dispatch">;
     /**
-     * since
+     * **since**
      *
      * Watch for all records that have changed since a given date
      *
@@ -70,7 +69,7 @@ export declare class Watch<T extends Model = Model> {
      */
     since(when: epochWithMilliseconds | string, limit?: number): Omit<Watch, IWatchListQueries | "toString">;
     /**
-     * dormantSince
+     * **dormantSince**
      *
      * Watch for all records that have NOT changed since a given date (opposite of "since")
      *
@@ -79,7 +78,7 @@ export declare class Watch<T extends Model = Model> {
      */
     dormantSince(when: epochWithMilliseconds | string, limit?: number): Omit<Watch, IWatchListQueries | "toString">;
     /**
-     * after
+     * **after**
      *
      * Watch all records that were created after a given date
      *
@@ -88,7 +87,7 @@ export declare class Watch<T extends Model = Model> {
      */
     after(when: epochWithMilliseconds | string, limit?: number): Omit<Watch, IWatchListQueries | "toString">;
     /**
-     * before
+     * **before**
      *
      * Watch all records that were created before a given date
      *
@@ -97,7 +96,7 @@ export declare class Watch<T extends Model = Model> {
      */
     before(when: epochWithMilliseconds | string, limit?: number): Omit<Watch, IWatchListQueries | "toString">;
     /**
-     * first
+     * **first**
      *
      * Watch for a given number of records; starting with the first/earliest records (createdAt).
      * Optionally you can state an ID from which to start from. This is useful for a pagination
@@ -108,7 +107,7 @@ export declare class Watch<T extends Model = Model> {
      */
     first(howMany: number, startAt?: string): Omit<Watch, IWatchListQueries | "toString">;
     /**
-     * last
+     * **last**
      *
      * Watch for a given number of records; starting with the last/most-recently added records
      * (e.g., createdAt). Optionally you can state an ID from which to start from.
@@ -119,7 +118,7 @@ export declare class Watch<T extends Model = Model> {
      */
     last(howMany: number, startAt?: string): Omit<Watch, IWatchListQueries | "toString">;
     /**
-     * recent
+     * **recent**
      *
      * Watch for a given number of records; starting with the recent/most-recently updated records
      * (e.g., lastUpdated). Optionally you can state an ID from which to start from.
@@ -130,7 +129,7 @@ export declare class Watch<T extends Model = Model> {
      */
     recent(howMany: number, startAt?: string): Omit<Watch, IWatchListQueries | "toString">;
     /**
-     * inactive
+     * **inactive**
      *
      * Watch for a given number of records; starting with the inactive/most-inactively added records
      * (e.g., lastUpdated). Optionally you can state an ID from which to start from.
@@ -141,7 +140,7 @@ export declare class Watch<T extends Model = Model> {
      */
     inactive(howMany: number, startAt?: string): Omit<Watch, IWatchListQueries | "toString">;
     /**
-     * fromQuery
+     * **fromQuery**
      *
      * Watch for all records that conform to a passed in query
      *
@@ -149,7 +148,7 @@ export declare class Watch<T extends Model = Model> {
      */
     fromQuery(inputQuery: SerializedQuery): Omit<Watch, IWatchListQueries | "toString">;
     /**
-     * all
+     * **all**
      *
      * Watch for all records of a given type
      *
@@ -157,7 +156,7 @@ export declare class Watch<T extends Model = Model> {
      */
     all(limit?: number): Omit<Watch, IWatchListQueries | "toString">;
     /**
-     * where
+     * **where**
      *
      * Watch for all records where a specified property is
      * equal, less-than, or greater-than a certain value

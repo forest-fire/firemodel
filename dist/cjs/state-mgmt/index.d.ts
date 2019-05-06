@@ -61,8 +61,12 @@ export declare enum FMEvents {
     RECORD_LOCAL_ROLLBACK = "@firemodel/RECORD_LOCAL_ROLLBACK",
     /** Indicates that a given model's "since" property has been updated */
     SINCE_UPDATED = "@firemodel/SINCE_UPDATED",
+    /** Watcher has started request to watch; waiting for initial SYNC event */
+    WATCHER_STARTING = "@firemodel/WATCHER_STARTING",
     /** Watcher has established connection with Firebase */
     WATCHER_STARTED = "@firemodel/WATCHER_STARTED",
+    /** Watcher failed to start */
+    WATCHER_FAILED = "@firemodel/WATCHER_FAILED",
     /** Watcher has disconnected an event stream from Firebase */
     WATCHER_STOPPED = "@firemodel/WATCHER_STOPPED",
     /** Watcher has disconnected all event streams from Firebase */
@@ -123,6 +127,7 @@ export interface IFmRecordWatchContext<T> {
     dynamicPathProperties: string[];
     /** the path in your local state management where this Record should go */
     localPath: string;
+    localModelName?: string;
     /** the "postFix" for local names; this is only presented when watcher is coming from a LIST */
     localPostfix?: string;
 }

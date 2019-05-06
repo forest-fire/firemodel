@@ -53,7 +53,7 @@ describe("Record > ", () => {
         });
         expect(events).to.have.lengthOf(2);
         const eventTypes = new Set(events.map(e => e.type));
-        expect(eventTypes.has(state_mgmt_1.FMEvents.RECORD_ADDED)).to.equal(true);
+        expect(eventTypes.has(state_mgmt_1.FMEvents.RECORD_ADDED_CONFIRMATION)).to.equal(true);
         expect(eventTypes.has(state_mgmt_1.FMEvents.RECORD_ADDED_LOCALLY)).to.equal(true);
     });
     it("Record's load() populates state, does not add to db", async () => {
@@ -192,8 +192,10 @@ describe("Record > ", () => {
         expect(events).to.have.lengthOf(2);
         const eventTypes = new Set(events.map(e => e.type));
         expect(eventTypes.has(state_mgmt_1.FMEvents.RECORD_REMOVED_LOCALLY)).is.equal(true);
-        expect(eventTypes.has(state_mgmt_1.FMEvents.RECORD_REMOVED)).is.equal(true);
+        expect(eventTypes.has(state_mgmt_1.FMEvents.RECORD_REMOVED_CONFIRMATION)).is.equal(true);
         const peeps2 = await src_1.List.all(person_1.Person);
+        console.log("person id", id);
+        console.log(peeps2.map(i => i.id));
         expect(peeps2).to.have.lengthOf(9);
         const ids = peeps2.map(p => p.id);
         expect(ids.includes(id)).to.equal(false);
@@ -212,7 +214,7 @@ describe("Record > ", () => {
         expect(events).to.have.lengthOf(2);
         const eventTypes = new Set(events.map(e => e.type));
         expect(eventTypes.has(state_mgmt_1.FMEvents.RECORD_REMOVED_LOCALLY)).is.equal(true);
-        expect(eventTypes.has(state_mgmt_1.FMEvents.RECORD_REMOVED)).is.equal(true);
+        expect(eventTypes.has(state_mgmt_1.FMEvents.RECORD_REMOVED_ROLLBACK)).is.equal(true);
         const peeps2 = await src_1.List.all(person_1.Person);
         expect(peeps2).to.have.lengthOf(9);
         const ids = peeps2.map(p => p.id);

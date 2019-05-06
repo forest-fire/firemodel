@@ -1,5 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+const typed_conversions_1 = require("typed-conversions");
+const property_store_1 = require("./decorators/model-meta/property-store");
+const equal = require("fast-deep-equal");
 function normalized(...args) {
     return args
         .filter(a => a)
@@ -33,4 +36,38 @@ function updateToAuditChanges(changed, prior) {
     }, []);
 }
 exports.updateToAuditChanges = updateToAuditChanges;
+function compareHashes(from, to) {
+    const results = {
+        added: [],
+        changed: [],
+        removed: []
+    };
+    const keys = new Set([...Object.keys(from), ...Object.keys(to)]);
+    Array.from(keys).forEach(i => {
+        if (!to[i]) {
+            results.added.push(i);
+        }
+        else if (!from[i]) {
+            results.removed.push(i);
+        }
+        else if (!equal(from, to)) {
+            results.changed.push(i);
+        }
+    });
+    return results;
+}
+exports.compareHashes = compareHashes;
+function getAllPropertiesFromClassStructure(model) {
+    const modelName = model.constructor.name;
+    const properties = typed_conversions_1.hashToArray(property_store_1.propertiesByModel[modelName], "property") || [];
+    let parent = Object.getPrototypeOf(model.constructor);
+    while (parent.name) {
+        const subClass = new parent();
+        const subClassName = subClass.constructor.name;
+        properties.push(...typed_conversions_1.hashToArray(property_store_1.propertiesByModel[subClassName], "property"));
+        parent = Object.getPrototypeOf(subClass.constructor);
+    }
+    return properties.map(p => p.property);
+}
+exports.getAllPropertiesFromClassStructure = getAllPropertiesFromClassStructure;
 //# sourceMappingURL=util.js.map

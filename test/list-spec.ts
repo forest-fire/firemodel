@@ -387,9 +387,4 @@ describe("List class: ", () => {
     expect(eventTypes).to.contain(FMEvents.RECORD_ADDED_CONFIRMATION);
     expect(eventTypes).to.contain(FMEvents.RECORD_ADDED_LOCALLY);
   });
-
-  it('local state includes the postFix default of "all"', async () => {
-    const peeps = await List.all(Person);
-    expect(peeps.localPath).to.equal("people/all");
-  });
 });

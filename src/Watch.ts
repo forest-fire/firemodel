@@ -10,7 +10,7 @@ import { IReduxDispatch } from "./VuexWrapper";
 import { FireModel } from "./FireModel";
 import { Record } from "./Record";
 type RealTimeDB = import("abstracted-firebase").RealTimeDB;
-import { ModelDispatchTransformer } from "./watching/ModelDispatchTransformer";
+import { WatchDispatcher } from "./Watch/WatchDispatcher";
 import { List } from "./List";
 import {
   IModelOptions,
@@ -20,36 +20,15 @@ import {
 import { IPrimaryKey } from "./@types/record-types";
 import { FMEvents } from "./state-mgmt";
 import { getAllPropertiesFromClassStructure } from "./util";
-
-export type IWatchEventClassification = "child" | "value";
-export type IQuerySetter = (q: SerializedQuery) => void;
-
-export interface ISuperset<T> extends IDictionary {
-  foo?: string;
-}
-
-export type IWatchListQueries =
-  | "all"
-  | "first"
-  | "last"
-  | "since"
-  | "dormantSince"
-  | "where"
-  | "fromQuery"
-  | "after"
-  | "before"
-  | "recent"
-  | "inactive";
-
-export interface IWatcherItem {
-  watcherId: string;
-  eventType: string;
-  query: SerializedQuery;
-  createdAt: number;
-  dispatch: IReduxDispatch;
-  dbPath: string;
-  localPath: string;
-}
+import {
+  IWatcherItem,
+  IWatchListQueries,
+  IWatchEventClassification
+} from "./Watch/types";
+import {
+  waitForInitialization,
+  hasInitialized
+} from "./Watch/watchInitialization";
 
 /** a cache of all the watched  */
 let watcherPool: IDictionary<IWatcherItem> = {};
@@ -63,6 +42,7 @@ export class Watch<T extends Model = Model> {
     FireModel.dispatch = d;
   }
 
+  /** returns a full list of all watchers */
   public static get inventory() {
     return watcherPool;
   }
@@ -159,6 +139,7 @@ export class Watch<T extends Model = Model> {
     o._query = new SerializedQuery(`${r.dbPath}`);
     o._modelConstructor = modelConstructor;
     o._modelName = r.modelName;
+    o._localModelName = r.META.localModelName;
     o._pluralName = r.pluralName;
     o._localPath = r.localPath;
     o._localPostfix = r.META.localPostfix;
@@ -197,6 +178,7 @@ export class Watch<T extends Model = Model> {
   protected _dispatcher: IReduxDispatch;
   protected _db: RealTimeDB;
   protected _modelName: string;
+  protected _localModelName: string;
   protected _pluralName: string;
   protected _localPath: string;
   protected _localPostfix: string;
@@ -204,13 +186,22 @@ export class Watch<T extends Model = Model> {
   protected _watcherSource: "record" | "list";
   protected _classProperties: string[];
 
-  /** executes the watcher so that it becomes actively watched */
-  public start(): IWatcherItem {
+  /**
+   * **start**
+   *
+   * executes the watcher so that it becomes actively watched
+   *
+   * @param once optionally state a function callback to be called when
+   * the response for the given watcher's query has been fetched. This is
+   * useful as it indicates when the local state has been synced with the
+   * server state
+   */
+  public async start(once?: (evt: any) => void): Promise<IWatcherItem> {
     const watcherId = "w" + String(this._query.hashCode());
     const construct = this._modelConstructor;
     type ModelType = typeof construct;
     // create a dispatch function with context
-    const dispatchCallback = ModelDispatchTransformer<ModelType>({
+    const context = {
       watcherId,
       modelConstructor: this._modelConstructor,
       query: this._query,
@@ -218,9 +209,13 @@ export class Watch<T extends Model = Model> {
       localPath: this._localPath,
       localPostfix: this._localPostfix,
       modelName: this._modelName,
+      localModelName: this._localModelName || "not-relevant",
       pluralName: this._pluralName,
       watcherSource: this._watcherSource
-    })(this._dispatcher || FireModel.dispatch);
+    };
+    const dispatchCallback = WatchDispatcher<ModelType>(context)(
+      this._dispatcher || FireModel.dispatch
+    );
 
     try {
       if (this._eventType === "value") {
@@ -234,11 +229,18 @@ export class Watch<T extends Model = Model> {
       }
     } catch (e) {
       console.log(`Problem starting watcher [${watcherId}]: `, e);
+      (this._dispatcher || FireModel.dispatch)({
+        type: FMEvents.WATCHER_FAILED,
+        errorMessage: e.message,
+        errorCode: e.code || e.name || "firemodel/watcher-failed"
+      });
+      return;
     }
 
     const watcherItem: IWatcherItem = {
       watcherId,
       eventType: this._eventType,
+      watcherSource: this._watcherSource,
       dispatch: this._dispatcher || FireModel.dispatch,
       query: this._query,
       dbPath: this._query.path as string,
@@ -249,13 +251,29 @@ export class Watch<T extends Model = Model> {
     watcherPool[watcherId] = watcherItem;
     // dispatch meta
     (this._dispatcher || FireModel.dispatch)({
-      type: FMEvents.WATCHER_STARTED,
+      type: FMEvents.WATCHER_STARTING,
       ...watcherItem
     });
-    return watcherItem;
+    try {
+      await waitForInitialization(watcherItem);
+
+      (this._dispatcher || FireModel.dispatch)({
+        type: FMEvents.WATCHER_STARTED,
+        ...watcherItem
+      });
+
+      return watcherItem;
+    } catch (e) {
+      throw createError(
+        "firemodel/watcher-initialization",
+        `The watcher "${watcherId}" failed to initialize`
+      );
+    }
   }
 
   /**
+   * **dispatch**
+   *
    * allows you to state an explicit dispatch function which will be called
    * when this watcher detects a change; by default it will use the "default dispatch"
    * set on FireModel.dispatch.
@@ -266,8 +284,9 @@ export class Watch<T extends Model = Model> {
     this._dispatcher = d;
     return this;
   }
+
   /**
-   * since
+   * **since**
    *
    * Watch for all records that have changed since a given date
    *
@@ -287,7 +306,7 @@ export class Watch<T extends Model = Model> {
   }
 
   /**
-   * dormantSince
+   * **dormantSince**
    *
    * Watch for all records that have NOT changed since a given date (opposite of "since")
    *
@@ -307,7 +326,7 @@ export class Watch<T extends Model = Model> {
   }
 
   /**
-   * after
+   * **after**
    *
    * Watch all records that were created after a given date
    *
@@ -327,7 +346,7 @@ export class Watch<T extends Model = Model> {
   }
 
   /**
-   * before
+   * **before**
    *
    * Watch all records that were created before a given date
    *
@@ -347,7 +366,7 @@ export class Watch<T extends Model = Model> {
   }
 
   /**
-   * first
+   * **first**
    *
    * Watch for a given number of records; starting with the first/earliest records (createdAt).
    * Optionally you can state an ID from which to start from. This is useful for a pagination
@@ -369,7 +388,7 @@ export class Watch<T extends Model = Model> {
   }
 
   /**
-   * last
+   * **last**
    *
    * Watch for a given number of records; starting with the last/most-recently added records
    * (e.g., createdAt). Optionally you can state an ID from which to start from.
@@ -391,7 +410,7 @@ export class Watch<T extends Model = Model> {
   }
 
   /**
-   * recent
+   * **recent**
    *
    * Watch for a given number of records; starting with the recent/most-recently updated records
    * (e.g., lastUpdated). Optionally you can state an ID from which to start from.
@@ -413,7 +432,7 @@ export class Watch<T extends Model = Model> {
   }
 
   /**
-   * inactive
+   * **inactive**
    *
    * Watch for a given number of records; starting with the inactive/most-inactively added records
    * (e.g., lastUpdated). Optionally you can state an ID from which to start from.
@@ -435,7 +454,7 @@ export class Watch<T extends Model = Model> {
   }
 
   /**
-   * fromQuery
+   * **fromQuery**
    *
    * Watch for all records that conform to a passed in query
    *
@@ -450,7 +469,7 @@ export class Watch<T extends Model = Model> {
   }
 
   /**
-   * all
+   * **all**
    *
    * Watch for all records of a given type
    *
@@ -464,7 +483,7 @@ export class Watch<T extends Model = Model> {
   }
 
   /**
-   * where
+   * **where**
    *
    * Watch for all records where a specified property is
    * equal, less-than, or greater-than a certain value

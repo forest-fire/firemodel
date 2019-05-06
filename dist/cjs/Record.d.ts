@@ -4,9 +4,7 @@ import { Omit, Nullable } from "common-types";
 import { FireModel } from "./FireModel";
 import { IReduxDispatch } from "./VuexWrapper";
 import { IFMEventName, IFmCrudOperations, IFmDispatchOptions } from "./state-mgmt/index";
-import { IAuditChange, IAuditOperations } from "./Audit";
 import { IIdWithDynamicPrefix, IFkReference, ICompositeKey } from "./@types/record-types";
-import { IModelOptions } from "./@types/general";
 export declare type ModelOptionalId<T extends Model> = Omit<T, "id"> & {
     id?: string;
 };
@@ -186,11 +184,18 @@ export declare class Record<T extends Model> extends FireModel<T> {
      */
     pushKey<K extends keyof T>(property: K, value: T[K][keyof T[K]]): Promise<string>;
     /**
-     * Updates a set of properties on a given model atomically (aka, all at once); will automatically
-     * include the "lastUpdated" property. Does NOT allow relationships to be included,
-     * this should be done separately.
+     * **update**
      *
-     * @param props a hash of name value pairs which represent the props being updated and their new values
+     * Updates a set of properties on a given model atomically (aka, all at once);
+     * will automatically include the "lastUpdated" property. Does NOT
+     * allow relationships to be included, this should be done separately.
+     *
+     * If you want to remove a particular property but otherwise leave the object
+     * unchanged, you can set that values(s) to NULL and it will be removed without
+     * impact to other properties.
+     *
+     * @param props a hash of name value pairs which represent the props being
+     * updated and their new values
      */
     update(props: Nullable<Partial<T>>): Promise<void>;
     /**
@@ -243,9 +248,9 @@ export declare class Record<T extends Model> extends FireModel<T> {
      */
     clearRelationship(property: Extract<keyof T, string>): Promise<void>;
     /**
-     * setRelationship
+     * **setRelationship**
      *
-     * sets up an hasOne FK relationship
+     * sets up an FK relationship for a _hasOne_ relationship
      *
      * @param property the property containing the hasOne FK
      * @param ref the FK
@@ -267,7 +272,12 @@ export declare class Record<T extends Model> extends FireModel<T> {
         localPath: any;
         data: string;
     };
-    protected _writeAudit(action: IAuditOperations, changes?: IAuditChange[], options?: IModelOptions): void;
+    /**
+     * **_writeAudit**
+     *
+     * Writes an audit log if the record is configured for audit logs
+     */
+    protected _writeAudit(action: IFmCrudOperations, propertyValues: Partial<T>, priorValue: Partial<T>): Promise<void>;
     protected _expandFkStringToCompositeNotation(fkRef: string, dynamicComponents?: string[]): {
         id: string;
     };
@@ -289,6 +299,8 @@ export declare class Record<T extends Model> extends FireModel<T> {
     protected _errorIfNothasOneReln(property: Extract<keyof T, string>, fn: string): void;
     protected _errorIfNotHasManyReln(property: Extract<keyof T, string>, fn: string): void;
     /**
+     * **_localCrudOperation**
+     *
      * updates properties on a given Record while firing
      * two-phase commit EVENTs to dispatch:
      *
@@ -304,15 +316,17 @@ export declare class Record<T extends Model> extends FireModel<T> {
      * successful transaction is achieved you will by default get
      * both sides of the two-phase commit. If you have a watcher
      * watching this same path then that watcher will also get
-     * a dispatch message sent.
+     * a dispatch message sent (e.g., RECORD_ADDED, RECORD_REMOVED, etc).
      *
      * If you only want to hear about Firebase's acceptance of the
      * record from a watcher then you can opt-out by setting the
      * { silentAcceptance: true } parameter in options. If you don't
      * want either side of the two phase commit sent to dispatch
-     * you can mute both with { silent: true }
+     * you can mute both with { silent: true }. This option is not
+     * typically a great idea but it can be useful in situations like
+     * _mocking_
      */
-    protected _localCrudOperation<K extends IFMEventName<K>>(crudAction: IFmCrudOperations, propertyValues: Partial<T>, options?: IFmDispatchOptions): Promise<void>;
+    protected _localCrudOperation<K extends IFMEventName<K>>(crudAction: IFmCrudOperations, newValues: Partial<T>, options?: IFmDispatchOptions): Promise<void>;
     private _findDynamicComponents;
     /**
      * looks for ":name" property references within the dbOffset or localPrefix and expands them
@@ -322,5 +336,8 @@ export declare class Record<T extends Model> extends FireModel<T> {
      * Load data from a record in database
      */
     private _getFromDB;
+    /**
+     * Allows for the static "add" method to add a record
+     */
     private _adding;
 }
