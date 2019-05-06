@@ -35,7 +35,7 @@ var FMEvents;
     /** A record has been removed from a given Model list being watched */
     FMEvents["RECORD_REMOVED_LOCALLY"] = "@firemodel/RECORD_REMOVED_LOCALLY";
     /** a record removed locally has now been confirmed by Firebase */
-    FMEvents["RECORD_REMOVED_CONFIRMATION"] = "@firemodel/RECORD_REMOVED_LOCALLY";
+    FMEvents["RECORD_REMOVED_CONFIRMATION"] = "@firemodel/RECORD_REMOVED_CONFIRMATION";
     /** A record removed locally failed to be saved to Firebase */
     FMEvents["RECORD_REMOVED_ROLLBACK"] = "@firemodel/RECORD_REMOVED_LOCALLY";
     /** A record has been removed from a given Model list being watched */
@@ -46,8 +46,12 @@ var FMEvents;
     FMEvents["RECORD_LOCAL_ROLLBACK"] = "@firemodel/RECORD_LOCAL_ROLLBACK";
     /** Indicates that a given model's "since" property has been updated */
     FMEvents["SINCE_UPDATED"] = "@firemodel/SINCE_UPDATED";
+    /** Watcher has started request to watch; waiting for initial SYNC event */
+    FMEvents["WATCHER_STARTING"] = "@firemodel/WATCHER_STARTING";
     /** Watcher has established connection with Firebase */
     FMEvents["WATCHER_STARTED"] = "@firemodel/WATCHER_STARTED";
+    /** Watcher failed to start */
+    FMEvents["WATCHER_FAILED"] = "@firemodel/WATCHER_FAILED";
     /** Watcher has disconnected an event stream from Firebase */
     FMEvents["WATCHER_STOPPED"] = "@firemodel/WATCHER_STOPPED";
     /** Watcher has disconnected all event streams from Firebase */

@@ -53,8 +53,8 @@ describe("Relationship > ", () => {
       amount: "2400.00"
     });
 
-    company.addToRelationship("employees", person.id);
-    person.addToRelationship("pays", pay.id);
+    await company.addToRelationship("employees", person.id);
+    await person.addToRelationship("pays", pay.id);
 
     expect((company.data.employees as any)[person.id]).to.equal(true);
   });
@@ -81,10 +81,10 @@ describe("Relationship > ", () => {
       amount: "2400.00"
     });
 
-    company.associate("employees", person.id);
-    person.associate("pays", pay.id);
-    company.addToRelationship("employees", [person.id, person2.id]);
-    company.associate("employees", [person.id, person2.id]);
+    await company.associate("employees", person.id);
+    await person.associate("pays", pay.id);
+    await company.addToRelationship("employees", [person.id, person2.id]);
+    await company.associate("employees", [person.id, person2.id]);
 
     expect((company.data.employees as any)[person.id]).to.equal(true);
   });
@@ -111,11 +111,11 @@ describe("Relationship > ", () => {
       amount: "2400.00"
     });
 
-    person.associate("pays", pay.id);
-    company.associate("employees", [person.id, person2.id]);
+    await person.associate("pays", pay.id);
+    await company.associate("employees", [person.id, person2.id]);
 
-    company.disassociate("employees", person2.id);
-    person.disassociate("pays", pay.id);
+    await company.disassociate("employees", person2.id);
+    await person.disassociate("pays", pay.id);
 
     expect((company.data.employees as any)[person.id]).to.equal(true);
     expect((company.data.employees as any)[person2.id]).to.not.equal(true);
@@ -135,7 +135,7 @@ describe("Relationship > ", () => {
     });
 
     try {
-      person.associate("company", [company.id]);
+      await person.associate("company", [company.id]);
       expect(false, "passing array as refs is not allowed with hasOne!");
     } catch (e) {
       expect(e.message).to.equal(

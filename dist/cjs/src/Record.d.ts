@@ -1,12 +1,10 @@
 import { RealTimeDB } from "abstracted-firebase";
 import { Model } from "./Model";
-import { Omit } from "common-types";
+import { Omit, Nullable } from "common-types";
 import { FireModel } from "./FireModel";
 import { IReduxDispatch } from "./VuexWrapper";
 import { IFMEventName, IFmCrudOperations, IFmDispatchOptions } from "./state-mgmt/index";
-import { IAuditChange, IAuditOperations } from "./Audit";
 import { IIdWithDynamicPrefix, IFkReference, ICompositeKey } from "./@types/record-types";
-import { IModelOptions } from "./@types/general";
 export declare type ModelOptionalId<T extends Model> = Omit<T, "id"> & {
     id?: string;
 };
@@ -49,6 +47,8 @@ export declare class Record<T extends Model> extends FireModel<T> {
      */
     readonly hasDynamicPath: boolean;
     /**
+     * **dynamicPathComponents**
+     *
      * An array of "dynamic properties" that are derived fom the "dbOffset" to
      * produce the "dbPath"
      */
@@ -80,7 +80,7 @@ export declare class Record<T extends Model> extends FireModel<T> {
      * this can include dynamic properties characterized in the path string by
      * leading ":" character.
      */
-    readonly localPath: string;
+    readonly localPath: any;
     /**
      * The path in the local state tree that brings you to
      * the record; this is differnt when retrieved from a
@@ -115,15 +115,16 @@ export declare class Record<T extends Model> extends FireModel<T> {
      */
     static add<T extends Model>(model: new () => T, payload: ModelOptionalId<T>, options?: IRecordOptions): Promise<Record<T>>;
     /**
-     * update
+     * **update**
      *
-     * update an existing record in the database
+     * update an existing record in the database with a dictionary of prop/value pairs
      *
-     * @param schema the schema of the record
-     * @param payload the data for the new record
+     * @param model the _model_ type being updated
+     * @param id the `id` for the model being updated
+     * @param updates properties to update; this is a non-destructive operation so properties not expressed will remain unchanged. Also, because values are _nullable_ you can set a property to `null` to REMOVE it from the database.
      * @param options
      */
-    static update<T extends Model>(model: new () => T, id: string, updates: Partial<T>, options?: IRecordOptions): Promise<Record<T>>;
+    static update<T extends Model>(model: new () => T, id: string, updates: Nullable<Partial<T>>, options?: IRecordOptions): Promise<Record<T>>;
     /**
      * load
      *
@@ -189,9 +190,9 @@ export declare class Record<T extends Model> extends FireModel<T> {
      *
      * @param props a hash of name value pairs which represent the props being updated and their new values
      */
-    update(props: Partial<T>): Promise<void>;
+    update(props: Nullable<Partial<T>>): Promise<void>;
     /**
-     * remove
+     * **remove**
      *
      * Removes the active record from the database and dispatches the change to
      * FE State Mgmt.
@@ -240,9 +241,9 @@ export declare class Record<T extends Model> extends FireModel<T> {
      */
     clearRelationship(property: Extract<keyof T, string>): Promise<void>;
     /**
-     * setRelationship
+     * **setRelationship**
      *
-     * sets up an hasOne FK relationship
+     * sets up an FK relationship for a _hasOne_ relationship
      *
      * @param property the property containing the hasOne FK
      * @param ref the FK
@@ -261,10 +262,15 @@ export declare class Record<T extends Model> extends FireModel<T> {
         pluralName: any;
         key: string;
         compositeKey: ICompositeKey;
-        localPath: string;
+        localPath: any;
         data: string;
     };
-    protected _writeAudit(action: IAuditOperations, changes?: IAuditChange[], options?: IModelOptions): void;
+    /**
+     * **_writeAudit**
+     *
+     * Writes an audit log if the record is configured for audit logs
+     */
+    protected _writeAudit(action: IFmCrudOperations, propertyValues: Partial<T>, priorValue: Partial<T>): Promise<void>;
     protected _expandFkStringToCompositeNotation(fkRef: string, dynamicComponents?: string[]): {
         id: string;
     };
@@ -286,6 +292,8 @@ export declare class Record<T extends Model> extends FireModel<T> {
     protected _errorIfNothasOneReln(property: Extract<keyof T, string>, fn: string): void;
     protected _errorIfNotHasManyReln(property: Extract<keyof T, string>, fn: string): void;
     /**
+     * **_localCrudOperation**
+     *
      * updates properties on a given Record while firing
      * two-phase commit EVENTs to dispatch:
      *
@@ -301,15 +309,17 @@ export declare class Record<T extends Model> extends FireModel<T> {
      * successful transaction is achieved you will by default get
      * both sides of the two-phase commit. If you have a watcher
      * watching this same path then that watcher will also get
-     * a dispatch message sent.
+     * a dispatch message sent (e.g., RECORD_ADDED, RECORD_REMOVED, etc).
      *
      * If you only want to hear about Firebase's acceptance of the
      * record from a watcher then you can opt-out by setting the
      * { silentAcceptance: true } parameter in options. If you don't
      * want either side of the two phase commit sent to dispatch
-     * you can mute both with { silent: true }
+     * you can mute both with { silent: true }. This option is not
+     * typically a great idea but it can be useful in situations like
+     * _mocking_
      */
-    protected _localCrudOperation<K extends IFMEventName<K>>(crudAction: IFmCrudOperations, changed: Partial<T>, options?: IFmDispatchOptions): Promise<void>;
+    protected _localCrudOperation<K extends IFMEventName<K>>(crudAction: IFmCrudOperations, newValues: Partial<T>, options?: IFmDispatchOptions): Promise<void>;
     private _findDynamicComponents;
     /**
      * looks for ":name" property references within the dbOffset or localPrefix and expands them
@@ -319,5 +329,8 @@ export declare class Record<T extends Model> extends FireModel<T> {
      * Load data from a record in database
      */
     private _getFromDB;
+    /**
+     * Allows for the static "add" method to add a record
+     */
     private _adding;
 }

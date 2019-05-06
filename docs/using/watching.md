@@ -1,10 +1,13 @@
+---
+sidebarDepth: 3
+---
 # Watching for Changes
 
-![](https://media.giphy.com/media/xTiIzrkmUZpP6kYF20/giphy.gif)
+![buggy eyeball](https://media.giphy.com/media/xTiIzrkmUZpP6kYF20/giphy.gif)
 
-One of the really cool things about Firebase is that it is a "real time database" and what this means is that rather than interactions with the database always originating from your code, instead you can simply describe the data you're interested in and let Firebase tell _you_ when something's changed. 
+One of the really cool things about Firebase is that it is a "real time database" and what this means is that rather than interactions with the database always originating from your code, instead you can simply describe the data you're interested in and let Firebase tell _you_ when something has changed.
 
-Turning this interaction model around is a real game changer in some applications and useful in most (though maybe not so much backend micro-services). In any event, **FireModel** would be remiss to not fully get behind this way of doing things. So let's first begin by describing the data structure we will see. For those of you familiar with RX this will seem kind of obvious but what "watching for changes" looks like from a data standpoint is a stream of events. 
+Turning this interaction model around is a real game changer in some applications (including most modern frontend apps). In this section we will explore how 
 
 ## Expressing Interest
 
@@ -14,82 +17,32 @@ So how do we express our interest in these events?
 const dispatch: IFMRecordEvent = (payload) => console.log(payload);
 
 // Listen for changes on a single record
-const watch1 = Watch.record(Person, "1234")
+const { watchId:watch1 } = await Watch.record(Person, "1234")
   .dispatch(dispatch)
   .start();
 // Listen for changes on a list of records
-const watch2 = Watch.list(Person)
+const { watchId:watch2 } = await Watch.list(Person)
   .since(134123543)
   .dispatch(dispatch)
   .start();
 ```
 
-With these watchers in place we will be called back on `dispatch()` whenever an event fires. 
-
 > **Note:** you _do not_ have to specify the dispatch on calls to `Watch` so long as your dispatch function has been set on `FireModel.dispatch`.
 
-### FireModel Events
+> **Note:** the call to `start()` returns a Promise to a [`IWatcherItem`](https://github.com/forest-fire/firemodel/blob/master/src/Watch.ts#L44) object
 
-There are three category of events you'll get from your Watchers:
+With these watchers in place we will be called back on `dispatch()` whenever an event fires.
 
-| Record Events  | Relationship Events  | Lifecycle Events      |
-| -------------- | -------------------- | --------------------- |
-| RECORD_ADDED   | RELATIONSHIP_ADDED   | WATCHER_STARTED       |
-| RECORD_REMOVED | RELATIONSHIP_REMOVED | WATCHER_STOPPED       |
-| RECORD_CHANGED |                      | WATCHER_STOPPED_ALL   |
-| *RECORD_MOVED* |                      | FIREBASE_CONNECTED    |
-|                |                      | FIREBASE_DISCONNECTED |
+### State Synchronization
 
-The lifecycle events are quite "meta" in that they will not have much of a direct impact on local state but rather just help to trace the sequence of events. The *record* and *relationship* events, however, have very clear impact on state.
-
-> If you are using Typescript you can import the `FMEvents` enumeration for easy access to each event type
-
-All events are structured as a dictionary and ALL events have the `type` property. To give you a sense of what an event might look like, here's the structure of a record event:
-
-```typescript
-export interface IFMFirebaseEventPayload {
-  /** the unique identifier of the event type/kind */
-  type: keyof FMEvents;
-  /** the originator of the event */
-  source: "database" | "client";
-  /** the name of the Model who's record has changed */
-  model: string;
-  /** the constructor for the Model of the record which has changed */
-  modelConstructor: FMModelConstructor;
-  /** the path in Firebase where this Record should is stored */
-  dbPath: string;
-  /** the path in your local state management where this Record should go */
-  localPath: string;
-  /** an identifier of which active watcher was triggered to create this event */
-  watcherHash: string;
-  /** the Record's "id" property */
-  key: string;
-  /** the key/ID the previous state; provided only on child_moved and child_changed */
-  prevKey?: string;
-  /** the value of the Record after the change */
-  value: T;
-}
-```
-
-Whereas the _relationship_ events are a superset:
-
-```typescript
-export interface IFMRelationshipEvent extends IFMRecordEvent<T> {
-  fk: string;
-  fkModelName: string;
-  fkHasInverse: boolean;
-  fkConstructor?: FMModelConstructor;
-  fkRelType?: ISchemaRelationshipType;
-  fkLocalPath?: string;
-}
-```
+Note that because when we first declare the intent to watch a DB path, the app will always be out of sync with the database so you should expect that as quickly as you get connected to the DB and the query is run the first event will be fired. This initialization sequence is important to understand. You _can_ call `Watch` as a synchronous function and the watcher will start but if you treat it as an _async_ function the function will return once the Watch has synchronized.
 
 ## Losing Interest
 
 If at some later point you decide that one of you watchers is no longer of interest you can remove individual watchers by capturing a returned hash key like so:
 
 ```typescript
-const { watchId } = Watch(Record.get(Person, "1234"));
+const { watchId } = Watch.record(Person, "1234").start();
 /** passage of time */
 Watch.stop(watchId);
 ```
@@ -100,7 +53,13 @@ If you want to cancel all current watchers you can do this with:
 Watch.stop();
 ```
 
+## Where to use Watchers
 
-## Upward and Onward
+We've talked about _what_ watching is and _how_ it works mechanistically but we've not really discussed a practical manner of using it. There are two typical use-cases where watchers are used:
 
-We've talked about _what_ watching is and _how_ it works mechanistically but we've not really discussed a practical manner of using it. Don't worry kind reader, we'll get there next in the Advanced topic section under [Frontend State Management](./frontend-state-mgmt.html) ... but first a moment from our sponsors.
+1. Long running server processes
+2. Frontend applications (typically running an SPA)
+
+In both cases the common thread is a long running Javascript thread which enables the efficient use of Firebase's websocket connection to not only _send_ updates to the database but also to ensure that the locally cached state is kept current. Where watchers are less useful is in a serverless function or any situation where there is a very short execution lifespan. 
+
+In the [Frontend State Management](./frontend-state-mgmt.html) we cover a powerful way to integrate **FireModel** with a Frontend State Management solution but before reading that be sure to have a look at the next section ([Responding to Events](./dispatch-and-events.html))  to better understand what *events* are available and how to connect into them.

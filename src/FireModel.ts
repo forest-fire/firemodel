@@ -115,6 +115,10 @@ export class FireModel<T extends Model> {
     return FireModel.dispatch;
   }
 
+  public static get isDefaultDispatch() {
+    return FireModel.dispatch === defaultDispatch;
+  }
+
   public get dispatchIsActive(): boolean {
     return FireModel._dispatchActive;
   }

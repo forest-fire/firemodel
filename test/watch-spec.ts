@@ -1,5 +1,5 @@
 // tslint:disable:no-implicit-dependencies
-import { Record } from "../src";
+import { Record, Mock } from "../src";
 import { DB } from "abstracted-client";
 import { DB as Admin } from "abstracted-admin";
 import * as chai from "chai";
@@ -7,11 +7,11 @@ const expect = chai.expect;
 import { FireModel } from "../src/FireModel";
 import { Watch } from "../src/Watch";
 import { Person } from "./testing/person";
+import { PersonWithLocalAndPrefix } from "./testing/PersonWithLocalAndPrefix";
 import { setupEnv } from "./testing/helpers";
 import { IReduxAction } from "../src/VuexWrapper";
 import { FMEvents } from "../src/state-mgmt";
-import { wait } from "common-types";
-import { watch } from "fs";
+import { wait, IDictionary } from "common-types";
 
 setupEnv();
 
@@ -27,7 +27,7 @@ describe("Watch →", () => {
 
   it("Watching a Record gives back a hashCode which can be looked up", async () => {
     FireModel.defaultDb = await DB.connect({ mocking: true });
-    const { watcherId } = Watch.record(Person, "12345")
+    const { watcherId } = await Watch.record(Person, "12345")
       .dispatch(() => "")
       .start();
     expect(watcherId).to.be.a("string");
@@ -64,9 +64,9 @@ describe("Watch →", () => {
 
     const eventTypes = new Set(events.map(e => e.type));
 
-    expect(eventTypes.size).to.equal(3);
     expect(eventTypes.has(FMEvents.RECORD_CHANGED)).to.equal(true);
     expect(eventTypes.has(FMEvents.RECORD_REMOVED)).to.equal(true);
+    expect(eventTypes.has(FMEvents.WATCHER_STARTING)).to.equal(true);
     expect(eventTypes.has(FMEvents.WATCHER_STARTED)).to.equal(true);
   });
 
@@ -94,11 +94,9 @@ describe("Watch →", () => {
 
     await wait(500);
     // Initial response is to bring in all records
-    // expect(events).to.have.lengthOf(2);
     let eventTypes = new Set(events.map(e => e.type));
-    console.log(eventTypes);
 
-    expect(eventTypes.size).to.equal(2);
+    expect(eventTypes.has(FMEvents.WATCHER_STARTING));
     expect(eventTypes.has(FMEvents.WATCHER_STARTED));
     expect(eventTypes.has(FMEvents.RECORD_ADDED));
     // Now we'll do some more CRUD activities
@@ -120,8 +118,8 @@ describe("Watch →", () => {
     Watch.reset();
     FireModel.dispatch = () => "";
     expect(Watch.watchCount).to.equal(0);
-    const { watcherId: hc1 } = Watch.record(Person, "989898").start();
-    const { watcherId: hc2 } = Watch.record(Person, "45645645").start();
+    const { watcherId: hc1 } = await Watch.record(Person, "989898").start();
+    const { watcherId: hc2 } = await Watch.record(Person, "45645645").start();
     expect(Watch.watchCount).to.equal(2);
     Watch.stop(hc1);
     expect(Watch.watchCount).to.equal(1);
@@ -132,5 +130,59 @@ describe("Watch →", () => {
     } catch (e) {
       expect(e.name).to.equal("FireModel::InvalidHashcode");
     }
+  });
+
+  it("Watching a List uses pluralName for localPath", async () => {
+    FireModel.defaultDb = await DB.connect({ mocking: true });
+    Watch.reset();
+    const personId = (await Mock(PersonWithLocalAndPrefix).generate(1)).pop()
+      .id;
+    const person = await Record.get(PersonWithLocalAndPrefix, personId);
+
+    await Watch.list(PersonWithLocalAndPrefix)
+      .all()
+      .start();
+    const events: IDictionary[] = [];
+    FireModel.dispatch = evt => {
+      events.push(evt);
+    };
+    await Record.add(PersonWithLocalAndPrefix, person.data);
+    events.forEach(evt => {
+      expect(evt.localPath).to.equal(
+        `${person.META.localPrefix}/${person.pluralName}`
+      );
+    });
+  });
+
+  it("Watching a Record uses localModelName for localPath", async () => {
+    FireModel.defaultDb = await DB.connect({ mocking: true });
+    Watch.reset();
+    const personId = (await Mock(PersonWithLocalAndPrefix).generate(1)).pop()
+      .id;
+    const person = await Record.get(PersonWithLocalAndPrefix, personId);
+    const events: IDictionary[] = [];
+    FireModel.dispatch = evt => {
+      events.push(evt);
+    };
+    await Watch.record(PersonWithLocalAndPrefix, personId).start();
+    await Record.add(PersonWithLocalAndPrefix, person.data);
+    events.forEach(evt => {
+      expect(evt.localPath).to.equal(
+        `${person.META.localPrefix}/${person.META.localModelName}`
+      );
+    });
+
+    const eventTypes = Array.from(new Set(events.map(e => e.type)));
+
+    const expectedTypes = [
+      FMEvents.RECORD_ADDED_LOCALLY,
+      FMEvents.RECORD_ADDED_CONFIRMATION,
+      FMEvents.WATCHER_STARTING,
+      FMEvents.WATCHER_STARTED,
+      FMEvents.RECORD_CHANGED // Record Listeners can't distinguish between ADD and UPDATE
+    ];
+    expectedTypes.forEach(e => {
+      expect(eventTypes).to.include(e);
+    });
   });
 });

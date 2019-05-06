@@ -9,7 +9,8 @@ export type IVuexDispatch = (type: string, payload: IDictionary) => void;
 export type IReduxDispatch<T = IDictionary> = (payload: T) => void;
 
 /**
- * The structure of a Redux action message)
+ * The structure of a Redux action message (aka, a dictionary with
+ * at least the `type` attribute)
  */
 export interface IReduxAction extends IDictionary {
   type: string;

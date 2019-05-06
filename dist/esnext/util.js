@@ -1,5 +1,6 @@
 import { hashToArray } from "typed-conversions";
 import { propertiesByModel } from "./decorators/model-meta/property-store";
+import equal from "fast-deep-equal";
 export function normalized(...args) {
     return args
         .filter(a => a)
@@ -29,6 +30,26 @@ export function updateToAuditChanges(changed, prior) {
         return prev;
     }, []);
 }
+export function compareHashes(from, to) {
+    const results = {
+        added: [],
+        changed: [],
+        removed: []
+    };
+    const keys = new Set([...Object.keys(from), ...Object.keys(to)]);
+    Array.from(keys).forEach(i => {
+        if (!to[i]) {
+            results.added.push(i);
+        }
+        else if (!from[i]) {
+            results.removed.push(i);
+        }
+        else if (!equal(from, to)) {
+            results.changed.push(i);
+        }
+    });
+    return results;
+}
 export function getAllPropertiesFromClassStructure(model) {
     const modelName = model.constructor.name;
     const properties = hashToArray(propertiesByModel[modelName], "property") || [];
@@ -40,5 +61,12 @@ export function getAllPropertiesFromClassStructure(model) {
         parent = Object.getPrototypeOf(subClass.constructor);
     }
     return properties.map(p => p.property);
+}
+export function withoutMeta(model) {
+    if (model.META) {
+        model = Object.assign({}, model);
+        delete model.META;
+    }
+    return model;
 }
 //# sourceMappingURL=util.js.map

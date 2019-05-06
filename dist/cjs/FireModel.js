@@ -89,6 +89,9 @@ class FireModel {
     get dispatch() {
         return FireModel.dispatch;
     }
+    static get isDefaultDispatch() {
+        return FireModel.dispatch === defaultDispatch;
+    }
     get dispatchIsActive() {
         return FireModel._dispatchActive;
     }

@@ -38,6 +38,7 @@ export const propertyReflector = <R>(
 
   const reflect: IDictionary =
     Reflect.getMetadata("design:type", modelKlass, key) || {};
+
   const meta: IDictionary = {
     ...context,
     type: reflect.name as string,

@@ -5,20 +5,11 @@ import { IReduxDispatch } from "./VuexWrapper";
 declare type RealTimeDB = import("abstracted-firebase").RealTimeDB;
 import { IModelOptions, IComparisonOperator, FmModelConstructor } from "./@types/general";
 import { IPrimaryKey } from "./@types/record-types";
-export declare type IWatchEventClassification = "child" | "value";
-export declare type IQuerySetter = (q: SerializedQuery) => void;
-export declare type IWatchListQueries = "all" | "first" | "last" | "since" | "dormantSince" | "where" | "fromQuery" | "after" | "before" | "recent" | "inactive";
-export interface IWatcherItem {
-    watcherId: string;
-    eventType: string;
-    query: SerializedQuery;
-    createdAt: number;
-    dispatch: IReduxDispatch;
-    dbPath: string;
-}
-export declare class Watch {
+import { IWatcherItem, IWatchListQueries, IWatchEventClassification } from "./Watch/types";
+export declare class Watch<T extends Model = Model> {
     static defaultDb: RealTimeDB;
     static dispatch: IReduxDispatch;
+    /** returns a full list of all watchers */
     static readonly inventory: IDictionary<IWatcherItem>;
     static toJSON(): IDictionary<IWatcherItem>;
     /**
@@ -34,29 +25,42 @@ export declare class Watch {
     static reset(): void;
     /** stops watching either a specific watcher or ALL if no hash code is provided */
     static stop(hashCode?: string, oneOffDB?: RealTimeDB): void;
-    static record<T extends Model>(modelConstructor: new () => T, pk: IPrimaryKey, options?: IModelOptions): Pick<Watch, "start" | "dispatch">;
-    static list<T extends Model>(modelConstructor: new () => T, options?: IModelOptions): Pick<Watch, IWatchListQueries>;
+    static record<T extends Model>(modelConstructor: new () => T, pk: IPrimaryKey, options?: IModelOptions): Pick<Watch<Model>, "start" | "dispatch">;
+    static list<T extends Model>(modelConstructor: new () => T, options?: IModelOptions): Pick<Watch<Model>, IWatchListQueries>;
     protected _query: SerializedQuery;
     protected _modelConstructor: FmModelConstructor<any>;
     protected _eventType: IWatchEventClassification;
     protected _dispatcher: IReduxDispatch;
     protected _db: RealTimeDB;
     protected _modelName: string;
+    protected _localModelName: string;
     protected _pluralName: string;
     protected _localPath: string;
     protected _localPostfix: string;
     protected _dynamicProperties: string[];
     protected _watcherSource: "record" | "list";
-    /** executes the watcher so that it becomes actively watched */
-    start(): IWatcherItem;
+    protected _classProperties: string[];
     /**
+     * **start**
+     *
+     * executes the watcher so that it becomes actively watched
+     *
+     * @param once optionally state a function callback to be called when
+     * the response for the given watcher's query has been fetched. This is
+     * useful as it indicates when the local state has been synced with the
+     * server state
+     */
+    start(once?: (evt: any) => void): Promise<IWatcherItem>;
+    /**
+     * **dispatch**
+     *
      * allows you to state an explicit dispatch function which will be called
      * when this watcher detects a change; by default it will use the "default dispatch"
      * set on FireModel.dispatch.
      */
     dispatch(d: IReduxDispatch): Omit<Watch, IWatchListQueries | "toString" | "dispatch">;
     /**
-     * since
+     * **since**
      *
      * Watch for all records that have changed since a given date
      *
@@ -65,7 +69,7 @@ export declare class Watch {
      */
     since(when: epochWithMilliseconds | string, limit?: number): Omit<Watch, IWatchListQueries | "toString">;
     /**
-     * dormantSince
+     * **dormantSince**
      *
      * Watch for all records that have NOT changed since a given date (opposite of "since")
      *
@@ -74,7 +78,7 @@ export declare class Watch {
      */
     dormantSince(when: epochWithMilliseconds | string, limit?: number): Omit<Watch, IWatchListQueries | "toString">;
     /**
-     * after
+     * **after**
      *
      * Watch all records that were created after a given date
      *
@@ -83,7 +87,7 @@ export declare class Watch {
      */
     after(when: epochWithMilliseconds | string, limit?: number): Omit<Watch, IWatchListQueries | "toString">;
     /**
-     * before
+     * **before**
      *
      * Watch all records that were created before a given date
      *
@@ -92,7 +96,7 @@ export declare class Watch {
      */
     before(when: epochWithMilliseconds | string, limit?: number): Omit<Watch, IWatchListQueries | "toString">;
     /**
-     * first
+     * **first**
      *
      * Watch for a given number of records; starting with the first/earliest records (createdAt).
      * Optionally you can state an ID from which to start from. This is useful for a pagination
@@ -103,7 +107,7 @@ export declare class Watch {
      */
     first(howMany: number, startAt?: string): Omit<Watch, IWatchListQueries | "toString">;
     /**
-     * last
+     * **last**
      *
      * Watch for a given number of records; starting with the last/most-recently added records
      * (e.g., createdAt). Optionally you can state an ID from which to start from.
@@ -114,7 +118,7 @@ export declare class Watch {
      */
     last(howMany: number, startAt?: string): Omit<Watch, IWatchListQueries | "toString">;
     /**
-     * recent
+     * **recent**
      *
      * Watch for a given number of records; starting with the recent/most-recently updated records
      * (e.g., lastUpdated). Optionally you can state an ID from which to start from.
@@ -125,7 +129,7 @@ export declare class Watch {
      */
     recent(howMany: number, startAt?: string): Omit<Watch, IWatchListQueries | "toString">;
     /**
-     * inactive
+     * **inactive**
      *
      * Watch for a given number of records; starting with the inactive/most-inactively added records
      * (e.g., lastUpdated). Optionally you can state an ID from which to start from.
@@ -136,15 +140,15 @@ export declare class Watch {
      */
     inactive(howMany: number, startAt?: string): Omit<Watch, IWatchListQueries | "toString">;
     /**
-     * fromQuery
+     * **fromQuery**
      *
      * Watch for all records that conform to a passed in query
      *
      * @param query
      */
-    fromQuery<T extends Model>(inputQuery: SerializedQuery): Omit<Watch, IWatchListQueries | "toString">;
+    fromQuery(inputQuery: SerializedQuery): Omit<Watch, IWatchListQueries | "toString">;
     /**
-     * all
+     * **all**
      *
      * Watch for all records of a given type
      *
@@ -152,7 +156,7 @@ export declare class Watch {
      */
     all(limit?: number): Omit<Watch, IWatchListQueries | "toString">;
     /**
-     * where
+     * **where**
      *
      * Watch for all records where a specified property is
      * equal, less-than, or greater-than a certain value
@@ -160,7 +164,7 @@ export declare class Watch {
      * @param property the property which the comparison operater is being compared to
      * @param value either just a value (in which case "equality" is the operator), or a tuple with operator followed by value (e.g., [">", 34])
      */
-    where<T extends Model, K extends keyof T>(property: K, value: T[K] | [IComparisonOperator, T[K]]): Omit<Watch, IWatchListQueries | "toString">;
+    where<K extends keyof T>(property: K, value: T[K] | [IComparisonOperator, T[K]]): Omit<Watch, IWatchListQueries | "toString">;
     toString(): string;
     protected readonly db: RealTimeDB;
 }

@@ -2,16 +2,52 @@ import NamedFakes from "../Mock/NamedFakes";
 import { Model } from "../Model";
 
 export type FmRelationshipType = "hasMany" | "hasOne";
-
+/**
+ * **IFmModelMeta**
+ *
+ * The meta properties that describe the **Model** definition
+ */
 export interface IFmModelMeta<T extends Model = any> {
   /** Optionally specify a root path to store this schema under */
   dbOffset?: string;
   /** Optionally specify an explicit string for the plural name */
   plural?: string;
-  /** Optionally specify a root path where the local store will put this schema */
+  /**
+   * **localPrefix**
+   *
+   * Optionally specify a _path_ which will be _prefixed_
+   * to the path in the local store. The `localPath` variable will end up
+   * being combined with the `localModelName` (for a **Record** watcher) or the
+   * `pluralName` (for a **List** watcher)
+   */
   localPrefix?: string;
-  /** Optionally specify a post-fix to the path where lists of records will be stored; by default this is set to "all" */
+  /**
+   * **localPostfix**
+   *
+   * For local state management, the `localPostFix` provides a
+   * way to add a directory after the `localPath` for **List** watchers
+   * (note: `localPostFix` is ignored in **Record** watchers). If this
+   * property is _not_ set then it will default to "all".
+   *
+   * In most cases the default property should suffice.
+   */
   localPostfix?: string;
+  /**
+   * **localModelName**
+   *
+   * When defining a model that will be used with a frontend state management
+   * framework like redux, vuex, etc. the **Record** watcher will use this
+   * property to build the `localPath` variable:
+   *
+  ```js
+  localPath = pathJoin(localPrefix, localModelName);
+  ```
+   *
+   * It's default value will be the same as `modelName` but by exposing this
+   * to the `@model` decorator it allows an override where that is
+   * appropriate
+   */
+  localModelName?: string;
   /** provides a boolean flag on whether the stated name is a property */
   isProperty?: (prop: keyof T) => boolean;
   /** a function to lookup the meta properties of a given property */

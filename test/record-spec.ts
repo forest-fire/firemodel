@@ -127,7 +127,7 @@ describe("Record > ", () => {
     expect(roger.data.tags["123"]).to.equal("cartoon");
   });
 
-  it("using update() allows non-destructive updates on object type when initial value is undefined", async () => {
+  it("using update() allows non-destructive updates on object type when new props are/were undefined", async () => {
     await db.set<Person>("/authenticated/people/8888", {
       name: "Roger Rabbit",
       age: 3,
@@ -139,9 +139,10 @@ describe("Record > ", () => {
       tags: { "456": "something else" },
       scratchpad: { foo: "bar" }
     });
+
     // IMMEDIATE CHANGE on RECORD
-    expect(roger.get("tags")).to.haveOwnProperty("456");
     expect(roger.get("scratchpad")).to.haveOwnProperty("foo");
+    expect(roger.get("tags")).to.haveOwnProperty("456");
     // CHANGE REFLECTED after pulling from DB
     const bugs = await Record.get(Person, "8888");
     expect(bugs.get("tags")).to.haveOwnProperty("456");
@@ -224,7 +225,7 @@ describe("Record > ", () => {
     expect(events).to.have.lengthOf(2);
     const eventTypes = new Set(events.map(e => e.type));
     expect(eventTypes.has(FMEvents.RECORD_REMOVED_LOCALLY)).is.equal(true);
-    expect(eventTypes.has(FMEvents.RECORD_REMOVED)).is.equal(true);
+    expect(eventTypes.has(FMEvents.RECORD_REMOVED_ROLLBACK)).is.equal(true);
 
     const peeps2 = await List.all(Person);
     expect(peeps2).to.have.lengthOf(9);

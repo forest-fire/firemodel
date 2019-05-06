@@ -23,6 +23,7 @@ describe("List class: ", () => {
     beforeEach(async () => {
         db = new abstracted_admin_1.DB({ mocking: true });
         await db.waitForConnection();
+        await db.mock.importFakerLibrary();
         FireModel_1.FireModel.defaultDb = db;
     });
     it("can instantiate with new operator", () => {
@@ -336,8 +337,8 @@ describe("List class: ", () => {
         const id = peeps.data[1].id;
         const removed = await peeps.removeById(id);
         expect(peeps).to.have.lengthOf(9);
-        const eventTypes = events.map(e => e.type);
-        expect(eventTypes).to.contain(state_mgmt_1.FMEvents.RECORD_REMOVED);
+        const eventTypes = new Set(events.map(e => e.type));
+        expect(eventTypes).to.contain(state_mgmt_1.FMEvents.RECORD_REMOVED_CONFIRMATION);
         expect(eventTypes).to.contain(state_mgmt_1.FMEvents.RECORD_REMOVED_LOCALLY);
         expect(eventTypes).to.contain(state_mgmt_1.FMEvents.RECORD_LIST);
         const peeps2 = await index_1.List.all(person_1.Person);
@@ -359,7 +360,7 @@ describe("List class: ", () => {
         const ids = new Set(peeps.map(p => p.id));
         expect(ids.has(newRec.id)).to.equal(true);
         const eventTypes = events.map(e => e.type);
-        expect(eventTypes).to.contain(state_mgmt_1.FMEvents.RECORD_ADDED);
+        expect(eventTypes).to.contain(state_mgmt_1.FMEvents.RECORD_ADDED_CONFIRMATION);
         expect(eventTypes).to.contain(state_mgmt_1.FMEvents.RECORD_ADDED_LOCALLY);
     });
     it('local state includes the postFix default of "all"', async () => {

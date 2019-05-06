@@ -5,6 +5,7 @@ const serialized_query_1 = require("serialized-query");
 const common_types_1 = require("common-types");
 const FireModel_1 = require("./FireModel");
 const path_1 = require("./path");
+const ModelMeta_1 = require("./ModelMeta");
 const state_mgmt_1 = require("./state-mgmt");
 const DEFAULT_IF_NOT_FOUND = "__DO_NOT_USE__";
 function addTimestamps(obj) {
@@ -210,18 +211,29 @@ class List extends FireModel_1.FireModel {
         return this._data.length;
     }
     get dbPath() {
-        return [
-            this._injectDynamicDbOffsets(this.META.dbOffset),
-            this.pluralName
-        ].join("/");
+        const dbOffset = this._model.META.dbOffset || ModelMeta_1.getModelMeta(this._model).dbOffset;
+        return [this._injectDynamicDbOffsets(dbOffset), this.pluralName].join("/");
     }
     /**
      * Gives the path in the client state tree to the beginning
      * where this LIST will reside
+     *
+     * Includes `localPrefix` and `pluralName`, but does not include `localPostfix`
      */
     get localPath() {
-        const meta = this._model.META;
-        return path_1.pathJoin(meta.localPrefix, this.pluralName, meta.localPostfix);
+        const meta = this._model.META || ModelMeta_1.getModelMeta(this._model);
+        return path_1.pathJoin(meta.localPrefix, this.pluralName);
+    }
+    /**
+     * Used with local state management tools, it provides a postfix to the state tree path
+     * The default is `all` and it will probably be used in most cases
+     *
+     * e.g. If the model is called `Tree` then your records will be stored at `trees/all`
+     * (assuming the default `all` postfix)
+     */
+    get localPostfix() {
+        const meta = this._model.META || ModelMeta_1.getModelMeta(this._model);
+        return meta.localPostfix;
     }
     /** Returns another List with data filtered down by passed in filter function */
     filter(f) {
@@ -291,12 +303,27 @@ class List extends FireModel_1.FireModel {
         }
     }
     /**
-     * provides a map over the data structured managed by the List; there will be no mutations to the
-     * data managed by the list
+     * provides a `map` function over the records managed by the List; there
+     * will be no mutations to the data managed by the list
      */
     map(f) {
         return this.data.map(f);
     }
+    /**
+     * provides a `forEach` function to iterate over the records managed by the List
+     */
+    forEach(f) {
+        this.data.forEach(f);
+    }
+    /**
+     * runs a `reducer` function across all records in the list
+     */
+    reduce(f, initialValue = {}) {
+        return this.data.reduce(f, initialValue);
+    }
+    /**
+     * Gives access to the List's array of records
+     */
     get data() {
         return this._data;
     }
@@ -325,7 +352,7 @@ class List extends FireModel_1.FireModel {
         const rec = this.findById(id, null);
         if (!rec) {
             if (!ignoreOnNotFound) {
-                const e = new Error(`Could not remove "${id}" in list of ${this.pluralName} as the ID was not found!`);
+                const e = common_types_1.createError(`firemodel/not-allowed`, `Could not remove "${id}" in list of ${this.pluralName} as the ID was not found!`);
                 e.name = "NotFound";
                 throw e;
             }

@@ -2,6 +2,8 @@
 import { Record } from "../src";
 import * as chai from "chai";
 import { Person } from "./testing/person";
+import { PersonWithLocal } from "./testing/PersonWithLocal";
+import { PersonWithLocalAndPrefix } from "./testing/PersonWithLocalAndPrefix";
 import { IMultiPathUpdates, FireModel } from "../src/FireModel";
 import {
   FMEvents,
@@ -76,7 +78,7 @@ describe("Dispatch →", () => {
     });
 
     person.set("name", "Carol");
-    // expect(person.isDirty).to.equal(true);
+    expect(person.isDirty).to.equal(true);
     expect(person.get("name")).to.equal("Carol");
     await wait(15);
     expect(person.isDirty).to.equal(false);
@@ -93,7 +95,7 @@ describe("Dispatch →", () => {
     await person.set("name", "Carol");
     expect(person.get("name")).to.equal("Carol"); // local change took place
     expect(events.length).to.equal(2); // two phase commit
-    expect(person.isDirty).to.equal(false); // value already back to false
+    expect(person.isDirty).to.equal(false); // value  back to false
 
     // 1st EVENT (local change)
     let event = events[0];
@@ -129,5 +131,64 @@ describe("Dispatch →", () => {
     });
     expect(events).to.have.lengthOf(4);
     expect(types.size).to.equal(2);
+  });
+
+  it("By default the localPath is the singular modelName", async () => {
+    const events: Array<IFMRecordEvent<Person>> = [];
+    const types = new Set<string>();
+    const vueDispatch: IVuexDispatch = (type, payload: any) => {
+      types.add(type);
+      events.push({ ...payload, ...{ type } });
+    };
+    const person = await Record.add(Person, {
+      name: "Jane",
+      age: 18
+    });
+    Record.dispatch = VeuxWrapper(vueDispatch);
+    await person.update({
+      age: 12
+    });
+
+    events.forEach(event => expect(event.localPath).to.equal(event.modelName));
+  });
+
+  it("When @model decorator and setting localModelName we can override the localPath", async () => {
+    const events: Array<IFMRecordEvent<Person>> = [];
+    const types = new Set<string>();
+    const vueDispatch: IVuexDispatch = (type, payload: any) => {
+      types.add(type);
+      events.push({ ...payload, ...{ type } });
+    };
+    const person = await Record.add(PersonWithLocal, {
+      name: "Jane",
+      age: 18
+    });
+    Record.dispatch = VeuxWrapper(vueDispatch);
+    await person.update({
+      age: 12
+    });
+
+    events.forEach(event =>
+      expect(event.localPath).to.equal(person.META.localModelName)
+    );
+  });
+
+  it("The when dispatching events without a listener the source is 'unknown'", async () => {
+    const events: Array<IFMRecordEvent<Person>> = [];
+    const types = new Set<string>();
+    const vueDispatch: IVuexDispatch = (type, payload: any) => {
+      types.add(type);
+      events.push({ ...payload, ...{ type } });
+    };
+    const person = await Record.add(PersonWithLocalAndPrefix, {
+      name: "Jane",
+      age: 18
+    });
+    Record.dispatch = VeuxWrapper(vueDispatch);
+    await person.update({
+      age: 12
+    });
+
+    events.forEach(event => expect(event.watcherSource).to.equal("unknown"));
   });
 });
