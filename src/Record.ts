@@ -1,5 +1,5 @@
 // tslint:disable-next-line:no-implicit-dependencies
-import { RealTimeDB } from "abstracted-firebase";
+import { RealTimeDB, MPS, IMultiPathSet } from "abstracted-firebase";
 import { Model } from "./Model";
 import { createError, IDictionary, Omit, Nullable } from "common-types";
 import { key as fbKey } from "firebase-key";
@@ -23,7 +23,7 @@ import {
   ICompositeKey
 } from "./@types/record-types";
 import { createCompositeKey, createCompositeKeyString } from "./CompositeKey";
-import { IFmModelPropertyMeta } from ".";
+import { IFmModelPropertyMeta, IFmRelationshipOperation } from ".";
 import { findWatchers } from "./Watch/findWatchers";
 import { IFmEvent } from "./Watch/types";
 import { enhanceEventWithWatcherData } from "./Watch/enhanceWithWatcherData";
@@ -768,15 +768,14 @@ export class Record<T extends Model> extends FireModel<T> {
       );
       return;
     }
-    const mps = this.db.multiPathSet("/");
 
-    this._relationshipMPS(
-      mps,
-      this.get(property) as any,
+    const mps = this._relationshipMPS(
+      this.get(property),
       property,
       null,
       new Date().getTime()
     );
+
     this.dispatch(
       this._createRecordEvent(
         this,
@@ -811,29 +810,28 @@ export class Record<T extends Model> extends FireModel<T> {
       await this.clearRelationship(property);
     }
 
-    const mps = this.db.multiPathSet("/");
-
-    this._relationshipMPS(
-      mps,
+    const mps = this._relationshipMPS(
       ref,
       property,
       optionalValue,
       new Date().getTime()
     );
 
-    this.dispatch(
-      this._createRecordEvent(
-        this,
-        FMEvents.RELATIONSHIP_ADDED_LOCALLY,
-        mps.payload
-      )
-    );
+    await this._localRelationshipOperation("set", property, ref, mps);
 
-    await mps.execute();
+    // this.dispatch(
+    //   this._createRecordEvent(
+    //     this,
+    //     FMEvents.RELATIONSHIP_ADDED_LOCALLY,
+    //     mps.payload
+    //   )
+    // );
 
-    this.dispatch(
-      this._createRecordEvent(this, FMEvents.RELATIONSHIP_ADDED, this.data)
-    );
+    // await mps.execute();
+
+    // this.dispatch(
+    //   this._createRecordEvent(this, FMEvents.RELATIONSHIP_ADDED, this.data)
+    // );
   }
 
   /**
@@ -935,13 +933,11 @@ export class Record<T extends Model> extends FireModel<T> {
   }
 
   /**
-   * _relationshipMPS
+   * **_relationshipMPS**
    *
-   * Sets up and executes a multi-path SET (MPS) with the intent of
-   * updating the FK relationship of a given model as well as reflecting
-   * that change back from the FK to the originating model
+   * Returns a multi-path SET (`IMultiPathSet`) that includes all paths needed to
+   * update both sides of the relationship of a given model.
    *
-   * @param mps the multi-path selection object
    * @param fkRef a FK reference; either a string (representing the ID of other
    * record) or a composite key (ID plus all dynamic segments)
    * @param property the property on the target record which contains FK(s)
@@ -949,12 +945,12 @@ export class Record<T extends Model> extends FireModel<T> {
    * @param now the current time in miliseconds
    */
   protected _relationshipMPS(
-    mps: any,
     fkRef: IFkReference,
     property: Extract<keyof T, string>,
     value: any,
     now: number
   ) {
+    const mps = this.db.multiPathSet("/");
     const meta = getModelMeta(this);
     const fkModelConstructor = meta.relationship(property).fkConstructor();
     const inverseProperty = meta.relationship(property).inverseProperty;
@@ -1127,7 +1123,7 @@ export class Record<T extends Model> extends FireModel<T> {
           this.modelName
         }.${property}"!`
       );
-      return;
+      return mps;
     }
   }
 
@@ -1344,6 +1340,38 @@ export class Record<T extends Model> extends FireModel<T> {
         })
       );
     }
+  }
+
+  /**
+   * **_localRelationshipOperation**
+   *
+   * updates the current Record while also executing the appropriate two-phased commit
+   * with the `dispatch()` function; looking to associate with watchers where ever possible
+   */
+  protected async _localRelationshipOperation(
+    /**
+     * **operation**
+     *
+     * The relationship operation that is being executed
+     */
+    operation: IFmRelationshipOperation,
+    /**
+     * **property**
+     *
+     * The property on this model which changing its relationship status in some way
+     */
+    property: keyof T,
+    value: IFkReference,
+    /**
+     * **mps**
+     *
+     * The caller must state the full set of paths which are going to be effected;
+     * this will include paths on the local object but also the FK entity. This MPS
+     * will be created using the `_relationshipMPS()` helper method.
+     */
+    mps: IMultiPathSet
+  ) {
+    //
   }
 
   private _findDynamicComponents(path: string = "") {
