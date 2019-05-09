@@ -1,10 +1,11 @@
-import { RealTimeDB } from "abstracted-firebase";
+import { RealTimeDB, IMultiPathSet } from "abstracted-firebase";
 import { Model } from "./Model";
 import { Omit, Nullable } from "common-types";
 import { FireModel } from "./FireModel";
 import { IReduxDispatch } from "./VuexWrapper";
 import { IFMEventName, IFmCrudOperations, IFmDispatchOptions } from "./state-mgmt/index";
 import { IIdWithDynamicPrefix, IFkReference, ICompositeKey } from "./@types/record-types";
+import { IFmRelationshipOperation } from ".";
 export declare type ModelOptionalId<T extends Model> = Omit<T, "id"> & {
     id?: string;
 };
@@ -282,20 +283,18 @@ export declare class Record<T extends Model> extends FireModel<T> {
         id: string;
     };
     /**
-     * _relationshipMPS
+     * **_relationshipMPS**
      *
-     * Sets up and executes a multi-path SET (MPS) with the intent of
-     * updating the FK relationship of a given model as well as reflecting
-     * that change back from the FK to the originating model
+     * Returns a multi-path SET (`IMultiPathSet`) that includes all paths needed to
+     * update both sides of the relationship of a given model.
      *
-     * @param mps the multi-path selection object
      * @param fkRef a FK reference; either a string (representing the ID of other
      * record) or a composite key (ID plus all dynamic segments)
      * @param property the property on the target record which contains FK(s)
      * @param value the value to set this FK (null removes); typically TRUE if setting
      * @param now the current time in miliseconds
      */
-    protected _relationshipMPS(mps: any, fkRef: IFkReference, property: Extract<keyof T, string>, value: any, now: number): void;
+    protected _relationshipMPS(fkRef: IFkReference, property: Extract<keyof T, string>, value: any, now: number): IMultiPathSet;
     protected _errorIfNothasOneReln(property: Extract<keyof T, string>, fn: string): void;
     protected _errorIfNotHasManyReln(property: Extract<keyof T, string>, fn: string): void;
     /**
@@ -327,6 +326,33 @@ export declare class Record<T extends Model> extends FireModel<T> {
      * _mocking_
      */
     protected _localCrudOperation<K extends IFMEventName<K>>(crudAction: IFmCrudOperations, newValues: Partial<T>, options?: IFmDispatchOptions): Promise<void>;
+    /**
+     * **_localRelationshipOperation**
+     *
+     * updates the current Record while also executing the appropriate two-phased commit
+     * with the `dispatch()` function; looking to associate with watchers where ever possible
+     */
+    protected _localRelationshipOperation(
+    /**
+     * **operation**
+     *
+     * The relationship operation that is being executed
+     */
+    operation: IFmRelationshipOperation, 
+    /**
+     * **property**
+     *
+     * The property on this model which changing its relationship status in some way
+     */
+    property: keyof T, value: IFkReference, 
+    /**
+     * **mps**
+     *
+     * The caller must state the full set of paths which are going to be effected;
+     * this will include paths on the local object but also the FK entity. This MPS
+     * will be created using the `_relationshipMPS()` helper method.
+     */
+    mps: IMultiPathSet): Promise<void>;
     private _findDynamicComponents;
     /**
      * looks for ":name" property references within the dbOffset or localPrefix and expands them

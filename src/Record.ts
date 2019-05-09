@@ -1,5 +1,5 @@
 // tslint:disable-next-line:no-implicit-dependencies
-import { RealTimeDB, MPS, IMultiPathSet } from "abstracted-firebase";
+import { RealTimeDB, IMultiPathSet } from "abstracted-firebase";
 import { Model } from "./Model";
 import { createError, IDictionary, Omit, Nullable } from "common-types";
 import { key as fbKey } from "firebase-key";
@@ -688,12 +688,13 @@ export class Record<T extends Model> extends FireModel<T> {
 
     fkRefs = (Array.isArray(fkRefs) ? fkRefs : [fkRefs]) as IFkReference[];
     const now = new Date().getTime();
-    const mps = this.db.multiPathSet("/");
+    // const mps = this.db.multiPathSet("/");
+    let mps: IMultiPathSet;
 
     fkRefs.map(ref => {
       // adds appropriate paths to the MPS for both this model as well
       // as the foreign key being discussed
-      this._relationshipMPS(mps, ref, property, value, now);
+      mps = this._relationshipMPS(ref, property, value, now);
     });
     mps.add({ path: pathJoin(this.dbPath, "lastUpdated"), value: now });
 
@@ -730,11 +731,12 @@ export class Record<T extends Model> extends FireModel<T> {
     this._errorIfNotHasManyReln(property, "removeFromRelationship");
     fkRefs = (Array.isArray(fkRefs) ? fkRefs : [fkRefs]) as IFkReference[];
     const now = new Date().getTime();
-    const mps = this.db.multiPathSet("/");
+    // const mps = this.db.multiPathSet("/");
+    let mps: IMultiPathSet;
     const inverseProperty = this.META.relationship(property).inverseProperty;
-    mps.add({ path: pathJoin(this.dbPath, "lastUpdated"), value: now });
+    // mps.add({ path: pathJoin(this.dbPath, "lastUpdated"), value: now });
     fkRefs.map(ref => {
-      this._relationshipMPS(mps, ref, property, null, now);
+      mps = this._relationshipMPS(ref, property, null, now);
     });
 
     this.dispatch(
@@ -770,7 +772,8 @@ export class Record<T extends Model> extends FireModel<T> {
     }
 
     const mps = this._relationshipMPS(
-      this.get(property),
+      // TODO: fix this typing/calling structure
+      this.get(property) as any,
       property,
       null,
       new Date().getTime()

@@ -486,11 +486,12 @@ export class Record extends FireModel {
         this._errorIfNotHasManyReln(property, "addToRelationship");
         fkRefs = (Array.isArray(fkRefs) ? fkRefs : [fkRefs]);
         const now = new Date().getTime();
-        const mps = this.db.multiPathSet("/");
+        // const mps = this.db.multiPathSet("/");
+        let mps;
         fkRefs.map(ref => {
             // adds appropriate paths to the MPS for both this model as well
             // as the foreign key being discussed
-            this._relationshipMPS(mps, ref, property, value, now);
+            mps = this._relationshipMPS(ref, property, value, now);
         });
         mps.add({ path: pathJoin(this.dbPath, "lastUpdated"), value: now });
         this.dispatch(this._createRecordEvent(this, FMEvents.RELATIONSHIP_ADDED_LOCALLY, mps.payload));
@@ -515,11 +516,12 @@ export class Record extends FireModel {
         this._errorIfNotHasManyReln(property, "removeFromRelationship");
         fkRefs = (Array.isArray(fkRefs) ? fkRefs : [fkRefs]);
         const now = new Date().getTime();
-        const mps = this.db.multiPathSet("/");
+        // const mps = this.db.multiPathSet("/");
+        let mps;
         const inverseProperty = this.META.relationship(property).inverseProperty;
-        mps.add({ path: pathJoin(this.dbPath, "lastUpdated"), value: now });
+        // mps.add({ path: pathJoin(this.dbPath, "lastUpdated"), value: now });
         fkRefs.map(ref => {
-            this._relationshipMPS(mps, ref, property, null, now);
+            mps = this._relationshipMPS(ref, property, null, now);
         });
         this.dispatch(this._createRecordEvent(this, FMEvents.RELATIONSHIP_REMOVED_LOCALLY, mps.payload));
         await mps.execute();
@@ -539,8 +541,9 @@ export class Record extends FireModel {
             console.log(`Call to clearRelationship(${property}) on model ${this.modelName} but there was no relationship set. This may be ok.`);
             return;
         }
-        const mps = this.db.multiPathSet("/");
-        this._relationshipMPS(mps, this.get(property), property, null, new Date().getTime());
+        const mps = this._relationshipMPS(
+        // TODO: fix this typing/calling structure
+        this.get(property), property, null, new Date().getTime());
         this.dispatch(this._createRecordEvent(this, FMEvents.RELATIONSHIP_REMOVED_LOCALLY, mps.payload));
         await mps.execute();
         this.dispatch(this._createRecordEvent(this, FMEvents.RELATIONSHIP_REMOVED, this.data));
@@ -560,11 +563,19 @@ export class Record extends FireModel {
             // TODO: make this non-blocking and validate promise at end of function
             await this.clearRelationship(property);
         }
-        const mps = this.db.multiPathSet("/");
-        this._relationshipMPS(mps, ref, property, optionalValue, new Date().getTime());
-        this.dispatch(this._createRecordEvent(this, FMEvents.RELATIONSHIP_ADDED_LOCALLY, mps.payload));
-        await mps.execute();
-        this.dispatch(this._createRecordEvent(this, FMEvents.RELATIONSHIP_ADDED, this.data));
+        const mps = this._relationshipMPS(ref, property, optionalValue, new Date().getTime());
+        await this._localRelationshipOperation("set", property, ref, mps);
+        // this.dispatch(
+        //   this._createRecordEvent(
+        //     this,
+        //     FMEvents.RELATIONSHIP_ADDED_LOCALLY,
+        //     mps.payload
+        //   )
+        // );
+        // await mps.execute();
+        // this.dispatch(
+        //   this._createRecordEvent(this, FMEvents.RELATIONSHIP_ADDED, this.data)
+        // );
     }
     /**
      * get a property value from the record
@@ -638,20 +649,19 @@ export class Record extends FireModel {
         return Object.assign({ id }, remaining);
     }
     /**
-     * _relationshipMPS
+     * **_relationshipMPS**
      *
-     * Sets up and executes a multi-path SET (MPS) with the intent of
-     * updating the FK relationship of a given model as well as reflecting
-     * that change back from the FK to the originating model
+     * Returns a multi-path SET (`IMultiPathSet`) that includes all paths needed to
+     * update both sides of the relationship of a given model.
      *
-     * @param mps the multi-path selection object
      * @param fkRef a FK reference; either a string (representing the ID of other
      * record) or a composite key (ID plus all dynamic segments)
      * @param property the property on the target record which contains FK(s)
      * @param value the value to set this FK (null removes); typically TRUE if setting
      * @param now the current time in miliseconds
      */
-    _relationshipMPS(mps, fkRef, property, value, now) {
+    _relationshipMPS(fkRef, property, value, now) {
+        const mps = this.db.multiPathSet("/");
         const meta = getModelMeta(this);
         const fkModelConstructor = meta.relationship(property).fkConstructor();
         const inverseProperty = meta.relationship(property).inverseProperty;
@@ -771,7 +781,7 @@ export class Record extends FireModel {
             this.data[property][fkId]) {
             // TODO: back to warn?
             console.log(`Attempt to re-add the fk reference "${fkId}", which already exists in "${this.modelName}.${property}"!`);
-            return;
+            return mps;
         }
     }
     _errorIfNothasOneReln(property, fn) {
@@ -926,6 +936,35 @@ export class Record extends FireModel {
                 // paths
             }));
         }
+    }
+    /**
+     * **_localRelationshipOperation**
+     *
+     * updates the current Record while also executing the appropriate two-phased commit
+     * with the `dispatch()` function; looking to associate with watchers where ever possible
+     */
+    async _localRelationshipOperation(
+    /**
+     * **operation**
+     *
+     * The relationship operation that is being executed
+     */
+    operation, 
+    /**
+     * **property**
+     *
+     * The property on this model which changing its relationship status in some way
+     */
+    property, value, 
+    /**
+     * **mps**
+     *
+     * The caller must state the full set of paths which are going to be effected;
+     * this will include paths on the local object but also the FK entity. This MPS
+     * will be created using the `_relationshipMPS()` helper method.
+     */
+    mps) {
+        //
     }
     _findDynamicComponents(path = "") {
         if (!path.includes(":")) {
