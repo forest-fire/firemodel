@@ -48,7 +48,7 @@ export enum FMEvents {
   RECORD_ADDED_CONFIRMATION = "@firemodel/RECORD_ADDED_CONFIRMATION",
   /** A record added locally failed to be saved to Firebase */
   RECORD_ADDED_ROLLBACK = "@firemodel/RECORD_ADDED_ROLLBACK",
-  /** A record has been added to a given Model list being watched */
+  /** A record has been added to a given Model list being watched (external event) */
   RECORD_ADDED = "@firemodel/RECORD_ADDED",
   /** A record has been updated locally */
   RECORD_CHANGED_LOCALLY = "@firemodel/RECORD_CHANGED_LOCALLY",
@@ -56,7 +56,7 @@ export enum FMEvents {
   RECORD_CHANGED_CONFIRMATION = "@firemodel/RECORD_CHANGED_CONFIRMATION",
   /** A record changed locally failed to be saved to Firebase */
   RECORD_CHANGED_ROLLBACK = "@firemodel/RECORD_CHANGED_ROLLBACK",
-  /** A record has been updated on Firebase */
+  /** A record has been updated on Firebase (external event) */
   RECORD_CHANGED = "@firemodel/RECORD_CHANGED",
   /**
    * for client originated events touching relationships (as external events would come back as an event per model)
@@ -87,14 +87,17 @@ export enum FMEvents {
   WATCHER_STOPPED = "@firemodel/WATCHER_STOPPED",
   /** Watcher has disconnected all event streams from Firebase */
   WATCHER_STOPPED_ALL = "@firemodel/WATCHER_STOPPED_ALL",
+
   /** Relationship(s) have removed */
   RELATIONSHIP_REMOVED = "@firemodel/RELATIONSHIP_REMOVED",
   /** Relationship(s) have been removed locally */
   RELATIONSHIP_REMOVED_LOCALLY = "@firemodel/RELATIONSHIP_REMOVED_LOCALLY",
   /** Relationship(s) have added */
-  RELATIONSHIP_ADDED = "@firemodel/RELATIONSHIP_ADDED",
+  RELATIONSHIP_ADDED_LOCALLY = "@firemodel/RELATIONSHIP_ADDED",
   /** Relationship(s) have been added locally */
-  RELATIONSHIP_ADDED_LOCALLY = "@firemodel/RELATIONSHIP_ADDED_LOCALLY",
+  RELATIONSHIP_ADDED_CONFIRMATION = "@firemodel/RELATIONSHIP_ADDED_CONFIRMATION",
+  /** Relationship(s) failed to be added */
+  RELATIONSHIP_ADDED_ROLLBACK = "@firemodel/RELATIONSHIP_ADDED_ROLLBACK",
 
   APP_CONNECTED = "@firemodel/APP_CONNECTED",
   APP_DISCONNECTED = "@firemodel/APP_DISCONNECTED",

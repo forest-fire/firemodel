@@ -20,5 +20,8 @@ export function hasMany(
     payload.inverseProperty = inverse;
   }
 
-  return propertyReflector(payload, relationshipsByModel);
+  return propertyReflector(
+    { ...payload, type: "Object" },
+    relationshipsByModel
+  );
 }

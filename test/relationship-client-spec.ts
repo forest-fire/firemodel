@@ -146,9 +146,10 @@ describe("Relationship > ", () => {
     }
   });
 
-  it("using setRelationship() on an hasOne prop sets relationship", async () => {
+  it.only("using setRelationship() on an hasOne prop sets relationship", async () => {
     // TODO: add in an inverse relationship; currently getting very odd decorator behavior
-    const bob = await Record.add(FancyPerson, {
+    let bob = await Record.add(FancyPerson, {
+      id: "bobs-yur-uncle",
       name: "Bob",
       age: 23
     });
@@ -156,8 +157,14 @@ describe("Relationship > ", () => {
       id: "e8899",
       name: "ABC Inc"
     });
-    await bob.setRelationship("employer", "e8899");
+    const dbWasUpdated = bob.setRelationship("employer", "e8899");
+    // locally changed immediately
+    console.log(bob.data);
 
+    expect(bob.get("employer")).to.equal("e8899");
+    await dbWasUpdated;
+    // also changed in DB after the wait
+    bob = await Record.get(FancyPerson, "bobs-yur-uncle");
     expect(bob.get("employer")).to.equal("e8899");
     const people = await List.all(FancyPerson);
     const bob2 = people.findById(bob.id);

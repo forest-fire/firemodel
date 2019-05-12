@@ -807,11 +807,13 @@ export class Record<T extends Model> extends FireModel<T> {
     optionalValue: any = true
   ) {
     this._errorIfNothasOneReln(property, "setRelationship");
+    // const waitForAsyncEvents: Array<Promise<any>> = [];
+    const existingReln = this.data[property];
+
     // remove old relationship if it existed
-    if (this.data[property]) {
-      // TODO: make this non-blocking and validate promise at end of function
-      await this.clearRelationship(property);
-    }
+    // if (existingReln) {
+    //   waitForAsyncEvents.push(this.clearRelationship(property));
+    // }
 
     const mps = this._relationshipMPS(
       ref,
@@ -820,21 +822,14 @@ export class Record<T extends Model> extends FireModel<T> {
       new Date().getTime()
     );
 
-    await this._localRelationshipOperation("set", property, ref, mps);
+    await this._localRelationshipOperation(
+      existingReln ? "update" : "set",
+      property,
+      ref,
+      mps
+    );
 
-    // this.dispatch(
-    //   this._createRecordEvent(
-    //     this,
-    //     FMEvents.RELATIONSHIP_ADDED_LOCALLY,
-    //     mps.payload
-    //   )
-    // );
-
-    // await mps.execute();
-
-    // this.dispatch(
-    //   this._createRecordEvent(this, FMEvents.RELATIONSHIP_ADDED, this.data)
-    // );
+    // await Promise.all(waitForAsyncEvents);
   }
 
   /**
@@ -910,10 +905,30 @@ export class Record<T extends Model> extends FireModel<T> {
     }
   }
 
+  /**
+   * **_reduceCompositeNotationToStringRepresentation**
+   *
+   * Reduces a `ICompositeKey` hash into string representation of the form:
+   *
+```typescript
+`${id}::${prop}:${propValue}::${prop2}:${propValue2}`
+```
+   */
+  protected _reduceCompositeNotationToStringRepresentation(
+    ck: ICompositeKey
+  ): string {
+    return (
+      `${ck.id}` +
+      Object.keys(ck)
+        .filter(k => k !== "id")
+        .map(k => `::${k}:${ck[k]}`)
+    );
+  }
+
   protected _expandFkStringToCompositeNotation(
     fkRef: string,
     dynamicComponents: string[] = []
-  ) {
+  ): ICompositeKey {
     if (fkRef.indexOf("::") === -1) {
       return {
         ...{ id: fkRef },
@@ -950,20 +965,23 @@ export class Record<T extends Model> extends FireModel<T> {
   protected _relationshipMPS(
     fkRef: IFkReference,
     property: Extract<keyof T, string>,
-    value: any,
-    now: number
+    value: null | true | any = true,
+    now?: number
   ) {
     const mps = this.db.multiPathSet("/");
     const meta = getModelMeta(this);
     const fkModelConstructor = meta.relationship(property).fkConstructor();
     const inverseProperty = meta.relationship(property).inverseProperty;
     const fkRecord = Record.create(fkModelConstructor);
+    if (!now) {
+      now = new Date().getTime();
+    }
 
     /**
-     * It was expected that fkRef would be ICompositeKey or a string representing
-     * just an ID but it appears it may also be a composite key reference string
+     * Regardless if we receive the string or ICompositeKey notation for the FK's
+     * ID, we will normalize it to a ICompositeKey.
      */
-    const fkRecordData =
+    const fkCompositeKey: ICompositeKey =
       typeof fkRef === "object"
         ? fkRef
         : this._expandFkStringToCompositeNotation(
@@ -971,7 +989,7 @@ export class Record<T extends Model> extends FireModel<T> {
             fkRecord.dynamicPathComponents
           );
 
-    fkRecord._initialize({ ...fkRecord.data, ...fkRecordData });
+    fkRecord._initialize({ ...fkRecord.data, ...fkCompositeKey });
     let fkId: string;
 
     // DEAL WITH DYNAMIC PATHS on FK
@@ -995,18 +1013,8 @@ export class Record<T extends Model> extends FireModel<T> {
        * the composite FK reference.
        */
       const refIsCompositeKey = typeof fkRef === "object" ? true : false;
-      /** a hash of props and values */
-      const selfSourcedDynamicValues: IDictionary = fkRecord.dynamicPathComponents.reduce(
-        (prev, curr) => ({ ...prev, [curr]: this.data[curr as keyof T] }),
-        {}
-      );
 
-      const propData = refIsCompositeKey
-        ? (fkRef as ICompositeKey)
-        : canAutoPopulate
-        ? { ...selfSourcedDynamicValues, id: fkRef as string }
-        : false;
-      if (!propData) {
+      if (!canAutoPopulate) {
         throw createError(
           "record/insufficient-data",
           `Attempt to add/remove a FK relationship on ${this.modelName} to ${
@@ -1016,36 +1024,14 @@ export class Record<T extends Model> extends FireModel<T> {
           }'s dynamic prefixes: [ ${fkDynamicProps} ]`
         );
       }
-
-      fkId =
-        propData.id +
-        Object.keys(propData)
-          .filter(k => k !== "id")
-          .map(k => `::${k}:${propData[k]}`);
-    } else {
-      // TODO: this probably shouldn't be needed; look to cleanup
-      if (
-        typeof fkRef === "object" &&
-        Object.keys(fkRef).length === 1 &&
-        fkRef.id
-      ) {
-        fkRef = fkRef.id;
-      }
-      if (typeof fkRef === "object") {
-        throw createError(
-          `record/invalid-key`,
-          `When attempting to change the relationship between the originating model "${
-            this.modelName
-          }" and the foreign model "${fkRecord.modelName}" the reference to ${
-            fkRecord.modelName
-          } was expressed as Composite Key but ${
-            fkRecord.modelName
-          } does not have any dynamic segments.`
-        );
-      }
-      fkId = fkRef;
     }
 
+    fkId = this._reduceCompositeNotationToStringRepresentation(fkCompositeKey);
+
+    /**
+     * boolean flag indicating whether current model has a **hasMany** relationship
+     * with the FK.
+     */
     const hasManyReln =
       meta.isRelationship(property) &&
       meta.relationship(property).relType === "hasMany";
@@ -1055,14 +1041,14 @@ export class Record<T extends Model> extends FireModel<T> {
       property,
       // we must add the fk id to path (versus value) to make the write non-destructive
       // to other hasMany keys which already exist
-      hasManyReln ? createCompositeKeyString(fkRecord) : ""
+      hasManyReln ? fkId : ""
     );
 
-    // Add paths for primary model to FK in MPS
+    // Add paths for current model referencing FK
     mps.add({
       path: pathToRecordsFkReln,
-      // if hasMany then just add value, the fk is already part of path
-      value: hasManyReln ? value : fkRecord.compositeKeyRef
+      /* if _hasMany_ then just add value, the fk is already part of path **/
+      value: hasManyReln ? value : fkId
     });
 
     // INVERSE RELATIONSHIP
@@ -1106,9 +1092,7 @@ export class Record<T extends Model> extends FireModel<T> {
       // Inverse: add to FK the reference back to this record
       mps.add({
         path: pathToInverseFkReln,
-        value: fkInverseIsHasManyReln
-          ? { [createCompositeKeyString(this)]: value }
-          : createCompositeKeyString(this)
+        value: fkInverseIsHasManyReln ? { [fkId]: value } : fkId
       });
 
       mps.add({
@@ -1126,9 +1110,9 @@ export class Record<T extends Model> extends FireModel<T> {
           this.modelName
         }.${property}"!`
       );
-      return mps;
     }
-  }
+    return mps;
+  } // END _relationshipMPS
 
   protected _errorIfNothasOneReln(
     property: Extract<keyof T, string>,
@@ -1143,8 +1127,9 @@ export class Record<T extends Model> extends FireModel<T> {
         }, inverse: ${
           this.META.relationship(property).inverse
         } ]. If you are working with a hasMany relationship then you should instead use addRelationship() and removeRelationship().`
-      );
-      e.name = "FireModel::WrongRelationshipType";
+      ) as Error & { code: string };
+      e.code = "firemodel/invalid-relationship";
+      e.name = "firemodel/invalid-relationship";
       throw e;
     }
   }
@@ -1372,9 +1357,37 @@ export class Record<T extends Model> extends FireModel<T> {
      * this will include paths on the local object but also the FK entity. This MPS
      * will be created using the `_relationshipMPS()` helper method.
      */
-    mps: IMultiPathSet
+    mps: IMultiPathSet,
+    /**
+     * If there is any needed steps to rollback the operation a callback can be added
+     * to ensure the rollback is complete.
+     */
+    rollback?: () => Promise<void>
   ) {
-    //
+    const dispatchEvents = {
+      set: [
+        FMEvents.RELATIONSHIP_SET_LOCALLY,
+        FMEvents.RELATIONSHIP_SET_CONFIRMATION,
+        FMEvents.RELATIONSHIP_SET_ROLLBACK
+      ],
+      update: [
+        FMEvents.RELATIONSHIP_UPDATED_LOCALLY,
+        FMEvents.RELATIONSHIP_UPDATED_CONFIRMATION,
+        FMEvents.RELATIONSHIP_UPDATED_ROLLBACK
+      ],
+      add: [
+        FMEvents.RELATIONSHIP_ADDED_LOCALLY,
+        FMEvents.RELATIONSHIP_ADDED_CONFIRMATION,
+        FMEvents.RELATIONSHIP_ADDED_ROLLBACK
+      ],
+      remove: [
+        FMEvents.RELATIONSHIP_REMOVE_LOCALLY,
+        FMEvents.RELATIONSHIP_REMOVE_CONFIRMATION,
+        FMEvents.RELATIONSHIP_REMOVE_ROLLBACK
+      ]
+    };
+
+    const [localEvent, confirmEvent, rollbackEvent] = dispatchEvents[operation];
   }
 
   private _findDynamicComponents(path: string = "") {

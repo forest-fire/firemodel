@@ -19,7 +19,10 @@ export function belongsTo<T = Model>(
       payload.inverseProperty = inverse;
     }
 
-    return propertyReflector(payload, relationshipsByModel);
+    return propertyReflector(
+      { ...payload, type: "String" },
+      relationshipsByModel
+    );
   } catch (e) {
     e.name =
       e.name +
