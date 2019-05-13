@@ -5,6 +5,7 @@ import { RealTimeDB } from "abstracted-firebase";
 import { Record } from "./Record";
 import { FireModel } from "./FireModel";
 import API from "./Mock/api";
+import { FireModelError } from "./errors";
 
 function defaultCardinality<T>(r: Record<T>) {
   return r.META.relationships.reduce(
@@ -31,13 +32,13 @@ export function Mock<T extends Model>(
   }
 
   if (!db.isMockDb) {
-    throw createError(
-      "mock/not-mock-db",
+    throw new FireModelError(
       `When calling the Mock() function you provide a "mock database" not a live Firebase DB! ${
         db === FireModel.defaultDb
           ? "Note: the db connection was taken from the default FireModel database, if that's not what you intended you can explicitly pass in the DB in the call to Mock() as the second parameter."
           : ""
-      }`
+      }`,
+      "firemodel/not-mock-db"
     );
   }
 

@@ -23,7 +23,7 @@ export async function processHasOne<T>(
       .replace(fkMockMeta.id, "")
       .split("/")
       .filter(i => i);
-    // console.log(predecessors);
+
     await db.remove(fkMockMeta.dbPath);
   }
 

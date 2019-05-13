@@ -47,7 +47,6 @@ import { relationshipOperation } from "./record/relationshipOperation";
 import { createCompositeKeyString } from "./record/createCompositeKeyString";
 import { IFmPathValuePair, IFmRelationshipOptions } from "./@types";
 import { createCompositeKeyFromFkString } from "./record/createCompositeKeyFromFkString";
-import { FirebaseError } from "@firebase/util";
 
 // TODO: see if there's a way to convert to interface so that design time errors are more clear
 export type ModelOptionalId<T extends Model> = Omit<T, "id"> & { id?: string };
@@ -411,7 +410,7 @@ export class Record<T extends Model> extends FireModel<T> {
 
   public static async remove<T extends Model>(
     model: new () => T,
-    id: IFkReference,
+    id: IFkReference<T>,
     /** if there is a known current state of this model you can avoid a DB call to get it */
     currentState?: Record<T>
   ) {
@@ -657,7 +656,7 @@ export class Record<T extends Model> extends FireModel<T> {
   public async associate(
     property: Extract<keyof T, string>,
     refs: IFkReference | IFkReference[],
-    options: IFmRelationshipOptions
+    options: IFmRelationshipOptions = {}
   ) {
     const relType = this.META.relationship(property).relType;
     if (relType === "hasMany") {
@@ -684,7 +683,7 @@ export class Record<T extends Model> extends FireModel<T> {
   public async disassociate(
     property: Extract<keyof T, string>,
     refs: IFkReference | IFkReference[],
-    options?: IFmRelationshipOptions
+    options: IFmRelationshipOptions = {}
   ) {
     const relType = this.META.relationship(property).relType;
     if (relType === "hasMany") {
@@ -823,7 +822,7 @@ export class Record<T extends Model> extends FireModel<T> {
   public async setRelationship(
     property: Extract<keyof T, string>,
     fkId: IFkReference,
-    options: IFmRelationshipOptions
+    options: IFmRelationshipOptions = {}
   ) {
     // TODO: Validate
     if (isHasManyRelationship(this, property)) {
@@ -1141,11 +1140,14 @@ export class Record<T extends Model> extends FireModel<T> {
    */
   private async _getFromDB(id: string | ICompositeKey<T>) {
     const keys =
-      typeof id === "string" ? createCompositeKeyFromFkString(id, this) : id;
+      typeof id === "string"
+        ? createCompositeKeyFromFkString(id, this.modelConstructor)
+        : id;
 
     // load composite key into props so the dbPath() will evaluate
     Object.keys(keys).map(key => {
-      this._data[key] = keys[key];
+      // TODO: fix up typing
+      this._data[key as keyof T] = (keys as any)[key];
     });
 
     const data = await this.db.getRecord<T>(this.dbPath);
@@ -1153,7 +1155,7 @@ export class Record<T extends Model> extends FireModel<T> {
     if (data && data.id) {
       this._initialize(data);
     } else {
-      throw FirebaseError(
+      throw new FireModelError(
         `Failed to load the Record "${this.modelName}::${
           this.id
         }" with composite key of:\n ${JSON.stringify(keys, null, 2)}`,

@@ -9,7 +9,7 @@ export type IIdWithDynamicPrefix = IDictionary<number | string> & {
 export type ICompositeKeyGeneric = IDictionary<string | number | boolean>;
 
 export type ICompositeKey<T = ICompositeKeyGeneric> = IFmHasId & T;
-export type IFkReference = fk | ICompositeKey;
+export type IFkReference<T = ICompositeKeyGeneric> = fk | ICompositeKey<T>;
 export type IPrimaryKey = pk | ICompositeKey;
 
 export interface IFmBuildRelationshipOptions {
