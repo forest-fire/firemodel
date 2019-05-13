@@ -70,8 +70,10 @@ describe("Relationship > ", () => {
     expect(events).to.have.lengthOf(2);
 
     const eventTypes = new Set(events.map(e => e.type));
-    expect(eventTypes.has(FMEvents.RELATIONSHIP_ADDED)).to.equal(true);
     expect(eventTypes.has(FMEvents.RELATIONSHIP_ADDED_LOCALLY)).to.equal(true);
+    expect(eventTypes.has(FMEvents.RELATIONSHIP_ADDED_CONFIRMATION)).to.equal(
+      true
+    );
     const localEvent = events.find(
       i => i.type === FMEvents.RELATIONSHIP_ADDED_LOCALLY
     );

@@ -32,14 +32,11 @@ export function createCompositeKey<T extends Model = Model>(
     {}
   );
 
-  return {
-    ...{ id: rec.id },
-    ...rec.dynamicPathComponents.reduce(
-      (prev, key) => ({
-        ...prev,
-        ...dynamicPathComponents
-      }),
-      {}
-    )
-  };
+  return rec.dynamicPathComponents.reduce(
+    (prev, key) => ({
+      ...prev,
+      ...dynamicPathComponents
+    }),
+    { id: rec.id }
+  ) as ICompositeKey<T>;
 }

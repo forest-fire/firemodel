@@ -23,7 +23,7 @@ export default function API<T>(db: RealTimeDB, modelConstructor: new () => T) {
     async generate(
       count: number,
       exceptions: IDictionary = {}
-    ): Promise<IMockResponse[]> {
+    ): Promise<Array<IMockResponse<T>>> {
       await db.mock.importFakerLibrary();
 
       const props = mockProperties<T>(db, config, exceptions);
@@ -59,7 +59,7 @@ export default function API<T>(db: RealTimeDB, modelConstructor: new () => T) {
         });
       }
 
-      let mocks: IMockResponse[] = [];
+      let mocks: Array<IMockResponse<T>> = [];
       for (const i of Array(count)) {
         mocks = mocks.concat(await relns(await props(record)));
       }

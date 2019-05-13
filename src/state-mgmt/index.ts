@@ -208,7 +208,7 @@ export interface IFMRecordClientEvent<T extends Model = Model>
   changed?: IDictionary;
   dbPath: string;
   localPath: string;
-  compositeKey: ICompositeKey;
+  compositeKey: ICompositeKey<T>;
   key: string;
 
   errorCode?: string | number;

@@ -170,35 +170,6 @@ export class FireModel<T extends Model> {
 
   //#region PROTECTED INTERFACE
 
-  /**
-   * Creates a Redux-styled event
-   */
-  protected _createRecordEvent<
-    K extends string & NotString<K> & Extractable<FMEvents, K>
-  >(record: Record<T>, type: K, pathsOrValue: IMultiPathUpdates[] | T) {
-    const payload: Partial<IFMRecordEvent<T>> = {
-      type,
-      modelName: record.modelName,
-      modelConstructor: record._modelConstructor,
-      dbPath: record.dbPath,
-      compositeKey: record.compositeKey,
-      localPath: record.localPath || record.modelName,
-      key: record.id
-    };
-    if (Array.isArray(pathsOrValue)) {
-      if (pathsOrValue.length === 1 && pathsOrValue[0].path === "/") {
-        payload.value = pathsOrValue[0].value;
-      } else {
-        payload.paths = pathsOrValue;
-        payload.localPath = record.localPath || record.modelName;
-      }
-    } else {
-      payload.value = pathsOrValue;
-    }
-
-    return payload as IFMRecordEvent<T>;
-  }
-
   protected _getPaths(changes: IDictionary): IMultiPathUpdates[] {
     return Object.keys(changes).reduce(
       (prev: any[], current: Extract<keyof typeof changes, string>) => {

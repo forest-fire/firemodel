@@ -758,7 +758,7 @@ export class Record<T extends Model> extends FireModel<T> {
   public async removeFromRelationship(
     property: Extract<keyof T, string>,
     fkRefs: IFkReference<T> | Array<IFkReference<T>>,
-    options: IFmRelationshipOptionsForHasMany
+    options: IFmRelationshipOptionsForHasMany = {}
   ) {
     if (!isHasManyRelationship(this, property)) {
       throw new NotHasManyRelationship(
@@ -796,7 +796,7 @@ export class Record<T extends Model> extends FireModel<T> {
    */
   public async clearRelationship(
     property: Extract<keyof T, string>,
-    options: IFmRelationshipOptions
+    options: IFmRelationshipOptions = {}
   ) {
     const relType = this.META.relationship(property).relType;
     const fkRefs: string[] =
