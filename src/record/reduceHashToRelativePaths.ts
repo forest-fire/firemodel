@@ -1,29 +1,44 @@
 import { IDictionary } from "common-types";
-import { IFmDatabasePaths } from "../@types/general";
+import { IFmDatabasePaths, IFmPathValuePair } from "../@types/general";
+import { FireModelProxyError } from "../errors";
 
-export function reduceHashToRelativePaths(
-  results: IDictionary
+export function discoverRootPath(
+  results: IFmPathValuePair[]
 ): IFmDatabasePaths {
-  const baseParts = Object.keys(results).reduce((acc, curr) => {
-    let i = 0;
-    while (i < acc.length && curr.split("/")[i] === acc[i]) {
-      i++;
-    }
-  }, results[0].split("/"));
-  const root = baseParts.join("/");
-  const paths = Object.keys(results).reduce(
-    (acc, key) => {
+  try {
+    const incomingPaths = results.map(i => i.path);
+    const rootParts = incomingPaths.reduce((acc, curr) => {
+      let i = 0;
+      while (
+        i < acc.length &&
+        curr
+          .split("/")
+          .slice(0, i)
+          .join("/") === acc.slice(0, i).join("/")
+      ) {
+        i++;
+      }
+
+      return i === 1 ? [] : acc.slice(0, i - 1);
+    }, incomingPaths[0].split("/"));
+    const root = rootParts.join("/");
+    const paths = results.reduce((acc: IFmPathValuePair[], curr) => {
       acc = acc.concat({
-        path: key.replace(root, ""),
-        value: results[key as keyof typeof results]
+        path: curr.path.replace(root, ""),
+        value: curr.value as keyof typeof results
       });
       return acc;
-    },
-    [] as Array<{ path: string; value: string }>
-  );
-  return {
-    paths,
-    root,
-    fullPathNames: Object.keys(results)
-  };
+    }, []);
+    return {
+      paths,
+      root,
+      fullPathNames: Object.keys(results)
+    };
+  } catch (e) {
+    if (e.firemodel) {
+      throw e;
+    } else {
+      throw new FireModelProxyError(e, "Problems in discoverRootPath");
+    }
+  }
 }

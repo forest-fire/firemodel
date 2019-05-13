@@ -34,7 +34,6 @@ function setWithType<T extends Model>(prop: string, value: string, model: T) {
     );
   }
   const type = model.META.property(prop).type;
-  console.log(type);
 
   switch (type) {
     case "number":

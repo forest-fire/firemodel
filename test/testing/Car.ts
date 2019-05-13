@@ -2,6 +2,7 @@ import { model, Model, property, hasOne, fk, hasMany, index } from "../../src";
 import { mock } from "../../src/decorators/constraints";
 import { Company } from "./Company";
 import { Person } from "./Person";
+import { FancyPerson } from "./FancyPerson";
 
 function modelYear() {
   return 2018 - Math.floor(Math.random() * 10);
@@ -14,5 +15,5 @@ export class Car extends Model {
   // prettier-ignore
   @property @mock(modelYear) @index public modelYear: number;
   // prettier-ignore
-  @hasOne(() => Person) public owner?: fk;
+  @hasOne(() => FancyPerson) public owner?: fk;
 }

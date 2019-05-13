@@ -305,7 +305,6 @@ describe("MOCK uses dynamic dbOffsets", () => {
 
   it("Mock() by default does not build out relationships", async () => {
     const results = await Mock(DeepPerson).generate(2, { group: "test" });
-    console.log(JSON.stringify(db.mock.db, null, 2));
     const first = firstRecord(db.mock.db.test.testing.deepPeople);
     const last = lastRecord(db.mock.db.test.testing.deepPeople);
     expect(first.hobbies).is.an("object");
@@ -354,8 +353,6 @@ describe("MOCK uses dynamic dbOffsets", () => {
       .createRelationshipLinks()
       .generate(2, { group: "test" });
     fkStructuralChecksForHasMany(db.mock.db.test.testing.deepPeople);
-
-    console.log(JSON.stringify(db.mock.db, null, 2));
   });
 
   it("Mock() mocks on dynamic path and creates appropriate FK bi-directionally with using followRelationshipLinks()", async () => {

@@ -12,16 +12,19 @@ export function locallyUpdateFkOnRecord<T extends Model>(
   id: string
 ) {
   const relnType = rec.META.relationship(prop).relType;
+
   switch (op) {
     case "set":
     case "add":
       (rec as any)._data[prop] =
         relnType === "hasMany" ? { ...rec.data[prop], ...{ [id]: true } } : id;
+      return;
     case "remove":
       if (relnType === "hasMany") {
-        delete (rec as any)._data[prop];
+        delete (rec as any)._data[prop][id];
       } else {
         (rec as any)._data[prop] = "";
       }
+      return;
   }
 }

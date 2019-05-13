@@ -159,8 +159,6 @@ describe("Relationship > ", () => {
     });
     const dbWasUpdated = bob.setRelationship("employer", "e8899");
     // locally changed immediately
-    console.log(bob.data);
-
     expect(bob.get("employer")).to.equal("e8899");
     await dbWasUpdated;
     // also changed in DB after the wait

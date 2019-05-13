@@ -13,11 +13,13 @@ import {
 import { IDictionary } from "common-types";
 import { getModelMeta } from "../ModelMeta";
 import { UnknownRelationshipProblem } from "../errors/relationships/UnknownRelationshipProblem";
-import { reduceHashToRelativePaths } from "./reduceHashToRelativePaths";
+import { discoverRootPath } from "./reduceHashToRelativePaths";
 import { FireModelError } from "../errors";
 import { IMultiPathSet } from "abstracted-firebase";
 import { extractFksFromPaths } from "./extractFksFromPaths";
 import { locallyUpdateFkOnRecord } from "./locallyUpdateFkOnRecord";
+import { capitalize } from "../util";
+import { sendRelnDispatchEvent } from "./relationships/sendRelnDispatchEvent";
 
 /**
  * **relationshipOperation**
@@ -93,11 +95,33 @@ export async function relationshipOperation<T extends Model>(
         .substr(2, 5);
 
     try {
-      await localRelnOp(rec, operation, property, paths, localEvent);
+      await localRelnOp(
+        rec,
+        operation,
+        property,
+        paths,
+        localEvent,
+        transactionId
+      );
     } catch (e) {
-      await relnRollback(rec, operation, property, paths, rollbackEvent, e);
+      await relnRollback(
+        rec,
+        operation,
+        property,
+        paths,
+        rollbackEvent,
+        transactionId,
+        e
+      );
     }
-    await relnConfirmation(rec, operation, property, paths, confirmEvent);
+    await relnConfirmation(
+      rec,
+      operation,
+      property,
+      paths,
+      confirmEvent,
+      transactionId
+    );
   } catch (e) {
     if (e.firemodel) {
       throw e;
@@ -112,19 +136,23 @@ export async function localRelnOp<T extends Model>(
   op: IFmRelationshipOperation,
   prop: keyof T,
   paths: IFmPathValuePair[],
-  event: FMEvents
+  event: FMEvents,
+  transactionId: string
 ) {
   // locally modify Record's values
   const ids = extractFksFromPaths(rec, prop, paths);
+
   ids.map(id => {
     locallyUpdateFkOnRecord(rec, op, prop, id);
   });
   // build MPS
-  const dbPaths = reduceHashToRelativePaths(paths);
-  const mps = rec.db.multiPathSet(dbPaths.root);
+  const dbPaths = discoverRootPath(paths);
+  const mps = rec.db.multiPathSet(dbPaths.root || "/");
   dbPaths.paths.map(p => mps.add({ path: p.path, value: p.value }));
+  const fkRecord = Record.create(rec.META.relationship(prop).fkConstructor());
   // execute MPS on DB
   try {
+    sendRelnDispatchEvent(event, transactionId, op, rec, prop, paths);
     await mps.execute();
   } catch (e) {
     // TODO: complete err handling
@@ -136,19 +164,21 @@ export async function relnConfirmation<T extends Model>(
   rec: Record<T>,
   op: IFmRelationshipOperation,
   prop: keyof T,
-  paths: IDictionary,
-  event: FMEvents
+  paths: IFmPathValuePair[],
+  event: FMEvents,
+  transactionId: string
 ) {
-  //
+  sendRelnDispatchEvent(event, transactionId, op, rec, prop, paths);
 }
 
 export async function relnRollback<T extends Model>(
   rec: Record<T>,
   op: IFmRelationshipOperation,
   prop: keyof T,
-  paths: IDictionary,
+  paths: IFmPathValuePair[],
   event: FMEvents,
-  err: Error
+  transactionId: string,
+  err: FireModelError
 ) {
-  //
+  sendRelnDispatchEvent(event, transactionId, op, rec, prop, paths, err);
 }

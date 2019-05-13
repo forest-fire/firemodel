@@ -13,6 +13,7 @@ import { MissingReciprocalInverse } from "../../errors/relationships/MissingReci
 import { IncorrectReciprocalInverse } from "../../errors/relationships/IncorrectReciprocalInverse";
 import { createCompositeKeyString } from "../createCompositeKeyString";
 import { UnknownRelationshipProblem } from "../../errors/relationships/UnknownRelationshipProblem";
+import { MissingInverseProperty } from "../../errors/relationships/MissingInverseProperty";
 
 /**
  * Builds all the DB paths needed to update a pairing of a PK:FK. It is intended
@@ -44,50 +45,12 @@ export function buildRelationshipPaths<T>(
     const results: IFmPathValuePair[] = [];
 
     /**
-     * Regardless if we receive the string or ICompositeKey notation for the FK's
-     * ID, we will normalize it to a ICompositeKey.
+     * Normalize to a composite key format
      */
     const fkCompositeKey: ICompositeKey =
       typeof fkRef === "object" ? fkRef : fkRecord.compositeKey;
 
-    fkRecord._initialize({ ...fkRecord.data, ...fkCompositeKey });
-    let fkId: string;
-
-    // DEAL WITH DYNAMIC PATHS on FK
-    if (fkRecord.hasDynamicPath) {
-      const fkDynamicProps = fkRecord.dynamicPathComponents;
-      /**
-       * Sometimes the current model has all the properties needed
-       * to populate the FK's dynamic path. This boolean flag indicates
-       * whether that is the case.
-       */
-      const canAutoPopulate = fkDynamicProps.every(
-        p =>
-          this.data[p as keyof T] !== undefined ||
-          this.data[p as keyof T] !== null
-      )
-        ? true
-        : false;
-      /**
-       * This flag indicates whether the ref passed in just a simple string reference
-       * to the FK model (false) or if it is a hash which represents
-       * the composite FK reference.
-       */
-      const refIsCompositeKey = typeof fkRef === "object" ? true : false;
-
-      if (!canAutoPopulate) {
-        throw new DynamicPropertiesNotReady(
-          this,
-          `Attempt to add/remove a FK relationship on ${this.modelName} to ${
-            fkRecord.modelName
-          } failed because there was no way to resolve ${
-            fkRecord.modelName
-          }'s dynamic prefixes: [ ${fkDynamicProps} ]`
-        );
-      }
-    }
-
-    fkId = createCompositeKeyString(fkRecord);
+    const fkId: string = createCompositeKeyString(fkRecord);
 
     /**
      * boolean flag indicating whether current model has a **hasMany** relationship
@@ -108,7 +71,8 @@ export function buildRelationshipPaths<T>(
     // Add paths for current record
     results.push({
       path: pathToRecordsFkReln,
-      value: hasManyReln ? altHasManyValue : fkId
+      value:
+        operation === "remove" ? null : hasManyReln ? altHasManyValue : fkId
     });
     results.push({ path: pathJoin(rec.dbPath, "lastUpdated"), value: now });
 
@@ -116,6 +80,11 @@ export function buildRelationshipPaths<T>(
     if (inverseProperty) {
       const fkMeta = getModelMeta(fkRecord);
       const inverseReln = fkMeta.relationship(inverseProperty);
+
+      if (!inverseReln) {
+        throw new MissingInverseProperty(rec, property);
+      }
+
       if (
         !inverseReln.inverseProperty &&
         inverseReln.directionality === "bi-directional"
@@ -134,12 +103,17 @@ export function buildRelationshipPaths<T>(
         : false;
       const pathToInverseFkReln = fkInverseIsHasManyReln
         ? pathJoin(fkRecord.dbPath, inverseProperty, rec.compositeKeyRef)
-        : null;
+        : pathJoin(fkRecord.dbPath, inverseProperty);
 
       // Inverse paths
       results.push({
         path: pathToInverseFkReln,
-        value: fkInverseIsHasManyReln ? altHasManyValue : fkId
+        value:
+          operation === "remove"
+            ? null
+            : fkInverseIsHasManyReln
+            ? altHasManyValue
+            : rec.compositeKeyRef
       });
       results.push({
         path: pathJoin(fkRecord.dbPath, "lastUpdated"),

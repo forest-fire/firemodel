@@ -172,15 +172,24 @@ export class Record<T extends Model> extends FireModel<T> {
     return createCompositeKeyString<T>(this);
   }
 
-  /** The Record's primary key */
-  public get id() {
+  /**
+   * The Record's primary key; this is the `id` property only. Not
+   * the composite key.
+   */
+  public get id(): string {
     return this.data.id;
   }
 
+  /**
+   * Allows setting the Record's `id` if it hasn't been set before.
+   * Resetting the `id` is not allowed.
+   */
   public set id(val: string) {
     if (this.data.id) {
       throw new FireModelError(
-        `You may not re-set the ID of a record [ ${this.data.id} a†’ ${val} ].`,
+        `You may not re-set the ID of a record [ ${this.modelName}.id ${
+          this.data.id
+        } => ${val} ].`,
         "firemodel/not-allowed"
       );
     }
@@ -663,12 +672,16 @@ export class Record<T extends Model> extends FireModel<T> {
       await this.addToRelationship(property, refs, options);
     } else {
       if (Array.isArray(refs)) {
-        throw new FireModelError(
-          `Attempt to use "associate()" with a "hasOne" relationship [ ${property}] on the model ${capitalize(
-            this.modelName
-          )}.`,
-          "firemodel/invalid-cardinality"
-        );
+        if (refs.length === 1) {
+          refs = refs.pop();
+        } else {
+          throw new FireModelError(
+            `Attempt to use "associate()" with a "hasOne" relationship [ ${property}] on the model ${capitalize(
+              this.modelName
+            )}.`,
+            "firemodel/invalid-cardinality"
+          );
+        }
       }
       await this.setRelationship(property, refs, options);
     }
@@ -677,8 +690,8 @@ export class Record<T extends Model> extends FireModel<T> {
   /**
    * **disassociate**
    *
-   * Removes an associates between the current model and another entity
-   * regardless if the cardinality
+   * Removes an association between the current model and another entity
+   * (regardless of the cardinality in the relationship)
    */
   public async disassociate(
     property: Extract<keyof T, string>,
@@ -998,16 +1011,6 @@ export class Record<T extends Model> extends FireModel<T> {
     }
     if (watchers.length === 0) {
       event.watcherSource = "unknown";
-      if (!FireModel.isDefaultDispatch) {
-        console.log(
-          `An "${crudAction}" action was executed on "${this.modelName}::${
-            this.id
-          }" but while there WAS a dispatch function registered, there were no watchers covering this DB path [ ${
-            this.dbPath
-          } ]`
-        );
-      }
-
       if (!options.silent) {
         // Note: if used on frontend, the mutations must be careful to
         // set this to the right path considering there is no watcher

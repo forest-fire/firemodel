@@ -67,6 +67,8 @@ export interface IFmModelMeta<T extends Model = any> {
   isDirty?: boolean;
   /** get a list the list of database indexes on the given model */
   dbIndexes?: IModelIndexMeta[];
+  /** all the properties on this model; this includes props and relationships */
+  allProperties?: string[];
 }
 
 export interface IFmModelRelationshipMeta<T extends Model = Model>

@@ -56,7 +56,6 @@ export function setupEnv() {
       ...process.env
     };
 
-    console.log(`Loading ENV for "${process.env.AWS_STAGE}"`);
     Object.keys(combined).forEach(key => (process.env[key] = combined[key]));
     envIsSetup = true;
 
