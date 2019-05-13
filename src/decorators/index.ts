@@ -5,3 +5,4 @@ export * from "./constraints";
 export * from "./model";
 export * from "./types";
 export * from "./defaultValue";
+export * from "./OneWay";

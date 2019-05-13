@@ -18,3 +18,4 @@ export interface IComparisonResult {
 export declare function compareHashes<T extends IDictionary = IDictionary>(from: T, to: T): IComparisonResult;
 export declare function getAllPropertiesFromClassStructure<T extends Model>(model: T): ("id" | "lastUpdated" | "createdAt" | "META")[];
 export declare function withoutMeta<T extends Model>(model: T): T;
+export declare function capitalize(str: string): string;

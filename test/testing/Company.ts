@@ -16,5 +16,5 @@ export class Company extends Model {
   @property @length(20) @mock('companyName') name: string;
   @property founded?: string;
   // prettier-ignore
-  @hasMany(() => Person) employees?: fk[];
+  @hasMany(() => Person, "company") employees?: fk[];
 }

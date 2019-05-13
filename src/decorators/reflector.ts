@@ -2,6 +2,7 @@ import { Model } from "../Model";
 import { IDictionary } from "common-types";
 import get from "get-value";
 import set from "set-value";
+import { lowercase } from "../util";
 
 export interface IHasPropertyAndType {
   property: string;
@@ -43,7 +44,7 @@ export const propertyReflector = <R>(
 
   const meta: IDictionary = {
     ...(Reflect.getMetadata(key, modelKlass) || {}),
-    type: reflect.name as string,
+    type: lowercase(reflect.name) as string,
     ...context,
     property: key
   };

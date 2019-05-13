@@ -1,11 +1,12 @@
-import { RealTimeDB, IMultiPathSet } from "abstracted-firebase";
+import { RealTimeDB } from "abstracted-firebase";
 import { Model } from "./Model";
 import { Omit, Nullable } from "common-types";
 import { FireModel } from "./FireModel";
 import { IReduxDispatch } from "./VuexWrapper";
 import { IFMEventName, IFmCrudOperations, IFmDispatchOptions } from "./state-mgmt/index";
 import { IIdWithDynamicPrefix, IFkReference, ICompositeKey } from "./@types/record-types";
-import { IFmRelationshipOperation } from ".";
+import { IFmRelationshipOptionsForHasMany } from ".";
+import { IFmRelationshipOptions } from "./@types";
 export declare type ModelOptionalId<T extends Model> = Omit<T, "id"> & {
     id?: string;
 };
@@ -215,39 +216,52 @@ export declare class Record<T extends Model> extends FireModel<T> {
      */
     set<K extends keyof T>(prop: K, value: T[K], silent?: boolean): Promise<void>;
     /**
-     * associate
+     * **associate**
      *
-     * Associates the current model with another regardless if the cardinality is 1 or M.
-     * If it is a "hasOne" relationship it will proxy this request to setRelationship,
-     * if it is a "hasMany" relationshipo it will proxy this request to addToRelationship
+     * Associates the current model with another entity
+     * regardless if the cardinality
      */
-    associate(property: Extract<keyof T, string>, refs: IFkReference | IFkReference[], optionalValue?: any): Promise<void>;
-    disassociate(property: Extract<keyof T, string>, refs?: IFkReference | IFkReference[]): Promise<void>;
+    associate(property: Extract<keyof T, string>, refs: IFkReference | IFkReference[], options: IFmRelationshipOptions): Promise<void>;
     /**
-     * Adds one or more fk's to a hasMany relationship
+     * **disassociate**
+     *
+     * Removes an associates between the current model and another entity
+     * regardless if the cardinality
+     */
+    disassociate(property: Extract<keyof T, string>, refs: IFkReference | IFkReference[], options?: IFmRelationshipOptions): Promise<void>;
+    /**
+     * Adds one or more fk's to a hasMany relationship.
+     *
+     * Every relationship will be added as a "single transaction", meaning that ALL
+     * or NONE of the relationshiop transactions will succeed. If you want to
+     * take a more optimistic approach that accepts each relationship pairing (PK/FK)
+     * then you should manage the iteration outside of this call and let this call
+     * only manage the invidual PK/FK transactions (which should ALWAYS be atomic).
      *
      * @param property the property which is acting as a foreign key (array)
      * @param fkRefs FK reference (or array of FKs) that should be added to reln
-     * @param value the default behaviour is to add the value TRUE but you can optionally add some additional piece of information here instead
+     * @param options change the behavior of this relationship transaction
      */
-    addToRelationship(property: Extract<keyof T, string>, fkRefs: IFkReference | IFkReference[], value?: any): Promise<void>;
+    addToRelationship(property: Extract<keyof T, string>, fkRefs: IFkReference | IFkReference[], options?: IFmRelationshipOptionsForHasMany): Promise<void>;
     /**
      * removeFromRelationship
      *
-     * remove one or more IDs from a hasMany relationship
+     * remove one or more FK's from a `hasMany` relationship
      *
      * @param property the property which is acting as a FK
-     * @param fkRefs the IDs on the properties FK which should be removed
+     * @param fkRefs the FK's on the property which should be removed
      */
-    removeFromRelationship(property: Extract<keyof T, string>, fkRefs: IFkReference | IFkReference[]): Promise<void>;
+    removeFromRelationship(property: Extract<keyof T, string>, fkRefs: IFkReference | IFkReference[], options: IFmRelationshipOptionsForHasMany): Promise<void>;
     /**
-     * clearRelationship
+     * **clearRelationship**
      *
-     * clears an existing FK on a hasOne relationship
+     * clears an existing FK on a `hasOne` relationship or _all_ FK's on a
+     * `hasMany` relationship
      *
-     * @param property the property containing the hasOne FK
+     * @param property the property containing the relationship to an external
+     * entity
      */
-    clearRelationship(property: Extract<keyof T, string>): Promise<void>;
+    clearRelationship(property: Extract<keyof T, string>, options: IFmRelationshipOptions): Promise<void>;
     /**
      * **setRelationship**
      *
@@ -256,7 +270,7 @@ export declare class Record<T extends Model> extends FireModel<T> {
      * @param property the property containing the hasOne FK
      * @param ref the FK
      */
-    setRelationship(property: Extract<keyof T, string>, ref: IFkReference, optionalValue?: any): Promise<void>;
+    setRelationship(property: Extract<keyof T, string>, fkId: IFkReference, options: IFmRelationshipOptions): Promise<void>;
     /**
      * get a property value from the record
      *
@@ -279,24 +293,6 @@ export declare class Record<T extends Model> extends FireModel<T> {
      * Writes an audit log if the record is configured for audit logs
      */
     protected _writeAudit(action: IFmCrudOperations, propertyValues: Partial<T>, priorValue: Partial<T>): Promise<void>;
-    protected _expandFkStringToCompositeNotation(fkRef: string, dynamicComponents?: string[]): {
-        id: string;
-    };
-    /**
-     * **_relationshipMPS**
-     *
-     * Returns a multi-path SET (`IMultiPathSet`) that includes all paths needed to
-     * update both sides of the relationship of a given model.
-     *
-     * @param fkRef a FK reference; either a string (representing the ID of other
-     * record) or a composite key (ID plus all dynamic segments)
-     * @param property the property on the target record which contains FK(s)
-     * @param value the value to set this FK (null removes); typically TRUE if setting
-     * @param now the current time in miliseconds
-     */
-    protected _relationshipMPS(fkRef: IFkReference, property: Extract<keyof T, string>, value: any, now: number): IMultiPathSet;
-    protected _errorIfNothasOneReln(property: Extract<keyof T, string>, fn: string): void;
-    protected _errorIfNotHasManyReln(property: Extract<keyof T, string>, fn: string): void;
     /**
      * **_localCrudOperation**
      *
@@ -326,33 +322,6 @@ export declare class Record<T extends Model> extends FireModel<T> {
      * _mocking_
      */
     protected _localCrudOperation<K extends IFMEventName<K>>(crudAction: IFmCrudOperations, newValues: Partial<T>, options?: IFmDispatchOptions): Promise<void>;
-    /**
-     * **_localRelationshipOperation**
-     *
-     * updates the current Record while also executing the appropriate two-phased commit
-     * with the `dispatch()` function; looking to associate with watchers where ever possible
-     */
-    protected _localRelationshipOperation(
-    /**
-     * **operation**
-     *
-     * The relationship operation that is being executed
-     */
-    operation: IFmRelationshipOperation, 
-    /**
-     * **property**
-     *
-     * The property on this model which changing its relationship status in some way
-     */
-    property: keyof T, value: IFkReference, 
-    /**
-     * **mps**
-     *
-     * The caller must state the full set of paths which are going to be effected;
-     * this will include paths on the local object but also the FK entity. This MPS
-     * will be created using the `_relationshipMPS()` helper method.
-     */
-    mps: IMultiPathSet): Promise<void>;
     private _findDynamicComponents;
     /**
      * looks for ":name" property references within the dbOffset or localPrefix and expands them

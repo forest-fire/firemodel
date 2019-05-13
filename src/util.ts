@@ -105,3 +105,11 @@ export function withoutMeta<T extends Model>(model: T) {
   }
   return model;
 }
+
+export function capitalize(str: string) {
+  return str.slice(0, 1).toUpperCase() + str.slice(1);
+}
+
+export function lowercase(str: string) {
+  return str.slice(0, 1).toLowerCase() + str.slice(1);
+}

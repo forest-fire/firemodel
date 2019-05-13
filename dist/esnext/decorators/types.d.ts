@@ -74,6 +74,8 @@ export interface IFmModelRelationshipMeta<T extends Model = Model> extends IFmMo
     relType: FmRelationshipType;
     /** the property name on the related model that points back to this relationship */
     inverseProperty?: string;
+    /** indicates whether the relationship is one-way or bi-directional */
+    directionality: IFmRelationshipDirectionality;
     /** The constructor for a model of the FK reference that this relationship maintains */
     fkConstructor: () => new () => T;
     /** the singular name of the relationship's model */
@@ -128,7 +130,7 @@ export interface IFmModelAttributeBase<T> {
     /** what kind of relationship does this foreign key contain */
     relType?: FmRelationshipType;
     /** if the property is a relationship ... a constructor for the FK's Model */
-    fkConstructor?: () => new () => any;
+    fkConstructor?: IFmFunctionToConstructor;
     fkModelName?: string;
 }
 export declare type MockFunction = (context: import("firemock").MockHelper) => any;
@@ -140,3 +142,5 @@ export interface IModelIndexMeta {
     property: string;
 }
 export declare type IFmHasOne = string;
+export declare type IFmFunctionToConstructor<X = any> = () => new () => X;
+export declare type IFmRelationshipDirectionality = "bi-directional" | "one-way";

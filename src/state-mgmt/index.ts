@@ -4,10 +4,7 @@ import { IMultiPathUpdates } from "../FireModel";
 import { ICompositeKey } from "../@types/record-types";
 import { FmModelConstructor } from "../@types/general";
 import { FmRelationshipType } from "../decorators/types";
-import {
-  IFirebaseWatchEvent,
-  IValueBasedWatchEvent
-} from "abstracted-firebase";
+import { IValueBasedWatchEvent } from "abstracted-firebase";
 import { IDictionary } from "common-types";
 
 //#region generalized structures
@@ -88,16 +85,29 @@ export enum FMEvents {
   /** Watcher has disconnected all event streams from Firebase */
   WATCHER_STOPPED_ALL = "@firemodel/WATCHER_STOPPED_ALL",
 
-  /** Relationship(s) have removed */
-  RELATIONSHIP_REMOVED = "@firemodel/RELATIONSHIP_REMOVED",
   /** Relationship(s) have been removed locally */
   RELATIONSHIP_REMOVED_LOCALLY = "@firemodel/RELATIONSHIP_REMOVED_LOCALLY",
-  /** Relationship(s) have added */
-  RELATIONSHIP_ADDED_LOCALLY = "@firemodel/RELATIONSHIP_ADDED",
-  /** Relationship(s) have been added locally */
+  /** Relationship removal has been confirmed by database */
+  RELATIONSHIP_REMOVED_CONFIRMATION = "@firemodel/RELATIONSHIP_REMOVED_CONFIRMATION",
+  /** Relationship removal failed and must be rolled back if client updated optimistically */
+  RELATIONSHIP_REMOVED_ROLLBACK = "@firemodel/RELATIONSHIP_REMOVED_CONFIRMATION",
+
+  /** Relationship has been added locally */
+  RELATIONSHIP_ADDED_LOCALLY = "@firemodel/RELATIONSHIP_ADDED_LOCALLY",
+  /** Relationship add has been confirmed by database */
   RELATIONSHIP_ADDED_CONFIRMATION = "@firemodel/RELATIONSHIP_ADDED_CONFIRMATION",
-  /** Relationship(s) failed to be added */
+  /** Relationship add failed and must be rolled back if client updated optimistically */
   RELATIONSHIP_ADDED_ROLLBACK = "@firemodel/RELATIONSHIP_ADDED_ROLLBACK",
+
+  /** Relationship has been set locally (relating to a hasOne event) */
+  RELATIONSHIP_SET_LOCALLY = "@firemodel/RELATIONSHIP_SET_LOCALLY",
+  /** Relationship set has been confirmed by database */
+  RELATIONSHIP_SET_CONFIRMATION = "@firemodel/RELATIONSHIP_SET_CONFIRMATION",
+  /** Relationship set failed and must be rolled back if client updated optimistically */
+  RELATIONSHIP_SET_ROLLBACK = "@firemodel/RELATIONSHIP_ADDED_ROLLBACK",
+
+  /** A relationship was "added" but it already existed; this is typically non-action oriented */
+  RELATIONSHIP_DUPLICATE_ADD = "@firemodel/RELATIONSHIP_ADDED_ROLLBACK",
 
   APP_CONNECTED = "@firemodel/APP_CONNECTED",
   APP_DISCONNECTED = "@firemodel/APP_DISCONNECTED",

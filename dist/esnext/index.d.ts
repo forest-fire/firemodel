@@ -14,4 +14,4 @@ export { pathJoin } from "./path";
 export { fk, pk } from "common-types";
 export { key as fbKey } from "firebase-key";
 export * from "./state-mgmt/index";
-export * from "./CompositeKey";
+export * from "./record/createCompositeKey";

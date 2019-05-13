@@ -146,7 +146,7 @@ describe("Relationship > ", () => {
     }
   });
 
-  it.only("using setRelationship() on an hasOne prop sets relationship", async () => {
+  it("using setRelationship() on an hasOne prop sets relationship", async () => {
     // TODO: add in an inverse relationship; currently getting very odd decorator behavior
     let bob = await Record.add(FancyPerson, {
       id: "bobs-yur-uncle",

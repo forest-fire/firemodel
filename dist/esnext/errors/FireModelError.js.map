@@ -1,0 +1,1 @@
+{"version":3,"file":"FireModelError.js","sourceRoot":"","sources":["../../../src/errors/FireModelError.ts"],"names":[],"mappings":"AAAA,MAAM,OAAO,cAAe,SAAQ,KAAK;IAEvC,YAAY,OAAe,EAAS,OAAe,iBAAiB;QAClE,KAAK,EAAE,CAAC;QAD0B,SAAI,GAAJ,IAAI,CAA4B;QAD7D,cAAS,GAAG,IAAI,CAAC;QAGtB,IAAI,CAAC,IAAI,GAAG,IAAI,CAAC,KAAK,CAAC,GAAG,CAAC,CAAC,GAAG,EAAE,CAAC;IACpC,CAAC;CACF"}

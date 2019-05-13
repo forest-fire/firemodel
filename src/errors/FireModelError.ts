@@ -1,6 +1,9 @@
 export class FireModelError extends Error {
-  constructor(message: string, public code: string = "firemodel/error") {
+  public firemodel = true;
+  public code: string;
+  constructor(message: string, name: string = "firemodel/error") {
     super();
-    this.name = code.split("/").pop();
+    this.name = name;
+    this.code = name.split("/").pop();
   }
 }

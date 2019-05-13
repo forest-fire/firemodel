@@ -2,21 +2,35 @@ import { Model } from "../Model";
 import { propertyReflector } from "./reflector";
 import { Omit } from "common-types";
 import { relationshipsByModel } from "./model-meta/relationship-store";
-import { IFmModelRelationshipMeta } from "./types";
+import {
+  IFmModelRelationshipMeta,
+  IFmFunctionToConstructor,
+  IFmRelationshipDirectionality
+} from "./types";
+import { DecoratorProblem } from "../errors/decorators/DecoratorProblem";
 
 export function belongsTo<T = Model>(
-  fnToModelConstructor: () => new () => T,
-  inverse?: string
+  fnToModelConstructor: IFmFunctionToConstructor,
+  inverse?: string | [string, IFmRelationshipDirectionality]
 ) {
   try {
+    let inverseProperty: string | null;
+    let directionality: IFmRelationshipDirectionality;
+    if (Array.isArray(inverse)) {
+      [inverseProperty, directionality] = inverse;
+    } else {
+      inverseProperty = inverse;
+      directionality = inverse ? "bi-directional" : "one-way";
+    }
     const payload: Omit<IFmModelRelationshipMeta, "type" | "property"> = {
       isRelationship: true,
       isProperty: false,
       relType: "hasOne",
+      directionality,
       fkConstructor: fnToModelConstructor
     };
-    if (inverse) {
-      payload.inverseProperty = inverse;
+    if (inverseProperty) {
+      payload.inverseProperty = inverseProperty;
     }
 
     return propertyReflector(
@@ -24,10 +38,7 @@ export function belongsTo<T = Model>(
       relationshipsByModel
     );
   } catch (e) {
-    e.name =
-      e.name +
-      `. The type passed into the decorator was ${typeof fnToModelConstructor} [should be function]`;
-    throw e;
+    throw new DecoratorProblem("hasOne", e, { inverse });
   }
 }
 
