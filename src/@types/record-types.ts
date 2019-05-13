@@ -8,7 +8,7 @@ export type IIdWithDynamicPrefix = IDictionary<number | string> & {
 
 export type ICompositeKeyGeneric = IDictionary<string | number | boolean>;
 
-export type ICompositeKey<T = ICompositeKeyGeneric> = IFmHasId & T;
+export type ICompositeKey<T = ICompositeKeyGeneric> = IFmHasId & Partial<T>;
 export type IFkReference<T = ICompositeKeyGeneric> = fk | ICompositeKey<T>;
 export type IPrimaryKey = pk | ICompositeKey;
 

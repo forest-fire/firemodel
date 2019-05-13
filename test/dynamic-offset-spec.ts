@@ -164,7 +164,7 @@ describe("Dynamic offsets work with relationships", () => {
     ]);
 
     // refresh records
-    person = await Record.get(DeepPerson, { id: person.id, group: "test" });
+    person = await Record.get(DeepPerson, `${person.id}::group:test`);
     mother = await Record.get(DeepPerson, mother.compositeKey);
     father = await Record.get(DeepPerson, father.compositeKey);
 
@@ -185,14 +185,8 @@ describe("Dynamic offsets work with relationships", () => {
       age: 61,
       group: "test"
     })).pop();
-    let mother = await Record.get(DeepPerson, {
-      id: motherId.id,
-      group: "test2"
-    });
-    let father = await Record.get(DeepPerson, {
-      id: fatherId.id,
-      group: "test2"
-    });
+    let mother = await Record.get(DeepPerson, `${motherId.id}::group:test2`);
+    let father = await Record.get(DeepPerson, `${fatherId.id}::group:test2`);
 
     // add reln
     await person.addToRelationship("parents", [
@@ -201,7 +195,7 @@ describe("Dynamic offsets work with relationships", () => {
     ]);
 
     // refresh records
-    person = await Record.get(DeepPerson, { id: person.id, group: "test" });
+    person = await Record.get(DeepPerson, `${person.id}::group:test`);
     mother = await Record.get(DeepPerson, mother.compositeKey);
     father = await Record.get(DeepPerson, father.compositeKey);
 
@@ -238,8 +232,8 @@ describe("Dynamic offsets work with relationships", () => {
     });
     person.setRelationship("employer", company.compositeKeyRef);
 
-    company = await Record.get(Company, company.compositeKey);
-    person = await Record.get(DeepPerson, person.compositeKey);
+    company = await Record.get(Company, company.compositeKeyRef);
+    person = await Record.get(DeepPerson, person.compositeKeyRef);
 
     expect(person.data.employer).to.equal(company.compositeKeyRef);
     expect(company.data.employees).to.haveOwnProperty(person.compositeKeyRef);
@@ -252,7 +246,7 @@ describe("Dynamic offsets work with relationships", () => {
     });
     person.addToRelationship("attributes", attribute.compositeKeyRef);
 
-    attribute = await Record.get(HumanAttribute, attribute.compositeKey);
+    attribute = await Record.get(HumanAttribute, attribute.compositeKeyRef);
     person = await Record.get(DeepPerson, person.compositeKey);
 
     expect(person.data.attributes).to.haveOwnProperty(

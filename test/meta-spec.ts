@@ -33,7 +33,7 @@ describe.skip("schema() decorator: ", () => {
   });
 });
 
-describe.only("property decorator: ", () => {
+describe("property decorator: ", () => {
   it("can discover type for properties on class", () => {
     const myclass = new Klass();
     expect(Reflect.getMetadata("foo", myclass).type).to.equal("string");
@@ -78,7 +78,7 @@ describe.only("property decorator: ", () => {
   });
 });
 
-describe.only("relationship decorators: ", () => {
+describe("relationship decorators: ", () => {
   it("hasOne() sets correct meta props", async () => {
     const person = new Person();
     const keys: string[] = Reflect.getMetadataKeys(person);

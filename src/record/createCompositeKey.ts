@@ -8,7 +8,7 @@ import { FireModelError } from "../errors";
  */
 export function createCompositeKey<T extends Model = Model>(
   rec: Record<T>
-): ICompositeKey {
+): ICompositeKey<T> {
   const model = rec.data;
   if (!rec.id) {
     throw new FireModelError(

@@ -6,8 +6,6 @@ import {
 } from "../..";
 import { Record } from "../../Record";
 import { getModelMeta } from "../../ModelMeta";
-import { DynamicPropertiesNotReady } from "../../errors/DynamicPropertiesNotReady";
-import { createCompositeKeyFromFkString } from "../createCompositeKeyFromFkString";
 import { pathJoin, IDictionary } from "common-types";
 import { MissingReciprocalInverse } from "../../errors/relationships/MissingReciprocalInverse";
 import { IncorrectReciprocalInverse } from "../../errors/relationships/IncorrectReciprocalInverse";
@@ -31,7 +29,7 @@ import { MissingInverseProperty } from "../../errors/relationships/MissingInvers
 export function buildRelationshipPaths<T>(
   rec: Record<T>,
   property: Extract<keyof T, string>,
-  fkRef: IFkReference,
+  fkRef: IFkReference<T>,
   options: IFmBuildRelationshipOptions = {}
 ): IFmPathValuePair[] {
   try {

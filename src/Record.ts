@@ -160,7 +160,7 @@ export class Record<T extends Model> extends FireModel<T> {
    * A hash of values -- including at least "id" -- which represent
    * the composite key of a model.
    */
-  public get compositeKey(): ICompositeKey {
+  public get compositeKey(): ICompositeKey<T> {
     return createCompositeKey<T>(this);
   }
 
@@ -664,7 +664,7 @@ export class Record<T extends Model> extends FireModel<T> {
    */
   public async associate(
     property: Extract<keyof T, string>,
-    refs: IFkReference | IFkReference[],
+    refs: IFkReference<T> | Array<IFkReference<T>>,
     options: IFmRelationshipOptions = {}
   ) {
     const relType = this.META.relationship(property).relType;
@@ -695,7 +695,7 @@ export class Record<T extends Model> extends FireModel<T> {
    */
   public async disassociate(
     property: Extract<keyof T, string>,
-    refs: IFkReference | IFkReference[],
+    refs: IFkReference<T> | Array<IFkReference<T>>,
     options: IFmRelationshipOptions = {}
   ) {
     const relType = this.META.relationship(property).relType;
@@ -721,7 +721,7 @@ export class Record<T extends Model> extends FireModel<T> {
    */
   public async addToRelationship(
     property: Extract<keyof T, string>,
-    fkRefs: IFkReference | IFkReference[],
+    fkRefs: IFkReference<T> | Array<IFkReference<T>>,
     options: IFmRelationshipOptionsForHasMany = {}
   ) {
     const altHasManyValue = options.altHasManyValue || true;
@@ -730,7 +730,7 @@ export class Record<T extends Model> extends FireModel<T> {
       throw new NotHasManyRelationship(this, property, "addToRelationship");
     }
 
-    fkRefs = (Array.isArray(fkRefs) ? fkRefs : [fkRefs]) as IFkReference[];
+    fkRefs = Array.isArray(fkRefs) ? fkRefs : [fkRefs];
     let paths: IFmPathValuePair[] = [];
 
     const now = new Date().getTime();
@@ -757,7 +757,7 @@ export class Record<T extends Model> extends FireModel<T> {
    */
   public async removeFromRelationship(
     property: Extract<keyof T, string>,
-    fkRefs: IFkReference | IFkReference[],
+    fkRefs: IFkReference<T> | Array<IFkReference<T>>,
     options: IFmRelationshipOptionsForHasMany
   ) {
     if (!isHasManyRelationship(this, property)) {
@@ -768,7 +768,7 @@ export class Record<T extends Model> extends FireModel<T> {
       );
     }
 
-    fkRefs = (Array.isArray(fkRefs) ? fkRefs : [fkRefs]) as IFkReference[];
+    fkRefs = Array.isArray(fkRefs) ? fkRefs : [fkRefs];
     let paths: IFmPathValuePair[] = [];
 
     const now = new Date().getTime();
@@ -834,7 +834,7 @@ export class Record<T extends Model> extends FireModel<T> {
    */
   public async setRelationship(
     property: Extract<keyof T, string>,
-    fkId: IFkReference,
+    fkId: IFkReference<T>,
     options: IFmRelationshipOptions = {}
   ) {
     // TODO: Validate

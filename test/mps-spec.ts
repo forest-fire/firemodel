@@ -6,7 +6,7 @@ const expect = chai.expect;
 
 setupEnv();
 
-describe.only("Multi-path Set →", () => {
+describe("Multi-path Set →", () => {
   it("duplicate paths throw error", async () => {
     const db = await Admin.connect();
     const mps = db.multiPathSet("foo/bar");

@@ -27,7 +27,7 @@ export class SimplePerson extends Model {
   @property public phoneNumber: string;
 }
 
-describe.only("Mocking:", () => {
+describe("Mocking:", () => {
   let db: DB;
   let realDb: DB;
   before(async () => {
