@@ -44,3 +44,27 @@ export declare enum RelationshipCardinality {
     hasMany = "hasMany",
     belongsTo = "belongsTo"
 }
+/**
+ * a gathering of name/value pairs which are to be changed
+ * in the database but which have a root path which define
+ * their fully qualified path.
+ *
+ * Often used to feed into a MPS object.
+ */
+export interface IFmDatabasePaths {
+    /** a dictionary of name/values where the "name" is relative path off the root */
+    paths: IFmPathValuePair[];
+    /** the fully qualified paths in the DB which will be effected */
+    fullPathNames: string[];
+    /** the root path which all paths originate from */
+    root: string;
+}
+export interface IFmPathValuePair {
+    /** the path in the DB */
+    path: string;
+    /** the value at the given path */
+    value: any;
+}
+export interface IFmHasId {
+    id: string;
+}

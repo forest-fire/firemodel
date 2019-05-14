@@ -13,6 +13,8 @@ import {
 } from "../state-mgmt";
 import { Record } from "../Record";
 import { hasInitialized } from "./watchInitialization";
+import { FireModelError, FireModelProxyError } from "../errors";
+import { capitalize } from "../util";
 
 /**
  * **watchDispatcher**
@@ -24,11 +26,10 @@ export const WatchDispatcher = <T>(context: IFmDispatchWatchContext<T>) => (
   clientHandler: IReduxDispatch<IFmContextualizedWatchEvent<T>>
 ) => {
   if (typeof clientHandler !== "function") {
-    const e = new Error(
-      `A watcher is being setup but the dispatch function is not valid or not set!`
+    throw new FireModelError(
+      `A watcher is being setup but the dispatch function is not a valid function!`,
+      "firemodel/not-allowed"
     );
-    e.name = "FireModel::NotAllowed";
-    throw e;
   }
 
   return (event: IValueBasedWatchEvent & IPathBasedWatchEvent) => {
@@ -51,11 +52,12 @@ export const WatchDispatcher = <T>(context: IFmDispatchWatchContext<T>) => (
     try {
       compositeKey = rec.compositeKey;
     } catch (e) {
-      throw createError(
-        `firemodel/composite-key`,
-        `There was a problem getting the composite key for a ${
+      throw new FireModelProxyError(
+        e,
+        `There was a problem getting the composite key for a ${capitalize(
           rec.modelName
-        } model: ${e.message}`
+        )} model. `,
+        `firemodel/composite-key`
       );
     }
 

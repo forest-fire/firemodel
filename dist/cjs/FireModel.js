@@ -117,33 +117,6 @@ class FireModel {
     }
     //#endregion
     //#region PROTECTED INTERFACE
-    /**
-     * Creates a Redux-styled event
-     */
-    _createRecordEvent(record, type, pathsOrValue) {
-        const payload = {
-            type,
-            modelName: record.modelName,
-            modelConstructor: record._modelConstructor,
-            dbPath: record.dbPath,
-            compositeKey: record.compositeKey,
-            localPath: record.localPath || record.modelName,
-            key: record.id
-        };
-        if (Array.isArray(pathsOrValue)) {
-            if (pathsOrValue.length === 1 && pathsOrValue[0].path === "/") {
-                payload.value = pathsOrValue[0].value;
-            }
-            else {
-                payload.paths = pathsOrValue;
-                payload.localPath = record.localPath || record.modelName;
-            }
-        }
-        else {
-            payload.value = pathsOrValue;
-        }
-        return payload;
-    }
     _getPaths(changes) {
         return Object.keys(changes).reduce((prev, current) => {
             const path = current;

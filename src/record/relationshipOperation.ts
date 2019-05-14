@@ -145,15 +145,22 @@ export async function localRelnOp<T extends Model>(
   ids.map(id => {
     locallyUpdateFkOnRecord(rec, op, prop, id);
   });
+  // TODO: investigate why multiPathSet wasn't working
   // build MPS
-  const dbPaths = discoverRootPath(paths);
-  const mps = rec.db.multiPathSet(dbPaths.root || "/");
-  dbPaths.paths.map(p => mps.add({ path: p.path, value: p.value }));
+  // const dbPaths = discoverRootPath(paths);
+  // const mps = rec.db.multiPathSet(dbPaths.root || "/");
+  // dbPaths.paths.map(p => mps.add({ path: p.path, value: p.value }));
   const fkRecord = Record.create(rec.META.relationship(prop).fkConstructor());
   // execute MPS on DB
   try {
     sendRelnDispatchEvent(event, transactionId, op, rec, prop, paths);
-    await mps.execute();
+    // await mps.execute();
+    await rec.db.ref("/").update(
+      paths.reduce((acc: IDictionary, curr) => {
+        acc[curr.path] = curr.value;
+        return acc;
+      }, {})
+    );
   } catch (e) {
     // TODO: complete err handling
     throw e;

@@ -23,6 +23,11 @@ function model(options = {}) {
                 options.audit = false;
             }
             const meta = Object.assign({}, options, { isProperty: property_store_1.isProperty(modelOfObject) }, { property: property_store_1.getModelProperty(modelOfObject) }, { properties: property_store_1.getProperties(modelOfObject) }, { isRelationship: relationship_store_1.isRelationship(modelOfObject) }, { relationship: relationship_store_1.getModelRelationship(modelOfObject) }, { relationships: relationship_store_1.getRelationships(modelOfObject) }, { dbIndexes: indexing_1.getDbIndexes(modelOfObject) }, { pushKeys: decorator_1.getPushKeys(modelOfObject) }, { dbOffset: options.dbOffset ? options.dbOffset : "" }, { audit: options.audit ? options.audit : false }, { plural: options.plural }, {
+                allProperties: [
+                    ...property_store_1.getProperties(modelOfObject).map(p => p.property),
+                    ...relationship_store_1.getRelationships(modelOfObject).map(p => p.property)
+                ]
+            }, {
                 localPostfix: options.localPostfix === undefined ? "all" : options.localPostfix
             }, {
                 localModelName: options.localModelName === undefined

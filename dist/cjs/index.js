@@ -26,5 +26,5 @@ exports.pathJoin = path_1.pathJoin;
 var firebase_key_1 = require("firebase-key");
 exports.fbKey = firebase_key_1.key;
 __export(require("./state-mgmt/index"));
-__export(require("./CompositeKey"));
+__export(require("./record/createCompositeKey"));
 //# sourceMappingURL=index.js.map

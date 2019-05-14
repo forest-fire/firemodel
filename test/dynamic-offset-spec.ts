@@ -136,7 +136,10 @@ describe("Dynamic offsets work with relationships", () => {
       group: "test"
     })).pop();
 
-    await person.addToRelationship("parents", [motherId.id, fatherId.id]);
+    await person.addToRelationship("parents", [
+      motherId.compositeKey,
+      fatherId.compositeKey
+    ]);
   });
 
   it("addToRelationshipo works for M:M (FK has shared dynamic segment; using explicit composite key)", async () => {

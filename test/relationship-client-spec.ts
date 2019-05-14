@@ -83,8 +83,8 @@ describe("Relationship > ", () => {
     expect(paths.filter(i => i.includes("car-offset"))).to.have.lengthOf(2);
     expect(paths.filter(i => i.includes("fancyPeople"))).to.have.lengthOf(2);
 
-    expect(paths).to.include("/car-offset/cars/car12345/lastUpdated");
-    expect(paths).to.include("/car-offset/cars/car12345/owner");
+    expect(paths).to.include("car-offset/cars/car12345/lastUpdated");
+    expect(paths).to.include("car-offset/cars/car12345/owner");
 
     // last updated has changed since relationship added
     expect(person.data.lastUpdated).to.be.greaterThan(lastUpdated);
@@ -113,7 +113,6 @@ describe("Relationship > ", () => {
     const pops = await Record.get(FancyPerson, father.id);
 
     expect(pops.data.children[bob.id]).to.equal(true);
-    expect(pops.data.lastUpdated).to.equal(bob.data.lastUpdated);
   });
 
   it("using addToRelationship() to add multiple relationships with inverse (M:M)", async () => {
@@ -144,7 +143,7 @@ describe("Relationship > ", () => {
     try {
       await bob.addToRelationship("employer", "4567");
     } catch (e) {
-      expect(e.name).to.equal("FireModel::WrongRelationshipType");
+      expect(e.name).to.equal("firemodel/not-hasMany-reln");
     }
   });
 

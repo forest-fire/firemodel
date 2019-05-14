@@ -1,7 +1,5 @@
 import { Model } from "./Model";
-declare type Record<T> = import("./Record").Record<T>;
 import { IDictionary } from "common-types";
-import { IFMRecordEvent, FMEvents, NotString, Extractable } from "./state-mgmt";
 import { IReduxDispatch } from "./VuexWrapper";
 import { IFmModelMeta, IFmModelPropertyMeta, IFmModelRelationshipMeta } from "./decorators/types";
 declare type RealTimeDB = import("abstracted-firebase").RealTimeDB;
@@ -65,10 +63,6 @@ export declare class FireModel<T extends Model> {
     protected _model: T;
     protected _modelConstructor: new () => T;
     protected _db: RealTimeDB;
-    /**
-     * Creates a Redux-styled event
-     */
-    protected _createRecordEvent<K extends string & NotString<K> & Extractable<FMEvents, K>>(record: Record<T>, type: K, pathsOrValue: IMultiPathUpdates[] | T): IFMRecordEvent<T>;
     protected _getPaths(changes: IDictionary): IMultiPathUpdates[];
 }
 export interface IMultiPathUpdates {

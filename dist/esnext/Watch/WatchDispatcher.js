@@ -1,7 +1,8 @@
-import { createError } from "common-types";
 import { FMEvents } from "../state-mgmt";
 import { Record } from "../Record";
 import { hasInitialized } from "./watchInitialization";
+import { FireModelError, FireModelProxyError } from "../errors";
+import { capitalize } from "../util";
 /**
  * **watchDispatcher**
  *
@@ -11,9 +12,7 @@ export const WatchDispatcher = (context) => (
 /** a generic redux dispatch function; called by database on event */
 clientHandler) => {
     if (typeof clientHandler !== "function") {
-        const e = new Error(`A watcher is being setup but the dispatch function is not valid or not set!`);
-        e.name = "FireModel::NotAllowed";
-        throw e;
+        throw new FireModelError(`A watcher is being setup but the dispatch function is not a valid function!`, "firemodel/not-allowed");
     }
     return (event) => {
         hasInitialized[context.watcherId] = true;
@@ -32,7 +31,7 @@ clientHandler) => {
             compositeKey = rec.compositeKey;
         }
         catch (e) {
-            throw createError(`firemodel/composite-key`, `There was a problem getting the composite key for a ${rec.modelName} model: ${e.message}`);
+            throw new FireModelProxyError(e, `There was a problem getting the composite key for a ${capitalize(rec.modelName)} model. `, `firemodel/composite-key`);
         }
         const contextualizedEvent = Object.assign({
             type: event.eventType === "value"

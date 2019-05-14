@@ -113,3 +113,7 @@ export function capitalize(str: string) {
 export function lowercase(str: string) {
   return str.slice(0, 1).toLowerCase() + str.slice(1);
 }
+
+export function stripLeadingSlash(str: string) {
+  return str.slice(0, 1) === "/" ? str.slice(1) : str;
+}

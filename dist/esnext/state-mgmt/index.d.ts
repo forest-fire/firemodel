@@ -180,7 +180,7 @@ export interface IFMRecordClientEvent<T extends Model = Model> extends IFmRecord
     changed?: IDictionary;
     dbPath: string;
     localPath: string;
-    compositeKey: ICompositeKey;
+    compositeKey: ICompositeKey<T>;
     key: string;
     errorCode?: string | number;
     errorMessage?: string;
@@ -212,5 +212,5 @@ export interface IFMValueAction extends IFMAction {
 }
 export interface IFmContextualizedWatchEvent<T = any> extends IFmDispatchWatchContext<T>, IValueBasedWatchEvent {
     type: FMEvents;
-    compositeKey: ICompositeKey;
+    compositeKey: ICompositeKey<T>;
 }

@@ -1,5 +1,6 @@
 import { Model, Record, ICompositeKey } from "..";
 import { FireModelError } from "../errors";
+import { capitalize } from "../util";
 
 /**
  * Given a `Record` which defines all properties in it's
@@ -20,7 +21,9 @@ export function createCompositeKey<T extends Model = Model>(
     (prev, key) => {
       if (!model[key as keyof typeof model]) {
         throw new FireModelError(
-          `You can create a composite key without first setting the '${key}' property!`,
+          `You can not create a composite key on a ${capitalize(
+            rec.modelName
+          )} without first setting the '${key}' property!`,
           "firemodel/not-ready"
         );
       }

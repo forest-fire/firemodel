@@ -6,6 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const common_types_1 = require("common-types");
 const FireModel_1 = require("./FireModel");
 const api_1 = __importDefault(require("./Mock/api"));
+const errors_1 = require("./errors");
 function defaultCardinality(r) {
     return r.META.relationships.reduce((prev, curr) => {
         prev = Object.assign({}, prev, { [curr.property]: true });
@@ -21,9 +22,9 @@ function Mock(modelConstructor, db) {
         }
     }
     if (!db.isMockDb) {
-        throw common_types_1.createError("mock/not-mock-db", `When calling the Mock() function you provide a "mock database" not a live Firebase DB! ${db === FireModel_1.FireModel.defaultDb
+        throw new errors_1.FireModelError(`When calling the Mock() function you provide a "mock database" not a live Firebase DB! ${db === FireModel_1.FireModel.defaultDb
             ? "Note: the db connection was taken from the default FireModel database, if that's not what you intended you can explicitly pass in the DB in the call to Mock() as the second parameter."
-            : ""}`);
+            : ""}`, "firemodel/not-mock-db");
     }
     return api_1.default(db, modelConstructor);
 }

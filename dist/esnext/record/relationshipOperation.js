@@ -2,9 +2,9 @@ import { Record } from "../Record";
 import { FMEvents } from "..";
 import { getModelMeta } from "../ModelMeta";
 import { UnknownRelationshipProblem } from "../errors/relationships/UnknownRelationshipProblem";
-import { reduceHashToRelativePaths } from "./reduceHashToRelativePaths";
 import { extractFksFromPaths } from "./extractFksFromPaths";
 import { locallyUpdateFkOnRecord } from "./locallyUpdateFkOnRecord";
+import { sendRelnDispatchEvent } from "./relationships/sendRelnDispatchEvent";
 /**
  * **relationshipOperation**
  *
@@ -71,12 +71,12 @@ paths, options = {}) {
                 .toString(36)
                 .substr(2, 5);
         try {
-            await localRelnOp(rec, operation, property, paths, localEvent);
+            await localRelnOp(rec, operation, property, paths, localEvent, transactionId);
         }
         catch (e) {
-            await relnRollback(rec, operation, property, paths, rollbackEvent, e);
+            await relnRollback(rec, operation, property, paths, rollbackEvent, transactionId, e);
         }
-        await relnConfirmation(rec, operation, property, paths, confirmEvent);
+        await relnConfirmation(rec, operation, property, paths, confirmEvent, transactionId);
     }
     catch (e) {
         if (e.firemodel) {
@@ -87,29 +87,36 @@ paths, options = {}) {
         }
     }
 }
-export async function localRelnOp(rec, op, prop, paths, event) {
+export async function localRelnOp(rec, op, prop, paths, event, transactionId) {
     // locally modify Record's values
     const ids = extractFksFromPaths(rec, prop, paths);
     ids.map(id => {
         locallyUpdateFkOnRecord(rec, op, prop, id);
     });
+    // TODO: investigate why multiPathSet wasn't working
     // build MPS
-    const dbPaths = reduceHashToRelativePaths(paths);
-    const mps = rec.db.multiPathSet(dbPaths.root);
-    dbPaths.paths.map(p => mps.add({ path: p.path, value: p.value }));
+    // const dbPaths = discoverRootPath(paths);
+    // const mps = rec.db.multiPathSet(dbPaths.root || "/");
+    // dbPaths.paths.map(p => mps.add({ path: p.path, value: p.value }));
+    const fkRecord = Record.create(rec.META.relationship(prop).fkConstructor());
     // execute MPS on DB
     try {
-        await mps.execute();
+        sendRelnDispatchEvent(event, transactionId, op, rec, prop, paths);
+        // await mps.execute();
+        await rec.db.ref("/").update(paths.reduce((acc, curr) => {
+            acc[curr.path] = curr.value;
+            return acc;
+        }, {}));
     }
     catch (e) {
         // TODO: complete err handling
         throw e;
     }
 }
-export async function relnConfirmation(rec, op, prop, paths, event) {
-    //
+export async function relnConfirmation(rec, op, prop, paths, event, transactionId) {
+    sendRelnDispatchEvent(event, transactionId, op, rec, prop, paths);
 }
-export async function relnRollback(rec, op, prop, paths, event, err) {
-    //
+export async function relnRollback(rec, op, prop, paths, event, transactionId, err) {
+    sendRelnDispatchEvent(event, transactionId, op, rec, prop, paths, err);
 }
 //# sourceMappingURL=relationshipOperation.js.map

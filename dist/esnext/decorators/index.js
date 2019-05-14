@@ -4,4 +4,5 @@ export { index, uniqueIndex } from "./indexing";
 export * from "./constraints";
 export * from "./model";
 export * from "./defaultValue";
+export * from "./OneWay";
 //# sourceMappingURL=index.js.map

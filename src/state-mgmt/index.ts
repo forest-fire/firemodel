@@ -252,7 +252,7 @@ export interface IFmContextualizedWatchEvent<T = any>
   extends IFmDispatchWatchContext<T>,
     IValueBasedWatchEvent {
   type: FMEvents;
-  compositeKey: ICompositeKey;
+  compositeKey: ICompositeKey<T>;
 }
 //#endregion
 

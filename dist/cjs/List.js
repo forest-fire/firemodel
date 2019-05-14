@@ -103,6 +103,7 @@ class List extends FireModel_1.FireModel {
         const list = List.create(model, options);
         query.setPath(list.dbPath);
         await list.load(query);
+        // TODO: should this have a dispatch?
         list.dispatch({
             type: state_mgmt_1.FMEvents.RECORD_LIST,
             modelName: list.modelName,

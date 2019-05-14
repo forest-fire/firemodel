@@ -55,8 +55,9 @@ describe("Mocking:", () => {
   });
 
   it("giving a @mock named hint corrects the typing of a named prop", async () => {
-    await Mock(FancyPerson, db).generate(10);
+    const m = await Mock(FancyPerson, db).generate(10);
     const people = await List.all(FancyPerson);
+
     expect(people).to.have.lengthOf(10);
     people.map(person => {
       expect(person.otherPhone).to.be.a("string");
@@ -216,6 +217,7 @@ describe("Mocking:", () => {
     });
 
     const eventTypes2: string[] = Array.from(new Set(events.map(e => e.type)));
+    console.log(eventTypes2);
 
     expect(eventTypes2).to.include(FMEvents.RECORD_ADDED);
   });

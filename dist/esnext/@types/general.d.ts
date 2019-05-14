@@ -65,3 +65,6 @@ export interface IFmPathValuePair {
     /** the value at the given path */
     value: any;
 }
+export interface IFmHasId {
+    id: string;
+}

@@ -5,6 +5,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const get_value_1 = __importDefault(require("get-value"));
 const set_value_1 = __importDefault(require("set-value"));
+const util_1 = require("../util");
 function push(target, path, value) {
     set_value_1.default(target, path, value);
 }
@@ -25,7 +26,8 @@ exports.propertyReflector = (context = {},
 modelRollup) => (modelKlass, key) => {
     const modelName = modelKlass.constructor.name;
     const reflect = Reflect.getMetadata("design:type", modelKlass, key) || {};
-    const meta = Object.assign({}, context, { type: reflect.name }, Reflect.getMetadata(key, modelKlass), { property: key });
+    console.log(key, Reflect.getMetadata(key, modelKlass));
+    const meta = Object.assign({}, (Reflect.getMetadata(key, modelKlass) || {}), { type: util_1.lowercase(reflect.name) }, context, { property: key });
     Reflect.defineMetadata(key, meta, modelKlass);
     if (modelRollup) {
         const modelAndProp = modelName + "." + key;

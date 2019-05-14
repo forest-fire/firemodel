@@ -15,6 +15,7 @@ import { NotHasManyRelationship, NotHasOneRelationship, FireModelError } from ".
 import { buildRelationshipPaths } from "./record/relationships/buildRelationshipPaths";
 import { relationshipOperation } from "./record/relationshipOperation";
 import { createCompositeKeyString } from "./record/createCompositeKeyString";
+import { createCompositeKeyFromFkString } from "./record/createCompositeKeyFromFkString";
 export class Record extends FireModel {
     constructor(model, options = {}) {
         super();
@@ -107,15 +108,20 @@ export class Record extends FireModel {
     get compositeKeyRef() {
         return createCompositeKeyString(this);
     }
-    /** The Record's primary key */
+    /**
+     * The Record's primary key; this is the `id` property only. Not
+     * the composite key.
+     */
     get id() {
         return this.data.id;
     }
+    /**
+     * Allows setting the Record's `id` if it hasn't been set before.
+     * Resetting the `id` is not allowed.
+     */
     set id(val) {
         if (this.data.id) {
-            const e = new Error(`You may not re-set the ID of a record [ ${this.data.id} → ${val} ].`);
-            e.name = "NotAllowed";
-            throw e;
+            throw new FireModelError(`You may not re-set the ID of a record [ ${this.modelName}.id ${this.data.id} => ${val} ].`, "firemodel/not-allowed");
         }
         this._data.id = val;
     }
@@ -247,17 +253,29 @@ export class Record extends FireModel {
         return r;
     }
     /**
-     * load
+     * **createWith**
      *
-     * static method to create a Record when you want to load the
-     * state of the record with something you already have.
+     * A static initializer that creates a Record of a given class
+     * and then initializes the state with either a Model payload
+     * or a CompositeKeyString (aka, '[id]::[prop]:[value]').
      *
-     * Intent should be that this record already exists in the
-     * database. If you want to add to the database then use add()
+     * You should be careful in using this initializer; the expected
+     * _intent_ include:
+     *
+     * 1. to initialize an in-memory record of something which is already
+     * in the DB
+     * 2. to get all the "composite key" attributes into the record so
+     * all META queries are possible
+     *
+     * If you want to add this record to the database then use `add()`
+     * initializer instead.
      */
     static createWith(model, payload, options = {}) {
         const rec = Record.create(model, options);
-        rec._initialize(payload);
+        const properties = typeof payload === "string"
+            ? createCompositeKeyFromFkString(payload, rec.modelConstructor)
+            : payload;
+        rec._initialize(properties);
         return rec;
     }
     /**
@@ -272,15 +290,6 @@ export class Record extends FireModel {
      */
     static async get(model, id, options = {}) {
         const record = Record.create(model, options);
-        if (typeof id === "object") {
-            if (!id.id) {
-                throw createError("record/not-allowed", `Attempting to get a ${record.modelName} record where the ID and prefix hash did not include the "id" property! Properties that were sent in were: ${Object.keys(id)}`);
-            }
-            Object.keys(id).forEach(key => {
-                record.data[key] = id[key];
-            });
-            id = id.id;
-        }
         await record._getFromDB(id);
         return record;
     }
@@ -299,7 +308,7 @@ export class Record extends FireModel {
      * Goes out to the database and reloads this record
      */
     async reload() {
-        const reloaded = await Record.get(this._modelConstructor, this.compositeKey);
+        const reloaded = await Record.get(this._modelConstructor, this.compositeKeyRef);
         return reloaded;
     }
     /**
@@ -458,14 +467,19 @@ export class Record extends FireModel {
      * Associates the current model with another entity
      * regardless if the cardinality
      */
-    async associate(property, refs, options) {
+    async associate(property, refs, options = {}) {
         const relType = this.META.relationship(property).relType;
         if (relType === "hasMany") {
             await this.addToRelationship(property, refs, options);
         }
         else {
             if (Array.isArray(refs)) {
-                throw new FireModelError(`Attempt to use "associate()" with a "hasOne" relationship [ ${property}] on the model ${capitalize(this.modelName)}.`, "firemodel/invalid-cardinality");
+                if (refs.length === 1) {
+                    refs = refs.pop();
+                }
+                else {
+                    throw new FireModelError(`Attempt to use "associate()" with a "hasOne" relationship [ ${property}] on the model ${capitalize(this.modelName)}.`, "firemodel/invalid-cardinality");
+                }
             }
             await this.setRelationship(property, refs, options);
         }
@@ -473,10 +487,10 @@ export class Record extends FireModel {
     /**
      * **disassociate**
      *
-     * Removes an associates between the current model and another entity
-     * regardless if the cardinality
+     * Removes an association between the current model and another entity
+     * (regardless of the cardinality in the relationship)
      */
-    async disassociate(property, refs, options) {
+    async disassociate(property, refs, options = {}) {
         const relType = this.META.relationship(property).relType;
         if (relType === "hasMany") {
             await this.removeFromRelationship(property, refs, options);
@@ -498,12 +512,12 @@ export class Record extends FireModel {
      * @param fkRefs FK reference (or array of FKs) that should be added to reln
      * @param options change the behavior of this relationship transaction
      */
-    async addToRelationship(property, fkRefs, options) {
+    async addToRelationship(property, fkRefs, options = {}) {
         const altHasManyValue = options.altHasManyValue || true;
         if (!isHasManyRelationship(this, property)) {
             throw new NotHasManyRelationship(this, property, "addToRelationship");
         }
-        fkRefs = (Array.isArray(fkRefs) ? fkRefs : [fkRefs]);
+        fkRefs = Array.isArray(fkRefs) ? fkRefs : [fkRefs];
         let paths = [];
         const now = new Date().getTime();
         fkRefs.map(ref => {
@@ -525,11 +539,11 @@ export class Record extends FireModel {
      * @param property the property which is acting as a FK
      * @param fkRefs the FK's on the property which should be removed
      */
-    async removeFromRelationship(property, fkRefs, options) {
+    async removeFromRelationship(property, fkRefs, options = {}) {
         if (!isHasManyRelationship(this, property)) {
             throw new NotHasManyRelationship(this, property, "removeFromRelationship");
         }
-        fkRefs = (Array.isArray(fkRefs) ? fkRefs : [fkRefs]);
+        fkRefs = Array.isArray(fkRefs) ? fkRefs : [fkRefs];
         let paths = [];
         const now = new Date().getTime();
         fkRefs.map(ref => {
@@ -552,7 +566,7 @@ export class Record extends FireModel {
      * @param property the property containing the relationship to an external
      * entity
      */
-    async clearRelationship(property, options) {
+    async clearRelationship(property, options = {}) {
         const relType = this.META.relationship(property).relType;
         const fkRefs = relType === "hasMany"
             ? this._data[property]
@@ -582,7 +596,7 @@ export class Record extends FireModel {
      * @param property the property containing the hasOne FK
      * @param ref the FK
      */
-    async setRelationship(property, fkId, options) {
+    async setRelationship(property, fkId, options = {}) {
         // TODO: Validate
         if (isHasManyRelationship(this, property)) {
             throw new NotHasOneRelationship(this, property, "setRelationship");
@@ -721,9 +735,6 @@ export class Record extends FireModel {
         }
         if (watchers.length === 0) {
             event.watcherSource = "unknown";
-            if (!FireModel.isDefaultDispatch) {
-                console.log(`An "${crudAction}" action was executed on "${this.modelName}::${this.id}" but while there WAS a dispatch function registered, there were no watchers covering this DB path [ ${this.dbPath} ]`);
-            }
             if (!options.silent) {
                 // Note: if used on frontend, the mutations must be careful to
                 // set this to the right path considering there is no watcher
@@ -748,6 +759,12 @@ export class Record extends FireModel {
                 const mps = this.db.multiPathSet(this.dbPath);
                 paths.map(path => mps.add(path));
                 await mps.execute();
+                // await this.db.ref(this.dbPath).update(
+                //   paths.reduce((acc: IDictionary, curr) => {
+                //     acc[curr.path] = curr.value;
+                //     return acc;
+                //   }, {})
+                // );
             }
             this.isDirty = false;
             // write audit if option is turned on
@@ -816,21 +833,23 @@ export class Record extends FireModel {
         return path;
     }
     /**
-     * Load data from a record in database
+     * Load data from a record in database; works with `get` static initializer
      */
     async _getFromDB(id) {
-        if (!this.db) {
-            const e = new Error(`The attempt to load data into a Record requires that the DB property be initialized first!`);
-            e.name = "NoDatabase";
-            throw e;
-        }
-        this._data.id = id;
+        const keys = typeof id === "string"
+            ? createCompositeKeyFromFkString(id, this.modelConstructor)
+            : id;
+        // load composite key into props so the dbPath() will evaluate
+        Object.keys(keys).map(key => {
+            // TODO: fix up typing
+            this._data[key] = keys[key];
+        });
         const data = await this.db.getRecord(this.dbPath);
         if (data && data.id) {
             this._initialize(data);
         }
         else {
-            throw new Error(`Unknown Key: the key "${id}" was not found in Firebase at "${this.dbPath}".`);
+            throw new FireModelError(`Failed to load the Record "${this.modelName}::${this.id}" with composite key of:\n ${JSON.stringify(keys, null, 2)}`, "firebase/invalid-composite-key");
         }
         return this;
     }

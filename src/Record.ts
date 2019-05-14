@@ -1040,6 +1040,13 @@ export class Record<T extends Model> extends FireModel<T> {
         const mps = this.db.multiPathSet(this.dbPath);
         paths.map(path => mps.add(path));
         await mps.execute();
+
+        // await this.db.ref(this.dbPath).update(
+        //   paths.reduce((acc: IDictionary, curr) => {
+        //     acc[curr.path] = curr.value;
+        //     return acc;
+        //   }, {})
+        // );
       }
       this.isDirty = false;
 

@@ -1,11 +1,11 @@
 import { IDictionary, fk, pk, epoch } from "common-types";
+import { IFmHasId } from "./general";
 export declare type IIdWithDynamicPrefix = IDictionary<number | string> & {
     id: string;
 };
-export declare type ICompositeKey = IDictionary<string | number> & {
-    id: string;
-};
-export declare type IFkReference = fk | ICompositeKey;
+export declare type ICompositeKeyGeneric = IDictionary<string | number | boolean>;
+export declare type ICompositeKey<T = ICompositeKeyGeneric> = IFmHasId & Partial<T>;
+export declare type IFkReference<T = ICompositeKeyGeneric> = fk | ICompositeKey<T>;
 export declare type IPrimaryKey = pk | ICompositeKey;
 export interface IFmBuildRelationshipOptions {
     /**

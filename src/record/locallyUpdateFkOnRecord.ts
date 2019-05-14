@@ -12,7 +12,10 @@ export function locallyUpdateFkOnRecord<T extends Model>(
   id: string
 ) {
   const relnType = rec.META.relationship(prop).relType;
-
+  // update lastUpdated but quietly as it will be updated again
+  // once server responds
+  rec.set("lastUpdated", new Date().getTime(), true);
+  // now work on a per-op basis
   switch (op) {
     case "set":
     case "add":

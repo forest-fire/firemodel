@@ -1,9 +1,9 @@
 export class FireModelError extends Error {
-    constructor(message, code = "firemodel/error") {
-        super();
-        this.code = code;
+    constructor(message, name = "firemodel/error") {
+        super(message);
         this.firemodel = true;
-        this.name = code.split("/").pop();
+        this.name = name;
+        this.code = name.split("/").pop();
     }
 }
 //# sourceMappingURL=FireModelError.js.map

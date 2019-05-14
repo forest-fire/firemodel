@@ -1,12 +1,11 @@
 import { Record } from "../../Record";
 import { getModelMeta } from "../../ModelMeta";
-import { DynamicPropertiesNotReady } from "../../errors/DynamicPropertiesNotReady";
-import { expandFkStringToCompositeNotation } from "../expandFkStringToCompositeNotation";
 import { pathJoin } from "common-types";
 import { MissingReciprocalInverse } from "../../errors/relationships/MissingReciprocalInverse";
 import { IncorrectReciprocalInverse } from "../../errors/relationships/IncorrectReciprocalInverse";
 import { createCompositeKeyString } from "../createCompositeKeyString";
 import { UnknownRelationshipProblem } from "../../errors/relationships/UnknownRelationshipProblem";
+import { MissingInverseProperty } from "../../errors/relationships/MissingInverseProperty";
 /**
  * Builds all the DB paths needed to update a pairing of a PK:FK. It is intended
  * to be used by the `Record`'s transactional API as a first step of specifying
@@ -28,40 +27,13 @@ export function buildRelationshipPaths(rec, property, fkRef, options = {}) {
         const altHasManyValue = options.altHasManyValue || true;
         const fkModelConstructor = meta.relationship(property).fkConstructor();
         const inverseProperty = meta.relationship(property).inverseProperty;
-        const fkRecord = Record.create(fkModelConstructor);
+        const fkRecord = Record.createWith(fkModelConstructor, fkRef);
         const results = [];
         /**
-         * Regardless if we receive the string or ICompositeKey notation for the FK's
-         * ID, we will normalize it to a ICompositeKey.
+         * Normalize to a composite key format
          */
-        const fkCompositeKey = typeof fkRef === "object"
-            ? fkRef
-            : expandFkStringToCompositeNotation(fkRef, fkRecord.dynamicPathComponents);
-        fkRecord._initialize(Object.assign({}, fkRecord.data, fkCompositeKey));
-        let fkId;
-        // DEAL WITH DYNAMIC PATHS on FK
-        if (fkRecord.hasDynamicPath) {
-            const fkDynamicProps = fkRecord.dynamicPathComponents;
-            /**
-             * Sometimes the current model has all the properties needed
-             * to populate the FK's dynamic path. This boolean flag indicates
-             * whether that is the case.
-             */
-            const canAutoPopulate = fkDynamicProps.every(p => this.data[p] !== undefined ||
-                this.data[p] !== null)
-                ? true
-                : false;
-            /**
-             * This flag indicates whether the ref passed in just a simple string reference
-             * to the FK model (false) or if it is a hash which represents
-             * the composite FK reference.
-             */
-            const refIsCompositeKey = typeof fkRef === "object" ? true : false;
-            if (!canAutoPopulate) {
-                throw new DynamicPropertiesNotReady(this, `Attempt to add/remove a FK relationship on ${this.modelName} to ${fkRecord.modelName} failed because there was no way to resolve ${fkRecord.modelName}'s dynamic prefixes: [ ${fkDynamicProps} ]`);
-            }
-        }
-        fkId = createCompositeKeyString(fkRecord);
+        const fkCompositeKey = typeof fkRef === "object" ? fkRef : fkRecord.compositeKey;
+        const fkId = createCompositeKeyString(fkRecord);
         /**
          * boolean flag indicating whether current model has a **hasMany** relationship
          * with the FK.
@@ -76,17 +48,22 @@ export function buildRelationshipPaths(rec, property, fkRef, options = {}) {
         // Add paths for current record
         results.push({
             path: pathToRecordsFkReln,
-            value: hasManyReln ? altHasManyValue : fkId
+            value: operation === "remove" ? null : hasManyReln ? altHasManyValue : fkId
         });
         results.push({ path: pathJoin(rec.dbPath, "lastUpdated"), value: now });
         // INVERSE RELATIONSHIP
         if (inverseProperty) {
             const fkMeta = getModelMeta(fkRecord);
             const inverseReln = fkMeta.relationship(inverseProperty);
-            if (!inverseReln.inverseProperty) {
+            if (!inverseReln) {
+                throw new MissingInverseProperty(rec, property);
+            }
+            if (!inverseReln.inverseProperty &&
+                inverseReln.directionality === "bi-directional") {
                 throw new MissingReciprocalInverse(rec, property);
             }
-            if (inverseReln.inverseProperty !== property) {
+            if (inverseReln.inverseProperty !== property &&
+                inverseReln.directionality === "bi-directional") {
                 throw new IncorrectReciprocalInverse(rec, property);
             }
             const fkInverseIsHasManyReln = inverseProperty
@@ -94,17 +71,22 @@ export function buildRelationshipPaths(rec, property, fkRef, options = {}) {
                 : false;
             const pathToInverseFkReln = fkInverseIsHasManyReln
                 ? pathJoin(fkRecord.dbPath, inverseProperty, rec.compositeKeyRef)
-                : null;
+                : pathJoin(fkRecord.dbPath, inverseProperty);
             // Inverse paths
             results.push({
                 path: pathToInverseFkReln,
-                value: fkInverseIsHasManyReln ? altHasManyValue : fkId
+                value: operation === "remove"
+                    ? null
+                    : fkInverseIsHasManyReln
+                        ? altHasManyValue
+                        : rec.compositeKeyRef
             });
             results.push({
                 path: pathJoin(fkRecord.dbPath, "lastUpdated"),
                 value: now
             });
         }
+        // TODO: add validation of FK paths if option is set
         return results;
     }
     catch (e) {
