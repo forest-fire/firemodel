@@ -152,7 +152,7 @@ class Record extends FireModel_1.FireModel {
      * Record versus a List.
      */
     get localPrefix() {
-        return this.data.META.localPrefix;
+        return ModelMeta_1.getModelMeta(this).localPrefix;
     }
     get existsOnDB() {
         return this.data && this.data.id ? true : false;
@@ -188,8 +188,12 @@ class Record extends FireModel_1.FireModel {
         }
         if (values) {
             // silently set all values
-            Object.keys(values).forEach(key => rec.set(key, values[key], true));
+            console.log(values);
+            // Object.keys(values).forEach(key =>
+            //   rec.set(key as keyof T, values[key as keyof typeof values], true)
+            // );
             const defaultValues = rec.META.properties.filter(i => i.defaultValue !== undefined);
+            console.log(defaultValues);
             // also include "default values"
             defaultValues.forEach((i) => {
                 if (rec.get(i.property) === undefined) {
@@ -271,6 +275,10 @@ class Record extends FireModel_1.FireModel {
      *
      * If you want to add this record to the database then use `add()`
      * initializer instead.
+     *
+     * @prop model a constructor for the underlying model
+     * @payload either a string representing an `id` or Composite Key or alternatively
+     * a hash/dictionary of attributes that are to be set as a starting point
      */
     static createWith(model, payload, options = {}) {
         const rec = Record.create(model, options);
@@ -439,14 +447,15 @@ class Record extends FireModel_1.FireModel {
      *
      * @param prop the property on the record to be changed
      * @param value the new value to set to
-     * @param silent a flag to indicate whether the change to the prop should be updated to the database
+     * @param silent a flag to indicate whether the change to the prop should be updated to the database or not
      */
     async set(prop, value, silent = false) {
-        const meta = this.META.property(prop) || ModelMeta_1.getModelMeta(this._modelConstructor);
+        const meta = this.META.property(prop);
+        if (!meta) {
+            throw new errors_1.FireModelError(`There was a problem getting the meta data for the model ${util_1.capitalize(this.modelName)} while attempting to set the "${prop}" property to: ${value}`);
+        }
         if (meta.isRelationship) {
-            const e = new Error(`You can not "set" the property "${prop}" because it is configured as a relationship!`);
-            e.name = "FireModel::NotAllowed";
-            throw e;
+            throw new errors_1.FireModelError(`You can not "set" the property "${prop}" because it is configured as a relationship!`, "firemodel/not-allowed");
         }
         const lastUpdated = new Date().getTime();
         const changed = {
@@ -457,10 +466,12 @@ class Record extends FireModel_1.FireModel {
         this.META.isDirty = true;
         this._data = Object.assign({}, this._data, changed);
         // dispatch
-        await this._localCrudOperation("update" /* update */, changed, {
-            silent
-        });
-        this.META.isDirty = false;
+        if (!silent) {
+            await this._localCrudOperation("update" /* update */, changed, {
+                silent
+            });
+            this.META.isDirty = false;
+        }
         return;
     }
     /**

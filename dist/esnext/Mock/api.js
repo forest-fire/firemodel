@@ -16,7 +16,7 @@ export default function API(db, modelConstructor) {
          * @param exceptions do you want to fix a given set of properties to a static value?
          */
         async generate(count, exceptions = {}) {
-            await db.mock.importFakerLibrary();
+            // await db.mock.importFakerLibrary();
             const props = mockProperties(db, config, exceptions);
             const relns = addRelationships(db, config, exceptions);
             // If dynamic props then warn if it's not constrained

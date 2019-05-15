@@ -17,7 +17,7 @@ export default function addRelationships<T extends Model>(
     const relnResults: Array<IMockResponse<T>> = [];
 
     if (config.relationshipBehavior !== "ignore") {
-      const p = new Parallel<IMockResponse<T>>("Adding Relationships to Mock");
+      // const p = new Parallel<IMockResponse<T>>("Adding Relationships to Mock");
       for (const rel of relns) {
         if (
           !config.cardinality ||

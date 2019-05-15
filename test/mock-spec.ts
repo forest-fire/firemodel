@@ -12,6 +12,7 @@ import {
 import { DB } from "abstracted-admin";
 import * as chai from "chai";
 import { Mock } from "../src/Mock";
+import { Mock as FireMock } from "firemock";
 import { FancyPerson } from "./testing/FancyPerson";
 import { Car } from "./testing/Car";
 import { Company } from "./testing/Company";
@@ -41,6 +42,13 @@ describe("Mocking:", () => {
     db = await DB.connect({ mocking: true });
     FireModel.defaultDb = db;
   });
+
+  it("FireMock.prepare() leads to immediate availability of faker library", async () => {
+    const m = await FireMock.prepare();
+    expect(m.faker).is.a("object");
+    expect(m.faker.address.city).is.a("function");
+  });
+
   it("the auto-mock works for named properties", async () => {
     await Mock(SimplePerson, db).generate(10);
     const people = await List.all(SimplePerson);
@@ -148,7 +156,7 @@ describe("Mocking:", () => {
   });
 
   // TODO: is this freezing the build?
-  it.skip("Adding a record with {silent: true} raises an error in real db", async () => {
+  it("Adding a record with {silent: true} raises an error in real db", async () => {
     FireModel.defaultDb = realDb;
     const events: IDictionary[] = [];
     FireModel.dispatch = (e: IReduxAction) => events.push(e);
@@ -167,7 +175,7 @@ describe("Mocking:", () => {
     }
   });
 
-  it.skip("Adding a record with a watcher fires both watcher event and LOCAL events [ real db ]", async () => {
+  it("Adding a record with a watcher fires both watcher event and LOCAL events [ real db ]", async () => {
     FireModel.defaultDb = realDb;
     const events: IDictionary[] = [];
     FireModel.dispatch = (e: IReduxAction) => events.push(e);
@@ -200,7 +208,7 @@ describe("Mocking:", () => {
     expect(locally.transactionId).to.equal(confirm.transactionId);
   });
 
-  it("Mocking data does NOT fire watcher events but adding a record DOES [ mock db ]", async () => {
+  it.only("Mocking data does NOT fire watcher events but adding a record DOES [ mock db ]", async () => {
     const events: IDictionary[] = [];
     FireModel.dispatch = (e: IReduxAction) => events.push(e);
     const w = await Watch.list(FancyPerson)

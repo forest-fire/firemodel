@@ -101,6 +101,7 @@ describe("Dynamic offsets work with relationships", () => {
   let hobbies: List<Hobby>;
   beforeEach(async () => {
     db = await DB.connect({ mocking: true });
+
     FireModel.defaultDb = db;
     person = await Record.add(DeepPerson, {
       name: {

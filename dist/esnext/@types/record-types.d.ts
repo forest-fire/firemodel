@@ -6,7 +6,7 @@ export declare type IIdWithDynamicPrefix = IDictionary<number | string> & {
 export declare type ICompositeKeyGeneric = IDictionary<string | number | boolean>;
 export declare type ICompositeKey<T = ICompositeKeyGeneric> = IFmHasId & Partial<T>;
 export declare type IFkReference<T = ICompositeKeyGeneric> = fk | ICompositeKey<T>;
-export declare type IPrimaryKey = pk | ICompositeKey;
+export declare type IPrimaryKey<T> = pk | ICompositeKey<T>;
 export interface IFmBuildRelationshipOptions {
     /**
      * optionally send in a epoch timestamp; alternative it will be created

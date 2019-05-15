@@ -47,16 +47,20 @@ export const WatchDispatcher = <T>(context: IFmDispatchWatchContext<T>) => (
       typeof event.value === "object"
         ? { id: event.key, ...event.value }
         : { id: event.key };
-    const rec = Record.local(context.modelConstructor, recId);
+
+    const rec = Record.createWith(context.modelConstructor, recId);
+
     let compositeKey;
     try {
       compositeKey = rec.compositeKey;
     } catch (e) {
       throw new FireModelProxyError(
         e,
-        `There was a problem getting the composite key for a ${capitalize(
+        `While responding to a watcher event [ id: ${context.watcherId}, ${
+          context.query.path
+        } ] there was a problem getting the composite key for a ${capitalize(
           rec.modelName
-        )} model. `,
+        )}::${rec.id} model`,
         `firemodel/composite-key`
       );
     }

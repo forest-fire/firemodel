@@ -5,12 +5,14 @@ import { IDictionary } from "common-types";
 import { IFMRecordEvent, FMEvents, NotString, Extractable } from "./state-mgmt";
 import { IReduxDispatch } from "./VuexWrapper";
 import { getModelMeta } from "./ModelMeta";
+import { DB } from "abstracted-firebase";
 import {
   IFmModelMeta,
   IFmModelPropertyMeta,
   IFmModelRelationshipMeta
 } from "./decorators/types";
 import { ILocalStateManagement } from "./@types";
+import { DB } from "abstracted-client";
 // tslint:disable-next-line:no-var-requires
 const pluralize = require("pluralize");
 const defaultDispatch = (context: IDictionary) => "";
@@ -146,6 +148,31 @@ export class FireModel<T extends Model> {
   }
 
   public static auditLogs: string = "/auditing";
+
+  /**
+   * **connect**
+   *
+   * This static initializer facilitates connecting **FireModel** with
+   * the firebase database in a compact and convenient way:
+```typescript
+import { DB } from 'abstracted-xxx';
+const db = await FireModel.connect(DB, options);
+```
+   * This method not only sets **FireModel**'s `defaultDb` property but
+   * also returns a reference to the `abstracted-client`/`abstracted-admin`
+   * object so you can use this externally to FireModel should you choose to.
+   *
+   * Note: each _CRUD_ action in FireModel allows passing
+   * in a DB connection (which opens up the possibility of multiple firebase
+   * databases) but the vast majority of projects only have ONE firebase
+   * database so this just makes the whole process much easier.
+   */
+  public static async connect(database: DB, options: IDictionary) {
+    const db = await database.connect(options);
+    FireModel.defaultDb = db;
+    return db;
+  }
+
   //#region STATIC INTERFACE
 
   public static isBeingWatched(path: string): boolean {

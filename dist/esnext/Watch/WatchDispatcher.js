@@ -25,13 +25,13 @@ clientHandler) => {
         };
         const recId = typeof event.value === "object"
             ? Object.assign({ id: event.key }, event.value) : { id: event.key };
-        const rec = Record.local(context.modelConstructor, recId);
+        const rec = Record.createWith(context.modelConstructor, recId);
         let compositeKey;
         try {
             compositeKey = rec.compositeKey;
         }
         catch (e) {
-            throw new FireModelProxyError(e, `There was a problem getting the composite key for a ${capitalize(rec.modelName)} model. `, `firemodel/composite-key`);
+            throw new FireModelProxyError(e, `While responding to a watcher event [ id: ${context.watcherId}, ${context.query.path} ] there was a problem getting the composite key for a ${capitalize(rec.modelName)}::${rec.id} model`, `firemodel/composite-key`);
         }
         const contextualizedEvent = Object.assign({
             type: event.eventType === "value"

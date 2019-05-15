@@ -224,7 +224,7 @@ export class Record<T extends Model> extends FireModel<T> {
    * Record versus a List.
    */
   public get localPrefix() {
-    return this.data.META.localPrefix;
+    return getModelMeta(this).localPrefix;
   }
 
   public get existsOnDB() {
@@ -279,12 +279,16 @@ export class Record<T extends Model> extends FireModel<T> {
 
     if (values) {
       // silently set all values
-      Object.keys(values).forEach(key =>
-        rec.set(key as keyof T, values[key as keyof typeof values], true)
-      );
+      console.log(values);
+
+      // Object.keys(values).forEach(key =>
+      //   rec.set(key as keyof T, values[key as keyof typeof values], true)
+      // );
       const defaultValues = rec.META.properties.filter(
         i => i.defaultValue !== undefined
       );
+      console.log(defaultValues);
+
       // also include "default values"
       defaultValues.forEach((i: IFmModelPropertyMeta<T>) => {
         if (rec.get(i.property) === undefined) {
@@ -381,10 +385,14 @@ export class Record<T extends Model> extends FireModel<T> {
    *
    * If you want to add this record to the database then use `add()`
    * initializer instead.
+   *
+   * @prop model a constructor for the underlying model
+   * @payload either a string representing an `id` or Composite Key or alternatively
+   * a hash/dictionary of attributes that are to be set as a starting point
    */
   public static createWith<T extends Model>(
     model: new () => T,
-    payload: T | string,
+    payload: Partial<T> | string,
     options: IRecordOptions = {}
   ) {
     const rec = Record.create(model, options);
@@ -622,21 +630,26 @@ export class Record<T extends Model> extends FireModel<T> {
    *
    * @param prop the property on the record to be changed
    * @param value the new value to set to
-   * @param silent a flag to indicate whether the change to the prop should be updated to the database
+   * @param silent a flag to indicate whether the change to the prop should be updated to the database or not
    */
   public async set<K extends keyof T>(
     prop: K,
     value: T[K],
     silent: boolean = false
   ) {
-    const meta =
-      this.META.property(prop) || getModelMeta(this._modelConstructor);
-    if (meta.isRelationship) {
-      const e = new Error(
-        `You can not "set" the property "${prop}" because it is configured as a relationship!`
+    const meta = this.META.property(prop);
+    if (!meta) {
+      throw new FireModelError(
+        `There was a problem getting the meta data for the model ${capitalize(
+          this.modelName
+        )} while attempting to set the "${prop}" property to: ${value}`
       );
-      e.name = "FireModel::NotAllowed";
-      throw e;
+    }
+    if (meta.isRelationship) {
+      throw new FireModelError(
+        `You can not "set" the property "${prop}" because it is configured as a relationship!`,
+        "firemodel/not-allowed"
+      );
     }
     const lastUpdated = new Date().getTime();
     const changed: any = {
@@ -646,12 +659,13 @@ export class Record<T extends Model> extends FireModel<T> {
     // locally change Record values
     this.META.isDirty = true;
     this._data = { ...this._data, ...changed };
-
     // dispatch
-    await this._localCrudOperation(IFmCrudOperations.update, changed, {
-      silent
-    });
-    this.META.isDirty = false;
+    if (!silent) {
+      await this._localCrudOperation(IFmCrudOperations.update, changed, {
+        silent
+      });
+      this.META.isDirty = false;
+    }
 
     return;
   }

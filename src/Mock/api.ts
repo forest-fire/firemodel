@@ -4,7 +4,7 @@ import addRelationships from "./addRelationships";
 import { Record } from "../Record";
 import { RealTimeDB } from "abstracted-firebase";
 import { IMockConfig, IMockResponse } from "./types";
-import { FireModel } from "../FireModel";
+import { Mock as FireMock } from "firemock";
 
 export default function API<T>(db: RealTimeDB, modelConstructor: new () => T) {
   const config: IMockConfig = {
@@ -24,8 +24,7 @@ export default function API<T>(db: RealTimeDB, modelConstructor: new () => T) {
       count: number,
       exceptions: IDictionary = {}
     ): Promise<Array<IMockResponse<T>>> {
-      await db.mock.importFakerLibrary();
-
+      await FireMock.prepare();
       const props = mockProperties<T>(db, config, exceptions);
       const relns = addRelationships<T>(db, config, exceptions);
 

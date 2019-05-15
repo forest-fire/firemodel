@@ -8,8 +8,8 @@ import { FireModel } from "../src/FireModel";
 import { wait } from "common-types";
 const expect = chai.expect;
 
-describe("Auditing â†’", () => {
-  describe("Writing â†’", () => {
+describe("Auditing ->’", () => {
+  describe("Writing ->’", () => {
     let db: DB;
     beforeEach(async () => {
       db = await DB.connect({ mocking: true });

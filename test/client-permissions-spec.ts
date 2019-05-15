@@ -38,7 +38,6 @@ describe("Validating client permissions with an anonymous user", () => {
     } catch (e) {
       expect(e.code).to.equal("PERMISSION_DENIED");
     }
-    console.log(events);
 
     expect(
       events.filter((i: any) => i.type === "@firemodel/RECORD_ADDED_ROLLBACK")

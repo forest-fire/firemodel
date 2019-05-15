@@ -151,8 +151,12 @@ export declare class Record<T extends Model> extends FireModel<T> {
      *
      * If you want to add this record to the database then use `add()`
      * initializer instead.
+     *
+     * @prop model a constructor for the underlying model
+     * @payload either a string representing an `id` or Composite Key or alternatively
+     * a hash/dictionary of attributes that are to be set as a starting point
      */
-    static createWith<T extends Model>(model: new () => T, payload: T | string, options?: IRecordOptions): Record<T>;
+    static createWith<T extends Model>(model: new () => T, payload: Partial<T> | string, options?: IRecordOptions): Record<T>;
     /**
      * get (static initializer)
      *
@@ -228,7 +232,7 @@ export declare class Record<T extends Model> extends FireModel<T> {
      *
      * @param prop the property on the record to be changed
      * @param value the new value to set to
-     * @param silent a flag to indicate whether the change to the prop should be updated to the database
+     * @param silent a flag to indicate whether the change to the prop should be updated to the database or not
      */
     set<K extends keyof T>(prop: K, value: T[K], silent?: boolean): Promise<void>;
     /**
