@@ -1,5 +1,7 @@
 # Permissions and Indexes
 
+> NOTE: THIS IS A WORK IN PROGRESS; DO NOT EXPECT THIS TO WORK YET
+
 In addition to data-structure we can also annotate the permission level data should have which  in turn can be translated into Firebase security rules. Further, we have the ability at the property level to indicate which fields should be indexed.
 
 ### Permissions

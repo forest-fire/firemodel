@@ -28,6 +28,12 @@ While there aren't stark differences in behavior between these constraints it mi
    - The `@mock` decorator allows for detailed meta-characteristics of your data to be stored in your models and then _mocked_ whenever you need them. See the [mocking](/mocking/) section for more  details.
    - The `@defaultValue` decorator allows you to state values for some of your model's properties to take on if they are not specified. Unlike the _mock_ these values are not used for testing purposes but rather for real life defaults. This allows your models to initialize into a known  state without requiring the caller to state every required property any time they are adding/creating a new record.
 
+     ```typescript
+     export FooBar extends Model {
+       @property @defaultValue("USA") country: string;
+     }
+     ```
+
 2. **Built-in Meta** - the remaining constraints that are built in to **FireModel** "out of the box" are `min`, `max`, `length`, and `desc`. These properties are available to your code and you'll find them quite easily as the typing is included to ensure these properties are exposed via your editor's autocomplete. For instance, to get the minimum age in our `Person` example above:
 
     ```typescript

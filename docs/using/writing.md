@@ -13,7 +13,6 @@ const newPerson = await Record.add(Person, {
 
 This is short and sweet and is likely the most common way of achieving the goal of adding a new record. Not only will this add the stated properties to Firebase but it will also add `lastUpdated` and `createdAt` properties as well as a Firebase created ID.
 
-
 In a slightly modified example, imagine that you want to add a new `Company` "ABC Corp" and you've decided that rather that using Firebase's push() method -- which is what happened above -- to auto-create an ID you want to use slugified names for the company's ID. No problem, you can just include the ID property as part of the record like so:
 
 ```typescript
@@ -65,39 +64,17 @@ await people.remove("1234");
 
 ## Updating records
 
-So after having covered "adding" and "removing" we'll now touch on the slightly more nuanced _updating_ of records. Why is updating more _nuanced_? Well updating is just kinda more complicated by it's very nature but Firebase adds its own little twist under the heading of "multi-path updates". 
-
-In the Firebase SDK the `update()` operation is a non destructive operation. So for instance if you had a person in the database under the "1234" ID and then did this:
+In the Firebase SDK -- as well as `abstracted-admin` / `abstracted-client` -- the `update()` operation is "non destructive":
 
 ```typescript
-await ref('authenticated/people/1234').update({ favoriteColor: "blue" });
+await ref('people/1234').update({ favoriteColor: "blue" });
 ```
 
-It would add (or update) `favoriteColor` but not blow away the other properties like "name", "age", etc that also sit at the same path of `authenticated/people/1234`. This non-destructive behavior is useful but the SDK overloads the `update()` method with another very useful feature called "multi-path updates" which _are_ destructive. 
-
-In **FireModel** we've separated these two operations from a nomenclature perspective and behind the scenes what we're really doing is doing a bunch of sneaky "multi-path updates" so that when things are written to the database they are writting _atomically_ (aka, all as part of one transaction). 
-
-Let's start with a basic operation ... say you have a `Person` record and you want to change `favoriteColor` color like the example above but you also wanted to add another "child" to your `children` relationship. You would write something like:
+That same idea is carried forward to **FireModel**. So, for instance, if were to execute:
 
 ```typescript
-const jimmy = Record.get(Person, "1234");
-jimmy.set('favoriteColor', "blue");
-jimmy.addToRelationship('children', '4567');
-await jimmy.update();
+const person = Record.get(Person, '1234');
+person.update({ favoriteColor: 'blue' });
 ```
 
-This would then know to update the following paths under the covers: 
-
-```typescript
-[
-  "/authenticated/people/1234/favoriteColor": "blue",
-  "/authenticated/people/1234/children/4567": true,
-  "/authenticated/people/1234/lastUpdated": [now],
-  "/authenticated/people/4567/parents/1234": true,
-  "/authenticated/people/4567/lastUpdated": [now],
-]
-```
-
-![](../images/mic-drop.jpg)
-
-Hot damn! Let's get this party started. Next up ... _watching_ for change.
+It would update `favoriteColor` (and `lastUpdated`) but not change  other properties like "name", "age", etc that also sit at the same path of `people/1234`.

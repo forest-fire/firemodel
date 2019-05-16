@@ -9,14 +9,24 @@ module.exports = {
     },
     "@vuepress/back-to-top": true,
     "@vuepress/last-updated": true,
-    "@vuepress/medium-zoom": true
+    "@vuepress/medium-zoom": true,
+    autometa: {
+      site: {
+        name: "FireModel"
+      },
+      canonical_base: "https://firemodel.info",
+      author: {
+        name: "Ken Snyder",
+        twitter: "yankeeinlondon"
+      }
+    }
   },
   title: "FireModel",
   description: "Modeling, Access, and Mocking for Firebase Projects",
   head: [
     ["meta", { name: "apple-mobile-web-app-capable", content: "yes" }],
     ["meta", { name: "application-name", content: "FireModel" }],
-    ["link", { rel: "favicon", href: "icon/icon-48.png" }],
+    ["link", { rel: "favicon", href: "icon/icon-32.png" }],
     ["link", { rel: "icon", href: "icon/icon-225.png" }],
     ["link", { rel: "manifest", href: "manifest.json" }],
     [
