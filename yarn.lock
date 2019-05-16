@@ -4065,9 +4065,9 @@ firebase-key@^2.0.1, firebase-key@^2.0.2:
   integrity sha512-gH0u6apANQsqHUqcf+Yd49VaUQyKNCLxofwYx0gqUGcymeLs5HWg/3tXroGheYYH8+ynxbrnP/Z4F/FEqNy9Ow==
 
 firemock@^0.24.102:
-  version "0.24.102"
-  resolved "https://registry.yarnpkg.com/firemock/-/firemock-0.24.102.tgz#923791d9fdc80dfcef2991d4cf47170ea60ec231"
-  integrity sha512-z0JV+9aj1iTFKDo9ZZJ+8LHUKXmAWX6xzeeTFpxh2gqwC0ZvPwfqrWZ0QeT19v8gwCB+1khP24az7VI4F7Veew==
+  version "0.24.103"
+  resolved "https://registry.yarnpkg.com/firemock/-/firemock-0.24.103.tgz#ce1cdb4767ca6dfc5ab22cfd55ce84dc3e6a2bc7"
+  integrity sha512-bOayQM053xpW0l/NzWi8L/4IAnUYo3yMd47FuAYHrzfLRSVJilIlgBjl554oTC4TX/R2Z8aojjCY8WhAYLkmMg==
   dependencies:
     "@firebase/app-types" "^0.4.0"
     "@firebase/auth-types" "^0.7.0"

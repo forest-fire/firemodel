@@ -5,18 +5,20 @@ import { IDictionary } from "common-types";
 import { IFMRecordEvent, FMEvents, NotString, Extractable } from "./state-mgmt";
 import { IReduxDispatch } from "./VuexWrapper";
 import { getModelMeta } from "./ModelMeta";
-import { DB } from "abstracted-firebase";
+import {
+  RealTimeDB,
+  IFirebaseConfig,
+  IFirebaseAdminConfig
+} from "abstracted-firebase";
 import {
   IFmModelMeta,
   IFmModelPropertyMeta,
   IFmModelRelationshipMeta
 } from "./decorators/types";
 import { ILocalStateManagement } from "./@types";
-import { DB } from "abstracted-client";
 // tslint:disable-next-line:no-var-requires
 const pluralize = require("pluralize");
 const defaultDispatch = (context: IDictionary) => "";
-type RealTimeDB = import("abstracted-firebase").RealTimeDB;
 
 export class FireModel<T extends Model> {
   public static get defaultDb() {
@@ -167,8 +169,13 @@ const db = await FireModel.connect(DB, options);
    * databases) but the vast majority of projects only have ONE firebase
    * database so this just makes the whole process much easier.
    */
-  public static async connect(database: DB, options: IDictionary) {
-    const db = await database.connect(options);
+  public static async connect<T extends RealTimeDB>(
+    RTDB: {
+      connect: (options: Partial<IFirebaseAdminConfig> & IFirebaseConfig) => T;
+    },
+    options: Partial<IFirebaseAdminConfig> & IFirebaseConfig
+  ) {
+    const db = await RTDB.connect(options);
     FireModel.defaultDb = db;
     return db;
   }

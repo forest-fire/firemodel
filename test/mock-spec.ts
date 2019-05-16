@@ -170,8 +170,7 @@ describe("Mocking:", () => {
         { silent: true }
       );
     } catch (e) {
-      expect(e.name).to.equal("FireModel::Forbidden");
-      expect(events).to.have.lengthOf(0);
+      expect(e.code).to.equal("forbidden");
     }
   });
 
@@ -208,7 +207,7 @@ describe("Mocking:", () => {
     expect(locally.transactionId).to.equal(confirm.transactionId);
   });
 
-  it.only("Mocking data does NOT fire watcher events but adding a record DOES [ mock db ]", async () => {
+  it("Mocking data does NOT fire watcher events but adding a record DOES [ mock db ]", async () => {
     const events: IDictionary[] = [];
     FireModel.dispatch = (e: IReduxAction) => events.push(e);
     const w = await Watch.list(FancyPerson)
@@ -223,7 +222,6 @@ describe("Mocking:", () => {
     await Record.add(FancyPerson, {
       name: "Bob the Builder"
     });
-
     const eventTypes2: string[] = Array.from(new Set(events.map(e => e.type)));
     console.log(eventTypes2);
 
