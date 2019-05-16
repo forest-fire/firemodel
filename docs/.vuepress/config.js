@@ -26,7 +26,33 @@ module.exports = {
   head: [
     ["meta", { name: "apple-mobile-web-app-capable", content: "yes" }],
     ["meta", { name: "application-name", content: "FireModel" }],
-    ["link", { rel: "favicon", href: "icon/icon-32.png" }],
+    [
+      "link",
+      {
+        rel: "favicon",
+        href: "icon/icon-16.png",
+        type: "image/png",
+        sizes: "16x16"
+      }
+    ],
+    [
+      "link",
+      {
+        rel: "favicon",
+        href: "icon/icon-32.png",
+        type: "image/png",
+        sizes: "32x32"
+      }
+    ],
+    [
+      "link",
+      {
+        rel: "favicon",
+        href: "icon/icon-48.png",
+        type: "image/png",
+        sizes: "48x48"
+      }
+    ],
     ["link", { rel: "icon", href: "icon/icon-32.png", sizes: "32x32" }],
     ["link", { rel: "icon", href: "icon/icon-48.png", sizes: "48x48" }],
     ["link", { rel: "icon", href: "icon/icon-192.png", sizes: "192x192" }],
