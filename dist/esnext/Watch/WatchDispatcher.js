@@ -6,7 +6,7 @@ import { capitalize } from "../util";
 /**
  * **watchDispatcher**
  *
- * Wraps up context captured at watch conception with
+ * Wraps Firebase event detail (meager) with as much context as is possible
  */
 export const WatchDispatcher = (context) => (
 /** a generic redux dispatch function; called by database on event */

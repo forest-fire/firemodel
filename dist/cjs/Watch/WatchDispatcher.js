@@ -8,7 +8,7 @@ const util_1 = require("../util");
 /**
  * **watchDispatcher**
  *
- * Wraps up context captured at watch conception with
+ * Wraps Firebase event detail (meager) with as much context as is possible
  */
 exports.WatchDispatcher = (context) => (
 /** a generic redux dispatch function; called by database on event */

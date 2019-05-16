@@ -6,6 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const mockProperties_1 = __importDefault(require("./mockProperties"));
 const addRelationships_1 = __importDefault(require("./addRelationships"));
 const Record_1 = require("../Record");
+const firemock_1 = require("firemock");
 function API(db, modelConstructor) {
     const config = {
         relationshipBehavior: "ignore",
@@ -21,7 +22,7 @@ function API(db, modelConstructor) {
          * @param exceptions do you want to fix a given set of properties to a static value?
          */
         async generate(count, exceptions = {}) {
-            // await db.mock.importFakerLibrary();
+            await firemock_1.Mock.prepare();
             const props = mockProperties_1.default(db, config, exceptions);
             const relns = addRelationships_1.default(db, config, exceptions);
             // If dynamic props then warn if it's not constrained

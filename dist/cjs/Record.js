@@ -18,6 +18,7 @@ const buildRelationshipPaths_1 = require("./record/relationships/buildRelationsh
 const relationshipOperation_1 = require("./record/relationshipOperation");
 const createCompositeKeyString_1 = require("./record/createCompositeKeyString");
 const createCompositeKeyFromFkString_1 = require("./record/createCompositeKeyFromFkString");
+const DatabaseCrudFailure_1 = require("./errors/record/DatabaseCrudFailure");
 class Record extends FireModel_1.FireModel {
     constructor(model, options = {}) {
         super();
@@ -170,9 +171,7 @@ class Record extends FireModel_1.FireModel {
     static create(model, options = {}) {
         const r = new Record(model, options);
         if (options.silent && !r.db.isMockDb) {
-            const e = new Error(`You can only add new records to the DB silently when using a Mock database!`);
-            e.name = "FireModel::Forbidden";
-            throw e;
+            throw new errors_1.FireModelError(`You can only add new records to the DB silently when using a Mock database!`, "firemodel/forbidden");
         }
         return r;
     }
@@ -229,9 +228,7 @@ class Record extends FireModel_1.FireModel {
             await r._adding(options);
         }
         catch (e) {
-            const err = new Error(`Problem adding new Record: ${e.message}`);
-            err.name = e.name !== "Error" ? e.name : "FireModel";
-            throw e;
+            throw new errors_1.FireModelProxyError(e, "Failed to add new record");
         }
         return r;
     }
@@ -419,9 +416,7 @@ class Record extends FireModel_1.FireModel {
             return this.META.property(root).isRelationship;
         })) {
             const relProps = Object.keys(props).filter((p) => this.META.property(p).isRelationship);
-            const e = new Error(`You called update on a hash which has relationships included in it. Please only use "update" for updating properties. The relationships you were attempting to update were: ${relProps.join(", ")}.`);
-            e.name = "FireModel::NotAllowed";
-            throw e;
+            throw new errors_1.FireModelError(`You called update on a hash which has relationships included in it. Please only use "update" for updating properties. The relationships you were attempting to update were: ${relProps.join(", ")}.`, `firemodel/not-allowed`);
         }
         const lastUpdated = new Date().getTime();
         const changed = Object.assign({}, props, { lastUpdated });
@@ -782,7 +777,7 @@ class Record extends FireModel_1.FireModel {
             this.isDirty = false;
             // write audit if option is turned on
             this._writeAudit(crudAction, newValues, priorValue);
-            // send confirm/rollback event
+            // send confirm event
             if (!options.silent && !options.silentAcceptance) {
                 if (watchers.length === 0) {
                     this.dispatch(createWatchEvent_1.createWatchEvent(actionTypeEnd, this, {
@@ -804,6 +799,7 @@ class Record extends FireModel_1.FireModel {
             }
         }
         catch (e) {
+            // send failure event
             this.dispatch(createWatchEvent_1.createWatchEvent(actionTypeFailure, this, {
                 transactionId,
                 crudAction,
@@ -811,6 +807,7 @@ class Record extends FireModel_1.FireModel {
                 dbPath: this.dbPath
                 // paths
             }));
+            throw new DatabaseCrudFailure_1.RecordCrudFailure(this, crudAction, transactionId, e);
         }
     }
     _findDynamicComponents(path = "") {

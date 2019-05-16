@@ -1,8 +1,8 @@
 import { Model } from "./Model";
 import { IDictionary } from "common-types";
 import { IReduxDispatch } from "./VuexWrapper";
+import { RealTimeDB, IFirebaseConfig, IFirebaseAdminConfig } from "abstracted-firebase";
 import { IFmModelMeta, IFmModelPropertyMeta, IFmModelRelationshipMeta } from "./decorators/types";
-declare type RealTimeDB = import("abstracted-firebase").RealTimeDB;
 export declare class FireModel<T extends Model> {
     /**
     * Any FireModel transaction needs to connect to the database
@@ -54,6 +54,27 @@ export declare class FireModel<T extends Model> {
     readonly db: RealTimeDB;
     readonly pushKeys: string[];
     static auditLogs: string;
+    /**
+     * **connect**
+     *
+     * This static initializer facilitates connecting **FireModel** with
+     * the firebase database in a compact and convenient way:
+  ```typescript
+  import { DB } from 'abstracted-xxx';
+  const db = await FireModel.connect(DB, options);
+  ```
+     * This method not only sets **FireModel**'s `defaultDb` property but
+     * also returns a reference to the `abstracted-client`/`abstracted-admin`
+     * object so you can use this externally to FireModel should you choose to.
+     *
+     * Note: each _CRUD_ action in FireModel allows passing
+     * in a DB connection (which opens up the possibility of multiple firebase
+     * databases) but the vast majority of projects only have ONE firebase
+     * database so this just makes the whole process much easier.
+     */
+    static connect<T extends RealTimeDB>(RTDB: {
+        connect: (options: Partial<IFirebaseAdminConfig> & IFirebaseConfig) => T;
+    }, options: Partial<IFirebaseAdminConfig> & IFirebaseConfig): Promise<T>;
     static isBeingWatched(path: string): boolean;
     private static _defaultDb;
     private static _dispatchActive;
@@ -69,4 +90,3 @@ export interface IMultiPathUpdates {
     path: string;
     value: any;
 }
-export {};
