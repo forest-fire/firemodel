@@ -1,10 +1,6 @@
 {
   "name": "firemodel",
-<<<<<<< HEAD
-  "version": "0.23.2",
-=======
   "version": "0.25.1",
->>>>>>> feature/fix-relationship-crud
   "description": "Modeling, Access, and Mocking for Firebase Projects",
   "license": "MIT",
   "repository": "https://github.com/forest-fire/firemodel",
