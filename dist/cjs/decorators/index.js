@@ -5,14 +5,15 @@ function __export(m) {
 Object.defineProperty(exports, "__esModule", { value: true });
 var hasMany_1 = require("./hasMany");
 exports.hasMany = hasMany_1.hasMany;
-var belongsTo_1 = require("./belongsTo");
-exports.belongsTo = belongsTo_1.belongsTo;
-exports.hasOne = belongsTo_1.hasOne;
-exports.ownedBy = belongsTo_1.ownedBy;
+var hasOne_1 = require("./hasOne");
+exports.belongsTo = hasOne_1.belongsTo;
+exports.hasOne = hasOne_1.hasOne;
+exports.ownedBy = hasOne_1.ownedBy;
 var indexing_1 = require("./indexing");
 exports.index = indexing_1.index;
 exports.uniqueIndex = indexing_1.uniqueIndex;
 __export(require("./constraints"));
 __export(require("./model"));
 __export(require("./defaultValue"));
+__export(require("./OneWay"));
 //# sourceMappingURL=index.js.map

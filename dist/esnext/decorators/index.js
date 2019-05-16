@@ -1,7 +1,8 @@
 export { hasMany } from "./hasMany";
-export { belongsTo, hasOne, ownedBy } from "./belongsTo";
+export { belongsTo, hasOne, ownedBy } from "./hasOne";
 export { index, uniqueIndex } from "./indexing";
 export * from "./constraints";
 export * from "./model";
 export * from "./defaultValue";
+export * from "./OneWay";
 //# sourceMappingURL=index.js.map

@@ -67,6 +67,8 @@ export interface IFmModelMeta<T extends Model = any> {
   isDirty?: boolean;
   /** get a list the list of database indexes on the given model */
   dbIndexes?: IModelIndexMeta[];
+  /** all the properties on this model; this includes props and relationships */
+  allProperties?: string[];
 }
 
 export interface IFmModelRelationshipMeta<T extends Model = Model>
@@ -77,6 +79,8 @@ export interface IFmModelRelationshipMeta<T extends Model = Model>
   relType: FmRelationshipType;
   /** the property name on the related model that points back to this relationship */
   inverseProperty?: string;
+  /** indicates whether the relationship is one-way or bi-directional */
+  directionality: IFmRelationshipDirectionality;
   /** The constructor for a model of the FK reference that this relationship maintains */
   fkConstructor: () => new () => T;
   /** the singular name of the relationship's model */
@@ -105,7 +109,12 @@ export interface IFmModelPropertyMeta<T extends Model = Model>
   defaultValue?: any;
 }
 
-export type FMPropertyType = "string" | "number" | "object" | "array";
+export type FMPropertyType =
+  | "string"
+  | "number"
+  | "object"
+  | "array"
+  | "boolean";
 
 export interface IFmModelAttributeBase<T> {
   /** the property name */
@@ -135,7 +144,7 @@ export interface IFmModelAttributeBase<T> {
   /** what kind of relationship does this foreign key contain */
   relType?: FmRelationshipType;
   /** if the property is a relationship ... a constructor for the FK's Model */
-  fkConstructor?: () => new () => any;
+  fkConstructor?: IFmFunctionToConstructor;
   fkModelName?: string;
 }
 
@@ -150,3 +159,7 @@ export interface IModelIndexMeta {
 }
 
 export type IFmHasOne = string;
+
+export type IFmFunctionToConstructor<X = any> = () => new () => X;
+
+export type IFmRelationshipDirectionality = "bi-directional" | "one-way";

@@ -10,7 +10,6 @@ import {
   max,
   length
 } from "../../src";
-import { mock } from "../../src/decorators/constraints";
 import { Company } from "./Company";
 import { IDictionary } from "common-types";
 import { Concert } from "./Concert";
@@ -38,5 +37,5 @@ export class Person extends Model {
   // prettier-ignore
   @hasOne(() => Concert) public concerts?: IDictionary;
   // prettier-ignore
-  @hasOne(() => Company) public employerId?: fk;
+  @hasOne(() => Company) public company?: fk;
 }

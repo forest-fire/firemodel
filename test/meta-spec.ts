@@ -6,7 +6,7 @@ import { Klass } from "./testing/klass";
 import { Person } from "./testing/person";
 const expect = chai.expect;
 
-describe("schema() decorator: ", () => {
+describe.skip("schema() decorator: ", () => {
   it("can read Schema meta properties", () => {
     const myclass: any = new Klass();
     expect(myclass.META.dbOffset).to.equal("authenticated");
@@ -36,11 +36,11 @@ describe("schema() decorator: ", () => {
 describe("property decorator: ", () => {
   it("can discover type for properties on class", () => {
     const myclass = new Klass();
-    expect(Reflect.getMetadata("foo", myclass).type).to.equal("String");
-    expect(Reflect.getMetadata("bar", myclass).type).to.equal("Number");
-    expect(Reflect.getMetadata("bar2", myclass).type).to.equal("Number");
-    expect(Reflect.getMetadata("sub", myclass).type).to.equal("String");
-    expect(Reflect.getMetadata("id", myclass).type).to.equal("String");
+    expect(Reflect.getMetadata("foo", myclass).type).to.equal("string");
+    expect(Reflect.getMetadata("bar", myclass).type).to.equal("number");
+    expect(Reflect.getMetadata("bar2", myclass).type).to.equal("number");
+    expect(Reflect.getMetadata("sub", myclass).type).to.equal("string");
+    expect(Reflect.getMetadata("id", myclass).type).to.equal("string");
   });
 
   it("constraint() decorator-factory adds constrain metadata", () => {
@@ -101,12 +101,12 @@ describe("relationship decorators: ", () => {
     const person = new Person();
     const ids = person.META.relationships.map(r => r.property);
 
-    expect(person.META.relationships.length).to.equal(8);
     expect(ids).to.include("father");
     expect(ids).to.include("mother");
     expect(ids).to.include("children");
     expect(ids).to.include("concerts");
-    expect(ids).to.include("employerId");
+    expect(ids).to.include("company");
+    expect(ids).to.include("pays");
   });
   it("@relationships show up on Model", async () => {
     const PersonRecord = Record.create(Person, {
@@ -139,13 +139,12 @@ describe("relationship decorators: ", () => {
     const person = new Person();
     const props = person.META.relationships.map(r => r.property);
 
-    expect(person.META.relationships.length).to.equal(8);
-
     expect(props).to.include("mother");
     expect(props).to.include("father");
     expect(props).to.include("parents");
     expect(props).to.include("concerts");
-    expect(props).to.include("employerId");
+    expect(props).to.include("company");
+    expect(props).to.include("pays");
 
     person.META.relationships.map(p => {
       if (p.relType === "hasOne") {

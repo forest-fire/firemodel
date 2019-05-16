@@ -69,4 +69,13 @@ export function withoutMeta(model) {
     }
     return model;
 }
+export function capitalize(str) {
+    return str.slice(0, 1).toUpperCase() + str.slice(1);
+}
+export function lowercase(str) {
+    return str.slice(0, 1).toLowerCase() + str.slice(1);
+}
+export function stripLeadingSlash(str) {
+    return str.slice(0, 1) === "/" ? str.slice(1) : str;
+}
 //# sourceMappingURL=util.js.map

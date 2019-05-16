@@ -17,7 +17,7 @@ import {
   IComparisonOperator,
   FmModelConstructor
 } from "./@types/general";
-import { IPrimaryKey } from "./@types/record-types";
+import { IPrimaryKey, ICompositeKey } from "./@types/record-types";
 import { FMEvents } from "./state-mgmt";
 import { getAllPropertiesFromClassStructure } from "./util";
 import {
@@ -29,6 +29,7 @@ import {
   waitForInitialization,
   hasInitialized
 } from "./Watch/watchInitialization";
+import { FireModelError } from "./errors";
 
 /** a cache of all the watched  */
 let watcherPool: IDictionary<IWatcherItem> = {};
@@ -84,17 +85,16 @@ export class Watch<T extends Model = Model> {
     const codes = new Set(Object.keys(watcherPool));
     const db = oneOffDB || FireModel.defaultDb;
     if (!db) {
-      const e = new Error(
-        `There is no established way to connect to the database; either set the default DB or pass the DB in as the second parameter to Watch.stop()!`
+      throw new FireModelError(
+        `There is no established way to connect to the database; either set the default DB or pass the DB in as the second parameter to Watch.stop()!`,
+        `firemodel/no-database`
       );
-      e.name = "FireModel::NoDatabase";
-      throw e;
     }
     if (hashCode && !codes.has(hashCode)) {
-      const e = new Error(
+      const e = new FireModelError(
         `The hashcode passed into the stop() method [ ${hashCode} ] is not actively being watched!`
       );
-      e.name = "FireModel::Forbidden";
+      e.name = "firemodel/missing-hashcode";
       throw e;
     }
 
@@ -113,15 +113,24 @@ export class Watch<T extends Model = Model> {
     }
   }
 
+  /**
+   * Configures the watcher to be a `value` watcher on Firebase
+   * which is only concerned with changes to a singular Record.
+   *
+   * @param pk the _primary key_ for a given record. This can be a string
+   * represention of the `id` property, a string represention of
+   * the composite key, or an object representation of the composite
+   * key.
+   */
   public static record<T extends Model>(
     modelConstructor: new () => T,
-    pk: IPrimaryKey,
+    pk: IPrimaryKey<T>,
     options: IModelOptions = {}
   ) {
     if (!pk) {
-      throw createError(
-        "firemodel/watch",
-        `Attempt made to watch a RECORD but no primary key was provided!`
+      throw new FireModelError(
+        `Attempt made to watch a RECORD but no primary key was provided!`,
+        "firemodel/no-pk"
       );
     }
     const o = new Watch();
@@ -131,10 +140,7 @@ export class Watch<T extends Model = Model> {
     o._eventType = "value";
     o._watcherSource = "record";
 
-    const r = Record.local(
-      modelConstructor,
-      typeof pk === "string" ? { id: pk } : (pk as any)
-    );
+    const r = Record.createWith(modelConstructor, pk);
 
     o._query = new SerializedQuery(`${r.dbPath}`);
     o._modelConstructor = modelConstructor;

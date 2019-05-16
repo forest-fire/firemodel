@@ -4,6 +4,6 @@ import { IFmDispatchWatchContext, IFmContextualizedWatchEvent } from "../state-m
 /**
  * **watchDispatcher**
  *
- * Wraps up context captured at watch conception with
+ * Wraps Firebase event detail (meager) with as much context as is possible
  */
 export declare const WatchDispatcher: <T>(context: IFmDispatchWatchContext<T>) => (clientHandler: IReduxDispatch<IFmContextualizedWatchEvent<T>>) => (event: IValueBasedWatchEvent & IPathBasedWatchEvent) => void;

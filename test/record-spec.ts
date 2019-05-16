@@ -74,7 +74,8 @@ describe("Record > ", () => {
       throw new Error("Let ID be reset!");
     } catch (e) {
       expect(r.id).to.equal(id);
-      expect(e.name).to.equal("NotAllowed");
+      expect(e.name).to.equal("firemodel/not-allowed");
+      expect(e.code).to.equal("not-allowed");
     }
   });
 
@@ -203,8 +204,6 @@ describe("Record > ", () => {
     expect(eventTypes.has(FMEvents.RECORD_REMOVED_CONFIRMATION)).is.equal(true);
 
     const peeps2 = await List.all(Person);
-    console.log("person id", id);
-    console.log(peeps2.map(i => i.id));
 
     expect(peeps2).to.have.lengthOf(9);
     const ids = peeps2.map(p => p.id);

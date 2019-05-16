@@ -36,7 +36,7 @@ describe("Validating client permissions with an anonymous user", () => {
         cost: 10000
       });
     } catch (e) {
-      expect(e.code).to.equal("PERMISSION_DENIED");
+      expect(e.code).to.equal("permission-denied");
     }
 
     expect(

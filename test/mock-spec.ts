@@ -12,6 +12,7 @@ import {
 import { DB } from "abstracted-admin";
 import * as chai from "chai";
 import { Mock } from "../src/Mock";
+import { Mock as FireMock } from "firemock";
 import { FancyPerson } from "./testing/FancyPerson";
 import { Car } from "./testing/Car";
 import { Company } from "./testing/Company";
@@ -27,7 +28,7 @@ export class SimplePerson extends Model {
   @property public phoneNumber: string;
 }
 
-describe.skip("Mocking:", () => {
+describe("Mocking:", () => {
   let db: DB;
   let realDb: DB;
   before(async () => {
@@ -41,6 +42,13 @@ describe.skip("Mocking:", () => {
     db = await DB.connect({ mocking: true });
     FireModel.defaultDb = db;
   });
+
+  it("FireMock.prepare() leads to immediate availability of faker library", async () => {
+    const m = await FireMock.prepare();
+    expect(m.faker).is.a("object");
+    expect(m.faker.address.city).is.a("function");
+  });
+
   it("the auto-mock works for named properties", async () => {
     await Mock(SimplePerson, db).generate(10);
     const people = await List.all(SimplePerson);
@@ -55,8 +63,9 @@ describe.skip("Mocking:", () => {
   });
 
   it("giving a @mock named hint corrects the typing of a named prop", async () => {
-    await Mock(FancyPerson, db).generate(10);
+    const m = await Mock(FancyPerson, db).generate(10);
     const people = await List.all(FancyPerson);
+
     expect(people).to.have.lengthOf(10);
     people.map(person => {
       expect(person.otherPhone).to.be.a("string");
@@ -146,6 +155,7 @@ describe.skip("Mocking:", () => {
     expect(events).to.have.lengthOf(0);
   });
 
+  // TODO: is this freezing the build?
   it("Adding a record with {silent: true} raises an error in real db", async () => {
     FireModel.defaultDb = realDb;
     const events: IDictionary[] = [];
@@ -160,8 +170,7 @@ describe.skip("Mocking:", () => {
         { silent: true }
       );
     } catch (e) {
-      expect(e.name).to.equal("FireModel::Forbidden");
-      expect(events).to.have.lengthOf(0);
+      expect(e.code).to.equal("forbidden");
     }
   });
 
@@ -189,7 +198,6 @@ describe.skip("Mocking:", () => {
     expect(Array.from(eventTypes)).to.include(
       "@firemodel/RECORD_ADDED_CONFIRMATION"
     );
-    expect(Array.from(eventTypes)).to.include("@firemodel/RECORD_ADDED");
     const locally = events.find(e => e.type === FMEvents.RECORD_ADDED_LOCALLY);
     const confirm = events.find(
       e => e.type === FMEvents.RECORD_ADDED_CONFIRMATION
@@ -209,13 +217,14 @@ describe.skip("Mocking:", () => {
     await Mock(FancyPerson).generate(1);
     const eventTypes: Set<string> = new Set(events.map(e => e.type));
 
-    expect(Array.from(eventTypes)).to.not.include("@firemodel/RECORD_ADDED");
+    expect(Array.from(eventTypes)).to.not.include(FMEvents.RECORD_ADDED);
 
     await Record.add(FancyPerson, {
       name: "Bob the Builder"
     });
-
     const eventTypes2: string[] = Array.from(new Set(events.map(e => e.type)));
-    expect(eventTypes2).to.include("@firemodel/RECORD_ADDED");
+    console.log(eventTypes2);
+
+    expect(eventTypes2).to.include(FMEvents.RECORD_ADDED);
   });
 });

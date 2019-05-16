@@ -1,4 +1,3 @@
-import { Parallel } from "wait-in-parallel";
 import { processHasMany } from "./processHasMany";
 import { processHasOne } from "./processHasOne";
 export default function addRelationships(db, config, exceptions = {}) {
@@ -6,7 +5,7 @@ export default function addRelationships(db, config, exceptions = {}) {
         const relns = record.META.relationships;
         const relnResults = [];
         if (config.relationshipBehavior !== "ignore") {
-            const p = new Parallel("Adding Relationships to Mock");
+            // const p = new Parallel<IMockResponse<T>>("Adding Relationships to Mock");
             for (const rel of relns) {
                 if (!config.cardinality ||
                     Object.keys(config.cardinality).includes(rel.property)) {

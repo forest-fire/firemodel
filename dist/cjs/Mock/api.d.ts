@@ -10,7 +10,7 @@ export default function API<T>(db: RealTimeDB, modelConstructor: new () => T): {
      * @param count how many instances of the given Model do you want?
      * @param exceptions do you want to fix a given set of properties to a static value?
      */
-    generate(count: number, exceptions?: IDictionary<any>): Promise<IMockResponse[]>;
+    generate(count: number, exceptions?: IDictionary<any>): Promise<IMockResponse<T>[]>;
     /**
      * createRelationshipLinks
      *

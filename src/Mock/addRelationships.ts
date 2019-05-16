@@ -12,12 +12,12 @@ export default function addRelationships<T extends Model>(
   config: IMockConfig,
   exceptions: IDictionary = {}
 ) {
-  return async (record: Record<T>): Promise<IMockResponse[]> => {
+  return async (record: Record<T>): Promise<Array<IMockResponse<T>>> => {
     const relns = record.META.relationships;
-    const relnResults: IMockResponse[] = [];
+    const relnResults: Array<IMockResponse<T>> = [];
 
     if (config.relationshipBehavior !== "ignore") {
-      const p = new Parallel<IMockResponse>("Adding Relationships to Mock");
+      // const p = new Parallel<IMockResponse<T>>("Adding Relationships to Mock");
       for (const rel of relns) {
         if (
           !config.cardinality ||

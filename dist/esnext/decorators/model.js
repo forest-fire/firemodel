@@ -21,6 +21,11 @@ export function model(options = {}) {
                 options.audit = false;
             }
             const meta = Object.assign({}, options, { isProperty: isProperty(modelOfObject) }, { property: getModelProperty(modelOfObject) }, { properties: getProperties(modelOfObject) }, { isRelationship: isRelationship(modelOfObject) }, { relationship: getModelRelationship(modelOfObject) }, { relationships: getRelationships(modelOfObject) }, { dbIndexes: getDbIndexes(modelOfObject) }, { pushKeys: getPushKeys(modelOfObject) }, { dbOffset: options.dbOffset ? options.dbOffset : "" }, { audit: options.audit ? options.audit : false }, { plural: options.plural }, {
+                allProperties: [
+                    ...getProperties(modelOfObject).map(p => p.property),
+                    ...getRelationships(modelOfObject).map(p => p.property)
+                ]
+            }, {
                 localPostfix: options.localPostfix === undefined ? "all" : options.localPostfix
             }, {
                 localModelName: options.localModelName === undefined

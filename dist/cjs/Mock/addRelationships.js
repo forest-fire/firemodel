@@ -1,6 +1,5 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const wait_in_parallel_1 = require("wait-in-parallel");
 const processHasMany_1 = require("./processHasMany");
 const processHasOne_1 = require("./processHasOne");
 function addRelationships(db, config, exceptions = {}) {
@@ -8,7 +7,7 @@ function addRelationships(db, config, exceptions = {}) {
         const relns = record.META.relationships;
         const relnResults = [];
         if (config.relationshipBehavior !== "ignore") {
-            const p = new wait_in_parallel_1.Parallel("Adding Relationships to Mock");
+            // const p = new Parallel<IMockResponse<T>>("Adding Relationships to Mock");
             for (const rel of relns) {
                 if (!config.cardinality ||
                     Object.keys(config.cardinality).includes(rel.property)) {

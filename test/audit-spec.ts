@@ -8,13 +8,14 @@ import { FireModel } from "../src/FireModel";
 import { wait } from "common-types";
 const expect = chai.expect;
 
-describe("Auditing â†’", () => {
-  describe("Writing â†’", () => {
+describe("Auditing ->’", () => {
+  describe("Writing ->’", () => {
     let db: DB;
     beforeEach(async () => {
       db = await DB.connect({ mocking: true });
       FireModel.defaultDb = db;
     });
+
     it("writes to auditing table when adding a Record", async () => {
       const person = await Record.add(Person, {
         name: "Johhny Rocket",
@@ -29,6 +30,7 @@ describe("Auditing â†’", () => {
       const p2 = await Record.get(Person, log[0].recordId);
       expect(p2.data.name).to.equal("Johhny Rocket");
     });
+
     it("writes to auditing table when updating a record", async () => {
       await db.set("/authenticated/people/1234", {
         name: "Johhny Rocket",

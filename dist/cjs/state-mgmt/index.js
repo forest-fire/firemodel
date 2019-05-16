@@ -18,7 +18,7 @@ var FMEvents;
     FMEvents["RECORD_ADDED_CONFIRMATION"] = "@firemodel/RECORD_ADDED_CONFIRMATION";
     /** A record added locally failed to be saved to Firebase */
     FMEvents["RECORD_ADDED_ROLLBACK"] = "@firemodel/RECORD_ADDED_ROLLBACK";
-    /** A record has been added to a given Model list being watched */
+    /** A record has been added to a given Model list being watched (external event) */
     FMEvents["RECORD_ADDED"] = "@firemodel/RECORD_ADDED";
     /** A record has been updated locally */
     FMEvents["RECORD_CHANGED_LOCALLY"] = "@firemodel/RECORD_CHANGED_LOCALLY";
@@ -26,7 +26,7 @@ var FMEvents;
     FMEvents["RECORD_CHANGED_CONFIRMATION"] = "@firemodel/RECORD_CHANGED_CONFIRMATION";
     /** A record changed locally failed to be saved to Firebase */
     FMEvents["RECORD_CHANGED_ROLLBACK"] = "@firemodel/RECORD_CHANGED_ROLLBACK";
-    /** A record has been updated on Firebase */
+    /** A record has been updated on Firebase (external event) */
     FMEvents["RECORD_CHANGED"] = "@firemodel/RECORD_CHANGED";
     /**
      * for client originated events touching relationships (as external events would come back as an event per model)
@@ -56,14 +56,26 @@ var FMEvents;
     FMEvents["WATCHER_STOPPED"] = "@firemodel/WATCHER_STOPPED";
     /** Watcher has disconnected all event streams from Firebase */
     FMEvents["WATCHER_STOPPED_ALL"] = "@firemodel/WATCHER_STOPPED_ALL";
-    /** Relationship(s) have removed */
-    FMEvents["RELATIONSHIP_REMOVED"] = "@firemodel/RELATIONSHIP_REMOVED";
     /** Relationship(s) have been removed locally */
     FMEvents["RELATIONSHIP_REMOVED_LOCALLY"] = "@firemodel/RELATIONSHIP_REMOVED_LOCALLY";
-    /** Relationship(s) have added */
-    FMEvents["RELATIONSHIP_ADDED"] = "@firemodel/RELATIONSHIP_ADDED";
-    /** Relationship(s) have been added locally */
+    /** Relationship removal has been confirmed by database */
+    FMEvents["RELATIONSHIP_REMOVED_CONFIRMATION"] = "@firemodel/RELATIONSHIP_REMOVED_CONFIRMATION";
+    /** Relationship removal failed and must be rolled back if client updated optimistically */
+    FMEvents["RELATIONSHIP_REMOVED_ROLLBACK"] = "@firemodel/RELATIONSHIP_REMOVED_CONFIRMATION";
+    /** Relationship has been added locally */
     FMEvents["RELATIONSHIP_ADDED_LOCALLY"] = "@firemodel/RELATIONSHIP_ADDED_LOCALLY";
+    /** Relationship add has been confirmed by database */
+    FMEvents["RELATIONSHIP_ADDED_CONFIRMATION"] = "@firemodel/RELATIONSHIP_ADDED_CONFIRMATION";
+    /** Relationship add failed and must be rolled back if client updated optimistically */
+    FMEvents["RELATIONSHIP_ADDED_ROLLBACK"] = "@firemodel/RELATIONSHIP_ADDED_ROLLBACK";
+    /** Relationship has been set locally (relating to a hasOne event) */
+    FMEvents["RELATIONSHIP_SET_LOCALLY"] = "@firemodel/RELATIONSHIP_SET_LOCALLY";
+    /** Relationship set has been confirmed by database */
+    FMEvents["RELATIONSHIP_SET_CONFIRMATION"] = "@firemodel/RELATIONSHIP_SET_CONFIRMATION";
+    /** Relationship set failed and must be rolled back if client updated optimistically */
+    FMEvents["RELATIONSHIP_SET_ROLLBACK"] = "@firemodel/RELATIONSHIP_ADDED_ROLLBACK";
+    /** A relationship was "added" but it already existed; this is typically non-action oriented */
+    FMEvents["RELATIONSHIP_DUPLICATE_ADD"] = "@firemodel/RELATIONSHIP_ADDED_ROLLBACK";
     FMEvents["APP_CONNECTED"] = "@firemodel/APP_CONNECTED";
     FMEvents["APP_DISCONNECTED"] = "@firemodel/APP_DISCONNECTED";
     FMEvents["ERROR_UNKNOWN_EVENT"] = "@firemodel/UNKNOWN_EVENT";

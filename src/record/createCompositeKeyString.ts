@@ -1,22 +1,5 @@
+import { Model, Record, createCompositeKey } from "..";
 import { IDictionary } from "common-types";
-import { Record, Model } from "./index";
-import { ICompositeKey } from "./@types/record-types";
-
-export function createCompositeKey<T extends Model = Model>(
-  rec: Record<T>
-): ICompositeKey {
-  const model = rec.data;
-  return {
-    ...{ id: rec.id },
-    ...rec.dynamicPathComponents.reduce(
-      (prev, key) => ({
-        ...prev,
-        ...{ [key]: model[key as keyof typeof model] }
-      }),
-      {}
-    )
-  };
-}
 
 /**
  * Creates a string based composite key if the passed in record

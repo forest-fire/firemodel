@@ -5,8 +5,8 @@ import {
   property,
   Model,
   mock,
-  IFmHasMany,
-  hasMany
+  hasMany,
+  fks
 } from "../../src";
 import { Person } from "./AuditedPerson";
 
@@ -16,5 +16,5 @@ export class Company extends Model {
   @property @length(20) @mock('companyName') name: string;
   @property founded?: string;
   // prettier-ignore
-  @hasMany(() => Person) employees?: fk[];
+  @hasMany(() => Person, "company") employees?: fks;
 }

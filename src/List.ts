@@ -120,6 +120,7 @@ export class List<T extends Model> extends FireModel<T> {
     query.setPath(list.dbPath);
 
     await list.load(query);
+    // TODO: should this have a dispatch?
     list.dispatch({
       type: FMEvents.RECORD_LIST,
       modelName: list.modelName,
@@ -302,7 +303,7 @@ export class List<T extends Model> extends FireModel<T> {
   /**
    * Gives the path in the client state tree to the beginning
    * where this LIST will reside
-   * 
+   *
    * Includes `localPrefix` and `pluralName`, but does not include `localPostfix`
    */
   public get localPath() {
@@ -313,13 +314,13 @@ export class List<T extends Model> extends FireModel<T> {
   /**
    * Used with local state management tools, it provides a postfix to the state tree path
    * The default is `all` and it will probably be used in most cases
-   * 
-   * e.g. If the model is called `Tree` then your records will be stored at `trees/all` 
+   *
+   * e.g. If the model is called `Tree` then your records will be stored at `trees/all`
    * (assuming the default `all` postfix)
    */
   public get localPostfix() {
     const meta = this._model.META || getModelMeta(this._model);
-    return meta.localPostfix
+    return meta.localPostfix;
   }
 
   /** Returns another List with data filtered down by passed in filter function */

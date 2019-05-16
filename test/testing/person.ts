@@ -9,7 +9,8 @@ import {
   hasMany,
   belongsTo,
   IFmHasMany,
-  fks
+  fks,
+  OneWay
 } from "../../src";
 import { Company } from "./Company";
 import { IDictionary } from "common-types";
@@ -28,15 +29,15 @@ export class Person extends Model {
   // prettier-ignore
   @property @pushKey public tags?: IDictionary<string>;
   // prettier-ignore
-  @belongsTo(() => Person, "children") public mother?: fk;
+  @belongsTo(() => Person, OneWay("children")) public mother?: fk;
   // prettier-ignore
-  @belongsTo(() => Person, "children") public father?: fk;
+  @belongsTo(() => Person, OneWay("children")) public father?: fk;
   // prettier-ignore
   @hasMany(() => Person) public children?: fks;
   // prettier-ignore
   @belongsTo(() => Concert) public concerts?: fk;
   // prettier-ignore
-  @belongsTo(() => Company) public company?: fk;
+  @belongsTo(() => Company, "employees") public company?: fk;
   // prettier-ignore
   @hasMany(() => Pay) public pays?: fks;
 }
