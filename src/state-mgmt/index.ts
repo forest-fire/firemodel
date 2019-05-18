@@ -4,10 +4,7 @@ import { IMultiPathUpdates } from "../FireModel";
 import { ICompositeKey } from "../@types/record-types";
 import { FmModelConstructor } from "../@types/general";
 import { FmRelationshipType } from "../decorators/types";
-import {
-  IFirebaseWatchEvent,
-  IValueBasedWatchEvent
-} from "abstracted-firebase";
+import { IValueBasedWatchEvent } from "abstracted-firebase";
 import { IDictionary } from "common-types";
 
 //#region generalized structures
@@ -48,7 +45,7 @@ export enum FMEvents {
   RECORD_ADDED_CONFIRMATION = "@firemodel/RECORD_ADDED_CONFIRMATION",
   /** A record added locally failed to be saved to Firebase */
   RECORD_ADDED_ROLLBACK = "@firemodel/RECORD_ADDED_ROLLBACK",
-  /** A record has been added to a given Model list being watched */
+  /** A record has been added to a given Model list being watched (external event) */
   RECORD_ADDED = "@firemodel/RECORD_ADDED",
   /** A record has been updated locally */
   RECORD_CHANGED_LOCALLY = "@firemodel/RECORD_CHANGED_LOCALLY",
@@ -56,7 +53,7 @@ export enum FMEvents {
   RECORD_CHANGED_CONFIRMATION = "@firemodel/RECORD_CHANGED_CONFIRMATION",
   /** A record changed locally failed to be saved to Firebase */
   RECORD_CHANGED_ROLLBACK = "@firemodel/RECORD_CHANGED_ROLLBACK",
-  /** A record has been updated on Firebase */
+  /** A record has been updated on Firebase (external event) */
   RECORD_CHANGED = "@firemodel/RECORD_CHANGED",
   /**
    * for client originated events touching relationships (as external events would come back as an event per model)
@@ -87,14 +84,30 @@ export enum FMEvents {
   WATCHER_STOPPED = "@firemodel/WATCHER_STOPPED",
   /** Watcher has disconnected all event streams from Firebase */
   WATCHER_STOPPED_ALL = "@firemodel/WATCHER_STOPPED_ALL",
-  /** Relationship(s) have removed */
-  RELATIONSHIP_REMOVED = "@firemodel/RELATIONSHIP_REMOVED",
+
   /** Relationship(s) have been removed locally */
   RELATIONSHIP_REMOVED_LOCALLY = "@firemodel/RELATIONSHIP_REMOVED_LOCALLY",
-  /** Relationship(s) have added */
-  RELATIONSHIP_ADDED = "@firemodel/RELATIONSHIP_ADDED",
-  /** Relationship(s) have been added locally */
+  /** Relationship removal has been confirmed by database */
+  RELATIONSHIP_REMOVED_CONFIRMATION = "@firemodel/RELATIONSHIP_REMOVED_CONFIRMATION",
+  /** Relationship removal failed and must be rolled back if client updated optimistically */
+  RELATIONSHIP_REMOVED_ROLLBACK = "@firemodel/RELATIONSHIP_REMOVED_CONFIRMATION",
+
+  /** Relationship has been added locally */
   RELATIONSHIP_ADDED_LOCALLY = "@firemodel/RELATIONSHIP_ADDED_LOCALLY",
+  /** Relationship add has been confirmed by database */
+  RELATIONSHIP_ADDED_CONFIRMATION = "@firemodel/RELATIONSHIP_ADDED_CONFIRMATION",
+  /** Relationship add failed and must be rolled back if client updated optimistically */
+  RELATIONSHIP_ADDED_ROLLBACK = "@firemodel/RELATIONSHIP_ADDED_ROLLBACK",
+
+  /** Relationship has been set locally (relating to a hasOne event) */
+  RELATIONSHIP_SET_LOCALLY = "@firemodel/RELATIONSHIP_SET_LOCALLY",
+  /** Relationship set has been confirmed by database */
+  RELATIONSHIP_SET_CONFIRMATION = "@firemodel/RELATIONSHIP_SET_CONFIRMATION",
+  /** Relationship set failed and must be rolled back if client updated optimistically */
+  RELATIONSHIP_SET_ROLLBACK = "@firemodel/RELATIONSHIP_ADDED_ROLLBACK",
+
+  /** A relationship was "added" but it already existed; this is typically non-action oriented */
+  RELATIONSHIP_DUPLICATE_ADD = "@firemodel/RELATIONSHIP_ADDED_ROLLBACK",
 
   APP_CONNECTED = "@firemodel/APP_CONNECTED",
   APP_DISCONNECTED = "@firemodel/APP_DISCONNECTED",
@@ -195,7 +208,7 @@ export interface IFMRecordClientEvent<T extends Model = Model>
   changed?: IDictionary;
   dbPath: string;
   localPath: string;
-  compositeKey: ICompositeKey;
+  compositeKey: ICompositeKey<T>;
   key: string;
 
   errorCode?: string | number;
@@ -239,7 +252,7 @@ export interface IFmContextualizedWatchEvent<T = any>
   extends IFmDispatchWatchContext<T>,
     IValueBasedWatchEvent {
   type: FMEvents;
-  compositeKey: ICompositeKey;
+  compositeKey: ICompositeKey<T>;
 }
 //#endregion
 

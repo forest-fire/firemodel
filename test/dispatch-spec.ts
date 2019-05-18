@@ -46,31 +46,6 @@ describe("Dispatch →", () => {
     });
   });
 
-  it("_createRecordEvent() produces correctly formed Redux event", async () => {
-    const person = Record.create(Person);
-    (person as any)._data.id = "12345"; // cheating a bit here
-    const lastUpdated = new Date().getTime();
-    const updated = {
-      name: "Roger Rabbit",
-      lastUpdated
-    };
-    const paths: IMultiPathUpdates[] = (person as any)._getPaths(updated);
-    const event: IFMRecordClientEvent<
-      Person
-    > = (person as any)._createRecordEvent(
-      person,
-      FMEvents.RECORD_CHANGED_LOCALLY,
-      paths
-    );
-    expect(event).is.an("object");
-    expect(event.type).to.equal(FMEvents.RECORD_CHANGED_LOCALLY);
-    expect(event.dbPath).to.equal(`authenticated/people/12345`);
-    expect(event.paths).to.equal(paths);
-    expect(event.paths).to.have.lengthOf(2);
-
-    expect(event.modelName).to.equal("person");
-  });
-
   it("set() immediately changes value on Record", async () => {
     const person = await Record.add(Person, {
       name: "Jane",

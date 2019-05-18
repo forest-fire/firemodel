@@ -11,7 +11,6 @@ async function processHasOne(source, rel, config, db) {
             .replace(fkMockMeta.id, "")
             .split("/")
             .filter(i => i);
-        // console.log(predecessors);
         await db.remove(fkMockMeta.dbPath);
     }
     return fkMockMeta;

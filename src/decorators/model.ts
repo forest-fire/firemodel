@@ -59,6 +59,12 @@ export function model(options: Partial<IFmModelMeta> = {}) {
         ...{ audit: options.audit ? options.audit : false },
         ...{ plural: options.plural },
         ...{
+          allProperties: [
+            ...getProperties(modelOfObject).map(p => p.property),
+            ...getRelationships(modelOfObject).map(p => p.property)
+          ]
+        },
+        ...{
           localPostfix:
             options.localPostfix === undefined ? "all" : options.localPostfix
         },

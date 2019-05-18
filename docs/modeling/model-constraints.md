@@ -3,7 +3,7 @@ sidebarDepth: 3
 ---
 # Model Constraints
 
-## Overview``
+## Overview
 
 Our first example was pretty basic and in our second one we're only going to add a bit but they are important changes to understand:
 

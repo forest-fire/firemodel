@@ -25,7 +25,16 @@ export declare class Watch<T extends Model = Model> {
     static reset(): void;
     /** stops watching either a specific watcher or ALL if no hash code is provided */
     static stop(hashCode?: string, oneOffDB?: RealTimeDB): void;
-    static record<T extends Model>(modelConstructor: new () => T, pk: IPrimaryKey, options?: IModelOptions): Pick<Watch<Model>, "start" | "dispatch">;
+    /**
+     * Configures the watcher to be a `value` watcher on Firebase
+     * which is only concerned with changes to a singular Record.
+     *
+     * @param pk the _primary key_ for a given record. This can be a string
+     * represention of the `id` property, a string represention of
+     * the composite key, or an object representation of the composite
+     * key.
+     */
+    static record<T extends Model>(modelConstructor: new () => T, pk: IPrimaryKey<T>, options?: IModelOptions): Pick<Watch<Model>, "start" | "dispatch">;
     static list<T extends Model>(modelConstructor: new () => T, options?: IModelOptions): Pick<Watch<Model>, IWatchListQueries>;
     protected _query: SerializedQuery;
     protected _modelConstructor: FmModelConstructor<any>;

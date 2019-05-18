@@ -39,7 +39,7 @@ For example sake, imagine that our frontend app has just executed the following:
 await Record.add(Person, { name: "bob", age: 45 });
 ```
 
-In this examle we are originating the change the event flow would look like this:
+In this example we are originating an record being added; the event flow would look like this:
 
 <process-flow>graph LR;Event("RECORD_ADDED_LOCALLY")-->Outcome{"success on DB?"}; Outcome-->|yes|Confirmation["RECORD_ADDED_CONFIRMATION"]; Outcome-->|no|Rollback["RECORD_ADDED_ROLLBACK"]; style Rollback stroke: red,stroke-width:2;</process-flow>
 

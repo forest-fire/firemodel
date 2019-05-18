@@ -7,7 +7,7 @@ export async function processHasMany<T>(
   rel: IFmModelRelationshipMeta<T>,
   config: IMockConfig,
   db: RealTimeDB
-): Promise<IMockResponse> {
+): Promise<IMockResponse<T>> {
   const fkMockMeta = (await Mock(rel.fkConstructor(), db).generate(1)).pop();
   const prop: Extract<keyof T, string> = rel.property as any;
 

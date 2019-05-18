@@ -13,22 +13,23 @@ import {
 } from "../state-mgmt";
 import { Record } from "../Record";
 import { hasInitialized } from "./watchInitialization";
+import { FireModelError, FireModelProxyError } from "../errors";
+import { capitalize } from "../util";
 
 /**
  * **watchDispatcher**
  *
- * Wraps up context captured at watch conception with
+ * Wraps Firebase event detail (meager) with as much context as is possible
  */
 export const WatchDispatcher = <T>(context: IFmDispatchWatchContext<T>) => (
   /** a generic redux dispatch function; called by database on event */
   clientHandler: IReduxDispatch<IFmContextualizedWatchEvent<T>>
 ) => {
   if (typeof clientHandler !== "function") {
-    const e = new Error(
-      `A watcher is being setup but the dispatch function is not valid or not set!`
+    throw new FireModelError(
+      `A watcher is being setup but the dispatch function is not a valid function!`,
+      "firemodel/not-allowed"
     );
-    e.name = "FireModel::NotAllowed";
-    throw e;
   }
 
   return (event: IValueBasedWatchEvent & IPathBasedWatchEvent) => {
@@ -46,16 +47,21 @@ export const WatchDispatcher = <T>(context: IFmDispatchWatchContext<T>) => (
       typeof event.value === "object"
         ? { id: event.key, ...event.value }
         : { id: event.key };
-    const rec = Record.local(context.modelConstructor, recId);
+
+    const rec = Record.createWith(context.modelConstructor, recId);
+
     let compositeKey;
     try {
       compositeKey = rec.compositeKey;
     } catch (e) {
-      throw createError(
-        `firemodel/composite-key`,
-        `There was a problem getting the composite key for a ${
+      throw new FireModelProxyError(
+        e,
+        `While responding to a watcher event [ id: ${context.watcherId}, ${
+          context.query.path
+        } ] there was a problem getting the composite key for a ${capitalize(
           rec.modelName
-        } model: ${e.message}`
+        )}::${rec.id} model`,
+        `firemodel/composite-key`
       );
     }
 

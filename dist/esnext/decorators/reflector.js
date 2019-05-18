@@ -1,5 +1,6 @@
 import get from "get-value";
 import set from "set-value";
+import { lowercase } from "../util";
 function push(target, path, value) {
     set(target, path, value);
 }
@@ -20,7 +21,8 @@ export const propertyReflector = (context = {},
 modelRollup) => (modelKlass, key) => {
     const modelName = modelKlass.constructor.name;
     const reflect = Reflect.getMetadata("design:type", modelKlass, key) || {};
-    const meta = Object.assign({}, context, { type: reflect.name }, Reflect.getMetadata(key, modelKlass), { property: key });
+    console.log(key, Reflect.getMetadata(key, modelKlass));
+    const meta = Object.assign({}, (Reflect.getMetadata(key, modelKlass) || {}), { type: lowercase(reflect.name) }, context, { property: key });
     Reflect.defineMetadata(key, meta, modelKlass);
     if (modelRollup) {
         const modelAndProp = modelName + "." + key;

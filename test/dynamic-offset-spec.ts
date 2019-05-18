@@ -101,6 +101,7 @@ describe("Dynamic offsets work with relationships", () => {
   let hobbies: List<Hobby>;
   beforeEach(async () => {
     db = await DB.connect({ mocking: true });
+
     FireModel.defaultDb = db;
     person = await Record.add(DeepPerson, {
       name: {
@@ -136,7 +137,10 @@ describe("Dynamic offsets work with relationships", () => {
       group: "test"
     })).pop();
 
-    await person.addToRelationship("parents", [motherId.id, fatherId.id]);
+    await person.addToRelationship("parents", [
+      motherId.compositeKey,
+      fatherId.compositeKey
+    ]);
   });
 
   it("addToRelationshipo works for M:M (FK has shared dynamic segment; using explicit composite key)", async () => {
@@ -164,7 +168,7 @@ describe("Dynamic offsets work with relationships", () => {
     ]);
 
     // refresh records
-    person = await Record.get(DeepPerson, { id: person.id, group: "test" });
+    person = await Record.get(DeepPerson, `${person.id}::group:test`);
     mother = await Record.get(DeepPerson, mother.compositeKey);
     father = await Record.get(DeepPerson, father.compositeKey);
 
@@ -185,14 +189,8 @@ describe("Dynamic offsets work with relationships", () => {
       age: 61,
       group: "test"
     })).pop();
-    let mother = await Record.get(DeepPerson, {
-      id: motherId.id,
-      group: "test2"
-    });
-    let father = await Record.get(DeepPerson, {
-      id: fatherId.id,
-      group: "test2"
-    });
+    let mother = await Record.get(DeepPerson, `${motherId.id}::group:test2`);
+    let father = await Record.get(DeepPerson, `${fatherId.id}::group:test2`);
 
     // add reln
     await person.addToRelationship("parents", [
@@ -201,7 +199,7 @@ describe("Dynamic offsets work with relationships", () => {
     ]);
 
     // refresh records
-    person = await Record.get(DeepPerson, { id: person.id, group: "test" });
+    person = await Record.get(DeepPerson, `${person.id}::group:test`);
     mother = await Record.get(DeepPerson, mother.compositeKey);
     father = await Record.get(DeepPerson, father.compositeKey);
 
@@ -238,8 +236,8 @@ describe("Dynamic offsets work with relationships", () => {
     });
     person.setRelationship("employer", company.compositeKeyRef);
 
-    company = await Record.get(Company, company.compositeKey);
-    person = await Record.get(DeepPerson, person.compositeKey);
+    company = await Record.get(Company, company.compositeKeyRef);
+    person = await Record.get(DeepPerson, person.compositeKeyRef);
 
     expect(person.data.employer).to.equal(company.compositeKeyRef);
     expect(company.data.employees).to.haveOwnProperty(person.compositeKeyRef);
@@ -252,7 +250,7 @@ describe("Dynamic offsets work with relationships", () => {
     });
     person.addToRelationship("attributes", attribute.compositeKeyRef);
 
-    attribute = await Record.get(HumanAttribute, attribute.compositeKey);
+    attribute = await Record.get(HumanAttribute, attribute.compositeKeyRef);
     person = await Record.get(DeepPerson, person.compositeKey);
 
     expect(person.data.attributes).to.haveOwnProperty(
@@ -305,7 +303,6 @@ describe("MOCK uses dynamic dbOffsets", () => {
 
   it("Mock() by default does not build out relationships", async () => {
     const results = await Mock(DeepPerson).generate(2, { group: "test" });
-    console.log(JSON.stringify(db.mock.db, null, 2));
     const first = firstRecord(db.mock.db.test.testing.deepPeople);
     const last = lastRecord(db.mock.db.test.testing.deepPeople);
     expect(first.hobbies).is.an("object");
@@ -354,8 +351,6 @@ describe("MOCK uses dynamic dbOffsets", () => {
       .createRelationshipLinks()
       .generate(2, { group: "test" });
     fkStructuralChecksForHasMany(db.mock.db.test.testing.deepPeople);
-
-    console.log(JSON.stringify(db.mock.db, null, 2));
   });
 
   it("Mock() mocks on dynamic path and creates appropriate FK bi-directionally with using followRelationshipLinks()", async () => {

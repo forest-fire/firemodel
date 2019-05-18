@@ -70,8 +70,10 @@ describe("Relationship > ", () => {
     expect(events).to.have.lengthOf(2);
 
     const eventTypes = new Set(events.map(e => e.type));
-    expect(eventTypes.has(FMEvents.RELATIONSHIP_ADDED)).to.equal(true);
     expect(eventTypes.has(FMEvents.RELATIONSHIP_ADDED_LOCALLY)).to.equal(true);
+    expect(eventTypes.has(FMEvents.RELATIONSHIP_ADDED_CONFIRMATION)).to.equal(
+      true
+    );
     const localEvent = events.find(
       i => i.type === FMEvents.RELATIONSHIP_ADDED_LOCALLY
     );
@@ -81,8 +83,8 @@ describe("Relationship > ", () => {
     expect(paths.filter(i => i.includes("car-offset"))).to.have.lengthOf(2);
     expect(paths.filter(i => i.includes("fancyPeople"))).to.have.lengthOf(2);
 
-    expect(paths).to.include("/car-offset/cars/car12345/lastUpdated");
-    expect(paths).to.include("/car-offset/cars/car12345/owner");
+    expect(paths).to.include("car-offset/cars/car12345/lastUpdated");
+    expect(paths).to.include("car-offset/cars/car12345/owner");
 
     // last updated has changed since relationship added
     expect(person.data.lastUpdated).to.be.greaterThan(lastUpdated);
@@ -111,7 +113,6 @@ describe("Relationship > ", () => {
     const pops = await Record.get(FancyPerson, father.id);
 
     expect(pops.data.children[bob.id]).to.equal(true);
-    expect(pops.data.lastUpdated).to.equal(bob.data.lastUpdated);
   });
 
   it("using addToRelationship() to add multiple relationships with inverse (M:M)", async () => {
@@ -142,13 +143,14 @@ describe("Relationship > ", () => {
     try {
       await bob.addToRelationship("employer", "4567");
     } catch (e) {
-      expect(e.name).to.equal("FireModel::WrongRelationshipType");
+      expect(e.name).to.equal("firemodel/not-hasMany-reln");
     }
   });
 
   it("using setRelationship() on an hasOne prop sets relationship", async () => {
     // TODO: add in an inverse relationship; currently getting very odd decorator behavior
-    const bob = await Record.add(FancyPerson, {
+    let bob = await Record.add(FancyPerson, {
+      id: "bobs-yur-uncle",
       name: "Bob",
       age: 23
     });
@@ -156,8 +158,12 @@ describe("Relationship > ", () => {
       id: "e8899",
       name: "ABC Inc"
     });
-    await bob.setRelationship("employer", "e8899");
-
+    const dbWasUpdated = bob.setRelationship("employer", "e8899");
+    // locally changed immediately
+    expect(bob.get("employer")).to.equal("e8899");
+    await dbWasUpdated;
+    // also changed in DB after the wait
+    bob = await Record.get(FancyPerson, "bobs-yur-uncle");
     expect(bob.get("employer")).to.equal("e8899");
     const people = await List.all(FancyPerson);
     const bob2 = people.findById(bob.id);

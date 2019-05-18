@@ -12,5 +12,5 @@ export default class Car extends Model {
   // prettier-ignore
   @property @mock("number", {min: 1970, max: 2018}) year: string;
   // prettier-ignore
-  @hasMany(() => DeepPerson, "cars") owners: fks;
+  @hasMany(() => DeepPerson, "cars") owners?: fks;
 }

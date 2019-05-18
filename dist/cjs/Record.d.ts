@@ -4,7 +4,9 @@ import { Omit, Nullable } from "common-types";
 import { FireModel } from "./FireModel";
 import { IReduxDispatch } from "./VuexWrapper";
 import { IFMEventName, IFmCrudOperations, IFmDispatchOptions } from "./state-mgmt/index";
-import { IIdWithDynamicPrefix, IFkReference, ICompositeKey } from "./@types/record-types";
+import { IFkReference, ICompositeKey } from "./@types/record-types";
+import { IFmRelationshipOptionsForHasMany } from ".";
+import { IFmRelationshipOptions } from "./@types";
 export declare type ModelOptionalId<T extends Model> = Omit<T, "id"> & {
     id?: string;
 };
@@ -62,13 +64,20 @@ export declare class Record<T extends Model> extends FireModel<T> {
      * A hash of values -- including at least "id" -- which represent
      * the composite key of a model.
      */
-    readonly compositeKey: ICompositeKey;
+    readonly compositeKey: ICompositeKey<T>;
     /**
      * a string value which is used in relationships to fully qualify
      * a composite string (aka, a model which has a dynamic dbOffset)
      */
     readonly compositeKeyRef: any;
-    /** The Record's primary key */
+    /**
+     * The Record's primary key; this is the `id` property only. Not
+     * the composite key.
+     */
+    /**
+    * Allows setting the Record's `id` if it hasn't been set before.
+    * Resetting the `id` is not allowed.
+    */
     id: string;
     /**
      * returns the record's database offset without including the ID of the record;
@@ -126,15 +135,28 @@ export declare class Record<T extends Model> extends FireModel<T> {
      */
     static update<T extends Model>(model: new () => T, id: string, updates: Nullable<Partial<T>>, options?: IRecordOptions): Promise<Record<T>>;
     /**
-     * load
+     * **createWith**
      *
-     * static method to create a Record when you want to load the
-     * state of the record with something you already have.
+     * A static initializer that creates a Record of a given class
+     * and then initializes the state with either a Model payload
+     * or a CompositeKeyString (aka, '[id]::[prop]:[value]').
      *
-     * Intent should be that this record already exists in the
-     * database. If you want to add to the database then use add()
+     * You should be careful in using this initializer; the expected
+     * _intent_ include:
+     *
+     * 1. to initialize an in-memory record of something which is already
+     * in the DB
+     * 2. to get all the "composite key" attributes into the record so
+     * all META queries are possible
+     *
+     * If you want to add this record to the database then use `add()`
+     * initializer instead.
+     *
+     * @prop model a constructor for the underlying model
+     * @payload either a string representing an `id` or Composite Key or alternatively
+     * a hash/dictionary of attributes that are to be set as a starting point
      */
-    static createWith<T extends Model>(model: new () => T, payload: T, options?: IRecordOptions): Record<T>;
+    static createWith<T extends Model>(model: new () => T, payload: Partial<T> | string, options?: IRecordOptions): Record<T>;
     /**
      * get (static initializer)
      *
@@ -145,8 +167,8 @@ export declare class Record<T extends Model> extends FireModel<T> {
      * @param id either just an "id" string or in the case of models with dynamic path prefixes you can pass in an object with the id and all dynamic prefixes
      * @param options
      */
-    static get<T extends Model>(model: new () => T, id: string | IIdWithDynamicPrefix, options?: IRecordOptions): Promise<Record<T>>;
-    static remove<T extends Model>(model: new () => T, id: IFkReference, 
+    static get<T extends Model>(model: new () => T, id: string | ICompositeKey<T>, options?: IRecordOptions): Promise<Record<T>>;
+    static remove<T extends Model>(model: new () => T, id: IFkReference<T>, 
     /** if there is a known current state of this model you can avoid a DB call to get it */
     currentState?: Record<T>): Promise<Record<T>>;
     private _existsOnDB;
@@ -177,7 +199,7 @@ export declare class Record<T extends Model> extends FireModel<T> {
      *
      * @param data the initial state you want to start with
      */
-    _initialize(data: T): void;
+    _initialize(data: Partial<T>): void;
     /**
      * Pushes new values onto properties on the record
      * which have been stated to be a "pushKey"
@@ -210,43 +232,56 @@ export declare class Record<T extends Model> extends FireModel<T> {
      *
      * @param prop the property on the record to be changed
      * @param value the new value to set to
-     * @param silent a flag to indicate whether the change to the prop should be updated to the database
+     * @param silent a flag to indicate whether the change to the prop should be updated to the database or not
      */
     set<K extends keyof T>(prop: K, value: T[K], silent?: boolean): Promise<void>;
     /**
-     * associate
+     * **associate**
      *
-     * Associates the current model with another regardless if the cardinality is 1 or M.
-     * If it is a "hasOne" relationship it will proxy this request to setRelationship,
-     * if it is a "hasMany" relationshipo it will proxy this request to addToRelationship
+     * Associates the current model with another entity
+     * regardless if the cardinality
      */
-    associate(property: Extract<keyof T, string>, refs: IFkReference | IFkReference[], optionalValue?: any): Promise<void>;
-    disassociate(property: Extract<keyof T, string>, refs?: IFkReference | IFkReference[]): Promise<void>;
+    associate(property: Extract<keyof T, string>, refs: IFkReference<T> | Array<IFkReference<T>>, options?: IFmRelationshipOptions): Promise<void>;
     /**
-     * Adds one or more fk's to a hasMany relationship
+     * **disassociate**
+     *
+     * Removes an association between the current model and another entity
+     * (regardless of the cardinality in the relationship)
+     */
+    disassociate(property: Extract<keyof T, string>, refs: IFkReference<T> | Array<IFkReference<T>>, options?: IFmRelationshipOptions): Promise<void>;
+    /**
+     * Adds one or more fk's to a hasMany relationship.
+     *
+     * Every relationship will be added as a "single transaction", meaning that ALL
+     * or NONE of the relationshiop transactions will succeed. If you want to
+     * take a more optimistic approach that accepts each relationship pairing (PK/FK)
+     * then you should manage the iteration outside of this call and let this call
+     * only manage the invidual PK/FK transactions (which should ALWAYS be atomic).
      *
      * @param property the property which is acting as a foreign key (array)
      * @param fkRefs FK reference (or array of FKs) that should be added to reln
-     * @param value the default behaviour is to add the value TRUE but you can optionally add some additional piece of information here instead
+     * @param options change the behavior of this relationship transaction
      */
-    addToRelationship(property: Extract<keyof T, string>, fkRefs: IFkReference | IFkReference[], value?: any): Promise<void>;
+    addToRelationship(property: Extract<keyof T, string>, fkRefs: IFkReference<T> | Array<IFkReference<T>>, options?: IFmRelationshipOptionsForHasMany): Promise<void>;
     /**
      * removeFromRelationship
      *
-     * remove one or more IDs from a hasMany relationship
+     * remove one or more FK's from a `hasMany` relationship
      *
      * @param property the property which is acting as a FK
-     * @param fkRefs the IDs on the properties FK which should be removed
+     * @param fkRefs the FK's on the property which should be removed
      */
-    removeFromRelationship(property: Extract<keyof T, string>, fkRefs: IFkReference | IFkReference[]): Promise<void>;
+    removeFromRelationship(property: Extract<keyof T, string>, fkRefs: IFkReference<T> | Array<IFkReference<T>>, options?: IFmRelationshipOptionsForHasMany): Promise<void>;
     /**
-     * clearRelationship
+     * **clearRelationship**
      *
-     * clears an existing FK on a hasOne relationship
+     * clears an existing FK on a `hasOne` relationship or _all_ FK's on a
+     * `hasMany` relationship
      *
-     * @param property the property containing the hasOne FK
+     * @param property the property containing the relationship to an external
+     * entity
      */
-    clearRelationship(property: Extract<keyof T, string>): Promise<void>;
+    clearRelationship(property: Extract<keyof T, string>, options?: IFmRelationshipOptions): Promise<void>;
     /**
      * **setRelationship**
      *
@@ -255,7 +290,7 @@ export declare class Record<T extends Model> extends FireModel<T> {
      * @param property the property containing the hasOne FK
      * @param ref the FK
      */
-    setRelationship(property: Extract<keyof T, string>, ref: IFkReference, optionalValue?: any): Promise<void>;
+    setRelationship(property: Extract<keyof T, string>, fkId: IFkReference<T>, options?: IFmRelationshipOptions): Promise<void>;
     /**
      * get a property value from the record
      *
@@ -268,7 +303,7 @@ export declare class Record<T extends Model> extends FireModel<T> {
         modelName: string;
         pluralName: any;
         key: string;
-        compositeKey: ICompositeKey;
+        compositeKey: ICompositeKey<T>;
         localPath: any;
         data: string;
     };
@@ -278,26 +313,6 @@ export declare class Record<T extends Model> extends FireModel<T> {
      * Writes an audit log if the record is configured for audit logs
      */
     protected _writeAudit(action: IFmCrudOperations, propertyValues: Partial<T>, priorValue: Partial<T>): Promise<void>;
-    protected _expandFkStringToCompositeNotation(fkRef: string, dynamicComponents?: string[]): {
-        id: string;
-    };
-    /**
-     * _relationshipMPS
-     *
-     * Sets up and executes a multi-path SET (MPS) with the intent of
-     * updating the FK relationship of a given model as well as reflecting
-     * that change back from the FK to the originating model
-     *
-     * @param mps the multi-path selection object
-     * @param fkRef a FK reference; either a string (representing the ID of other
-     * record) or a composite key (ID plus all dynamic segments)
-     * @param property the property on the target record which contains FK(s)
-     * @param value the value to set this FK (null removes); typically TRUE if setting
-     * @param now the current time in miliseconds
-     */
-    protected _relationshipMPS(mps: any, fkRef: IFkReference, property: Extract<keyof T, string>, value: any, now: number): void;
-    protected _errorIfNothasOneReln(property: Extract<keyof T, string>, fn: string): void;
-    protected _errorIfNotHasManyReln(property: Extract<keyof T, string>, fn: string): void;
     /**
      * **_localCrudOperation**
      *
@@ -333,7 +348,7 @@ export declare class Record<T extends Model> extends FireModel<T> {
      */
     private _injectDynamicPathProperties;
     /**
-     * Load data from a record in database
+     * Load data from a record in database; works with `get` static initializer
      */
     private _getFromDB;
     /**

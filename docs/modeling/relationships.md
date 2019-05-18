@@ -44,9 +44,9 @@ Let's decompose what this example is illustrating:
 
 ## The Inverse Property
 
-The optional _inverse_ property is important so it's important to understand what's really happening with the use of it. To do this, we'll explore three examples: 1:M, M:1, and M:M. Before we go into each example though we should understand the "implicit" and "explicit" use-cases.
+The optional _inverse_ property allows you to express "two way" relationships. This is a powerful feature and most likely something you **do** want to use when you express a relationship.
 
-Above when we stated that you can state the "inverse" as part of the `@hasOne` or `@hasMany` decorator's signature this represents an **explicit** statement about what the inverse is intended to be. It is important to note, however, that if you are relating two Models and the inverse can be determined automatically the association will be made. Here is an example of where this would happen:
+Let's use a simple example. Below you'll find two models who relate to each other but since neither uses the inverse property they are assumed to be "one way" relationships:
 
 ```typescript
 @model()
@@ -58,46 +58,56 @@ export class Patient extends Model {
 @model()
 export class Doctor extends Model {
   @property name: string;
-  @hasMany(() => Patient) patients: FirebaseFks;
+  @hasMany(() => Patient) patients: fks;
 }
 ```
 
-Because these models are following an obvious naming convention, `Patient` and `Doctor` relationships are linked automatically. You can see this by introspecting a record's META property:
-
-```typescript
-const patient = Record.create(Patient);
-expect(patient.META.relationship("doctor").inverseProperty).to.equal("patients");
-expect(patient.META.relationship("doctor").inverseCardinality).to.equal("many");
-```
-
-If, in contrast, if we were relating a `Person` model and the `Doctor` model above it would not know that the `Person.doctor` relationship is connected to the `Doctor.patients` relationship. To ensure that **FireModel** is updating both sides of the relationship then you would need to explicitly define both:
+That means that if you add a new patient to the `Doctor` model it _will_ add a FK to the Doctor model but the `Patient` record will **not** be updated to reference the `Doctor`. This is probably _not_ what you want. Here, in comparison is the same example but _with_ the inverse property:
 
 ```typescript
 @model()
 export class Patient extends Model {
   @property name: string;
-  @hasOne(() => Doctor, "patients") doctor: IFmHasOne;
+  @hasOne(() => Doctor, 'patients') doctor: fk;
 }
 
 @model()
 export class Doctor extends Model {
   @property name: string;
-  @hasMany(() => Patient, "doctor") patients: IFmHasMany;
+  @hasMany(() => Patient, 'doctor') patients: fks;
 }
 ```
 
-### One to Many ( `1:M` )
+Now whenever the `Patient` or `Doctor` records are updated (in relation to one another, both will be updated.
 
-Lorem ipsum dolor sit amet consectetur adipisicing elit. Facilis at ab recusandae fugiat, saepe molestiae doloribus assumenda rem voluptates non illum nemo dolorem architecto animi obcaecati esse eius et iure
+There are sometimes situations where two-way synchronization is either very hard or impossible. Let's take the following `Person` model:
 
-### Many to One ( `M:1` )
+```typescript
+@model({ dbOffset: "authenticated" })
+export class Person extends Model {
+  @property @length(20) public name: string;
+  @property public gender?: "male" | "female" | "other";
+  @belongsTo(() => Person, "children") public mother?: fk;
+  @belongsTo(() => Person, "children") public father?: fk;
+  @hasMany(() => Person) public children?: fks;
+}
+```
 
-Lorem ipsum dolor sit amet consectetur adipisicing elit. Facilis at ab recusandae fugiat, saepe molestiae doloribus assumenda rem voluptates non illum nemo dolorem architecto animi obcaecati esse eius et iure
+In the above model you will run into problems because both `mother` and `father` have an _inverse_ of `children`. This means that when a new child is added, FireModel will not know whether that child's record should add the inverse key to `mother` or `father`. The system is _lossy_ and so there is no way to automatically manage this.
 
-### Many to Many ( `M:M` )
+One option to address the above scenario is to manually manage this (aka, no inverse properties). Another might be to change the structure of the model to avoid the lossy conditions. There is one final way to manage this which should be done with some caution:
 
-Lorem ipsum dolor sit amet consectetur adipisicing elit. Facilis at ab recusandae fugiat, saepe molestiae doloribus assumenda rem voluptates non illum nemo dolorem architecto animi obcaecati esse eius et iure
+```typescript{7,8}
+import { OneWay } from 'firemodel';
 
-## Relationship Constraints
+@model({ dbOffset: "authenticated" })
+export class Person extends Model {
+  @property @length(20) public name: string;
+  @property public gender?: "male" | "female" | "other";
+  @belongsTo(() => Person, OneWay("children")) public mother?: fk;
+  @belongsTo(() => Person, OneWay("children")) public father?: fk;
+  @hasMany(() => Person) public children?: fks;
+}
+```
 
-Lorem ipsum dolor sit amet consectetur adipisicing elit. Facilis at ab recusandae fugiat, saepe molestiae doloribus assumenda rem voluptates non illum nemo dolorem architecto animi obcaecati esse eius et iure
+Above you can see the use of the `OneWay` modifier. This will allow for any updates to the `mother` and `father` Fk's to automatically synchronize with the `children` properties of the foreign model but NOT synchronize in the other direction where the relationship is lossy. This "halfway" step is in many cases a bad compromise but it is available if you can put it to good use.

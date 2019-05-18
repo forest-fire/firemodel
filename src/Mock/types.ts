@@ -21,11 +21,11 @@ export interface IMockConfig {
   cardinality?: IDictionary<number | [number, number] | true>;
 }
 
-export interface IMockResponse {
+export interface IMockResponse<T> {
   modelName: string;
   pluralName: string;
   id: string;
-  compositeKey: ICompositeKey;
+  compositeKey: ICompositeKey<T>;
   dbPath: string;
   localPath: string;
 }

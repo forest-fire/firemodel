@@ -15,7 +15,6 @@ describe("List class: ", () => {
   beforeEach(async () => {
     db = new DB({ mocking: true });
     await db.waitForConnection();
-    await db.mock.importFakerLibrary();
     FireModel.defaultDb = db;
   });
   it("can instantiate with new operator", () => {
