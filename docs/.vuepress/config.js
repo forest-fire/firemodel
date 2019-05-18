@@ -30,7 +30,7 @@ module.exports = {
       "link",
       {
         rel: "favicon",
-        href: "icon/icon-16.png",
+        href: "/icon/icon-16.png",
         type: "image/png",
         sizes: "16x16"
       }
@@ -39,7 +39,7 @@ module.exports = {
       "link",
       {
         rel: "favicon",
-        href: "icon/icon-32.png",
+        href: "/icon/icon-32.png",
         type: "image/png",
         sizes: "32x32"
       }
@@ -48,31 +48,37 @@ module.exports = {
       "link",
       {
         rel: "favicon",
-        href: "icon/icon-48.png",
+        href: "/icon/icon-48.png",
         type: "image/png",
         sizes: "48x48"
       }
     ],
-    ["link", { rel: "icon", href: "icon/icon-rounded-32.png", sizes: "32x32" }],
-    ["link", { rel: "icon", href: "icon/icon-rounded-48.png", sizes: "48x48" }],
     [
       "link",
-      { rel: "icon", href: "icon/icon-rounded-192.png", sizes: "192x192" }
+      { rel: "icon", href: "/icon/icon-rounded-32.png", sizes: "32x32" }
     ],
     [
       "link",
-      { rel: "icon", href: "icon/icon-rounded-225.png", sizes: "225x225" }
+      { rel: "icon", href: "/icon/icon-rounded-48.png", sizes: "48x48" }
     ],
     [
       "link",
-      { rel: "icon", href: "icon/icon-rounded-512.png", sizes: "512x512" }
+      { rel: "icon", href: "/icon/icon-rounded-192.png", sizes: "192x192" }
+    ],
+    [
+      "link",
+      { rel: "icon", href: "/icon/icon-rounded-225.png", sizes: "225x225" }
+    ],
+    [
+      "link",
+      { rel: "icon", href: "/icon/icon-rounded-512.png", sizes: "512x512" }
     ],
     ["link", { rel: "manifest", href: "manifest.json" }],
     [
       "link",
       {
         rel: "apple-touch-icon-precomposed",
-        href: "icon/icon-rounded-192.png",
+        href: "/icon/icon-rounded-192.png",
         sizes: "192x192"
       }
     ],
