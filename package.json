@@ -1,6 +1,6 @@
 {
   "name": "firemodel",
-  "version": "0.25.1",
+  "version": "0.25.2",
   "description": "Modeling, Access, and Mocking for Firebase Projects",
   "license": "MIT",
   "repository": "https://github.com/forest-fire/firemodel",
@@ -35,7 +35,7 @@
     "docs:build": "vuepress build docs"
   },
   "dependencies": {
-    "abstracted-firebase": "^0.25.6",
+    "abstracted-firebase": "^0.25.8",
     "common-types": "^1.10.20",
     "fast-deep-equal": "^2.0.1",
     "firebase-key": "^2.0.2",
@@ -48,7 +48,7 @@
     "wait-in-parallel": "^1.2.6"
   },
   "peerDependencies": {
-    "firemock": "^0.24.104"
+    "firemock": "^0.25.1"
   },
   "devDependencies": {
     "@types/chai": "^4.1.4",
@@ -75,7 +75,7 @@
     "coveralls": "^3.0.3",
     "do-devops": "^0.1.0",
     "faker": "^4.1.0",
-    "firemock": "^0.24.104",
+    "firemock": "^0.25.1",
     "js-yaml": "^3.13.1",
     "mermaid": "^8.0.0",
     "mocha": "^6.0.1",
