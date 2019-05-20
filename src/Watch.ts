@@ -245,6 +245,7 @@ export class Watch<T extends Model = Model> {
 
     const watcherItem: IWatcherItem = {
       watcherId,
+      watcherName,
       eventType: this._eventType,
       watcherSource: this._watcherSource,
       dispatch: this._dispatcher || FireModel.dispatch,

@@ -88,6 +88,8 @@ export declare type IWatchListQueries = "all" | "first" | "last" | "since" | "do
 export declare type IWatcherSource = "list" | "record" | "unknown";
 export interface IWatcherItem {
     watcherId: string;
+    /** if defined, pass along the string name off the watcher */
+    watcherName?: string;
     watcherSource: IWatcherSource;
     eventType: IWatchEventClassification;
     query: SerializedQuery;
