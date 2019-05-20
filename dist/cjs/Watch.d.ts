@@ -23,6 +23,11 @@ export declare class Watch<T extends Model = Model> {
     static lookup(hashCode: string): IWatcherItem;
     static readonly watchCount: number;
     static reset(): void;
+    /**
+     * Finds the watcher by a given name and returns the ID of the
+     * first match
+     */
+    static findByName(name: string): string;
     /** stops watching either a specific watcher or ALL if no hash code is provided */
     static stop(hashCode?: string, oneOffDB?: RealTimeDB): void;
     /**

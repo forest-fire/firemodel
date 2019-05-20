@@ -49,6 +49,13 @@ class Watch {
     static reset() {
         watcherPool = {};
     }
+    /**
+     * Finds the watcher by a given name and returns the ID of the
+     * first match
+     */
+    static findByName(name) {
+        return Object.keys(watcherPool).find(i => watcherPool[i].watcherName === name);
+    }
     /** stops watching either a specific watcher or ALL if no hash code is provided */
     static stop(hashCode, oneOffDB) {
         const codes = new Set(Object.keys(watcherPool));
@@ -129,7 +136,6 @@ class Watch {
     async start(options = {}) {
         const watcherId = "w" + String(this._query.hashCode());
         const watcherName = options.name;
-        const construct = this._modelConstructor;
         // create a dispatch function with context
         const context = {
             watcherId,
@@ -164,6 +170,7 @@ class Watch {
         }
         const watcherItem = {
             watcherId,
+            watcherName,
             eventType: this._eventType,
             watcherSource: this._watcherSource,
             dispatch: this._dispatcher || FireModel_1.FireModel.dispatch,
