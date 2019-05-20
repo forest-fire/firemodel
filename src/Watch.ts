@@ -18,12 +18,13 @@ import {
   FmModelConstructor
 } from "./@types/general";
 import { IPrimaryKey, ICompositeKey } from "./@types/record-types";
-import { FMEvents } from "./state-mgmt";
+import { FMEvents, IFmDispatchWatchContext } from "./state-mgmt";
 import { getAllPropertiesFromClassStructure } from "./util";
 import {
   IWatcherItem,
   IWatchListQueries,
-  IWatchEventClassification
+  IWatchEventClassification,
+  IFmWatcherStartOptions
 } from "./Watch/types";
 import {
   waitForInitialization,
@@ -196,19 +197,18 @@ export class Watch<T extends Model = Model> {
    * **start**
    *
    * executes the watcher so that it becomes actively watched
-   *
-   * @param once optionally state a function callback to be called when
-   * the response for the given watcher's query has been fetched. This is
-   * useful as it indicates when the local state has been synced with the
-   * server state
    */
-  public async start(once?: (evt: any) => void): Promise<IWatcherItem> {
+  public async start(
+    options: IFmWatcherStartOptions = {}
+  ): Promise<IWatcherItem> {
     const watcherId = "w" + String(this._query.hashCode());
+    const watcherName = options.name;
     const construct = this._modelConstructor;
     type ModelType = typeof construct;
     // create a dispatch function with context
-    const context = {
+    const context: IFmDispatchWatchContext<T> = {
       watcherId,
+      watcherName,
       modelConstructor: this._modelConstructor,
       query: this._query,
       dynamicPathProperties: this._dynamicProperties,
@@ -219,7 +219,7 @@ export class Watch<T extends Model = Model> {
       pluralName: this._pluralName,
       watcherSource: this._watcherSource
     };
-    const dispatchCallback = WatchDispatcher<ModelType>(context)(
+    const dispatchCallback = WatchDispatcher<T>(context)(
       this._dispatcher || FireModel.dispatch
     );
 

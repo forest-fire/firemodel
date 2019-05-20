@@ -125,18 +125,15 @@ class Watch {
      * **start**
      *
      * executes the watcher so that it becomes actively watched
-     *
-     * @param once optionally state a function callback to be called when
-     * the response for the given watcher's query has been fetched. This is
-     * useful as it indicates when the local state has been synced with the
-     * server state
      */
-    async start(once) {
+    async start(options = {}) {
         const watcherId = "w" + String(this._query.hashCode());
+        const watcherName = options.name;
         const construct = this._modelConstructor;
         // create a dispatch function with context
         const context = {
             watcherId,
+            watcherName,
             modelConstructor: this._modelConstructor,
             query: this._query,
             dynamicPathProperties: this._dynamicProperties,
