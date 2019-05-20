@@ -1500,16 +1500,16 @@ abort-controller@^3.0.0:
     event-target-shim "^5.0.0"
 
 abstracted-admin@^0.25.2:
-  version "0.25.3"
-  resolved "https://registry.yarnpkg.com/abstracted-admin/-/abstracted-admin-0.25.3.tgz#b72ed21e4c8c0d685aee97107c23ec8ba28d8f6a"
-  integrity sha512-F5kAjeXmLU5UQE9wvzRfucmiHaFiw+i7yCbV04yo9412KNlcknVrR5teFpVpD1YwzrHL0rfYCOlCOf1eWmJYHw==
+  version "0.25.4"
+  resolved "https://registry.yarnpkg.com/abstracted-admin/-/abstracted-admin-0.25.4.tgz#746f38f98b2fd5026b72ed229eb2ebe5a51fb30b"
+  integrity sha512-oD8HJHDCOfvzpI4ceEZ8L4J1OaYGIupEkE61NbFe9EBKAoL2oPrASfqY13UK8J56pjbGGdOkM+YWKx/oKdflxw==
   dependencies:
     "@firebase/auth-types" "^0.7.0"
     "@firebase/database-types" "^0.4.0"
     "@firebase/firestore-types" "^1.3.0"
     "@firebase/messaging-types" "^0.2.11"
     "@firebase/storage-types" "^0.2.11"
-    abstracted-firebase "^0.25.6"
+    abstracted-firebase "^0.25.8"
     common-types "^1.10.20"
     firebase-admin "^7.3.0"
     lodash.first "^3.0.0"
@@ -1536,15 +1536,15 @@ abstracted-client@^0.25.2:
     serialized-query "^0.6.0"
     typed-conversions "^0.10.1"
 
-abstracted-firebase@^0.25.6:
-  version "0.25.6"
-  resolved "https://registry.yarnpkg.com/abstracted-firebase/-/abstracted-firebase-0.25.6.tgz#366d700cfb84733991951cd49947b2a8e7304e85"
-  integrity sha512-YdPFRpTEcj4Nt+IxFP0ozNv9v/OBDT2fulxLozuLBMHpfy2GXV5WTgElDO25hS/3/fyTaPJSsvFbQkSHTGrN8Q==
+abstracted-firebase@^0.25.6, abstracted-firebase@^0.25.8:
+  version "0.25.8"
+  resolved "https://registry.yarnpkg.com/abstracted-firebase/-/abstracted-firebase-0.25.8.tgz#474df957b8779b18b7ecfa232a59c0750106ab18"
+  integrity sha512-wk6CHJLjkWmTxEm9buvhghx87FaOwf1MeB5PII6mMXG96cssojot/4RePBGOQd5w0uGFI6cMIhSQC7VNINsIUA==
   dependencies:
     "@firebase/auth-types" "^0.7.0"
     "@firebase/database-types" "^0.4.0"
     common-types "^1.10.20"
-    firemock "^0.24.102"
+    firemock "^0.25.1"
     serialized-query "^0.6.0"
     typed-conversions "^0.10.1"
 
@@ -2776,9 +2776,9 @@ copy-webpack-plugin@^5.0.2:
     webpack-log "^2.0.0"
 
 core-js@^2.4.0, core-js@^2.6.5:
-  version "2.6.5"
-  resolved "https://registry.yarnpkg.com/core-js/-/core-js-2.6.5.tgz#44bc8d249e7fb2ff5d00e0341a7ffb94fbf67895"
-  integrity sha512-klh/kDpwX8hryYL14M9w/xei6vrv6sE8gTHDG7/T/+SEovB/G4ejwcfE/CBzO6Edsu+OETZMZ3wcX/EjUkrl5A==
+  version "2.6.6"
+  resolved "https://registry.yarnpkg.com/core-js/-/core-js-2.6.6.tgz#00eb6d6bf815471cc16d8563edd7d38786dec50b"
+  integrity sha512-Mt/LaAym54NXnrjEMdo918cT2h70tqb/Yl7T3uPHQHRm5SxVoqlKmerUy4mL11k8saSBDWQ7ULIHxmeFyT3pfg==
 
 core-util-is@1.0.2, core-util-is@~1.0.0:
   version "1.0.2"
@@ -3698,6 +3698,11 @@ elliptic@^6.0.0:
     minimalistic-assert "^1.0.0"
     minimalistic-crypto-utils "^1.0.0"
 
+email-validator@^2.0.4:
+  version "2.0.4"
+  resolved "https://registry.yarnpkg.com/email-validator/-/email-validator-2.0.4.tgz#b8dfaa5d0dae28f1b03c95881d904d4e40bfe7ed"
+  integrity sha512-gYCwo7kh5S3IDyZPLZf6hSS0MnZT8QmJFqYvbqlDZSbwdZlY6QZWxJ4i/6UhITOJ4XzyI647Bm2MXKCLqnJ4nQ==
+
 emoji-regex@^7.0.1:
   version "7.0.3"
   resolved "https://registry.yarnpkg.com/emoji-regex/-/emoji-regex-7.0.3.tgz#933a04052860c85e83c122479c4748a8e4c72156"
@@ -4015,9 +4020,9 @@ fast-deep-equal@^2.0.1:
   integrity sha1-ewUhjd+WZ79/Nwv3/bLLFf3Qqkk=
 
 fast-glob@^2.2.6:
-  version "2.2.6"
-  resolved "https://registry.yarnpkg.com/fast-glob/-/fast-glob-2.2.6.tgz#a5d5b697ec8deda468d85a74035290a025a95295"
-  integrity sha512-0BvMaZc1k9F+MeWWMe8pL6YltFzZYcJsYU7D4JyDA6PAczaXvxqQQ/z+mDF7/4Mw01DeUc+i3CTKajnkANkV4w==
+  version "2.2.7"
+  resolved "https://registry.yarnpkg.com/fast-glob/-/fast-glob-2.2.7.tgz#6953857c3afa475fff92ee6015d52da70a4cd39d"
+  integrity sha512-g1KuQwHOZAmOZMuBtHdxDtju+T2RT8jgCC9aANsbpdiDDTSnjgfuVsIBNKbUeJI3oKMRExcfNDtJl4OhbffMsw==
   dependencies:
     "@mrmlnc/readdir-enhanced" "^2.2.1"
     "@nodelib/fs.stat" "^1.1.2"
@@ -4158,16 +4163,17 @@ firebase-key@^2.0.2:
   resolved "https://registry.yarnpkg.com/firebase-key/-/firebase-key-2.0.2.tgz#44ffdc460faeb774ef95e04a43027042974cfe5c"
   integrity sha512-gH0u6apANQsqHUqcf+Yd49VaUQyKNCLxofwYx0gqUGcymeLs5HWg/3tXroGheYYH8+ynxbrnP/Z4F/FEqNy9Ow==
 
-firemock@^0.24.102, firemock@^0.24.104:
-  version "0.24.104"
-  resolved "https://registry.yarnpkg.com/firemock/-/firemock-0.24.104.tgz#6f3fd170a23ae2c56629a766f52ba80e151e88af"
-  integrity sha512-ZlQAO89Sphl8drIatT+GX0aruZLVHnac7g0hZNgyxc4HCN3QPVzyd5k8ixoQw272V8TOgOOVfTBTzh+bD+8p+Q==
+firemock@^0.25.1:
+  version "0.25.1"
+  resolved "https://registry.yarnpkg.com/firemock/-/firemock-0.25.1.tgz#901598c384d80a048eade0224a8ac4f59f8eb246"
+  integrity sha512-ahLb5GF8I7//udpeuKaiKh1+THwqgjeJZ92X96lO1WKLO2R5BK1+jsQCa/FDvNzl6aUU36ccrSCNiTfo7e97sw==
   dependencies:
     "@firebase/app-types" "^0.4.0"
     "@firebase/auth-types" "^0.7.0"
     "@firebase/database-types" "^0.4.0"
     "@firebase/util" "^0.2.15"
     common-types "^1.10.20"
+    email-validator "^2.0.4"
     faker "^4.1.0"
     firebase-key "^2.0.2"
     lodash.first "^3.0.0"
@@ -9052,9 +9058,9 @@ uglify-js@3.4.x:
     source-map "~0.6.1"
 
 uglify-js@^3.1.4:
-  version "3.5.13"
-  resolved "https://registry.yarnpkg.com/uglify-js/-/uglify-js-3.5.13.tgz#d2d8857b598d77f8764ae3bfcf90bb1df134d2bd"
-  integrity sha512-Lho+IJlquX6sdJgyKSJx/M9y4XbDd3ekPjD8S6HYmT5yVSwDtlSuca2w5hV4g2dIsp0Y/4orbfWxKexodmFv7w==
+  version "3.5.14"
+  resolved "https://registry.yarnpkg.com/uglify-js/-/uglify-js-3.5.14.tgz#edf2a322c37fd7173a954fb35af199b52fb10946"
+  integrity sha512-dgyjIw8KFK6AyVl5vm2tEqPewv5TKGEiiVFLI1LbF+oHua/Njd8tZk3lIbF1AWU1rNdEg7scaceADb4zqCcWXg==
   dependencies:
     commander "~2.20.0"
     source-map "~0.6.1"
@@ -9496,9 +9502,9 @@ webpack-sources@^1.1.0, webpack-sources@^1.3.0:
     source-map "~0.6.1"
 
 webpack@^4.8.1:
-  version "4.31.0"
-  resolved "https://registry.yarnpkg.com/webpack/-/webpack-4.31.0.tgz#ae201d45f0571336e42d1c2b5c8ab56c4d3b0c63"
-  integrity sha512-n6RVO3X0LbbipoE62akME9K/JI7qYrwwufs20VvgNNpqUoH4860KkaxJTbGq5bgkVZF9FqyyTG/0WPLH3PVNJA==
+  version "4.32.0"
+  resolved "https://registry.yarnpkg.com/webpack/-/webpack-4.32.0.tgz#d8726fe73bb362e0e48171990f362df5e747747b"
+  integrity sha512-ofFq9jjAn4HRzlmkcZZrjijbRZcqDw+mM9KrjKd0r6lS0qxyZ7jzICzhphGafXL62dGdjP7TgMK9mZeMLUgZgw==
   dependencies:
     "@webassemblyjs/ast" "1.8.5"
     "@webassemblyjs/helper-module-context" "1.8.5"
