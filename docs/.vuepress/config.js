@@ -233,6 +233,7 @@ module.exports = {
           collapsable: false,
           children: [
             "frontend-state-mgmt",
+            "auth",
             "dynamic-paths",
             "auditing",
             "graphql",
