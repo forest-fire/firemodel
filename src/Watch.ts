@@ -81,6 +81,16 @@ export class Watch<T extends Model = Model> {
     watcherPool = {};
   }
 
+  /**
+   * Finds the watcher by a given name and returns the ID of the
+   * first match
+   */
+  public static findByName(name: string) {
+    return Object.keys(watcherPool).find(
+      i => watcherPool[i].watcherName === name
+    );
+  }
+
   /** stops watching either a specific watcher or ALL if no hash code is provided */
   public static stop(hashCode?: string, oneOffDB?: RealTimeDB) {
     const codes = new Set(Object.keys(watcherPool));
@@ -203,8 +213,6 @@ export class Watch<T extends Model = Model> {
   ): Promise<IWatcherItem> {
     const watcherId = "w" + String(this._query.hashCode());
     const watcherName = options.name;
-    const construct = this._modelConstructor;
-    type ModelType = typeof construct;
     // create a dispatch function with context
     const context: IFmDispatchWatchContext<T> = {
       watcherId,
