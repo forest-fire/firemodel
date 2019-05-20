@@ -5,7 +5,7 @@ import { IReduxDispatch } from "./VuexWrapper";
 declare type RealTimeDB = import("abstracted-firebase").RealTimeDB;
 import { IModelOptions, IComparisonOperator, FmModelConstructor } from "./@types/general";
 import { IPrimaryKey } from "./@types/record-types";
-import { IWatcherItem, IWatchListQueries, IWatchEventClassification } from "./Watch/types";
+import { IWatcherItem, IWatchListQueries, IWatchEventClassification, IFmWatcherStartOptions } from "./Watch/types";
 export declare class Watch<T extends Model = Model> {
     static defaultDb: RealTimeDB;
     static dispatch: IReduxDispatch;
@@ -23,6 +23,11 @@ export declare class Watch<T extends Model = Model> {
     static lookup(hashCode: string): IWatcherItem;
     static readonly watchCount: number;
     static reset(): void;
+    /**
+     * Finds the watcher by a given name and returns the ID of the
+     * first match
+     */
+    static findByName(name: string): string;
     /** stops watching either a specific watcher or ALL if no hash code is provided */
     static stop(hashCode?: string, oneOffDB?: RealTimeDB): void;
     /**
@@ -53,13 +58,8 @@ export declare class Watch<T extends Model = Model> {
      * **start**
      *
      * executes the watcher so that it becomes actively watched
-     *
-     * @param once optionally state a function callback to be called when
-     * the response for the given watcher's query has been fetched. This is
-     * useful as it indicates when the local state has been synced with the
-     * server state
      */
-    start(once?: (evt: any) => void): Promise<IWatcherItem>;
+    start(options?: IFmWatcherStartOptions): Promise<IWatcherItem>;
     /**
      * **dispatch**
      *

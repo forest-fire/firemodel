@@ -49,6 +49,13 @@ class Watch {
     static reset() {
         watcherPool = {};
     }
+    /**
+     * Finds the watcher by a given name and returns the ID of the
+     * first match
+     */
+    static findByName(name) {
+        return Object.keys(watcherPool).find(i => watcherPool[i].watcherName === name);
+    }
     /** stops watching either a specific watcher or ALL if no hash code is provided */
     static stop(hashCode, oneOffDB) {
         const codes = new Set(Object.keys(watcherPool));
@@ -125,18 +132,14 @@ class Watch {
      * **start**
      *
      * executes the watcher so that it becomes actively watched
-     *
-     * @param once optionally state a function callback to be called when
-     * the response for the given watcher's query has been fetched. This is
-     * useful as it indicates when the local state has been synced with the
-     * server state
      */
-    async start(once) {
+    async start(options = {}) {
         const watcherId = "w" + String(this._query.hashCode());
-        const construct = this._modelConstructor;
+        const watcherName = options.name;
         // create a dispatch function with context
         const context = {
             watcherId,
+            watcherName,
             modelConstructor: this._modelConstructor,
             query: this._query,
             dynamicPathProperties: this._dynamicProperties,
@@ -167,6 +170,7 @@ class Watch {
         }
         const watcherItem = {
             watcherId,
+            watcherName,
             eventType: this._eventType,
             watcherSource: this._watcherSource,
             dispatch: this._dispatcher || FireModel_1.FireModel.dispatch,

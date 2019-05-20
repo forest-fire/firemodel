@@ -1,6 +1,17 @@
 import { IMultiPathUpdates } from "../FireModel";
 import { IFmCrudOperations, IReduxDispatch } from "..";
 import { SerializedQuery } from "serialized-query";
+export interface IFmWatcherStartOptions {
+    /**
+     * optionally provide a callback to be called when
+     * the response for the given watcher's query has been fetched. This is
+     * useful as it indicates when the local state has been synced with the
+     * server state
+     */
+    once?: (evt: any) => void;
+    /** optionally give the watcher a name to make lookup easier when stopping */
+    name?: string;
+}
 export interface IFmEvent<T> {
     /**
      * A Unique ID for the given event payload
@@ -77,6 +88,8 @@ export declare type IWatchListQueries = "all" | "first" | "last" | "since" | "do
 export declare type IWatcherSource = "list" | "record" | "unknown";
 export interface IWatcherItem {
     watcherId: string;
+    /** if defined, pass along the string name off the watcher */
+    watcherName?: string;
     watcherSource: IWatcherSource;
     eventType: IWatchEventClassification;
     query: SerializedQuery;

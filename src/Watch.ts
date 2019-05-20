@@ -18,12 +18,13 @@ import {
   FmModelConstructor
 } from "./@types/general";
 import { IPrimaryKey, ICompositeKey } from "./@types/record-types";
-import { FMEvents } from "./state-mgmt";
+import { FMEvents, IFmDispatchWatchContext } from "./state-mgmt";
 import { getAllPropertiesFromClassStructure } from "./util";
 import {
   IWatcherItem,
   IWatchListQueries,
-  IWatchEventClassification
+  IWatchEventClassification,
+  IFmWatcherStartOptions
 } from "./Watch/types";
 import {
   waitForInitialization,
@@ -78,6 +79,16 @@ export class Watch<T extends Model = Model> {
 
   public static reset() {
     watcherPool = {};
+  }
+
+  /**
+   * Finds the watcher by a given name and returns the ID of the
+   * first match
+   */
+  public static findByName(name: string) {
+    return Object.keys(watcherPool).find(
+      i => watcherPool[i].watcherName === name
+    );
   }
 
   /** stops watching either a specific watcher or ALL if no hash code is provided */
@@ -196,19 +207,16 @@ export class Watch<T extends Model = Model> {
    * **start**
    *
    * executes the watcher so that it becomes actively watched
-   *
-   * @param once optionally state a function callback to be called when
-   * the response for the given watcher's query has been fetched. This is
-   * useful as it indicates when the local state has been synced with the
-   * server state
    */
-  public async start(once?: (evt: any) => void): Promise<IWatcherItem> {
+  public async start(
+    options: IFmWatcherStartOptions = {}
+  ): Promise<IWatcherItem> {
     const watcherId = "w" + String(this._query.hashCode());
-    const construct = this._modelConstructor;
-    type ModelType = typeof construct;
+    const watcherName = options.name;
     // create a dispatch function with context
-    const context = {
+    const context: IFmDispatchWatchContext<T> = {
       watcherId,
+      watcherName,
       modelConstructor: this._modelConstructor,
       query: this._query,
       dynamicPathProperties: this._dynamicProperties,
@@ -219,7 +227,7 @@ export class Watch<T extends Model = Model> {
       pluralName: this._pluralName,
       watcherSource: this._watcherSource
     };
-    const dispatchCallback = WatchDispatcher<ModelType>(context)(
+    const dispatchCallback = WatchDispatcher<T>(context)(
       this._dispatcher || FireModel.dispatch
     );
 
@@ -245,6 +253,7 @@ export class Watch<T extends Model = Model> {
 
     const watcherItem: IWatcherItem = {
       watcherId,
+      watcherName,
       eventType: this._eventType,
       watcherSource: this._watcherSource,
       dispatch: this._dispatcher || FireModel.dispatch,
