@@ -12,8 +12,8 @@ import { IDictionary } from "common-types";
 export type Extractable<T, U> = T extends U ? any : never;
 export type NotString<T> = string extends T ? never : any;
 function promoteStringToFMEvents<
-  K extends string & NotString<K> & Extractable<FMEvents, K>
->(k: K): Extract<FMEvents, K> {
+  K extends string & NotString<K> & Extractable<FmEvents, K>
+>(k: K): Extract<FmEvents, K> {
   return k;
 }
 
@@ -24,7 +24,7 @@ export const enum IFmCrudOperations {
   remove = "remove"
 }
 
-export type IFMEventName<T> = string & NotString<T> & Extractable<FMEvents, T>;
+export type IFMEventName<T> = string & NotString<T> & Extractable<FmEvents, T>;
 
 export interface IFmDispatchOptions {
   silent?: boolean;
@@ -32,7 +32,7 @@ export interface IFmDispatchOptions {
 }
 
 /** Enumeration of all Firemodel Actions that will be fired */
-export enum FMEvents {
+export enum FmEvents {
   /** a list of records has been queried from DB and being dispatched to FE State Mgmt */
   RECORD_LIST = "@firemodel/RECORD_LIST",
   /** a list of records was SET to a new list of records */
@@ -253,7 +253,7 @@ export interface IFMValueAction extends IFMAction {
 export interface IFmContextualizedWatchEvent<T = any>
   extends IFmDispatchWatchContext<T>,
     IValueBasedWatchEvent {
-  type: FMEvents;
+  type: FmEvents;
   compositeKey: ICompositeKey<T>;
 }
 //#endregion

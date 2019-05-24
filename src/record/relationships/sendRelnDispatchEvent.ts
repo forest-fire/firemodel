@@ -1,11 +1,11 @@
 import { Model, Record } from "../..";
-import { FMEvents } from "../../state-mgmt";
+import { FmEvents } from "../../state-mgmt";
 import { IFmPathValuePair, IFmRelationshipOperation } from "../../@types";
 import { capitalize } from "../../util";
 import { FireModelError } from "../../errors";
 
 export function sendRelnDispatchEvent<T extends Model>(
-  type: FMEvents,
+  type: FmEvents,
   transactionId: string,
   operation: IFmRelationshipOperation,
   rec: Record<T>,

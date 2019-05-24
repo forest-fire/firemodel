@@ -7,7 +7,7 @@ import {
   FireModel,
   Watch,
   Record,
-  FMEvents
+  FmEvents
 } from "../src";
 import { DB } from "abstracted-admin";
 import * as chai from "chai";
@@ -84,13 +84,15 @@ describe("Mocking:", () => {
   });
 
   it("using createRelationshipLinks() sets fake links to all relns", async () => {
-    const numberOfFolks = 1;
+    const numberOfFolks = 2;
     await Mock(FancyPerson, db)
       .createRelationshipLinks()
       .generate(numberOfFolks);
 
     const people = await List.all(FancyPerson);
     expect(people).to.have.lengthOf(numberOfFolks);
+    console.log(people.data);
+
     people.map(person => {
       expect(person.employer).to.be.a("string");
       expect(person.cars).to.be.an("object");
@@ -131,6 +133,7 @@ describe("Mocking:", () => {
       })
       .generate(numberOfFolks);
     const people = await List.all(FancyPerson);
+    console.log(db.mock.db);
 
     expect(people).to.have.lengthOf(numberOfFolks);
   });
@@ -144,8 +147,8 @@ describe("Mocking:", () => {
 
     const types = events.map(e => e.type);
 
-    expect(types).to.include(FMEvents.RECORD_ADDED_LOCALLY);
-    expect(types).to.include(FMEvents.RECORD_ADDED_CONFIRMATION);
+    expect(types).to.include(FmEvents.RECORD_ADDED_LOCALLY);
+    expect(types).to.include(FmEvents.RECORD_ADDED_CONFIRMATION);
   });
 
   it("Mocking data does not fire fire local events (RECORD_ADD_LOCALLY, RECORD_ADD_CONFIRMATION) to dispatch", async () => {
@@ -191,16 +194,16 @@ describe("Mocking:", () => {
     const eventTypes: Set<string> = new Set();
     events.forEach(e => eventTypes.add(e.type));
 
-    expect(Array.from(eventTypes)).to.include(FMEvents.RECORD_ADDED);
+    expect(Array.from(eventTypes)).to.include(FmEvents.RECORD_ADDED);
     expect(Array.from(eventTypes)).to.include(
       "@firemodel/RECORD_ADDED_LOCALLY"
     );
     expect(Array.from(eventTypes)).to.include(
       "@firemodel/RECORD_ADDED_CONFIRMATION"
     );
-    const locally = events.find(e => e.type === FMEvents.RECORD_ADDED_LOCALLY);
+    const locally = events.find(e => e.type === FmEvents.RECORD_ADDED_LOCALLY);
     const confirm = events.find(
-      e => e.type === FMEvents.RECORD_ADDED_CONFIRMATION
+      e => e.type === FmEvents.RECORD_ADDED_CONFIRMATION
     );
     expect(locally).to.haveOwnProperty("transactionId");
     expect(confirm).to.haveOwnProperty("transactionId");
@@ -217,7 +220,7 @@ describe("Mocking:", () => {
     await Mock(FancyPerson).generate(1);
     const eventTypes: Set<string> = new Set(events.map(e => e.type));
 
-    expect(Array.from(eventTypes)).to.not.include(FMEvents.RECORD_ADDED);
+    expect(Array.from(eventTypes)).to.not.include(FmEvents.RECORD_ADDED);
 
     await Record.add(FancyPerson, {
       name: "Bob the Builder"
@@ -225,6 +228,6 @@ describe("Mocking:", () => {
     const eventTypes2: string[] = Array.from(new Set(events.map(e => e.type)));
     console.log(eventTypes2);
 
-    expect(eventTypes2).to.include(FMEvents.RECORD_ADDED);
+    expect(eventTypes2).to.include(FmEvents.RECORD_ADDED);
   });
 });

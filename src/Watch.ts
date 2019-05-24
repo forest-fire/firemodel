@@ -18,7 +18,7 @@ import {
   FmModelConstructor
 } from "./@types/general";
 import { IPrimaryKey, ICompositeKey } from "./@types/record-types";
-import { FMEvents, IFmDispatchWatchContext } from "./state-mgmt";
+import { FmEvents, IFmDispatchWatchContext } from "./state-mgmt";
 import { getAllPropertiesFromClassStructure } from "./util";
 import {
   IWatcherItem,
@@ -244,7 +244,7 @@ export class Watch<T extends Model = Model> {
     } catch (e) {
       console.log(`Problem starting watcher [${watcherId}]: `, e);
       (this._dispatcher || FireModel.dispatch)({
-        type: FMEvents.WATCHER_FAILED,
+        type: FmEvents.WATCHER_FAILED,
         errorMessage: e.message,
         errorCode: e.code || e.name || "firemodel/watcher-failed"
       });
@@ -266,14 +266,14 @@ export class Watch<T extends Model = Model> {
     watcherPool[watcherId] = watcherItem;
     // dispatch meta
     (this._dispatcher || FireModel.dispatch)({
-      type: FMEvents.WATCHER_STARTING,
+      type: FmEvents.WATCHER_STARTING,
       ...watcherItem
     });
     try {
       await waitForInitialization(watcherItem);
 
       (this._dispatcher || FireModel.dispatch)({
-        type: FMEvents.WATCHER_STARTED,
+        type: FmEvents.WATCHER_STARTED,
         ...watcherItem
       });
 

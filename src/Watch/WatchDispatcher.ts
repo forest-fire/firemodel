@@ -7,7 +7,7 @@ import {
   IPathBasedWatchEvent
 } from "abstracted-firebase";
 import {
-  FMEvents,
+  FmEvents,
   IFmDispatchWatchContext,
   IFmContextualizedWatchEvent
 } from "../state-mgmt";
@@ -36,11 +36,11 @@ export const WatchDispatcher = <T>(context: IFmDispatchWatchContext<T>) => (
     hasInitialized[context.watcherId] = true;
 
     const typeLookup: IDictionary = {
-      child_added: FMEvents.RECORD_ADDED,
-      child_removed: FMEvents.RECORD_REMOVED,
-      child_changed: FMEvents.RECORD_CHANGED,
-      child_moved: FMEvents.RECORD_MOVED,
-      value: FMEvents.RECORD_CHANGED
+      child_added: FmEvents.RECORD_ADDED,
+      child_removed: FmEvents.RECORD_REMOVED,
+      child_changed: FmEvents.RECORD_CHANGED,
+      child_moved: FmEvents.RECORD_MOVED,
+      value: FmEvents.RECORD_CHANGED
     };
 
     const recId =
@@ -70,8 +70,8 @@ export const WatchDispatcher = <T>(context: IFmDispatchWatchContext<T>) => (
         type:
           event.eventType === "value"
             ? event.value === null || event.paths === null
-              ? FMEvents.RECORD_REMOVED
-              : FMEvents.RECORD_CHANGED
+              ? FmEvents.RECORD_REMOVED
+              : FmEvents.RECORD_CHANGED
             : typeLookup[event.eventType as keyof typeof typeLookup],
         compositeKey
       },

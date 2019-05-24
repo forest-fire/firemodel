@@ -3,7 +3,7 @@ import { ICompositeKey } from "./record-types";
 import { IFirebaseWatchEvent } from "abstracted-firebase";
 import { FmModelConstructor } from "./general";
 import { Model } from "../Model";
-import { FMEvents } from "../state-mgmt";
+import { FmEvents } from "../state-mgmt";
 
 export type IFmEventType =
   | "value"
@@ -27,7 +27,7 @@ export interface IFmRecordEvent<T extends Model = Model> {
   previousChildKey?: string;
   query: SerializedQuery;
   targetType: "path" | "query";
-  type: FMEvents;
+  type: FmEvents;
   value: T;
   /** the value prior to the change; this is typically set for local events only */
   priorValue?: T;

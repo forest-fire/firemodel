@@ -6,7 +6,7 @@ const expect = chai.expect;
 import "reflect-metadata";
 import { FireModel } from "../src/FireModel";
 import { FancyPerson } from "./testing/FancyPerson";
-import { IFMRecordEvent, FMEvents } from "../src/state-mgmt";
+import { IFMRecordEvent, FmEvents } from "../src/state-mgmt";
 import { List } from "../src/List";
 import { Company } from "./testing/Company";
 
@@ -70,12 +70,12 @@ describe("Relationship > ", () => {
     expect(events).to.have.lengthOf(2);
 
     const eventTypes = new Set(events.map(e => e.type));
-    expect(eventTypes.has(FMEvents.RELATIONSHIP_ADDED_LOCALLY)).to.equal(true);
-    expect(eventTypes.has(FMEvents.RELATIONSHIP_ADDED_CONFIRMATION)).to.equal(
+    expect(eventTypes.has(FmEvents.RELATIONSHIP_ADDED_LOCALLY)).to.equal(true);
+    expect(eventTypes.has(FmEvents.RELATIONSHIP_ADDED_CONFIRMATION)).to.equal(
       true
     );
     const localEvent = events.find(
-      i => i.type === FMEvents.RELATIONSHIP_ADDED_LOCALLY
+      i => i.type === FmEvents.RELATIONSHIP_ADDED_LOCALLY
     );
 
     expect(localEvent.paths).to.have.lengthOf(4);
@@ -105,7 +105,7 @@ describe("Relationship > ", () => {
     // local person record is updated
     expect(bob.data.parents[father.id]).to.equal(true);
     const localEvent = events.find(
-      i => i.type === FMEvents.RELATIONSHIP_ADDED_LOCALLY
+      i => i.type === FmEvents.RELATIONSHIP_ADDED_LOCALLY
     );
     // client event paths are numerically correct
     expect(localEvent.paths).to.have.lengthOf(4);

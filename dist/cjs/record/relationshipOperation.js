@@ -35,14 +35,14 @@ property,
 paths, options = {}) {
     const dispatchEvents = {
         set: [
-            __1.FMEvents.RELATIONSHIP_SET_LOCALLY,
-            __1.FMEvents.RELATIONSHIP_SET_CONFIRMATION,
-            __1.FMEvents.RELATIONSHIP_SET_ROLLBACK
+            __1.FmEvents.RELATIONSHIP_SET_LOCALLY,
+            __1.FmEvents.RELATIONSHIP_SET_CONFIRMATION,
+            __1.FmEvents.RELATIONSHIP_SET_ROLLBACK
         ],
         clear: [
-            __1.FMEvents.RELATIONSHIP_REMOVED_LOCALLY,
-            __1.FMEvents.RELATIONSHIP_REMOVED_CONFIRMATION,
-            __1.FMEvents.RELATIONSHIP_REMOVED_ROLLBACK
+            __1.FmEvents.RELATIONSHIP_REMOVED_LOCALLY,
+            __1.FmEvents.RELATIONSHIP_REMOVED_CONFIRMATION,
+            __1.FmEvents.RELATIONSHIP_REMOVED_ROLLBACK
         ],
         // update: [
         //   FMEvents.RELATIONSHIP_UPDATED_LOCALLY,
@@ -50,14 +50,14 @@ paths, options = {}) {
         //   FMEvents.RELATIONSHIP_UPDATED_ROLLBACK
         // ],
         add: [
-            __1.FMEvents.RELATIONSHIP_ADDED_LOCALLY,
-            __1.FMEvents.RELATIONSHIP_ADDED_CONFIRMATION,
-            __1.FMEvents.RELATIONSHIP_ADDED_ROLLBACK
+            __1.FmEvents.RELATIONSHIP_ADDED_LOCALLY,
+            __1.FmEvents.RELATIONSHIP_ADDED_CONFIRMATION,
+            __1.FmEvents.RELATIONSHIP_ADDED_ROLLBACK
         ],
         remove: [
-            __1.FMEvents.RELATIONSHIP_REMOVED_LOCALLY,
-            __1.FMEvents.RELATIONSHIP_REMOVED_CONFIRMATION,
-            __1.FMEvents.RELATIONSHIP_REMOVED_ROLLBACK
+            __1.FmEvents.RELATIONSHIP_REMOVED_LOCALLY,
+            __1.FmEvents.RELATIONSHIP_REMOVED_CONFIRMATION,
+            __1.FmEvents.RELATIONSHIP_REMOVED_ROLLBACK
         ]
     };
     try {

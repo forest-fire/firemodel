@@ -1,5 +1,5 @@
 import { Record } from "../Record";
-import { FMEvents } from "..";
+import { FmEvents } from "..";
 import { getModelMeta } from "../ModelMeta";
 import { UnknownRelationshipProblem } from "../errors/relationships/UnknownRelationshipProblem";
 import { extractFksFromPaths } from "./extractFksFromPaths";
@@ -33,14 +33,14 @@ property,
 paths, options = {}) {
     const dispatchEvents = {
         set: [
-            FMEvents.RELATIONSHIP_SET_LOCALLY,
-            FMEvents.RELATIONSHIP_SET_CONFIRMATION,
-            FMEvents.RELATIONSHIP_SET_ROLLBACK
+            FmEvents.RELATIONSHIP_SET_LOCALLY,
+            FmEvents.RELATIONSHIP_SET_CONFIRMATION,
+            FmEvents.RELATIONSHIP_SET_ROLLBACK
         ],
         clear: [
-            FMEvents.RELATIONSHIP_REMOVED_LOCALLY,
-            FMEvents.RELATIONSHIP_REMOVED_CONFIRMATION,
-            FMEvents.RELATIONSHIP_REMOVED_ROLLBACK
+            FmEvents.RELATIONSHIP_REMOVED_LOCALLY,
+            FmEvents.RELATIONSHIP_REMOVED_CONFIRMATION,
+            FmEvents.RELATIONSHIP_REMOVED_ROLLBACK
         ],
         // update: [
         //   FMEvents.RELATIONSHIP_UPDATED_LOCALLY,
@@ -48,14 +48,14 @@ paths, options = {}) {
         //   FMEvents.RELATIONSHIP_UPDATED_ROLLBACK
         // ],
         add: [
-            FMEvents.RELATIONSHIP_ADDED_LOCALLY,
-            FMEvents.RELATIONSHIP_ADDED_CONFIRMATION,
-            FMEvents.RELATIONSHIP_ADDED_ROLLBACK
+            FmEvents.RELATIONSHIP_ADDED_LOCALLY,
+            FmEvents.RELATIONSHIP_ADDED_CONFIRMATION,
+            FmEvents.RELATIONSHIP_ADDED_ROLLBACK
         ],
         remove: [
-            FMEvents.RELATIONSHIP_REMOVED_LOCALLY,
-            FMEvents.RELATIONSHIP_REMOVED_CONFIRMATION,
-            FMEvents.RELATIONSHIP_REMOVED_ROLLBACK
+            FmEvents.RELATIONSHIP_REMOVED_LOCALLY,
+            FmEvents.RELATIONSHIP_REMOVED_CONFIRMATION,
+            FmEvents.RELATIONSHIP_REMOVED_ROLLBACK
         ]
     };
     try {

@@ -8,7 +8,7 @@ import { RealTimeDB } from "abstracted-firebase";
 import { IReduxDispatch } from "./VuexWrapper";
 import { pathJoin } from "./path";
 import { getModelMeta } from "./ModelMeta";
-import { FMEvents, IFMRecordListEvent } from "./state-mgmt";
+import { FmEvents, IFMRecordListEvent } from "./state-mgmt";
 import { IModelOptions } from "./@types/general";
 
 const DEFAULT_IF_NOT_FOUND = "__DO_NOT_USE__";
@@ -122,7 +122,7 @@ export class List<T extends Model> extends FireModel<T> {
     await list.load(query);
     // TODO: should this have a dispatch?
     list.dispatch({
-      type: FMEvents.RECORD_LIST,
+      type: FmEvents.RECORD_LIST,
       modelName: list.modelName,
       pluralName: list.pluralName,
       dbPath: list.dbPath,

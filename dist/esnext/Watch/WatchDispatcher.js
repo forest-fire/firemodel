@@ -1,4 +1,4 @@
-import { FMEvents } from "../state-mgmt";
+import { FmEvents } from "../state-mgmt";
 import { Record } from "../Record";
 import { hasInitialized } from "./watchInitialization";
 import { FireModelError, FireModelProxyError } from "../errors";
@@ -17,11 +17,11 @@ clientHandler) => {
     return (event) => {
         hasInitialized[context.watcherId] = true;
         const typeLookup = {
-            child_added: FMEvents.RECORD_ADDED,
-            child_removed: FMEvents.RECORD_REMOVED,
-            child_changed: FMEvents.RECORD_CHANGED,
-            child_moved: FMEvents.RECORD_MOVED,
-            value: FMEvents.RECORD_CHANGED
+            child_added: FmEvents.RECORD_ADDED,
+            child_removed: FmEvents.RECORD_REMOVED,
+            child_changed: FmEvents.RECORD_CHANGED,
+            child_moved: FmEvents.RECORD_MOVED,
+            value: FmEvents.RECORD_CHANGED
         };
         const recId = typeof event.value === "object"
             ? Object.assign({ id: event.key }, event.value) : { id: event.key };
@@ -36,8 +36,8 @@ clientHandler) => {
         const contextualizedEvent = Object.assign({
             type: event.eventType === "value"
                 ? event.value === null || event.paths === null
-                    ? FMEvents.RECORD_REMOVED
-                    : FMEvents.RECORD_CHANGED
+                    ? FmEvents.RECORD_REMOVED
+                    : FmEvents.RECORD_CHANGED
                 : typeLookup[event.eventType],
             compositeKey
         }, context, event);

@@ -1,3 +1,6 @@
+---
+sidebarDepth: 3
+---
 # Authentication & Authorization
 
 ## Introduction
@@ -43,3 +46,23 @@ First off, let's cover a set of assumptions we are making:
   - "
 - Frontend calls can "request" roles for the current user but if the requested role has `adminRequired` set to true it will be rejected unless the current user is either a _cross-app_ **admin** or an _app-specific_ **admin**. More on this in Admin section.
 - Frontend calls can "request" roles for a different user only if they are some sort of **admin**.
+
+### Creating a User
+
+Creating a "known user" (versus an anonymous user) from the frontend will operate the following flow:
+
+<process-flow>graph TD;subgraph Client; FE["Frontend Client"]-->CREATE("createEmailUser(email, password, url, [ claims ])"); FE-->Verify("verify email");end; subgraph Firebase; CREATE-->FB[".createUserWithEmailAndPassword()"]; end; subgraph server;CREATE-->SERVER["API Endpoint"]; SERVER-->CheckRoles; SERVER-->CheckApp; CheckApp-->Write["write CustomClaimRequest"]; CheckRoles-->Write; SERVER2["API Endpoint"]; SERVER2-->Claim["write CustomClaim"]; Verify-->SERVER2; end; </process-flow>
+
+In the above example, the authentication process was email/password but other flows will follow a similar path. The detailed steps are:
+
+1. The frontend client calls `createEmailUser()` and specifies not only the email/password pairing but includes a **url** to the backend endpoint. Optionally, requested "roles" are added.
+2. **FireModel** will use a direct call to **Firebase** to start the process. This establishes the username/password and should quickly return with a User object that is neither verified nor associated with any "custom claims".
+3. Once returning from the **Firebase** API call, `createEmailUser()` will pass the newly created UID, requested "custom claims", and the prior UID of the anonymous user (if the client had been logged in as an anonymous user).
+4. The backend will evaluate:
+   - Does the frontend have the right qualifications to be identified as originating from a known "App" (e.g., records of model `CustomClaimApp`); if not then disable user, if so then associate user to the app.
+   - Do any of the claims requested by the user require "admin" priviledges and if so strip this claims out. Those which remain should be added as `CustomClaimRequest` records.
+   - If the user had been connected as an anonymous user prior ( ... need to think through this ...)
+5. Once the user gets around to verifying the email, it will bring them to the frontend app where the app will call `verifyEmailUser()` which will again call the backend.
+6. The backend function will:
+   - set the user's status to verified
+   - convert the user's `CustomClaimRequest` records into `CustomClaim` records

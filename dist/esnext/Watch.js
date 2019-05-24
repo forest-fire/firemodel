@@ -4,7 +4,7 @@ import { FireModel } from "./FireModel";
 import { Record } from "./Record";
 import { WatchDispatcher } from "./Watch/WatchDispatcher";
 import { List } from "./List";
-import { FMEvents } from "./state-mgmt";
+import { FmEvents } from "./state-mgmt";
 import { getAllPropertiesFromClassStructure } from "./util";
 import { waitForInitialization } from "./Watch/watchInitialization";
 import { FireModelError } from "./errors";
@@ -160,7 +160,7 @@ export class Watch {
         catch (e) {
             console.log(`Problem starting watcher [${watcherId}]: `, e);
             (this._dispatcher || FireModel.dispatch)({
-                type: FMEvents.WATCHER_FAILED,
+                type: FmEvents.WATCHER_FAILED,
                 errorMessage: e.message,
                 errorCode: e.code || e.name || "firemodel/watcher-failed"
             });
@@ -179,10 +179,10 @@ export class Watch {
         };
         watcherPool[watcherId] = watcherItem;
         // dispatch meta
-        (this._dispatcher || FireModel.dispatch)(Object.assign({ type: FMEvents.WATCHER_STARTING }, watcherItem));
+        (this._dispatcher || FireModel.dispatch)(Object.assign({ type: FmEvents.WATCHER_STARTING }, watcherItem));
         try {
             await waitForInitialization(watcherItem);
-            (this._dispatcher || FireModel.dispatch)(Object.assign({ type: FMEvents.WATCHER_STARTED }, watcherItem));
+            (this._dispatcher || FireModel.dispatch)(Object.assign({ type: FmEvents.WATCHER_STARTED }, watcherItem));
             return watcherItem;
         }
         catch (e) {

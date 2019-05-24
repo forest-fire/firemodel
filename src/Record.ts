@@ -7,7 +7,7 @@ import { FireModel } from "./FireModel";
 import { IReduxDispatch } from "./VuexWrapper";
 
 import {
-  FMEvents,
+  FmEvents,
   IFMEventName,
   IFmCrudOperations,
   IFmDispatchOptions
@@ -976,21 +976,21 @@ export class Record<T extends Model> extends FireModel<T> {
       Math.random()
         .toString(36)
         .substr(2, 5);
-    const lookup: IDictionary<FMEvents[]> = {
+    const lookup: IDictionary<FmEvents[]> = {
       add: [
-        FMEvents.RECORD_ADDED_LOCALLY,
-        FMEvents.RECORD_ADDED_CONFIRMATION,
-        FMEvents.RECORD_ADDED_ROLLBACK
+        FmEvents.RECORD_ADDED_LOCALLY,
+        FmEvents.RECORD_ADDED_CONFIRMATION,
+        FmEvents.RECORD_ADDED_ROLLBACK
       ],
       update: [
-        FMEvents.RECORD_CHANGED_LOCALLY,
-        FMEvents.RECORD_CHANGED_CONFIRMATION,
-        FMEvents.RECORD_CHANGED_ROLLBACK
+        FmEvents.RECORD_CHANGED_LOCALLY,
+        FmEvents.RECORD_CHANGED_CONFIRMATION,
+        FmEvents.RECORD_CHANGED_ROLLBACK
       ],
       remove: [
-        FMEvents.RECORD_REMOVED_LOCALLY,
-        FMEvents.RECORD_REMOVED_CONFIRMATION,
-        FMEvents.RECORD_REMOVED_ROLLBACK
+        FmEvents.RECORD_REMOVED_LOCALLY,
+        FmEvents.RECORD_REMOVED_CONFIRMATION,
+        FmEvents.RECORD_REMOVED_ROLLBACK
       ]
     };
     const [actionTypeStart, actionTypeEnd, actionTypeFailure] = lookup[
