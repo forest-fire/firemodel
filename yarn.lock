@@ -7461,7 +7461,17 @@ promise-inflight@^1.0.1:
   resolved "https://registry.yarnpkg.com/promise-inflight/-/promise-inflight-1.0.1.tgz#98472870bf228132fcbdd868129bad12c3c029e3"
   integrity sha1-mEcocL8igTL8vdhoEputEsPAKeM=
 
-protobufjs@6.8.8, protobufjs@^6.8.0, protobufjs@^6.8.6, protobufjs@^6.8.8:
+protobufjs@^5.0.3:
+  version "5.0.3"
+  resolved "https://registry.yarnpkg.com/protobufjs/-/protobufjs-5.0.3.tgz#e4dfe9fb67c90b2630d15868249bcc4961467a17"
+  integrity sha512-55Kcx1MhPZX0zTbVosMQEO5R6/rikNXd9b6RQK4KSPcrSIIwoXTtebIczUrXlwaSrbz4x8XUVThGPob1n8I4QA==
+  dependencies:
+    ascli "~1"
+    bytebuffer "~5"
+    glob "^7.0.5"
+    yargs "^3.10.0"
+
+protobufjs@^6.8.0, protobufjs@^6.8.6, protobufjs@^6.8.8:
   version "6.8.8"
   resolved "https://registry.yarnpkg.com/protobufjs/-/protobufjs-6.8.8.tgz#c8b4f1282fd7a90e6f5b109ed11c84af82908e7c"
   integrity sha512-AAmHtD5pXgZfi7GMpllpO3q1Xw1OYldr+dMUlAnffGTAhqkg72WdmSY71uKBF/JuyiKs8psYbtKrhi0ASCD8qw==
@@ -7479,16 +7489,6 @@ protobufjs@6.8.8, protobufjs@^6.8.0, protobufjs@^6.8.6, protobufjs@^6.8.8:
     "@types/long" "^4.0.0"
     "@types/node" "^10.1.0"
     long "^4.0.0"
-
-protobufjs@^5.0.3:
-  version "5.0.3"
-  resolved "https://registry.yarnpkg.com/protobufjs/-/protobufjs-5.0.3.tgz#e4dfe9fb67c90b2630d15868249bcc4961467a17"
-  integrity sha512-55Kcx1MhPZX0zTbVosMQEO5R6/rikNXd9b6RQK4KSPcrSIIwoXTtebIczUrXlwaSrbz4x8XUVThGPob1n8I4QA==
-  dependencies:
-    ascli "~1"
-    bytebuffer "~5"
-    glob "^7.0.5"
-    yargs "^3.10.0"
 
 proxy-addr@~2.0.5:
   version "2.0.5"
@@ -8106,14 +8106,6 @@ serialized-query@^0.6.0:
   integrity sha512-FMnpjA310Jnvfp0pLXDH9+8TErmnv4rzsHkFDqUB66UAT7o8bpohvzmieGjP1EUFLu9a0W+5Tb3hBS/2RgRx4w==
   dependencies:
     common-types "^1.10.20"
-
-serialized-query@^0.7.0:
-  version "0.7.0"
-  resolved "https://registry.yarnpkg.com/serialized-query/-/serialized-query-0.7.0.tgz#464ca8c61e7941436a1157b442d1d6bc5fa56732"
-  integrity sha512-PwxEf1eoGU+hn46qZ6lHsdIK73Sim+ip9wykt07fAo9Y44fZjrp1vgdFMfVbP64vL0dQ+rYX6gI8wOHrQEMoQA==
-  dependencies:
-    common-types "^1.10.22"
-    protobufjs "6.8.8"
 
 serve-index@^1.9.1:
   version "1.9.1"
