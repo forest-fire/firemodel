@@ -7,9 +7,8 @@ import "reflect-metadata";
 import { Person } from "./testing/person";
 import { Person as Peeps } from "./testing/PersonAsPeeps";
 import { FireModel } from "../src/FireModel";
-import { IFMRecordEvent, FMEvents } from "../src/state-mgmt";
+import { IFMRecordEvent, FmEvents } from "../src/state-mgmt";
 import { Mock } from "../src/Mock";
-import { eventNames } from "cluster";
 
 describe("Record > ", () => {
   let db: DB;
@@ -49,8 +48,8 @@ describe("Record > ", () => {
     });
     expect(events).to.have.lengthOf(2);
     const eventTypes = new Set(events.map(e => e.type));
-    expect(eventTypes.has(FMEvents.RECORD_ADDED_CONFIRMATION)).to.equal(true);
-    expect(eventTypes.has(FMEvents.RECORD_ADDED_LOCALLY)).to.equal(true);
+    expect(eventTypes.has(FmEvents.RECORD_ADDED_CONFIRMATION)).to.equal(true);
+    expect(eventTypes.has(FmEvents.RECORD_ADDED_LOCALLY)).to.equal(true);
   });
 
   it("Record's load() populates state, does not add to db", async () => {
@@ -200,8 +199,8 @@ describe("Record > ", () => {
 
     expect(events).to.have.lengthOf(2);
     const eventTypes = new Set(events.map(e => e.type));
-    expect(eventTypes.has(FMEvents.RECORD_REMOVED_LOCALLY)).is.equal(true);
-    expect(eventTypes.has(FMEvents.RECORD_REMOVED_CONFIRMATION)).is.equal(true);
+    expect(eventTypes.has(FmEvents.RECORD_REMOVED_LOCALLY)).is.equal(true);
+    expect(eventTypes.has(FmEvents.RECORD_REMOVED_CONFIRMATION)).is.equal(true);
 
     const peeps2 = await List.all(Person);
 
@@ -223,8 +222,8 @@ describe("Record > ", () => {
     expect(removed.id).to.equal(id);
     expect(events).to.have.lengthOf(2);
     const eventTypes = new Set(events.map(e => e.type));
-    expect(eventTypes.has(FMEvents.RECORD_REMOVED_LOCALLY)).is.equal(true);
-    expect(eventTypes.has(FMEvents.RECORD_REMOVED_ROLLBACK)).is.equal(true);
+    expect(eventTypes.has(FmEvents.RECORD_REMOVED_LOCALLY)).is.equal(true);
+    expect(eventTypes.has(FmEvents.RECORD_REMOVED_ROLLBACK)).is.equal(true);
 
     const peeps2 = await List.all(Person);
     expect(peeps2).to.have.lengthOf(9);

@@ -1,6 +1,6 @@
 {
   "name": "firemodel",
-  "version": "0.25.2",
+  "version": "0.26.0",
   "description": "Modeling, Access, and Mocking for Firebase Projects",
   "license": "MIT",
   "repository": "https://github.com/forest-fire/firemodel",
@@ -17,7 +17,7 @@
   "typings": "dist/esnext/index.d.ts",
   "scripts": {
     "clean": "rimraf lib;",
-    "clean:nuclear": "rimraf lib; rimraf node_modeles; yarn cache clean; rm yarn.lock; yarn ",
+    "clean:nuclear": "rimraf lib dist node_modeles && yarn cache clean && rm yarn.lock && yarn && yarn upgrade",
     "lint": "./node_modules/.bin/tslint --force --format verbose \"src/**/*.ts\"",
     "build": "yarn run clean && yarn build:tsc",
     "build:rollup": "tslint src/**/*.ts && rollup -c rollup.config.js",
@@ -35,20 +35,20 @@
     "docs:build": "vuepress build docs"
   },
   "dependencies": {
-    "abstracted-firebase": "^0.25.8",
-    "common-types": "^1.10.20",
+    "abstracted-firebase": "^0.26.2",
+    "common-types": "^1.10.26",
     "fast-deep-equal": "^2.0.1",
     "firebase-key": "^2.0.2",
     "get-value": "^3.0.1",
     "pluralize": "^7.0.0",
     "reflect-metadata": "^0.1.13",
-    "serialized-query": "^0.6.0",
+    "serialized-query": "^0.7.0",
     "set-value": "^3.0.0",
     "typed-conversions": "^0.10.1",
     "wait-in-parallel": "^1.2.6"
   },
   "peerDependencies": {
-    "firemock": "^0.25.1"
+    "firemock": "^0.25.5"
   },
   "devDependencies": {
     "@types/chai": "^4.1.4",
@@ -67,15 +67,15 @@
     "@vuepress/plugin-last-updated": "^1.0.0-alpha.48",
     "@vuepress/plugin-medium-zoom": "^1.0.0-alpha.48",
     "@vuepress/plugin-pwa": "^1.0.0-alpha.48",
-    "abstracted-admin": "^0.25.2",
-    "abstracted-client": "^0.25.2",
+    "abstracted-admin": "^0.26.3",
+    "abstracted-client": "^0.26.0",
     "async-shelljs": "^0.1.2",
     "chai": "^4.2.0",
     "chalk": "^2.4.1",
     "coveralls": "^3.0.3",
     "do-devops": "^0.1.0",
     "faker": "^4.1.0",
-    "firemock": "^0.25.1",
+    "firemock": "^0.25.5",
     "js-yaml": "^3.13.1",
     "mermaid": "^8.0.0",
     "mocha": "^6.0.1",

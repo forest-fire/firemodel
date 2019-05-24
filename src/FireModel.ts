@@ -2,7 +2,7 @@ import { Model } from "./Model";
 // prettier-ignore
 type Record<T> = import("./Record").Record<T>;
 import { IDictionary } from "common-types";
-import { IFMRecordEvent, FMEvents, NotString, Extractable } from "./state-mgmt";
+import { IFMRecordEvent, FmEvents, NotString, Extractable } from "./state-mgmt";
 import { IReduxDispatch } from "./VuexWrapper";
 import { getModelMeta } from "./ModelMeta";
 import {

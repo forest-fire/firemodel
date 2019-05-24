@@ -6,7 +6,7 @@ import {
 import { Record } from "../Record";
 import { Model } from "../Model";
 import {
-  FMEvents,
+  FmEvents,
   IFmPathValuePair,
   IFmRelationshipOptionsForHasMany
 } from "..";
@@ -52,14 +52,14 @@ export async function relationshipOperation<T extends Model>(
 ) {
   const dispatchEvents = {
     set: [
-      FMEvents.RELATIONSHIP_SET_LOCALLY,
-      FMEvents.RELATIONSHIP_SET_CONFIRMATION,
-      FMEvents.RELATIONSHIP_SET_ROLLBACK
+      FmEvents.RELATIONSHIP_SET_LOCALLY,
+      FmEvents.RELATIONSHIP_SET_CONFIRMATION,
+      FmEvents.RELATIONSHIP_SET_ROLLBACK
     ],
     clear: [
-      FMEvents.RELATIONSHIP_REMOVED_LOCALLY,
-      FMEvents.RELATIONSHIP_REMOVED_CONFIRMATION,
-      FMEvents.RELATIONSHIP_REMOVED_ROLLBACK
+      FmEvents.RELATIONSHIP_REMOVED_LOCALLY,
+      FmEvents.RELATIONSHIP_REMOVED_CONFIRMATION,
+      FmEvents.RELATIONSHIP_REMOVED_ROLLBACK
     ],
     // update: [
     //   FMEvents.RELATIONSHIP_UPDATED_LOCALLY,
@@ -67,14 +67,14 @@ export async function relationshipOperation<T extends Model>(
     //   FMEvents.RELATIONSHIP_UPDATED_ROLLBACK
     // ],
     add: [
-      FMEvents.RELATIONSHIP_ADDED_LOCALLY,
-      FMEvents.RELATIONSHIP_ADDED_CONFIRMATION,
-      FMEvents.RELATIONSHIP_ADDED_ROLLBACK
+      FmEvents.RELATIONSHIP_ADDED_LOCALLY,
+      FmEvents.RELATIONSHIP_ADDED_CONFIRMATION,
+      FmEvents.RELATIONSHIP_ADDED_ROLLBACK
     ],
     remove: [
-      FMEvents.RELATIONSHIP_REMOVED_LOCALLY,
-      FMEvents.RELATIONSHIP_REMOVED_CONFIRMATION,
-      FMEvents.RELATIONSHIP_REMOVED_ROLLBACK
+      FmEvents.RELATIONSHIP_REMOVED_LOCALLY,
+      FmEvents.RELATIONSHIP_REMOVED_CONFIRMATION,
+      FmEvents.RELATIONSHIP_REMOVED_ROLLBACK
     ]
   };
 
@@ -136,7 +136,7 @@ export async function localRelnOp<T extends Model>(
   op: IFmRelationshipOperation,
   prop: keyof T,
   paths: IFmPathValuePair[],
-  event: FMEvents,
+  event: FmEvents,
   transactionId: string
 ) {
   // locally modify Record's values
@@ -172,7 +172,7 @@ export async function relnConfirmation<T extends Model>(
   op: IFmRelationshipOperation,
   prop: keyof T,
   paths: IFmPathValuePair[],
-  event: FMEvents,
+  event: FmEvents,
   transactionId: string
 ) {
   sendRelnDispatchEvent(event, transactionId, op, rec, prop, paths);
@@ -183,7 +183,7 @@ export async function relnRollback<T extends Model>(
   op: IFmRelationshipOperation,
   prop: keyof T,
   paths: IFmPathValuePair[],
-  event: FMEvents,
+  event: FmEvents,
   transactionId: string,
   err: FireModelError
 ) {

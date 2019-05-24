@@ -1,4 +1,4 @@
-import { FMEvents, IFMRecordEvent, IFMRecordClientEvent } from "../state-mgmt";
+import { FmEvents, IFMRecordEvent, IFMRecordClientEvent } from "../state-mgmt";
 
 import { Record } from "..";
 import { IFmEvent } from "./types";
@@ -7,7 +7,7 @@ import { IFmEvent } from "./types";
  * dispatch event with desired META from the model
  */
 export function createWatchEvent<T>(
-  type: FMEvents,
+  type: FmEvents,
   record: Record<T>,
   event: IFmEvent<T>
 ) {

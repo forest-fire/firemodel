@@ -4,7 +4,7 @@ import { createError } from "common-types";
 import { FireModel } from "./FireModel";
 import { pathJoin } from "./path";
 import { getModelMeta } from "./ModelMeta";
-import { FMEvents } from "./state-mgmt";
+import { FmEvents } from "./state-mgmt";
 const DEFAULT_IF_NOT_FOUND = "__DO_NOT_USE__";
 function addTimestamps(obj) {
     const datetime = new Date().getTime();
@@ -103,7 +103,7 @@ export class List extends FireModel {
         await list.load(query);
         // TODO: should this have a dispatch?
         list.dispatch({
-            type: FMEvents.RECORD_LIST,
+            type: FmEvents.RECORD_LIST,
             modelName: list.modelName,
             pluralName: list.pluralName,
             dbPath: list.dbPath,

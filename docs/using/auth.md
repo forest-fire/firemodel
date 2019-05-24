@@ -61,7 +61,8 @@ In the above example, the authentication process was email/password but other fl
 4. The backend will evaluate:
    - Does the frontend have the right qualifications to be identified as originating from a known "App" (e.g., records of model `CustomClaimApp`); if not then disable user, if so then associate user to the app.
    - Do any of the claims requested by the user require "admin" priviledges and if so strip this claims out. Those which remain should be added as `CustomClaimRequest` records.
-5. Once the user gets around to verifying the email, it will bring them to the frontend app where the app will call `verifyEmailUser()` which will again call the backend. 
+   - If the user had been connected as an anonymous user prior ( ... need to think through this ...)
+5. Once the user gets around to verifying the email, it will bring them to the frontend app where the app will call `verifyEmailUser()` which will again call the backend.
 6. The backend function will:
    - set the user's status to verified
    - convert the user's `CustomClaimRequest` records into `CustomClaim` records

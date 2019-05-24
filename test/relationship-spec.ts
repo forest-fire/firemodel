@@ -6,7 +6,7 @@ const expect = chai.expect;
 import { Person } from "./testing/person";
 import { FireModel } from "../src/FireModel";
 import { FancyPerson } from "./testing/FancyPerson";
-import { IFMRecordEvent, FMEvents } from "../src/state-mgmt";
+import { IFMRecordEvent, FmEvents } from "../src/state-mgmt";
 import { Company } from "./testing/Company";
 import { Pay } from "./testing/Pay";
 import { extractFksFromPaths } from "../src/record/extractFksFromPaths";
@@ -35,10 +35,8 @@ const hasOnePaths = (id: string, now: number) => [
 describe("Relationship > ", () => {
   let db: DB;
   beforeEach(async () => {
-    db = new DB({ mocking: true });
-    await db.waitForConnection();
+    db = await DB.connect({ mocking: true, mockData: {} });
     FireModel.defaultDb = db;
-    db.mock.updateDB({});
   });
 
   it("extractFksFromPath pulls out the ids which are being changed", async () => {
@@ -174,8 +172,8 @@ describe("Relationship > ", () => {
     await person.addToRelationship("cars", "12345");
 
     const eventTypes = Array.from(new Set(events.map(e => e.type)));
-    expect(eventTypes).includes(FMEvents.RELATIONSHIP_ADDED_LOCALLY);
-    expect(eventTypes).includes(FMEvents.RELATIONSHIP_ADDED_CONFIRMATION);
+    expect(eventTypes).includes(FmEvents.RELATIONSHIP_ADDED_LOCALLY);
+    expect(eventTypes).includes(FmEvents.RELATIONSHIP_ADDED_CONFIRMATION);
 
     const p = await Record.get(FancyPerson, person.id);
     expect(Object.keys(p.data.cars)).to.include("12345");

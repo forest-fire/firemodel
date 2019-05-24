@@ -10,7 +10,7 @@ import { Person } from "./testing/person";
 import { PersonWithLocalAndPrefix } from "./testing/PersonWithLocalAndPrefix";
 import { setupEnv } from "./testing/helpers";
 import { IReduxAction } from "../src/VuexWrapper";
-import { FMEvents } from "../src/state-mgmt";
+import { FmEvents } from "../src/state-mgmt";
 import { wait, IDictionary } from "common-types";
 
 setupEnv();
@@ -64,10 +64,10 @@ describe("Watch →", () => {
 
     const eventTypes = new Set(events.map(e => e.type));
 
-    expect(eventTypes.has(FMEvents.RECORD_CHANGED)).to.equal(true);
-    expect(eventTypes.has(FMEvents.RECORD_REMOVED)).to.equal(true);
-    expect(eventTypes.has(FMEvents.WATCHER_STARTING)).to.equal(true);
-    expect(eventTypes.has(FMEvents.WATCHER_STARTED)).to.equal(true);
+    expect(eventTypes.has(FmEvents.RECORD_CHANGED)).to.equal(true);
+    expect(eventTypes.has(FmEvents.RECORD_REMOVED)).to.equal(true);
+    expect(eventTypes.has(FmEvents.WATCHER_STARTING)).to.equal(true);
+    expect(eventTypes.has(FmEvents.WATCHER_STARTED)).to.equal(true);
   });
 
   it("Watching CRUD actions on List", async () => {
@@ -96,9 +96,9 @@ describe("Watch →", () => {
     // Initial response is to bring in all records
     let eventTypes = new Set(events.map(e => e.type));
 
-    expect(eventTypes.has(FMEvents.WATCHER_STARTING));
-    expect(eventTypes.has(FMEvents.WATCHER_STARTED));
-    expect(eventTypes.has(FMEvents.RECORD_ADDED));
+    expect(eventTypes.has(FmEvents.WATCHER_STARTING));
+    expect(eventTypes.has(FmEvents.WATCHER_STARTED));
+    expect(eventTypes.has(FmEvents.RECORD_ADDED));
     // Now we'll do some more CRUD activities
     await FireModel.defaultDb.set("/authenticated/people/1234", {
       name: "Bob",
@@ -109,9 +109,9 @@ describe("Watch →", () => {
       age: 88
     });
     eventTypes = new Set(events.map(e => e.type));
-    expect(eventTypes.has(FMEvents.RECORD_CHANGED)).to.equal(true);
-    expect(eventTypes.has(FMEvents.RECORD_REMOVED)).to.equal(true);
-    expect(eventTypes.has(FMEvents.RECORD_ADDED)).to.equal(true);
+    expect(eventTypes.has(FmEvents.RECORD_CHANGED)).to.equal(true);
+    expect(eventTypes.has(FmEvents.RECORD_REMOVED)).to.equal(true);
+    expect(eventTypes.has(FmEvents.RECORD_ADDED)).to.equal(true);
   });
 
   it("start() increases watcher count, stop() decreases it", async () => {
@@ -175,11 +175,11 @@ describe("Watch →", () => {
     const eventTypes = Array.from(new Set(events.map(e => e.type)));
 
     const expectedTypes = [
-      FMEvents.RECORD_ADDED_LOCALLY,
-      FMEvents.RECORD_ADDED_CONFIRMATION,
-      FMEvents.WATCHER_STARTING,
-      FMEvents.WATCHER_STARTED,
-      FMEvents.RECORD_CHANGED // Record Listeners can't distinguish between ADD and UPDATE
+      FmEvents.RECORD_ADDED_LOCALLY,
+      FmEvents.RECORD_ADDED_CONFIRMATION,
+      FmEvents.WATCHER_STARTING,
+      FmEvents.WATCHER_STARTED,
+      FmEvents.RECORD_CHANGED // Record Listeners can't distinguish between ADD and UPDATE
     ];
     expectedTypes.forEach(e => {
       expect(eventTypes).to.include(e);

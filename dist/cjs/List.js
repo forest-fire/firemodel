@@ -105,7 +105,7 @@ class List extends FireModel_1.FireModel {
         await list.load(query);
         // TODO: should this have a dispatch?
         list.dispatch({
-            type: state_mgmt_1.FMEvents.RECORD_LIST,
+            type: state_mgmt_1.FmEvents.RECORD_LIST,
             modelName: list.modelName,
             pluralName: list.pluralName,
             dbPath: list.dbPath,

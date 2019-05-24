@@ -1,7 +1,7 @@
 import { createError } from "common-types";
 import { key as fbKey } from "firebase-key";
 import { FireModel } from "./FireModel";
-import { FMEvents } from "./state-mgmt/index";
+import { FmEvents } from "./state-mgmt/index";
 import { createWatchEvent } from "./Watch/createWatchEvent";
 import { pathJoin } from "./path";
 import { getModelMeta } from "./ModelMeta";
@@ -704,19 +704,19 @@ export class Record extends FireModel {
                 .substr(2, 5);
         const lookup = {
             add: [
-                FMEvents.RECORD_ADDED_LOCALLY,
-                FMEvents.RECORD_ADDED_CONFIRMATION,
-                FMEvents.RECORD_ADDED_ROLLBACK
+                FmEvents.RECORD_ADDED_LOCALLY,
+                FmEvents.RECORD_ADDED_CONFIRMATION,
+                FmEvents.RECORD_ADDED_ROLLBACK
             ],
             update: [
-                FMEvents.RECORD_CHANGED_LOCALLY,
-                FMEvents.RECORD_CHANGED_CONFIRMATION,
-                FMEvents.RECORD_CHANGED_ROLLBACK
+                FmEvents.RECORD_CHANGED_LOCALLY,
+                FmEvents.RECORD_CHANGED_CONFIRMATION,
+                FmEvents.RECORD_CHANGED_ROLLBACK
             ],
             remove: [
-                FMEvents.RECORD_REMOVED_LOCALLY,
-                FMEvents.RECORD_REMOVED_CONFIRMATION,
-                FMEvents.RECORD_REMOVED_ROLLBACK
+                FmEvents.RECORD_REMOVED_LOCALLY,
+                FmEvents.RECORD_REMOVED_CONFIRMATION,
+                FmEvents.RECORD_REMOVED_ROLLBACK
             ]
         };
         const [actionTypeStart, actionTypeEnd, actionTypeFailure] = lookup[crudAction];

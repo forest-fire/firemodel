@@ -6,7 +6,7 @@ import { PersonWithLocal } from "./testing/PersonWithLocal";
 import { PersonWithLocalAndPrefix } from "./testing/PersonWithLocalAndPrefix";
 import { IMultiPathUpdates, FireModel } from "../src/FireModel";
 import {
-  FMEvents,
+  FmEvents,
   IFMRecordClientEvent,
   IFMRelationshipEvent,
   IFMRecordEvent
@@ -75,12 +75,12 @@ describe("Dispatch →", () => {
     // 1st EVENT (local change)
     let event = events[0];
 
-    expect(event.type).to.equal(FMEvents.RECORD_CHANGED_LOCALLY);
+    expect(event.type).to.equal(FmEvents.RECORD_CHANGED_LOCALLY);
     expect(event.value.name).to.equal("Carol");
 
     // 2nd EVENT
     event = events[1];
-    expect(event.type).to.equal(FMEvents.RECORD_CHANGED_CONFIRMATION);
+    expect(event.type).to.equal(FmEvents.RECORD_CHANGED_CONFIRMATION);
     expect(event.value).to.be.an("object");
     expect(event.value.name).to.equal("Carol");
     expect(event.value.age).to.equal(18);

@@ -1,7 +1,7 @@
 import { IFmRelationshipOperation, IFmRelationshipOptions } from "../@types";
 import { Record } from "../Record";
 import { Model } from "../Model";
-import { FMEvents, IFmPathValuePair, IFmRelationshipOptionsForHasMany } from "..";
+import { FmEvents, IFmPathValuePair, IFmRelationshipOptionsForHasMany } from "..";
 import { FireModelError } from "../errors";
 /**
  * **relationshipOperation**
@@ -29,6 +29,6 @@ property: keyof T,
  * and the value is the value to set.
  */
 paths: IFmPathValuePair[], options?: IFmRelationshipOptions | IFmRelationshipOptionsForHasMany): Promise<void>;
-export declare function localRelnOp<T extends Model>(rec: Record<T>, op: IFmRelationshipOperation, prop: keyof T, paths: IFmPathValuePair[], event: FMEvents, transactionId: string): Promise<void>;
-export declare function relnConfirmation<T extends Model>(rec: Record<T>, op: IFmRelationshipOperation, prop: keyof T, paths: IFmPathValuePair[], event: FMEvents, transactionId: string): Promise<void>;
-export declare function relnRollback<T extends Model>(rec: Record<T>, op: IFmRelationshipOperation, prop: keyof T, paths: IFmPathValuePair[], event: FMEvents, transactionId: string, err: FireModelError): Promise<void>;
+export declare function localRelnOp<T extends Model>(rec: Record<T>, op: IFmRelationshipOperation, prop: keyof T, paths: IFmPathValuePair[], event: FmEvents, transactionId: string): Promise<void>;
+export declare function relnConfirmation<T extends Model>(rec: Record<T>, op: IFmRelationshipOperation, prop: keyof T, paths: IFmPathValuePair[], event: FmEvents, transactionId: string): Promise<void>;
+export declare function relnRollback<T extends Model>(rec: Record<T>, op: IFmRelationshipOperation, prop: keyof T, paths: IFmPathValuePair[], event: FmEvents, transactionId: string, err: FireModelError): Promise<void>;

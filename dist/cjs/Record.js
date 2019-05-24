@@ -706,19 +706,19 @@ class Record extends FireModel_1.FireModel {
                 .substr(2, 5);
         const lookup = {
             add: [
-                index_1.FMEvents.RECORD_ADDED_LOCALLY,
-                index_1.FMEvents.RECORD_ADDED_CONFIRMATION,
-                index_1.FMEvents.RECORD_ADDED_ROLLBACK
+                index_1.FmEvents.RECORD_ADDED_LOCALLY,
+                index_1.FmEvents.RECORD_ADDED_CONFIRMATION,
+                index_1.FmEvents.RECORD_ADDED_ROLLBACK
             ],
             update: [
-                index_1.FMEvents.RECORD_CHANGED_LOCALLY,
-                index_1.FMEvents.RECORD_CHANGED_CONFIRMATION,
-                index_1.FMEvents.RECORD_CHANGED_ROLLBACK
+                index_1.FmEvents.RECORD_CHANGED_LOCALLY,
+                index_1.FmEvents.RECORD_CHANGED_CONFIRMATION,
+                index_1.FmEvents.RECORD_CHANGED_ROLLBACK
             ],
             remove: [
-                index_1.FMEvents.RECORD_REMOVED_LOCALLY,
-                index_1.FMEvents.RECORD_REMOVED_CONFIRMATION,
-                index_1.FMEvents.RECORD_REMOVED_ROLLBACK
+                index_1.FmEvents.RECORD_REMOVED_LOCALLY,
+                index_1.FmEvents.RECORD_REMOVED_CONFIRMATION,
+                index_1.FmEvents.RECORD_REMOVED_ROLLBACK
             ]
         };
         const [actionTypeStart, actionTypeEnd, actionTypeFailure] = lookup[crudAction];

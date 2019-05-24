@@ -19,11 +19,11 @@ clientHandler) => {
     return (event) => {
         watchInitialization_1.hasInitialized[context.watcherId] = true;
         const typeLookup = {
-            child_added: state_mgmt_1.FMEvents.RECORD_ADDED,
-            child_removed: state_mgmt_1.FMEvents.RECORD_REMOVED,
-            child_changed: state_mgmt_1.FMEvents.RECORD_CHANGED,
-            child_moved: state_mgmt_1.FMEvents.RECORD_MOVED,
-            value: state_mgmt_1.FMEvents.RECORD_CHANGED
+            child_added: state_mgmt_1.FmEvents.RECORD_ADDED,
+            child_removed: state_mgmt_1.FmEvents.RECORD_REMOVED,
+            child_changed: state_mgmt_1.FmEvents.RECORD_CHANGED,
+            child_moved: state_mgmt_1.FmEvents.RECORD_MOVED,
+            value: state_mgmt_1.FmEvents.RECORD_CHANGED
         };
         const recId = typeof event.value === "object"
             ? Object.assign({ id: event.key }, event.value) : { id: event.key };
@@ -38,8 +38,8 @@ clientHandler) => {
         const contextualizedEvent = Object.assign({
             type: event.eventType === "value"
                 ? event.value === null || event.paths === null
-                    ? state_mgmt_1.FMEvents.RECORD_REMOVED
-                    : state_mgmt_1.FMEvents.RECORD_CHANGED
+                    ? state_mgmt_1.FmEvents.RECORD_REMOVED
+                    : state_mgmt_1.FmEvents.RECORD_CHANGED
                 : typeLookup[event.eventType],
             compositeKey
         }, context, event);

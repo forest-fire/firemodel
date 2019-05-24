@@ -8,7 +8,7 @@ import "reflect-metadata";
 import { Person } from "./testing/person";
 import { FireModel } from "../src/FireModel";
 import { Mock } from "../src/Mock";
-import { IFMRecordEvent, FMEvents } from "../src/state-mgmt";
+import { IFMRecordEvent, FmEvents } from "../src/state-mgmt";
 
 describe("List class: ", () => {
   let db: DB;
@@ -358,9 +358,9 @@ describe("List class: ", () => {
     expect(peeps).to.have.lengthOf(9);
     const eventTypes = new Set(events.map(e => e.type));
 
-    expect(eventTypes).to.contain(FMEvents.RECORD_REMOVED_CONFIRMATION);
-    expect(eventTypes).to.contain(FMEvents.RECORD_REMOVED_LOCALLY);
-    expect(eventTypes).to.contain(FMEvents.RECORD_LIST);
+    expect(eventTypes).to.contain(FmEvents.RECORD_REMOVED_CONFIRMATION);
+    expect(eventTypes).to.contain(FmEvents.RECORD_REMOVED_LOCALLY);
+    expect(eventTypes).to.contain(FmEvents.RECORD_LIST);
 
     const peeps2 = await List.all(Person);
     expect(peeps2).to.have.length(9);
@@ -383,7 +383,7 @@ describe("List class: ", () => {
     expect(ids.has(newRec.id)).to.equal(true);
 
     const eventTypes = events.map(e => e.type);
-    expect(eventTypes).to.contain(FMEvents.RECORD_ADDED_CONFIRMATION);
-    expect(eventTypes).to.contain(FMEvents.RECORD_ADDED_LOCALLY);
+    expect(eventTypes).to.contain(FmEvents.RECORD_ADDED_CONFIRMATION);
+    expect(eventTypes).to.contain(FmEvents.RECORD_ADDED_LOCALLY);
   });
 });

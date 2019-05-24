@@ -2,7 +2,7 @@ import { SerializedQuery } from "serialized-query";
 import { ICompositeKey } from "./record-types";
 import { FmModelConstructor } from "./general";
 import { Model } from "../Model";
-import { FMEvents } from "../state-mgmt";
+import { FmEvents } from "../state-mgmt";
 export declare type IFmEventType = "value" | "child_added" | "child_moved" | "child_removed" | "child_changed";
 export interface IFmRecordEvent<T extends Model = Model> {
     compositeKey: ICompositeKey;
@@ -18,7 +18,7 @@ export interface IFmRecordEvent<T extends Model = Model> {
     previousChildKey?: string;
     query: SerializedQuery;
     targetType: "path" | "query";
-    type: FMEvents;
+    type: FmEvents;
     value: T;
     /** the value prior to the change; this is typically set for local events only */
     priorValue?: T;
