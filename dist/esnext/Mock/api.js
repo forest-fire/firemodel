@@ -2,6 +2,7 @@ import mockProperties from "./mockProperties";
 import addRelationships from "./addRelationships";
 import { Record } from "../Record";
 import { Mock as FireMock } from "firemock";
+import { FireModelError } from "../errors";
 export default function API(db, modelConstructor) {
     const config = {
         relationshipBehavior: "ignore",
@@ -20,16 +21,23 @@ export default function API(db, modelConstructor) {
             await FireMock.prepare();
             const props = mockProperties(db, config, exceptions);
             const relns = addRelationships(db, config, exceptions);
-            // If dynamic props then warn if it's not constrained
-            const record = Record.create(modelConstructor);
+            // create record; using any incoming exception to build the object.
+            // this is primarily to form the "composite key" where it is needed
+            const record = Record.createWith(modelConstructor, exceptions);
             if (record.hasDynamicPath) {
+                // which props -- required for compositeKey -- are not yet
+                // set
                 const notCovered = record.dynamicPathComponents.filter(key => !Object.keys(exceptions).includes(key));
+                // for now we are stating that these two mock-types can
+                // be used to dig us out of this deficit; we should
+                // consider openning this up
+                // TODO: consider openning up other mockTypes to fill in the compositeKey
                 const validMocks = ["sequence", "random"];
                 notCovered.forEach(key => {
                     const mock = record.META.property(key).mockType;
                     if (!mock ||
                         (typeof mock !== "function" && !validMocks.includes(mock))) {
-                        console.error(`The mock for the "${record.modelName}" model has dynamic segments and "${key}" was neither set as a fixed value in the exception parameter [ ${Object.keys(exceptions || {})} ] of generate() nor was the model constrained by a @mock type ${mock ? `[ ${mock} ]` : ""} which is deemed valid. Valid named mocks are ${JSON.stringify(validMocks)}; all bespoke mocks are accepted as valid.`);
+                        throw new FireModelError(`The mock for the "${record.modelName}" model has dynamic segments and "${key}" was neither set as a fixed value in the exception parameter [ ${Object.keys(exceptions || {})} ] of generate() nor was the model constrained by a @mock type ${mock ? `[ ${mock} ]` : ""} which is deemed valid. Valid named mocks are ${JSON.stringify(validMocks)}; all bespoke mocks are accepted as valid.`, `firemodel/mock-not-ready`);
                     }
                 });
             }

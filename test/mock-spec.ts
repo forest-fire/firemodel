@@ -212,13 +212,20 @@ describe("Mocking:", () => {
 
   it("Mocking data does NOT fire watcher events but adding a record DOES [ mock db ]", async () => {
     const events: IDictionary[] = [];
-    FireModel.dispatch = (e: IReduxAction) => events.push(e);
+    FireModel.dispatch = (e: IReduxAction) => {
+      events.push(e);
+    };
     const w = await Watch.list(FancyPerson)
       .all()
-      .start();
+      .start({ name: "my-test-watcher" });
 
     await Mock(FancyPerson).generate(1);
     const eventTypes: Set<string> = new Set(events.map(e => e.type));
+    console.log(
+      "events:",
+      events.length,
+      events.map(e => `${e.type} - ${JSON.stringify(e.compositeKey)}`)
+    );
 
     expect(Array.from(eventTypes)).to.not.include(FmEvents.RECORD_ADDED);
 
@@ -227,7 +234,12 @@ describe("Mocking:", () => {
     });
     const eventTypes2: string[] = Array.from(new Set(events.map(e => e.type)));
     console.log(eventTypes2);
+    console.log(events.filter(e => e.type === FmEvents.RECORD_CHANGED));
 
     expect(eventTypes2).to.include(FmEvents.RECORD_ADDED);
+  });
+
+  it.skip("Updating a record with values which are unchanged does NOT fire a server watch event", async () => {
+    //
   });
 });

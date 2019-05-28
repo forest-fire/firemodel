@@ -34,7 +34,7 @@ export declare class List<T extends Model> extends FireModel<T> {
      * @param query the serialized query; note that this LIST will override the path of the query
      * @param options model options
      */
-    static fromQuery<T extends Model>(model: new () => T, query: SerializedQuery, options?: IModelOptions): Promise<List<T>>;
+    static fromQuery<T extends Model>(model: new () => T, query: SerializedQuery<T>, options?: IModelOptions): Promise<List<T>>;
     /**
      * Loads all the records of a given schema-type ordered by lastUpdated
      *

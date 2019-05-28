@@ -21,7 +21,7 @@ export default function mockProperties<T extends Model>(
       const p = prop.property as keyof T;
       recProps[p] = mockValue<T>(db, prop);
     });
-
+    // use mocked values but allow exceptions to override
     const finalized: T = { ...(recProps as any), ...exceptions };
 
     // write to mock db and retain a reference to same model

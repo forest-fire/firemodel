@@ -225,11 +225,19 @@ export class Watch<T extends Model = Model> {
       modelName: this._modelName,
       localModelName: this._localModelName || "not-relevant",
       pluralName: this._pluralName,
+      watcherPath: this._query.path as string,
       watcherSource: this._watcherSource
     };
-    const dispatchCallback = WatchDispatcher<T>(context)(
-      this._dispatcher || FireModel.dispatch
-    );
+    const coreDispatch = this._dispatcher || FireModel.dispatch;
+    if (coreDispatch.name === "defaultDispatch") {
+      throw new FireModelError(
+        `Attempt to start a ${this._watcherSource} watcher on "${
+          this._query.path
+        }" but no dispatcher has been assigned. Make sure to explicitly set the dispatch function or use "FireModel.dispatch = xxx" to setup a default dispatch function.`,
+        `firemodel/invalid-dispatch`
+      );
+    }
+    const dispatchCallback = WatchDispatcher<T>(context)(coreDispatch);
 
     try {
       if (this._eventType === "value") {

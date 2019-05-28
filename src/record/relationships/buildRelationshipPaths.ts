@@ -28,7 +28,7 @@ import { MissingInverseProperty } from "../../errors/relationships/MissingInvers
  */
 export function buildRelationshipPaths<T>(
   rec: Record<T>,
-  property: Extract<keyof T, string>,
+  property: keyof T,
   fkRef: IFkReference<T>,
   options: IFmBuildRelationshipOptions = {}
 ): IFmPathValuePair[] {

@@ -1,6 +1,14 @@
+var __asyncValues = (this && this.__asyncValues) || function (o) {
+    if (!Symbol.asyncIterator) throw new TypeError("Symbol.asyncIterator is not defined.");
+    var m = o[Symbol.asyncIterator], i;
+    return m ? m.call(o) : (o = typeof __values === "function" ? __values(o) : o[Symbol.iterator](), i = {}, verb("next"), verb("throw"), verb("return"), i[Symbol.asyncIterator] = function () { return this; }, i);
+    function verb(n) { i[n] = o[n] && function (v) { return new Promise(function (resolve, reject) { v = o[n](v), settle(resolve, reject, v.done, v.value); }); }; }
+    function settle(resolve, reject, d, v) { Promise.resolve(v).then(function(v) { resolve({ value: v, done: d }); }, reject); }
+};
 import { createError } from "common-types";
 import { key as fbKey } from "firebase-key";
 import { FireModel } from "./FireModel";
+import { buildDeepRelationshipLinks } from "./record/buildDeepRelationshipLinks";
 import { FmEvents } from "./state-mgmt/index";
 import { createWatchEvent } from "./Watch/createWatchEvent";
 import { pathJoin } from "./path";
@@ -216,7 +224,7 @@ export class Record extends FireModel {
             if (!payload.id) {
                 payload.id = fbKey();
             }
-            r._initialize(payload);
+            await r._initialize(payload, options);
             const defaultValues = r.META.properties.filter(i => i.defaultValue !== undefined);
             defaultValues.forEach((i) => {
                 if (r.get(i.property) === undefined) {
@@ -277,10 +285,16 @@ export class Record extends FireModel {
      */
     static createWith(model, payload, options = {}) {
         const rec = Record.create(model, options);
+        if (options.setDeepRelationships) {
+            throw new FireModelError(`Trying to create a ${capitalize(rec.modelName)} with the "setDeepRelationships" property set. This is NOT allowed; consider the 'Record.add()' method instead.`, "not-allowed");
+        }
         const properties = typeof payload === "string"
             ? createCompositeKeyFromFkString(payload, rec.modelConstructor)
             : payload;
-        rec._initialize(properties);
+        // TODO: build some tests to ensure that ...
+        // the async possibilites of this method (only if `options.setDeepRelationships`)
+        // are not negatively impacting this method
+        rec._initialize(properties, options);
         return rec;
     }
     /**
@@ -340,7 +354,8 @@ export class Record extends FireModel {
      *
      * @param data the initial state you want to start with
      */
-    _initialize(data) {
+    async _initialize(data, options = {}) {
+        var e_1, _a;
         Object.keys(data).map(key => {
             this._data[key] = data[key];
         });
@@ -351,12 +366,32 @@ export class Record extends FireModel {
         const hasManyRels = (relationships || [])
             .filter(r => r.relType === "hasMany")
             .map(r => r.property);
-        // default hasMany to empty hash
-        hasManyRels.map((p) => {
-            if (!this._data[p]) {
-                this._data[p] = {};
+        try {
+            /**
+             * Sets hasMany to default `{}` if nothing was set.
+             * Also, if the option `deepRelationships` is set to `true`,
+             * it will look for relationships hashes instead of the typical
+             * `fk: true` pairing.
+             */
+            for (var hasManyRels_1 = __asyncValues(hasManyRels), hasManyRels_1_1; hasManyRels_1_1 = await hasManyRels_1.next(), !hasManyRels_1_1.done;) {
+                const oneToManyProp = hasManyRels_1_1.value;
+                if (!this._data[oneToManyProp]) {
+                    this._data[oneToManyProp] = {};
+                }
+                if (options.setDeepRelationships) {
+                    if (this._data[oneToManyProp]) {
+                        await buildDeepRelationshipLinks(this, oneToManyProp);
+                    }
+                }
             }
-        });
+        }
+        catch (e_1_1) { e_1 = { error: e_1_1 }; }
+        finally {
+            try {
+                if (hasManyRels_1_1 && !hasManyRels_1_1.done && (_a = hasManyRels_1.return)) await _a.call(hasManyRels_1);
+            }
+            finally { if (e_1) throw e_1.error; }
+        }
         const now = new Date().getTime();
         if (!this._data.lastUpdated) {
             this._data.lastUpdated = now;
@@ -854,7 +889,7 @@ export class Record extends FireModel {
         });
         const data = await this.db.getRecord(this.dbPath);
         if (data && data.id) {
-            this._initialize(data);
+            await this._initialize(data);
         }
         else {
             throw new FireModelError(`Failed to load the Record "${this.modelName}::${this.id}" with composite key of:\n ${JSON.stringify(keys, null, 2)}`, "firebase/invalid-composite-key");

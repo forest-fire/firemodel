@@ -4,7 +4,7 @@ import { Omit, Nullable } from "common-types";
 import { FireModel } from "./FireModel";
 import { IReduxDispatch } from "./VuexWrapper";
 import { IFMEventName, IFmCrudOperations, IFmDispatchOptions } from "./state-mgmt/index";
-import { IFkReference, ICompositeKey } from "./@types/record-types";
+import { IFkReference, ICompositeKey, IRecordOptions } from "./@types/record-types";
 import { IFmRelationshipOptionsForHasMany } from ".";
 import { IFmRelationshipOptions } from "./@types";
 export declare type ModelOptionalId<T extends Model> = Omit<T, "id"> & {
@@ -19,13 +19,6 @@ export interface IWriteOperation {
     value: any;
     /** called on positive confirmation received from server */
     callback: (type: string, value: any) => void;
-}
-export interface IRecordOptions {
-    db?: RealTimeDB;
-    logging?: any;
-    id?: string;
-    /** if you're working off of a mocking database, there are situations where adding a record silently (aka., not triggering any listener events) is desirable and should be allowed */
-    silent?: boolean;
 }
 export declare class Record<T extends Model> extends FireModel<T> {
     static defaultDb: RealTimeDB;
@@ -199,7 +192,7 @@ export declare class Record<T extends Model> extends FireModel<T> {
      *
      * @param data the initial state you want to start with
      */
-    _initialize(data: Partial<T>): void;
+    _initialize(data: Partial<T>, options?: IRecordOptions): Promise<void>;
     /**
      * Pushes new values onto properties on the record
      * which have been stated to be a "pushKey"
@@ -262,7 +255,7 @@ export declare class Record<T extends Model> extends FireModel<T> {
      * @param fkRefs FK reference (or array of FKs) that should be added to reln
      * @param options change the behavior of this relationship transaction
      */
-    addToRelationship(property: Extract<keyof T, string>, fkRefs: IFkReference<T> | Array<IFkReference<T>>, options?: IFmRelationshipOptionsForHasMany): Promise<void>;
+    addToRelationship(property: keyof T, fkRefs: IFkReference<T> | Array<IFkReference<T>>, options?: IFmRelationshipOptionsForHasMany): Promise<void>;
     /**
      * removeFromRelationship
      *

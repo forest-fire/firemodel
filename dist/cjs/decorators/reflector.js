@@ -26,7 +26,6 @@ exports.propertyReflector = (context = {},
 modelRollup) => (modelKlass, key) => {
     const modelName = modelKlass.constructor.name;
     const reflect = Reflect.getMetadata("design:type", modelKlass, key) || {};
-    console.log(key, Reflect.getMetadata(key, modelKlass));
     const meta = Object.assign({}, (Reflect.getMetadata(key, modelKlass) || {}), { type: util_1.lowercase(reflect.name) }, context, { property: key });
     Reflect.defineMetadata(key, meta, modelKlass);
     if (modelRollup) {

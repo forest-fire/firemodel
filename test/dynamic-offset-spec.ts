@@ -273,7 +273,7 @@ describe("LIST uses static offsets() with static API methods", () => {
     expect(List).to.have.ownProperty("where");
   });
 
-  it("List.all works with offsets", async () => {
+  it.only("List.all works with offsets", async () => {
     await Mock(DeepPerson).generate(3, { group: "test" });
     await Mock(DeepPerson).generate(5, { group: "test2" });
     const people = await List.offsets({ group: "test" }).all(DeepPerson);

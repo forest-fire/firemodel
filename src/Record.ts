@@ -1,10 +1,11 @@
 // tslint:disable-next-line:no-implicit-dependencies
 import { RealTimeDB, IMultiPathSet } from "abstracted-firebase";
 import { Model } from "./Model";
-import { createError, IDictionary, Omit, Nullable } from "common-types";
+import { createError, IDictionary, Omit, Nullable, wait } from "common-types";
 import { key as fbKey } from "firebase-key";
 import { FireModel } from "./FireModel";
 import { IReduxDispatch } from "./VuexWrapper";
+import { buildDeepRelationshipLinks } from "./record/buildDeepRelationshipLinks";
 
 import {
   FmEvents,
@@ -25,7 +26,8 @@ import {
 import {
   IIdWithDynamicPrefix,
   IFkReference,
-  ICompositeKey
+  ICompositeKey,
+  IRecordOptions
 } from "./@types/record-types";
 
 import {
@@ -62,14 +64,6 @@ export interface IWriteOperation {
   value: any;
   /** called on positive confirmation received from server */
   callback: (type: string, value: any) => void;
-}
-
-export interface IRecordOptions {
-  db?: RealTimeDB;
-  logging?: any;
-  id?: string;
-  /** if you're working off of a mocking database, there are situations where adding a record silently (aka., not triggering any listener events) is desirable and should be allowed */
-  silent?: boolean;
 }
 
 export class Record<T extends Model> extends FireModel<T> {
@@ -321,7 +315,7 @@ export class Record<T extends Model> extends FireModel<T> {
       if (!payload.id) {
         (payload as T).id = fbKey();
       }
-      r._initialize(payload as T);
+      await r._initialize(payload as T, options);
       const defaultValues = r.META.properties.filter(
         i => i.defaultValue !== undefined
       );
@@ -395,11 +389,22 @@ export class Record<T extends Model> extends FireModel<T> {
     options: IRecordOptions = {}
   ) {
     const rec = Record.create(model, options);
+    if (options.setDeepRelationships) {
+      throw new FireModelError(
+        `Trying to create a ${capitalize(
+          rec.modelName
+        )} with the "setDeepRelationships" property set. This is NOT allowed; consider the 'Record.add()' method instead.`,
+        "not-allowed"
+      );
+    }
     const properties: Partial<T> =
       typeof payload === "string"
         ? createCompositeKeyFromFkString(payload, rec.modelConstructor)
         : payload;
-    rec._initialize(properties);
+    // TODO: build some tests to ensure that ...
+    // the async possibilites of this method (only if `options.setDeepRelationships`)
+    // are not negatively impacting this method
+    rec._initialize(properties, options);
 
     return rec;
   }
@@ -495,26 +500,39 @@ export class Record<T extends Model> extends FireModel<T> {
    *
    * @param data the initial state you want to start with
    */
-  public _initialize(data: Partial<T>) {
+  public async _initialize(
+    data: Partial<T>,
+    options: IRecordOptions = {}
+  ): Promise<void> {
     Object.keys(data).map(key => {
       this._data[key as keyof T] = data[key as keyof T];
     });
 
     const relationships = getModelMeta(this).relationships;
 
-    const hasOneRels = (relationships || [])
+    const hasOneRels: Array<keyof T> = (relationships || [])
       .filter(r => r.relType === "hasOne")
-      .map(r => r.property);
-    const hasManyRels = (relationships || [])
+      .map(r => r.property) as Array<keyof T>;
+    const hasManyRels: Array<keyof T> = (relationships || [])
       .filter(r => r.relType === "hasMany")
-      .map(r => r.property);
+      .map(r => r.property) as Array<keyof T>;
 
-    // default hasMany to empty hash
-    hasManyRels.map((p: string) => {
-      if (!this._data[p as keyof T]) {
-        (this._data as any)[p] = {};
+    /**
+     * Sets hasMany to default `{}` if nothing was set.
+     * Also, if the option `deepRelationships` is set to `true`,
+     * it will look for relationships hashes instead of the typical
+     * `fk: true` pairing.
+     */
+    for await (const oneToManyProp of hasManyRels) {
+      if (!this._data[oneToManyProp]) {
+        (this._data as any)[oneToManyProp] = {};
       }
-    });
+      if (options.setDeepRelationships) {
+        if (this._data[oneToManyProp]) {
+          await buildDeepRelationshipLinks(this, oneToManyProp);
+        }
+      }
+    }
 
     const now = new Date().getTime();
     if (!this._data.lastUpdated) {
@@ -732,14 +750,18 @@ export class Record<T extends Model> extends FireModel<T> {
    * @param options change the behavior of this relationship transaction
    */
   public async addToRelationship(
-    property: Extract<keyof T, string>,
+    property: keyof T,
     fkRefs: IFkReference<T> | Array<IFkReference<T>>,
     options: IFmRelationshipOptionsForHasMany = {}
   ) {
     const altHasManyValue = options.altHasManyValue || true;
 
     if (!isHasManyRelationship(this, property)) {
-      throw new NotHasManyRelationship(this, property, "addToRelationship");
+      throw new NotHasManyRelationship(
+        this,
+        property as string,
+        "addToRelationship"
+      );
     }
 
     fkRefs = Array.isArray(fkRefs) ? fkRefs : [fkRefs];
@@ -1178,7 +1200,7 @@ export class Record<T extends Model> extends FireModel<T> {
     const data = await this.db.getRecord<T>(this.dbPath);
 
     if (data && data.id) {
-      this._initialize(data);
+      await this._initialize(data);
     } else {
       throw new FireModelError(
         `Failed to load the Record "${this.modelName}::${
