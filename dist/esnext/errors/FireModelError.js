@@ -7,7 +7,6 @@ export class FireModelError extends Error {
         super(message);
         this.firemodel = true;
         const parts = classification.split("/");
-        console.log(parts);
         const [type, subType] = parts.length === 1 ? ["firemodel", parts[0]] : parts;
         this.name = `${type}/${subType}`;
         this.code = subType;
