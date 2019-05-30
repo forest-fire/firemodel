@@ -7,14 +7,13 @@ export default function mockProperties(db, config = { relationshipBehavior: "ign
         const meta = getModelMeta(record);
         const props = meta.properties;
         const recProps = {};
-        // below is needed to import faker library
+        // set properties on the record with mocks
         props.map(prop => {
             const p = prop.property;
             recProps[p] = mockValue(db, prop);
         });
         // use mocked values but allow exceptions to override
         const finalized = Object.assign({}, recProps, exceptions);
-        console.log(finalized);
         // write to mock db and retain a reference to same model
         record = await Record.add(record.modelConstructor, finalized, {
             silent: true

@@ -25,9 +25,7 @@ clientHandler) => {
         };
         const recId = typeof event.value === "object"
             ? Object.assign({ id: event.key }, event.value) : { id: event.key };
-        console.log("before", event);
         const rec = Record.createWith(context.modelConstructor, recId);
-        // console.log(rec.compositeKey);
         let compositeKey;
         try {
             compositeKey = rec.compositeKey;

@@ -15,7 +15,7 @@ import {
 } from "./state-mgmt/index";
 import { createWatchEvent } from "./Watch/createWatchEvent";
 import { pathJoin } from "./path";
-import { getModelMeta, addModelMeta, modelsWithMeta } from "./ModelMeta";
+import { getModelMeta } from "./ModelMeta";
 import { writeAudit, IAuditChange, IAuditOperations } from "./Audit";
 import {
   updateToAuditChanges,
@@ -245,7 +245,7 @@ export class Record<T extends Model> extends FireModel<T> {
     if (options.silent && !r.db.isMockDb) {
       throw new FireModelError(
         `You can only add new records to the DB silently when using a Mock database!`,
-        "firemodel/forbidden"
+        "forbidden"
       );
     }
 
@@ -324,11 +324,22 @@ export class Record<T extends Model> extends FireModel<T> {
           r.set(i.property, i.defaultValue, true);
         }
       });
-      console.log(r.compositeKeyRef);
 
       await r._adding(options);
     } catch (e) {
-      console.log(e.stack);
+      if (e.code === "permission-denied") {
+        const rec = Record.createWith(model, payload as Partial<T>);
+        throw new FireModelError(
+          `Permission error while trying to add the ${capitalize(
+            rec.modelName
+          )} to the database path ${rec.dbPath}`,
+          "firemodel/permission-denied"
+        );
+      }
+
+      if (e.name.includes("firemodel")) {
+        throw e;
+      }
 
       throw new FireModelProxyError(e, "Failed to add new record");
     }
@@ -1071,6 +1082,9 @@ export class Record<T extends Model> extends FireModel<T> {
 
     // Send CRUD to Firebase
     try {
+      if (this.db.isMockDb && options.silent) {
+        this.db.mock.silenceEvents();
+      }
       this._data.lastUpdated = new Date().getTime();
       if (crudAction === "remove") {
         this.db.remove(this.dbPath);
@@ -1109,6 +1123,9 @@ export class Record<T extends Model> extends FireModel<T> {
             }
           });
         }
+      }
+      if (this.db.isMockDb && options.silent) {
+        this.db.mock.restoreEvents();
       }
     } catch (e) {
       // send failure event
@@ -1223,12 +1240,10 @@ export class Record<T extends Model> extends FireModel<T> {
     }
     this._data.lastUpdated = now;
     if (!this.db) {
-      const e = createError(
-        "firemodel/db-not-ready",
-        `Attempt to save Record failed as the Database has not been connected yet. Try setting FireModel's defaultDb first.`
+      throw new FireModelError(
+        `Attempt to save Record failed as the Database has not been connected yet. Try setting FireModel's defaultDb first.`,
+        "firemodel/db-not-ready"
       );
-      e.name = "FiremodelError";
-      throw e;
     }
 
     await this._localCrudOperation(IFmCrudOperations.add, this.data, options);

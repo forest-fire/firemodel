@@ -38,7 +38,7 @@ describe("Dynamic offsets reflected in path", () => {
       phoneNumber: "555-1212"
     });
 
-    expect(person.META.dbOffset).to.equal(":group/testing");
+    expect(person.META.dbOffset).to.equal("/group/:group/testing");
     expect(person.dynamicPathComponents)
       .to.be.lengthOf(1)
       .and.contain("group");
@@ -305,8 +305,8 @@ describe("MOCK uses dynamic dbOffsets", () => {
 
   it("Mock() by default does not build out relationships", async () => {
     const results = await Mock(DeepPerson).generate(2, { group: "test" });
-    const first = firstRecord(db.mock.db.test.testing.deepPeople);
-    const last = lastRecord(db.mock.db.test.testing.deepPeople);
+    const first = firstRecord(db.mock.db.group.test.testing.deepPeople);
+    const last = lastRecord(db.mock.db.group.test.testing.deepPeople);
     expect(first.hobbies).is.an("object");
     expect(Object.keys(first.hobbies)).to.have.lengthOf(0);
     expect(last.hobbies).is.an("object");
@@ -318,8 +318,8 @@ describe("MOCK uses dynamic dbOffsets", () => {
       .createRelationshipLinks()
       .generate(2, { group: "test" });
 
-    const first = firstRecord(db.mock.db.test.testing.deepPeople);
-    const last = lastRecord(db.mock.db.test.testing.deepPeople);
+    const first = firstRecord(db.mock.db.group.test.testing.deepPeople);
+    const last = lastRecord(db.mock.db.group.test.testing.deepPeople);
     expect(first.hobbies).is.an("object");
     expect(Object.keys(first.hobbies)).to.have.lengthOf(2);
     expect(last.hobbies).is.an("object");
@@ -330,7 +330,7 @@ describe("MOCK uses dynamic dbOffsets", () => {
     await Mock(DeepPerson)
       .followRelationshipLinks()
       .generate(2, { group: "test" });
-    expect(db.mock.db.test.testing.deepPeople).is.an("object");
+    expect(db.mock.db.group.test.testing.deepPeople).is.an("object");
     expect(db.mock.db.hobbies).is.an("object");
     expect(db.mock.db.attributes).is.an("object");
     const attributeKey = firstKey(db.mock.db.attributes);
@@ -343,16 +343,16 @@ describe("MOCK uses dynamic dbOffsets", () => {
   it("Mock() mocks on dynamic path without relationships rendered", async () => {
     await Mock(DeepPerson).generate(2, { group: "test" });
     expect(
-      firstRecord<DeepPerson>(db.mock.db.test.testing.deepPeople).age
+      firstRecord<DeepPerson>(db.mock.db.group.test.testing.deepPeople).age
     ).to.be.a("number");
-    fkStructuralChecksForHasMany(db.mock.db.test.testing.deepPeople);
+    fkStructuralChecksForHasMany(db.mock.db.group.test.testing.deepPeople);
   });
 
   it("Mock() mocks on dynamic path and creates appropriate FK with using createRelationshipLinks()", async () => {
     await Mock(DeepPerson)
       .createRelationshipLinks()
       .generate(2, { group: "test" });
-    fkStructuralChecksForHasMany(db.mock.db.test.testing.deepPeople);
+    fkStructuralChecksForHasMany(db.mock.db.group.test.testing.deepPeople);
   });
 
   it("Mock() mocks on dynamic path and creates appropriate FK bi-directionally with using followRelationshipLinks()", async () => {
@@ -360,61 +360,41 @@ describe("MOCK uses dynamic dbOffsets", () => {
       .followRelationshipLinks()
       .generate(2, { group: "test" });
     // basics
-    expect(db.mock.db.test.testing.deepPeople).is.an("object");
+    expect(db.mock.db.group.test.testing.deepPeople).is.an("object");
     expect(db.mock.db.hobbies).is.an("object");
     expect(db.mock.db.test.testing.companies).is.an("object");
     // FK checks
-    fkStructuralChecksForHasMany(db.mock.db.test.testing.deepPeople);
+    fkStructuralChecksForHasMany(db.mock.db.group.test.testing.deepPeople);
 
     fkPropertyStructureForHasMany(
-      db.mock.db.test.testing.deepPeople,
+      db.mock.db.group.test.testing.deepPeople,
       ["parents", "children", "practitioners"],
       true
     );
     fkPropertyStructureForHasMany(
-      db.mock.db.test.testing.deepPeople,
+      db.mock.db.group.test.testing.deepPeople,
       ["hobby"],
       false
     );
     fkPropertyStructureForHasOne(
-      db.mock.db.test.testing.deepPeople,
+      db.mock.db.group.test.testing.deepPeople,
       ["employer"],
       true
     );
     fkPropertyStructureForHasOne(
-      db.mock.db.test.testing.deepPeople,
+      db.mock.db.group.test.testing.deepPeople,
       ["school"],
       false
     );
   });
 
-  it("Mock() warns if dynamic props are mocking to unbounded mock condition", async () => {
-    // break the rule with single property
-    // let restore = captureStderr();
-    // await Mock(DeepPerson).generate(3);
-    // let output = restore();
-    // expect(output).to.have.lengthOf(1);
-    // expect(output[0]).to.include("The mock for the");
-
-    // break the rule twice
-    let restore = captureStderr();
-    await Mock(DeeperPerson).generate(3);
-    let output = restore();
-    expect(output).to.have.lengthOf(2);
-    expect(output[0]).to.include("The mock for the");
-
-    // pass the rule via a valid named mock
-    restore = captureStderr();
-    await Mock(MockedPerson).generate(3);
-    output = restore();
-    expect(output).to.have.lengthOf(0);
-
-    // pass an invalid named mock
-    restore = captureStderr();
-    await Mock(MockedPerson2).generate(3);
-    output = restore();
-    expect(output).to.have.lengthOf(1);
-    expect(output[0]).to.contain("Valid named mocks are");
+  it("Mock() throws an error if dynamic props aren't set", async () => {
+    try {
+      await Mock(DeeperPerson).generate(3);
+      throw new Error("Should have failed");
+    } catch (e) {
+      expect(e.code).to.equal("mock-not-ready");
+    }
   });
 });
 

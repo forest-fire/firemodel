@@ -75,12 +75,10 @@ export default function API<T>(db: RealTimeDB, modelConstructor: new () => T) {
       }
 
       let mocks: Array<IMockResponse<T>> = [];
-      console.log("here", count);
 
       for (const i of Array(count)) {
         mocks = mocks.concat(await relns(await props(record)));
       }
-      console.log("here");
 
       return mocks;
     },

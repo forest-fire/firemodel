@@ -91,7 +91,6 @@ describe("Mocking:", () => {
 
     const people = await List.all(FancyPerson);
     expect(people).to.have.lengthOf(numberOfFolks);
-    console.log(people.data);
 
     people.map(person => {
       expect(person.employer).to.be.a("string");
@@ -133,7 +132,6 @@ describe("Mocking:", () => {
       })
       .generate(numberOfFolks);
     const people = await List.all(FancyPerson);
-    console.log(db.mock.db);
 
     expect(people).to.have.lengthOf(numberOfFolks);
   });
@@ -158,7 +156,6 @@ describe("Mocking:", () => {
     expect(events).to.have.lengthOf(0);
   });
 
-  // TODO: is this freezing the build?
   it("Adding a record with {silent: true} raises an error in real db", async () => {
     FireModel.defaultDb = realDb;
     const events: IDictionary[] = [];
@@ -210,7 +207,7 @@ describe("Mocking:", () => {
     expect(locally.transactionId).to.equal(confirm.transactionId);
   });
 
-  it.only("Mocking data does NOT fire watcher events but adding a record DOES [ mock db ]", async () => {
+  it("Mocking data does NOT fire watcher events but adding a record DOES [ mock db ]", async () => {
     const events: IDictionary[] = [];
     FireModel.dispatch = (e: IReduxAction) => {
       events.push(e);
@@ -221,20 +218,12 @@ describe("Mocking:", () => {
 
     await Mock(FancyPerson).generate(1);
     const eventTypes: Set<string> = new Set(events.map(e => e.type));
-    console.log(
-      "events:",
-      events.length,
-      events.map(e => `${e.type} - ${JSON.stringify(e.compositeKey)}`)
-    );
 
     expect(Array.from(eventTypes)).to.not.include(FmEvents.RECORD_ADDED);
-
     await Record.add(FancyPerson, {
       name: "Bob the Builder"
     });
     const eventTypes2: string[] = Array.from(new Set(events.map(e => e.type)));
-    console.log(eventTypes2);
-    console.log(events.filter(e => e.type === FmEvents.RECORD_CHANGED));
 
     expect(eventTypes2).to.include(FmEvents.RECORD_ADDED);
   });

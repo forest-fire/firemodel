@@ -24,8 +24,6 @@ export default function mockProperties<T extends Model>(
     // use mocked values but allow exceptions to override
     const finalized: T = { ...(recProps as any), ...exceptions };
 
-    console.log(finalized);
-
     // write to mock db and retain a reference to same model
     record = await Record.add(record.modelConstructor, finalized, {
       silent: true

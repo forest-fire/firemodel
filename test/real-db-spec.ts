@@ -138,7 +138,6 @@ describe("Tests using REAL db =>’", () => {
     const w = await Watch.record(FancyPerson, "abcd").start({
       name: "value-listener"
     });
-    console.log(events);
 
     const person = await Record.add(FancyPerson, {
       id: "abcd",
