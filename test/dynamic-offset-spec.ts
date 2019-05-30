@@ -22,7 +22,7 @@ const expect = chai.expect;
 
 describe("Dynamic offsets reflected in path", () => {
   let db: DB;
-  before(async () => {
+  beforeEach(async () => {
     db = await DB.connect({ mocking: true });
     FireModel.defaultDb = db;
   });
@@ -276,6 +276,8 @@ describe("LIST uses static offsets() with static API methods", () => {
   it("List.all works with offsets", async () => {
     await Mock(DeepPerson).generate(3, { group: "test" });
     await Mock(DeepPerson).generate(5, { group: "test2" });
+    await Mock(DeepPerson).generate(5, { group: "test3" });
+
     const people = await List.offsets({ group: "test" }).all(DeepPerson);
     expect(people.length).to.equal(3);
   });

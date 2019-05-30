@@ -180,7 +180,8 @@ describe("Record > ", () => {
       const foo = record.dbPath;
       throw new Error("Error should have happened");
     } catch (e) {
-      expect(e.code).to.equal("record/not-ready");
+      expect(e.code).to.equal("not-ready");
+      expect(e.name).to.equal("record/not-ready");
       expect(e.message).contains("dbPath before");
     }
   });

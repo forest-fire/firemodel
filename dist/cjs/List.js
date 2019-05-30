@@ -212,7 +212,7 @@ class List extends FireModel_1.FireModel {
         return this._data.length;
     }
     get dbPath() {
-        const dbOffset = this._model.META.dbOffset || ModelMeta_1.getModelMeta(this._model).dbOffset;
+        const dbOffset = ModelMeta_1.getModelMeta(this._model).dbOffset;
         return [this._injectDynamicDbOffsets(dbOffset), this.pluralName].join("/");
     }
     /**
@@ -247,8 +247,7 @@ class List extends FireModel_1.FireModel {
         const filtered = this._data.filter(f);
         const r = Record_1.Record.create(this._modelConstructor);
         if (filtered.length > 0) {
-            r._initialize(filtered[0]);
-            return r;
+            return Record_1.Record.createWith(this._modelConstructor, filtered[0]);
         }
         else {
             if (defaultIfNotFound !== DEFAULT_IF_NOT_FOUND) {
@@ -345,9 +344,7 @@ class List extends FireModel_1.FireModel {
             e.name = "NotFound";
             throw e;
         }
-        const r = Record_1.Record.create(this._modelConstructor);
-        r._initialize(find.data[0]);
-        return r;
+        return Record_1.Record.createWith(this._modelConstructor, find.data[0]);
     }
     async removeById(id, ignoreOnNotFound = false) {
         const rec = this.findById(id, null);

@@ -12,7 +12,9 @@ export default function mockProperties(db, config = { relationshipBehavior: "ign
             const p = prop.property;
             recProps[p] = mockValue(db, prop);
         });
+        // use mocked values but allow exceptions to override
         const finalized = Object.assign({}, recProps, exceptions);
+        console.log(finalized);
         // write to mock db and retain a reference to same model
         record = await Record.add(record.modelConstructor, finalized, {
             silent: true

@@ -162,6 +162,7 @@ export interface IFmDispatchWatchContext<T extends Model = Model> extends IFmRec
      * not populated in the case of a client triggered event
      */
     watcherId?: string;
+    watcherPath?: string;
     /** an easy to remember name that can be used to lookup the watcher later */
     watcherName?: string;
 }

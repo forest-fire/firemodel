@@ -112,7 +112,7 @@ export class List<T extends Model> extends FireModel<T> {
    */
   public static async fromQuery<T extends Model>(
     model: new () => T,
-    query: SerializedQuery,
+    query: SerializedQuery<T>,
     options: IModelOptions = {}
   ): Promise<List<T>> {
     const list = List.create(model, options);
@@ -295,8 +295,7 @@ export class List<T extends Model> extends FireModel<T> {
   }
 
   public get dbPath() {
-    const dbOffset =
-      this._model.META.dbOffset || getModelMeta(this._model).dbOffset;
+    const dbOffset = getModelMeta(this._model).dbOffset;
     return [this._injectDynamicDbOffsets(dbOffset), this.pluralName].join("/");
   }
 
@@ -338,8 +337,7 @@ export class List<T extends Model> extends FireModel<T> {
     const filtered = this._data.filter(f);
     const r = Record.create(this._modelConstructor);
     if (filtered.length > 0) {
-      r._initialize(filtered[0]);
-      return r;
+      return Record.createWith(this._modelConstructor, filtered[0]);
     } else {
       if (defaultIfNotFound !== DEFAULT_IF_NOT_FOUND) {
         return defaultIfNotFound as any;
@@ -465,9 +463,7 @@ export class List<T extends Model> extends FireModel<T> {
       throw e;
     }
 
-    const r = Record.create(this._modelConstructor);
-    r._initialize(find.data[0]);
-    return r;
+    return Record.createWith(this._modelConstructor, find.data[0]);
   }
 
   public async removeById(id: string, ignoreOnNotFound: boolean = false) {

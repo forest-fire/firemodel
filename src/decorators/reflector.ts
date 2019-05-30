@@ -40,8 +40,6 @@ export const propertyReflector = <R>(
   const reflect: IDictionary =
     Reflect.getMetadata("design:type", modelKlass, key) || {};
 
-  console.log(key, Reflect.getMetadata(key, modelKlass));
-
   const meta: IDictionary = {
     ...(Reflect.getMetadata(key, modelKlass) || {}),
     type: lowercase(reflect.name) as string,
