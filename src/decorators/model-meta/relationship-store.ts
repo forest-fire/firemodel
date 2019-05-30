@@ -18,7 +18,7 @@ export function addRelationshipToModelMeta<T extends Model = Model>(
   }
   // TODO: investigate why we need to genericize to model (from <T>)
   relationshipsByModel[modelName][property] = meta as IFmModelRelationshipMeta<
-    Model
+    any
   >;
 }
 

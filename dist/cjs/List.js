@@ -212,7 +212,7 @@ class List extends FireModel_1.FireModel {
         return this._data.length;
     }
     get dbPath() {
-        const dbOffset = this._model.META.dbOffset || ModelMeta_1.getModelMeta(this._model).dbOffset;
+        const dbOffset = ModelMeta_1.getModelMeta(this._model).dbOffset;
         return [this._injectDynamicDbOffsets(dbOffset), this.pluralName].join("/");
     }
     /**

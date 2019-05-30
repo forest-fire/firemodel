@@ -3,6 +3,7 @@ import addRelationships from "./addRelationships";
 import { Record } from "../Record";
 import { Mock as FireMock } from "firemock";
 import { FireModelError } from "../errors";
+let mockPrepared = false;
 export default function API(db, modelConstructor) {
     const config = {
         relationshipBehavior: "ignore",
@@ -18,7 +19,10 @@ export default function API(db, modelConstructor) {
          * @param exceptions do you want to fix a given set of properties to a static value?
          */
         async generate(count, exceptions = {}) {
-            await FireMock.prepare();
+            if (!mockPrepared) {
+                await FireMock.prepare();
+                mockPrepared = true;
+            }
             const props = mockProperties(db, config, exceptions);
             const relns = addRelationships(db, config, exceptions);
             // create record; using any incoming exception to build the object.
@@ -42,9 +46,11 @@ export default function API(db, modelConstructor) {
                 });
             }
             let mocks = [];
+            console.log("here", count);
             for (const i of Array(count)) {
                 mocks = mocks.concat(await relns(await props(record)));
             }
+            console.log("here");
             return mocks;
         },
         /**

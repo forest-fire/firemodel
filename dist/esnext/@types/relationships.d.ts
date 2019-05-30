@@ -4,7 +4,9 @@ import { FireModelError } from "../errors";
  *
  * The operations that all transactional _relationship_ operations must fit into
  */
-export declare type IFmRelationshipOperation = "set"
+export declare type IFmRelationshipOperation = 
+/** a hasOne relationship that is being set (where value was empty prior) */
+"set"
 /** when a SET takes place on a hasOne which was already set */
 /** clears/removes all FK's on a given relationship */
  | "clear"

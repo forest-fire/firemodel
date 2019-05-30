@@ -21,7 +21,7 @@ export interface IDeepName {
   last: string;
 }
 
-@model({ dbOffset: ":group/testing" })
+@model({ dbOffset: "/group/:group/testing" })
 export default class DeepPerson extends Model {
   @property name: IDeepName;
   @property age: number;

@@ -7,6 +7,8 @@ import { IMockConfig, IMockResponse } from "./types";
 import { Mock as FireMock } from "firemock";
 import { FireModelError } from "../errors";
 
+let mockPrepared = false;
+
 export default function API<T>(db: RealTimeDB, modelConstructor: new () => T) {
   const config: IMockConfig = {
     relationshipBehavior: "ignore",
@@ -25,7 +27,11 @@ export default function API<T>(db: RealTimeDB, modelConstructor: new () => T) {
       count: number,
       exceptions: IDictionary = {}
     ): Promise<Array<IMockResponse<T>>> {
-      await FireMock.prepare();
+      if (!mockPrepared) {
+        await FireMock.prepare();
+        mockPrepared = true;
+      }
+
       const props = mockProperties<T>(db, config, exceptions);
       const relns = addRelationships<T>(db, config, exceptions);
 
@@ -69,9 +75,12 @@ export default function API<T>(db: RealTimeDB, modelConstructor: new () => T) {
       }
 
       let mocks: Array<IMockResponse<T>> = [];
+      console.log("here", count);
+
       for (const i of Array(count)) {
         mocks = mocks.concat(await relns(await props(record)));
       }
+      console.log("here");
 
       return mocks;
     },

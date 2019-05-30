@@ -30,8 +30,8 @@
     "docs:build": "vuepress build docs"
   },
   "dependencies": {
-    "abstracted-firebase": "^0.27.1",
-    "common-types": "^1.11.6",
+    "abstracted-firebase": "^0.27.5",
+    "common-types": "^1.11.10",
     "fast-deep-equal": "^2.0.1",
     "firebase-key": "^2.0.2",
     "get-value": "^3.0.1",
@@ -43,7 +43,7 @@
     "wait-in-parallel": "^1.2.6"
   },
   "peerDependencies": {
-    "firemock": "^0.27.0"
+    "firemock": "^0.27.2"
   },
   "devDependencies": {
     "@types/chai": "^4.1.4",
@@ -62,15 +62,15 @@
     "@vuepress/plugin-last-updated": "^1.0.0-alpha.48",
     "@vuepress/plugin-medium-zoom": "^1.0.0-alpha.48",
     "@vuepress/plugin-pwa": "^1.0.0-alpha.48",
-    "abstracted-admin": "^0.27.1",
-    "abstracted-client": "^0.27.1",
+    "abstracted-admin": "^0.27.2",
+    "abstracted-client": "^0.27.2",
     "async-shelljs": "^0.1.2",
     "chai": "^4.2.0",
     "chalk": "^2.4.1",
     "coveralls": "^3.0.3",
     "do-devops": "^0.1.0",
     "faker": "^4.1.0",
-    "firemock": "^0.27.0",
+    "firemock": "^0.27.2",
     "js-yaml": "^3.13.1",
     "mermaid": "^8.0.0",
     "mocha": "^6.0.1",

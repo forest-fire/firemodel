@@ -8,6 +8,7 @@ const addRelationships_1 = __importDefault(require("./addRelationships"));
 const Record_1 = require("../Record");
 const firemock_1 = require("firemock");
 const errors_1 = require("../errors");
+let mockPrepared = false;
 function API(db, modelConstructor) {
     const config = {
         relationshipBehavior: "ignore",
@@ -23,7 +24,10 @@ function API(db, modelConstructor) {
          * @param exceptions do you want to fix a given set of properties to a static value?
          */
         async generate(count, exceptions = {}) {
-            await firemock_1.Mock.prepare();
+            if (!mockPrepared) {
+                await firemock_1.Mock.prepare();
+                mockPrepared = true;
+            }
             const props = mockProperties_1.default(db, config, exceptions);
             const relns = addRelationships_1.default(db, config, exceptions);
             // create record; using any incoming exception to build the object.
@@ -47,9 +51,11 @@ function API(db, modelConstructor) {
                 });
             }
             let mocks = [];
+            console.log("here", count);
             for (const i of Array(count)) {
                 mocks = mocks.concat(await relns(await props(record)));
             }
+            console.log("here");
             return mocks;
         },
         /**

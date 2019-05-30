@@ -135,7 +135,7 @@ export declare class Record<T extends Model> extends FireModel<T> {
      * or a CompositeKeyString (aka, '[id]::[prop]:[value]').
      *
      * You should be careful in using this initializer; the expected
-     * _intent_ include:
+     * _intents_ include:
      *
      * 1. to initialize an in-memory record of something which is already
      * in the DB

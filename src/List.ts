@@ -295,8 +295,7 @@ export class List<T extends Model> extends FireModel<T> {
   }
 
   public get dbPath() {
-    const dbOffset =
-      this._model.META.dbOffset || getModelMeta(this._model).dbOffset;
+    const dbOffset = getModelMeta(this._model).dbOffset;
     return [this._injectDynamicDbOffsets(dbOffset), this.pluralName].join("/");
   }
 

@@ -210,7 +210,7 @@ describe("Mocking:", () => {
     expect(locally.transactionId).to.equal(confirm.transactionId);
   });
 
-  it("Mocking data does NOT fire watcher events but adding a record DOES [ mock db ]", async () => {
+  it.only("Mocking data does NOT fire watcher events but adding a record DOES [ mock db ]", async () => {
     const events: IDictionary[] = [];
     FireModel.dispatch = (e: IReduxAction) => {
       events.push(e);

@@ -210,7 +210,7 @@ export class List extends FireModel {
         return this._data.length;
     }
     get dbPath() {
-        const dbOffset = this._model.META.dbOffset || getModelMeta(this._model).dbOffset;
+        const dbOffset = getModelMeta(this._model).dbOffset;
         return [this._injectDynamicDbOffsets(dbOffset), this.pluralName].join("/");
     }
     /**

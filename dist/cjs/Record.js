@@ -233,9 +233,11 @@ class Record extends FireModel_1.FireModel {
                     r.set(i.property, i.defaultValue, true);
                 }
             });
+            console.log(r.compositeKeyRef);
             await r._adding(options);
         }
         catch (e) {
+            console.log(e.stack);
             throw new errors_1.FireModelProxyError(e, "Failed to add new record");
         }
         return r;
@@ -271,7 +273,7 @@ class Record extends FireModel_1.FireModel {
      * or a CompositeKeyString (aka, '[id]::[prop]:[value]').
      *
      * You should be careful in using this initializer; the expected
-     * _intent_ include:
+     * _intents_ include:
      *
      * 1. to initialize an in-memory record of something which is already
      * in the DB
@@ -287,7 +289,7 @@ class Record extends FireModel_1.FireModel {
      */
     static createWith(model, payload, options = {}) {
         const rec = Record.create(model, options);
-        if (options.setDeepRelationships) {
+        if (options.setDeepRelationships === true) {
             throw new errors_1.FireModelError(`Trying to create a ${util_1.capitalize(rec.modelName)} with the "setDeepRelationships" property set. This is NOT allowed; consider the 'Record.add()' method instead.`, "not-allowed");
         }
         const properties = typeof payload === "string"
@@ -802,12 +804,6 @@ class Record extends FireModel_1.FireModel {
                 const mps = this.db.multiPathSet(this.dbPath);
                 paths.map(path => mps.add(path));
                 await mps.execute();
-                // await this.db.ref(this.dbPath).update(
-                //   paths.reduce((acc: IDictionary, curr) => {
-                //     acc[curr.path] = curr.value;
-                //     return acc;
-                //   }, {})
-                // );
             }
             this.isDirty = false;
             // write audit if option is turned on
