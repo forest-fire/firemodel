@@ -8,9 +8,11 @@ class FireModelError extends Error {
     constructor(message, classification = "firemodel/error") {
         super(message);
         this.firemodel = true;
-        const [type, subType] = classification.split("/");
-        this.name = subType ? `${type}/${subType}` : `firemodel/${subType}`;
-        this.code = subType ? subType : type;
+        const parts = classification.split("/");
+        console.log(parts);
+        const [type, subType] = parts.length === 1 ? ["firemodel", parts[0]] : parts;
+        this.name = `${type}/${subType}`;
+        this.code = subType;
     }
 }
 exports.FireModelError = FireModelError;

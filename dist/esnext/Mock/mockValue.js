@@ -3,12 +3,10 @@ import fakeIt from "./fakeIt";
 import NamedFakes from "./NamedFakes";
 import PropertyNamePatterns from "./PropertyNamePatterns";
 import { MockHelper } from "firemock";
+import { MockError } from "../errors";
 export default function mockValue(db, propMeta, ...rest) {
     if (!db || !(db instanceof RealTimeDB)) {
-        const e = new Error(`When trying to Mock the value of "${propMeta.property}" the database reference passed in not a valid instance of the RealTimeDB provided by either 'abstracted-client' or 'abstracted-server' [ ${typeof db}, ${typeof db === "object" ? db.constructor.name : db} ].`);
-        console.log(e.message);
-        e.name = "FireModel::NotReady";
-        throw e;
+        throw new MockError(`When trying to Mock the value of "${propMeta.property}" the database reference passed in not a valid instance of the RealTimeDB provided by either 'abstracted-client' or 'abstracted-server' [ ${typeof db}, ${typeof db === "object" ? db.constructor.name : db} ].`);
     }
     const helper = new MockHelper(propMeta);
     const { type, mockType, mockParameters } = propMeta;

@@ -51,11 +51,9 @@ function API(db, modelConstructor) {
                 });
             }
             let mocks = [];
-            console.log("here", count);
             for (const i of Array(count)) {
                 mocks = mocks.concat(await relns(await props(record)));
             }
-            console.log("here");
             return mocks;
         },
         /**

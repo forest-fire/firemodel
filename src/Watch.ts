@@ -229,7 +229,6 @@ export class Watch<T extends Model = Model> {
       watcherSource: this._watcherSource
     };
     const coreDispatch = this._dispatcher || FireModel.dispatch;
-    console.log("core dispatch:", coreDispatch.name);
 
     if (coreDispatch.name === "defaultDispatch") {
       throw new FireModelError(
