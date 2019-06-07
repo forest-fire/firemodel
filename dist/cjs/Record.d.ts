@@ -7,12 +7,14 @@ import { IFMEventName, IFmCrudOperations, IFmDispatchOptions } from "./state-mgm
 import { IFkReference, ICompositeKey, IRecordOptions } from "./@types/record-types";
 import { IFmRelationshipOptionsForHasMany } from ".";
 import { IFmRelationshipOptions } from "./@types";
+import { IFmModelMeta } from "./decorators";
 /**
  * a Model that doesn't require the ID tag (or the META tag which not a true
  * property of the model)
  * */
 export declare type ModelOptionalId<T extends Model> = Omit<T, "id" | "META"> & {
     id?: string;
+    META?: IFmModelMeta;
 };
 export interface IWriteOperation {
     id: string;

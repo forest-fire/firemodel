@@ -51,6 +51,7 @@ import { createCompositeKeyString } from "./record/createCompositeKeyString";
 import { IFmPathValuePair, IFmRelationshipOptions } from "./@types";
 import { createCompositeKeyFromFkString } from "./record/createCompositeKeyFromFkString";
 import { RecordCrudFailure } from "./errors/record/DatabaseCrudFailure";
+import { IFmModelMeta } from "./decorators";
 
 /**
  * a Model that doesn't require the ID tag (or the META tag which not a true
@@ -58,6 +59,7 @@ import { RecordCrudFailure } from "./errors/record/DatabaseCrudFailure";
  * */
 export type ModelOptionalId<T extends Model> = Omit<T, "id" | "META"> & {
   id?: string;
+  META?: IFmModelMeta;
 };
 
 export interface IWriteOperation {
