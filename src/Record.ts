@@ -52,8 +52,13 @@ import { IFmPathValuePair, IFmRelationshipOptions } from "./@types";
 import { createCompositeKeyFromFkString } from "./record/createCompositeKeyFromFkString";
 import { RecordCrudFailure } from "./errors/record/DatabaseCrudFailure";
 
-// TODO: see if there's a way to convert to interface so that design time errors are more clear
-export type ModelOptionalId<T extends Model> = Omit<T, "id"> & { id?: string };
+/**
+ * a Model that doesn't require the ID tag (or the META tag which not a true
+ * property of the model)
+ * */
+export type ModelOptionalId<T extends Model> = Omit<T, "id" | "META"> & {
+  id?: string;
+};
 
 export interface IWriteOperation {
   id: string;
