@@ -47,7 +47,7 @@ export declare class FireModel<T extends Model> {
      * meta information -- contained on the given model
      */
     readonly relationships: IFmModelRelationshipMeta[];
-    readonly dispatch: IReduxDispatch<IDictionary<any>>;
+    readonly dispatch: IReduxDispatch<import("./VuexWrapper").IReduxAction>;
     static readonly isDefaultDispatch: boolean;
     readonly dispatchIsActive: boolean;
     /** the connected real-time database */
