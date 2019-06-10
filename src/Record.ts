@@ -1004,7 +1004,7 @@ export class Record<T extends Model> extends FireModel<T> {
    */
   protected async _localCrudOperation<K extends IFMEventName<K>>(
     crudAction: IFmCrudOperations,
-    newValues: Partial<T>,
+    priorValue: Partial<T>,
     options: IFmDispatchOptions = {}
   ) {
     options = {
@@ -1043,20 +1043,18 @@ export class Record<T extends Model> extends FireModel<T> {
 
     this.isDirty = true;
     // Set aside prior value
-    const priorValue = { ...(this._data as T) };
     const { changed, added, removed } = compareHashes<Partial<T>>(
-      priorValue,
-      newValues
+      withoutMeta<T>(this.data),
+      priorValue
     );
 
-    const paths = this._getPaths(newValues);
+    const paths = this._getPaths(changed);
     const watchers = findWatchers(this.dbPath);
     const event: IFmEvent<T> = {
       transactionId,
       crudAction,
       value: withoutMeta<T>(this.data),
-      priorValue: withoutMeta<T>(priorValue),
-
+      priorValue,
       dbPath: this.dbPath
     };
     if (crudAction === "update") {
@@ -1103,7 +1101,7 @@ export class Record<T extends Model> extends FireModel<T> {
       this.isDirty = false;
 
       // write audit if option is turned on
-      this._writeAudit(crudAction, newValues, priorValue);
+      this._writeAudit(crudAction, priorValue, priorValue);
 
       // send confirm event
       if (!options.silent && !options.silentAcceptance) {
@@ -1136,13 +1134,13 @@ export class Record<T extends Model> extends FireModel<T> {
       }
     } catch (e) {
       // send failure event
+      // TODO: need to send both "attempted" value and "rollback" value
       this.dispatch(
         createWatchEvent(actionTypeFailure, this, {
           transactionId,
           crudAction,
           value: this.data,
           dbPath: this.dbPath
-          // paths
         })
       );
 

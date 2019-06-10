@@ -198,7 +198,6 @@ export interface IFMRecordExternalEvent<T extends Model = Model> extends IFmDisp
     /** the key/ID the previous state; provided only on child_moved and child_changed */
     previousChildKey?: string;
 }
-export declare type IFMRecordEvent<T = Model> = IFMRecordClientEvent<T> & IFMRecordExternalEvent<T>;
 export interface IFMAction {
     type: string;
     payload: any;

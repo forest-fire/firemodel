@@ -4,6 +4,7 @@ import { IFirebaseWatchEvent } from "abstracted-firebase";
 import { FmModelConstructor } from "./general";
 import { Model } from "../Model";
 import { FmEvents } from "../state-mgmt";
+import { IWatcherSource } from "../Watch/types";
 
 export type IFmEventType =
   | "value"
@@ -14,9 +15,9 @@ export type IFmEventType =
 
 // TODO: look at overlap between IFmContextualizedWatchEvent and IFmRecordEvent; remove one
 export interface IFmRecordEvent<T extends Model = Model> {
-  compositeKey: ICompositeKey;
+  compositeKey: ICompositeKey<T>;
   dynamicPathProperties: string[];
-  eventType: IFmEventType;
+  eventType?: IFmEventType;
   key: string;
   dbPath: string;
   localPath: string;
@@ -25,12 +26,12 @@ export interface IFmRecordEvent<T extends Model = Model> {
   modelName: string;
   pluralName: string;
   previousChildKey?: string;
-  query: SerializedQuery;
-  targetType: "path" | "query";
+  query?: SerializedQuery;
+  targetType?: "path" | "query";
   type: FmEvents;
   value: T;
   /** the value prior to the change; this is typically set for local events only */
   priorValue?: T;
-  watcherId: string;
-  watcherSource: "record" | "list";
+  watcherId?: string;
+  watcherSource?: IWatcherSource;
 }

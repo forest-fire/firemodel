@@ -734,7 +734,7 @@ export class Record extends FireModel {
      * typically a great idea but it can be useful in situations like
      * _mocking_
      */
-    async _localCrudOperation(crudAction, newValues, options = {}) {
+    async _localCrudOperation(crudAction, priorValue, options = {}) {
         options = Object.assign({ silent: false, silentAcceptance: false }, options);
         const transactionId = "t-" +
             Math.random()
@@ -764,15 +764,14 @@ export class Record extends FireModel {
         const [actionTypeStart, actionTypeEnd, actionTypeFailure] = lookup[crudAction];
         this.isDirty = true;
         // Set aside prior value
-        const priorValue = Object.assign({}, this._data);
-        const { changed, added, removed } = compareHashes(priorValue, newValues);
-        const paths = this._getPaths(newValues);
+        const { changed, added, removed } = compareHashes(withoutMeta(this.data), priorValue);
+        const paths = this._getPaths(changed);
         const watchers = findWatchers(this.dbPath);
         const event = {
             transactionId,
             crudAction,
             value: withoutMeta(this.data),
-            priorValue: withoutMeta(priorValue),
+            priorValue,
             dbPath: this.dbPath
         };
         if (crudAction === "update") {
@@ -813,7 +812,7 @@ export class Record extends FireModel {
             }
             this.isDirty = false;
             // write audit if option is turned on
-            this._writeAudit(crudAction, newValues, priorValue);
+            this._writeAudit(crudAction, priorValue, priorValue);
             // send confirm event
             if (!options.silent && !options.silentAcceptance) {
                 if (watchers.length === 0) {
@@ -840,12 +839,12 @@ export class Record extends FireModel {
         }
         catch (e) {
             // send failure event
+            // TODO: need to send both "attempted" value and "rollback" value
             this.dispatch(createWatchEvent(actionTypeFailure, this, {
                 transactionId,
                 crudAction,
                 value: this.data,
                 dbPath: this.dbPath
-                // paths
             }));
             throw new RecordCrudFailure(this, crudAction, transactionId, e);
         }
