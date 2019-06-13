@@ -30,9 +30,10 @@
     "docs:build": "vuepress build docs"
   },
   "dependencies": {
-    "abstracted-firebase": "^0.27.7",
-    "common-types": "^1.11.10",
+    "abstracted-firebase": "^0.27.9",
+    "common-types": "^1.11.11",
     "fast-deep-equal": "^2.0.1",
+    "fast-copy": "2.0.3",
     "firebase-key": "^2.0.2",
     "get-value": "^3.0.1",
     "pluralize": "^7.0.0",
@@ -43,7 +44,7 @@
     "wait-in-parallel": "^1.2.6"
   },
   "peerDependencies": {
-    "firemock": "^0.27.5"
+    "firemock": "^0.27.8"
   },
   "devDependencies": {
     "@types/chai": "^4.1.4",
@@ -58,18 +59,18 @@
     "@types/rimraf": "^2.0.2",
     "@types/set-value": "^2.0.0",
     "@types/stack-trace": "^0.0.28",
-    "@vuepress/plugin-back-to-top": "^1.0.0-alpha.48",
-    "@vuepress/plugin-last-updated": "^1.0.0-alpha.48",
-    "@vuepress/plugin-medium-zoom": "^1.0.0-alpha.48",
-    "@vuepress/plugin-pwa": "^1.0.0-alpha.48",
-    "abstracted-admin": "^0.27.5",
-    "abstracted-client": "^0.27.5",
+    "@vuepress/plugin-back-to-top": "^1.0.0",
+    "@vuepress/plugin-last-updated": "^1.0.0",
+    "@vuepress/plugin-medium-zoom": "^1.0.0",
+    "@vuepress/plugin-pwa": "^1.0.0",
+    "abstracted-admin": "^0.27.6",
+    "abstracted-client": "^0.27.6",
     "async-shelljs": "^0.1.2",
     "chai": "^4.2.0",
     "chalk": "^2.4.2",
     "do-devops": "^0.1.0",
     "faker": "^4.1.0",
-    "firemock": "^0.27.5",
+    "firemock": "^0.27.8",
     "js-yaml": "^3.13.1",
     "mermaid": "^8.0.0",
     "mocha": "^6.1.4",
@@ -79,9 +80,9 @@
     "ts-node": "^8.2.0",
     "tslint": "^5.16.0",
     "tslint-config-prettier": "^1.18.0",
-    "typescript": "^3.4.5",
+    "typescript": "^3.5.1",
     "vue-property-decorator": "^8.1.1",
-    "vuepress": "^1.0.0-alpha.48",
+    "vuepress": "^1.0.0",
     "vuepress-plugin-autometa": "^0.1.10"
   },
   "engines": {

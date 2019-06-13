@@ -1,6 +1,6 @@
 import { ISerializedQueryIdentity, SerializedQuery } from "serialized-query";
 import { ICompositeKey } from "./record-types";
-import { IFirebaseWatchEvent } from "abstracted-firebase";
+import { IFirebaseWatchEvent, IPathSetter } from "abstracted-firebase";
 import { FmModelConstructor } from "./general";
 import { Model } from "../Model";
 import { FmEvents } from "../state-mgmt";
@@ -30,6 +30,7 @@ export interface IFmRecordEvent<T extends Model = Model> {
   targetType?: "path" | "query";
   type: FmEvents;
   value: T;
+  paths?: IPathSetter[];
   /** the value prior to the change; this is typically set for local events only */
   priorValue?: T;
   watcherId?: string;

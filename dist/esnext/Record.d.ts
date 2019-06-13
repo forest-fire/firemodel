@@ -340,7 +340,7 @@ export declare class Record<T extends Model> extends FireModel<T> {
      * typically a great idea but it can be useful in situations like
      * _mocking_
      */
-    protected _localCrudOperation<K extends IFMEventName<K>>(crudAction: IFmCrudOperations, priorValue: Partial<T>, options?: IFmDispatchOptions): Promise<void>;
+    protected _localCrudOperation<K extends IFMEventName<K>>(crudAction: IFmCrudOperations, priorValue: T, options?: IFmDispatchOptions): Promise<void>;
     private _findDynamicComponents;
     /**
      * looks for ":name" property references within the dbOffset or localPrefix and expands them

@@ -24,7 +24,6 @@ import {
   capitalize
 } from "./util";
 import {
-  IIdWithDynamicPrefix,
   IFkReference,
   ICompositeKey,
   IRecordOptions
@@ -52,6 +51,7 @@ import { IFmPathValuePair, IFmRelationshipOptions } from "./@types";
 import { createCompositeKeyFromFkString } from "./record/createCompositeKeyFromFkString";
 import { RecordCrudFailure } from "./errors/record/DatabaseCrudFailure";
 import { IFmModelMeta } from "./decorators";
+import copy from "fast-copy";
 
 /**
  * a Model that doesn't require the ID tag (or the META tag which not a true
@@ -642,11 +642,12 @@ export class Record<T extends Model> extends FireModel<T> {
       ...props,
       lastUpdated
     };
+    const rollback = copy(this.data);
     // changes local Record to include updates immediately
     this._data = { ...this.data, ...changed };
 
     // performs a two phase commit using dispatch messages
-    await this._localCrudOperation(IFmCrudOperations.update, changed);
+    await this._localCrudOperation(IFmCrudOperations.update, rollback);
 
     return;
   }
@@ -659,7 +660,7 @@ export class Record<T extends Model> extends FireModel<T> {
    */
   public async remove() {
     this.isDirty = true;
-    await this._localCrudOperation(IFmCrudOperations.remove, {});
+    await this._localCrudOperation(IFmCrudOperations.remove, copy(this.data));
     this.isDirty = false;
   }
 
@@ -675,6 +676,7 @@ export class Record<T extends Model> extends FireModel<T> {
     value: T[K],
     silent: boolean = false
   ) {
+    const rollback = copy(this.data);
     const meta = this.META.property(prop);
     if (!meta) {
       throw new FireModelError(
@@ -699,7 +701,7 @@ export class Record<T extends Model> extends FireModel<T> {
     this._data = { ...this._data, ...changed };
     // dispatch
     if (!silent) {
-      await this._localCrudOperation(IFmCrudOperations.update, changed, {
+      await this._localCrudOperation(IFmCrudOperations.update, rollback, {
         silent
       });
       this.META.isDirty = false;
@@ -936,41 +938,46 @@ export class Record<T extends Model> extends FireModel<T> {
     propertyValues: Partial<T>,
     priorValue: Partial<T>
   ) {
-    if (this.META.audit) {
-      const changes = Object.keys(propertyValues).reduce<IAuditChange[]>(
-        (prev: IAuditChange[], curr: Extract<keyof T, string>) => {
-          const after = propertyValues[curr];
-          const before = priorValue[curr];
-          const propertyAction = !before
-            ? "added"
-            : !after
-            ? "removed"
-            : "updated";
-          const payload: IAuditChange = {
-            before,
-            after,
-            property: curr,
-            action: propertyAction
-          };
-          prev.push(payload);
-          return prev;
-        },
-        []
-      );
+    propertyValues = propertyValues ? propertyValues : {};
+    try {
+      if (this.META.audit) {
+        const changes = Object.keys(propertyValues).reduce<IAuditChange[]>(
+          (prev: IAuditChange[], curr: Extract<keyof T, string>) => {
+            const after = propertyValues[curr];
+            const before = priorValue[curr];
+            const propertyAction = !before
+              ? "added"
+              : !after
+              ? "removed"
+              : "updated";
+            const payload: IAuditChange = {
+              before,
+              after,
+              property: curr,
+              action: propertyAction
+            };
+            prev.push(payload);
+            return prev;
+          },
+          []
+        );
 
-      const pastTense = {
-        add: "added",
-        update: "updated",
-        remove: "removed"
-      };
+        const pastTense = {
+          add: "added",
+          update: "updated",
+          remove: "removed"
+        };
 
-      await writeAudit(
-        this.id,
-        this.pluralName,
-        pastTense[action] as IAuditOperations,
-        updateToAuditChanges(propertyValues, priorValue),
-        { db: this.db }
-      );
+        await writeAudit(
+          this.id,
+          this.pluralName,
+          pastTense[action] as IAuditOperations,
+          updateToAuditChanges(propertyValues, priorValue),
+          { db: this.db }
+        );
+      }
+    } catch (e) {
+      throw new FireModelProxyError(e);
     }
   }
 
@@ -1004,7 +1011,7 @@ export class Record<T extends Model> extends FireModel<T> {
    */
   protected async _localCrudOperation<K extends IFMEventName<K>>(
     crudAction: IFmCrudOperations,
-    priorValue: Partial<T>,
+    priorValue: T,
     options: IFmDispatchOptions = {}
   ) {
     options = {
@@ -1251,7 +1258,7 @@ export class Record<T extends Model> extends FireModel<T> {
       );
     }
 
-    await this._localCrudOperation(IFmCrudOperations.add, this.data, options);
+    await this._localCrudOperation(IFmCrudOperations.add, undefined, options);
 
     return this;
   }

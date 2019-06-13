@@ -13,5 +13,6 @@ export class FireModelProxyError extends FireModelError {
 
     this.originalError = e;
     this.message = context ? `${context}. ${e.message}.` : e.message;
+    this.stack = e.stack;
   }
 }

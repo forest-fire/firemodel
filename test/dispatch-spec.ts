@@ -1,16 +1,11 @@
 // tslint:disable:no-implicit-dependencies
-import { Record } from "../src";
+import { Record, IFmRecordEvent } from "../src";
 import * as chai from "chai";
 import { Person } from "./testing/person";
 import { PersonWithLocal } from "./testing/PersonWithLocal";
 import { PersonWithLocalAndPrefix } from "./testing/PersonWithLocalAndPrefix";
 import { IMultiPathUpdates, FireModel } from "../src/FireModel";
-import {
-  FmEvents,
-  IFMRecordClientEvent,
-  IFMRelationshipEvent,
-  IFMRecordEvent
-} from "../src/state-mgmt";
+import { FmEvents } from "../src/state-mgmt";
 import { DB } from "abstracted-admin";
 import { wait } from "./testing/helpers";
 import { IVuexDispatch, VeuxWrapper } from "../src/VuexWrapper";
@@ -60,12 +55,12 @@ describe("Dispatch →", () => {
   });
 
   it("waiting for set() fires the appropriate Redux event; and inProgress is set", async () => {
-    const events: Array<IFMRecordEvent<Person>> = [];
+    const events: Array<IFmRecordEvent<Person>> = [];
     const person = await Record.add(Person, {
       name: "Jane",
       age: 18
     });
-    Record.dispatch = (e: IFMRecordEvent<Person>) => events.push(e);
+    Record.dispatch = (e: IFmRecordEvent<Person>) => events.push(e);
 
     await person.set("name", "Carol");
     expect(person.get("name")).to.equal("Carol"); // local change took place
@@ -87,7 +82,7 @@ describe("Dispatch →", () => {
   });
 
   it("VuexWrapper converts calling structure to what Vuex expects", async () => {
-    const events: Array<IFMRecordEvent<Person>> = [];
+    const events: Array<IFmRecordEvent<Person>> = [];
     const types = new Set<string>();
     const vueDispatch: IVuexDispatch = (type, payload: any) => {
       types.add(type);
@@ -109,7 +104,7 @@ describe("Dispatch →", () => {
   });
 
   it("By default the localPath is the singular modelName", async () => {
-    const events: Array<IFMRecordEvent<Person>> = [];
+    const events: Array<IFmRecordEvent<Person>> = [];
     const types = new Set<string>();
     const vueDispatch: IVuexDispatch = (type, payload: any) => {
       types.add(type);
@@ -128,7 +123,7 @@ describe("Dispatch →", () => {
   });
 
   it("When @model decorator and setting localModelName we can override the localPath", async () => {
-    const events: Array<IFMRecordEvent<Person>> = [];
+    const events: Array<IFmRecordEvent<Person>> = [];
     const types = new Set<string>();
     const vueDispatch: IVuexDispatch = (type, payload: any) => {
       types.add(type);
@@ -149,7 +144,7 @@ describe("Dispatch →", () => {
   });
 
   it("The when dispatching events without a listener the source is 'unknown'", async () => {
-    const events: Array<IFMRecordEvent<Person>> = [];
+    const events: Array<IFmRecordEvent<Person>> = [];
     const types = new Set<string>();
     const vueDispatch: IVuexDispatch = (type, payload: any) => {
       types.add(type);

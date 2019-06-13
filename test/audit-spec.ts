@@ -16,7 +16,7 @@ describe("Auditing ->’", () => {
       FireModel.defaultDb = db;
     });
 
-    it("writes to auditing table when adding a Record", async () => {
+    it.only("writes to auditing table when adding a Record", async () => {
       const person = await Record.add(Person, {
         name: "Johhny Rocket",
         age: 20

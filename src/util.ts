@@ -57,14 +57,18 @@ export interface IComparisonResult {
 }
 
 export function compareHashes<T extends IDictionary = IDictionary>(
-  from: T,
-  to: T
+  from: Partial<T>,
+  to: Partial<T>
 ) {
   const results: IComparisonResult = {
     added: [],
     changed: [],
     removed: []
   };
+
+  from = from ? from : {};
+  to = to ? to : {};
+
   const keys = new Set([...Object.keys(from), ...Object.keys(to)]);
   Array.from(keys).forEach(i => {
     if (!to[i]) {
