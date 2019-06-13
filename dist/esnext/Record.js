@@ -25,6 +25,7 @@ import { relationshipOperation } from "./record/relationshipOperation";
 import { createCompositeKeyString } from "./record/createCompositeKeyString";
 import { createCompositeKeyFromFkString } from "./record/createCompositeKeyFromFkString";
 import { RecordCrudFailure } from "./errors/record/DatabaseCrudFailure";
+import copy from "fast-copy";
 export class Record extends FireModel {
     constructor(model, options = {}) {
         super();
@@ -460,10 +461,11 @@ export class Record extends FireModel {
         }
         const lastUpdated = new Date().getTime();
         const changed = Object.assign({}, props, { lastUpdated });
+        const rollback = copy(this.data);
         // changes local Record to include updates immediately
         this._data = Object.assign({}, this.data, changed);
         // performs a two phase commit using dispatch messages
-        await this._localCrudOperation("update" /* update */, changed);
+        await this._localCrudOperation("update" /* update */, rollback);
         return;
     }
     /**
@@ -474,7 +476,7 @@ export class Record extends FireModel {
      */
     async remove() {
         this.isDirty = true;
-        await this._localCrudOperation("remove" /* remove */, {});
+        await this._localCrudOperation("remove" /* remove */, copy(this.data));
         this.isDirty = false;
     }
     /**
@@ -485,6 +487,7 @@ export class Record extends FireModel {
      * @param silent a flag to indicate whether the change to the prop should be updated to the database or not
      */
     async set(prop, value, silent = false) {
+        const rollback = copy(this.data);
         const meta = this.META.property(prop);
         if (!meta) {
             throw new FireModelError(`There was a problem getting the meta data for the model ${capitalize(this.modelName)} while attempting to set the "${prop}" property to: ${value}`);
@@ -502,7 +505,7 @@ export class Record extends FireModel {
         this._data = Object.assign({}, this._data, changed);
         // dispatch
         if (!silent) {
-            await this._localCrudOperation("update" /* update */, changed, {
+            await this._localCrudOperation("update" /* update */, rollback, {
                 silent
             });
             this.META.isDirty = false;
@@ -734,7 +737,7 @@ export class Record extends FireModel {
      * typically a great idea but it can be useful in situations like
      * _mocking_
      */
-    async _localCrudOperation(crudAction, newValues, options = {}) {
+    async _localCrudOperation(crudAction, priorValue, options = {}) {
         options = Object.assign({ silent: false, silentAcceptance: false }, options);
         const transactionId = "t-" +
             Math.random()
@@ -764,15 +767,14 @@ export class Record extends FireModel {
         const [actionTypeStart, actionTypeEnd, actionTypeFailure] = lookup[crudAction];
         this.isDirty = true;
         // Set aside prior value
-        const priorValue = Object.assign({}, this._data);
-        const { changed, added, removed } = compareHashes(priorValue, newValues);
-        const paths = this._getPaths(newValues);
+        const { changed, added, removed } = compareHashes(withoutMeta(this.data), priorValue);
+        const paths = this._getPaths(changed);
         const watchers = findWatchers(this.dbPath);
         const event = {
             transactionId,
             crudAction,
             value: withoutMeta(this.data),
-            priorValue: withoutMeta(priorValue),
+            priorValue,
             dbPath: this.dbPath
         };
         if (crudAction === "update") {
@@ -813,7 +815,7 @@ export class Record extends FireModel {
             }
             this.isDirty = false;
             // write audit if option is turned on
-            this._writeAudit(crudAction, newValues, priorValue);
+            this._writeAudit(crudAction, priorValue, priorValue);
             // send confirm event
             if (!options.silent && !options.silentAcceptance) {
                 if (watchers.length === 0) {
@@ -840,12 +842,12 @@ export class Record extends FireModel {
         }
         catch (e) {
             // send failure event
+            // TODO: need to send both "attempted" value and "rollback" value
             this.dispatch(createWatchEvent(actionTypeFailure, this, {
                 transactionId,
                 crudAction,
                 value: this.data,
                 dbPath: this.dbPath
-                // paths
             }));
             throw new RecordCrudFailure(this, crudAction, transactionId, e);
         }
@@ -918,7 +920,7 @@ export class Record extends FireModel {
         if (!this.db) {
             throw new FireModelError(`Attempt to save Record failed as the Database has not been connected yet. Try setting FireModel's defaultDb first.`, "firemodel/db-not-ready");
         }
-        await this._localCrudOperation("add" /* add */, this.data, options);
+        await this._localCrudOperation("add" /* add */, undefined, options);
         return this;
     }
 }

@@ -1,12 +1,12 @@
 // tslint:disable:no-implicit-dependencies
-import { Record } from "../src";
+import { Record, IFmRecordEvent } from "../src";
 import { DB } from "abstracted-admin";
 import * as chai from "chai";
 const expect = chai.expect;
 import { Person } from "./testing/person";
 import { FireModel } from "../src/FireModel";
 import { FancyPerson } from "./testing/FancyPerson";
-import { IFMRecordEvent, FmEvents } from "../src/state-mgmt";
+import { FmEvents } from "../src/state-mgmt";
 import { Company } from "./testing/Company";
 import { Pay } from "./testing/Pay";
 import { extractFksFromPaths } from "../src/record/extractFksFromPaths";
@@ -167,8 +167,8 @@ describe("Relationship > ", () => {
     });
     expect(person.id).to.exist.and.to.be.a("string");
     const lastUpdated = person.data.lastUpdated;
-    const events: IFMRecordEvent[] = [];
-    Record.dispatch = (evt: IFMRecordEvent) => events.push(evt);
+    const events: IFmRecordEvent[] = [];
+    Record.dispatch = (evt: IFmRecordEvent) => events.push(evt);
     await person.addToRelationship("cars", "12345");
 
     const eventTypes = Array.from(new Set(events.map(e => e.type)));
@@ -296,8 +296,8 @@ describe("Relationship > ", () => {
   //   });
   //   expect(person.id).to.exist.and.to.be.a("string");
   //   const lastUpdated = person.data.lastUpdated;
-  //   const events: IFMRecordEvent[] = [];
-  //   Record.dispatch = (evt: IFMRecordEvent) => events.push(evt);
+  //   const events: IFmRecordEvent[] = [];
+  //   Record.dispatch = (evt: IFmRecordEvent) => events.push(evt);
   //   await person.addToRelationship("concerts", "12345");
   //   expect((person.data.concerts as any)["12345"]).to.equal(true);
   //   expect(events).to.have.lengthOf(2);

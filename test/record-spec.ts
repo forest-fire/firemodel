@@ -1,5 +1,5 @@
 // tslint:disable:no-implicit-dependencies
-import { Record, List } from "../src";
+import { Record, List, IFmRecordEvent } from "../src";
 import { DB } from "abstracted-admin";
 import * as chai from "chai";
 const expect = chai.expect;
@@ -7,7 +7,7 @@ import "reflect-metadata";
 import { Person } from "./testing/person";
 import { Person as Peeps } from "./testing/PersonAsPeeps";
 import { FireModel } from "../src/FireModel";
-import { IFMRecordEvent, FmEvents } from "../src/state-mgmt";
+import { FmEvents } from "../src/state-mgmt";
 import { Mock } from "../src/Mock";
 
 describe("Record > ", () => {
@@ -40,8 +40,8 @@ describe("Record > ", () => {
   });
 
   it(`Record's static add() fires client events`, async () => {
-    const events: IFMRecordEvent[] = [];
-    Record.dispatch = (payload: IFMRecordEvent) => events.push(payload);
+    const events: IFmRecordEvent[] = [];
+    Record.dispatch = (payload: IFmRecordEvent) => events.push(payload);
     const r = await Record.add(Person, {
       name: "Bob",
       age: 40
@@ -157,8 +157,8 @@ describe("Record > ", () => {
       lastUpdated: 12345
     });
     const roger = await Record.get(Person, "8888");
-    const events: IFMRecordEvent[] = [];
-    FireModel.dispatch = (evt: IFMRecordEvent) => events.push(evt);
+    const events: IFmRecordEvent[] = [];
+    FireModel.dispatch = (evt: IFmRecordEvent) => events.push(evt);
     expect(roger.dispatchIsActive).to.equal(true);
     await roger.update({
       name: "Roger Rabbit, III",
@@ -194,8 +194,8 @@ describe("Record > ", () => {
     expect(peeps.length).to.equal(10);
     const person = Record.createWith(Person, peeps.data[0]);
     const id = person.id;
-    const events: IFMRecordEvent[] = [];
-    FireModel.dispatch = (evt: IFMRecordEvent) => events.push(evt);
+    const events: IFmRecordEvent[] = [];
+    FireModel.dispatch = (evt: IFmRecordEvent) => events.push(evt);
     await person.remove();
 
     expect(events).to.have.lengthOf(2);
@@ -217,8 +217,8 @@ describe("Record > ", () => {
     const peeps = await List.all(Person);
     const id = peeps.data[0].id;
     expect(peeps.length).to.equal(10);
-    const events: IFMRecordEvent[] = [];
-    FireModel.dispatch = (evt: IFMRecordEvent) => events.push(evt);
+    const events: IFmRecordEvent[] = [];
+    FireModel.dispatch = (evt: IFmRecordEvent) => events.push(evt);
     const removed = await Record.remove(Person, id);
     expect(removed.id).to.equal(id);
     expect(events).to.have.lengthOf(2);

@@ -6,6 +6,9 @@ var __asyncValues = (this && this.__asyncValues) || function (o) {
     function verb(n) { i[n] = o[n] && function (v) { return new Promise(function (resolve, reject) { v = o[n](v), settle(resolve, reject, v.done, v.value); }); }; }
     function settle(resolve, reject, d, v) { Promise.resolve(v).then(function(v) { resolve({ value: v, done: d }); }, reject); }
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const common_types_1 = require("common-types");
 const firebase_key_1 = require("firebase-key");
@@ -27,6 +30,7 @@ const relationshipOperation_1 = require("./record/relationshipOperation");
 const createCompositeKeyString_1 = require("./record/createCompositeKeyString");
 const createCompositeKeyFromFkString_1 = require("./record/createCompositeKeyFromFkString");
 const DatabaseCrudFailure_1 = require("./errors/record/DatabaseCrudFailure");
+const fast_copy_1 = __importDefault(require("fast-copy"));
 class Record extends FireModel_1.FireModel {
     constructor(model, options = {}) {
         super();
@@ -462,10 +466,11 @@ class Record extends FireModel_1.FireModel {
         }
         const lastUpdated = new Date().getTime();
         const changed = Object.assign({}, props, { lastUpdated });
+        const rollback = fast_copy_1.default(this.data);
         // changes local Record to include updates immediately
         this._data = Object.assign({}, this.data, changed);
         // performs a two phase commit using dispatch messages
-        await this._localCrudOperation("update" /* update */, changed);
+        await this._localCrudOperation("update" /* update */, rollback);
         return;
     }
     /**
@@ -476,7 +481,7 @@ class Record extends FireModel_1.FireModel {
      */
     async remove() {
         this.isDirty = true;
-        await this._localCrudOperation("remove" /* remove */, {});
+        await this._localCrudOperation("remove" /* remove */, fast_copy_1.default(this.data));
         this.isDirty = false;
     }
     /**
@@ -487,6 +492,7 @@ class Record extends FireModel_1.FireModel {
      * @param silent a flag to indicate whether the change to the prop should be updated to the database or not
      */
     async set(prop, value, silent = false) {
+        const rollback = fast_copy_1.default(this.data);
         const meta = this.META.property(prop);
         if (!meta) {
             throw new errors_1.FireModelError(`There was a problem getting the meta data for the model ${util_1.capitalize(this.modelName)} while attempting to set the "${prop}" property to: ${value}`);
@@ -504,7 +510,7 @@ class Record extends FireModel_1.FireModel {
         this._data = Object.assign({}, this._data, changed);
         // dispatch
         if (!silent) {
-            await this._localCrudOperation("update" /* update */, changed, {
+            await this._localCrudOperation("update" /* update */, rollback, {
                 silent
             });
             this.META.isDirty = false;
@@ -736,7 +742,7 @@ class Record extends FireModel_1.FireModel {
      * typically a great idea but it can be useful in situations like
      * _mocking_
      */
-    async _localCrudOperation(crudAction, newValues, options = {}) {
+    async _localCrudOperation(crudAction, priorValue, options = {}) {
         options = Object.assign({ silent: false, silentAcceptance: false }, options);
         const transactionId = "t-" +
             Math.random()
@@ -766,15 +772,14 @@ class Record extends FireModel_1.FireModel {
         const [actionTypeStart, actionTypeEnd, actionTypeFailure] = lookup[crudAction];
         this.isDirty = true;
         // Set aside prior value
-        const priorValue = Object.assign({}, this._data);
-        const { changed, added, removed } = util_1.compareHashes(priorValue, newValues);
-        const paths = this._getPaths(newValues);
+        const { changed, added, removed } = util_1.compareHashes(util_1.withoutMeta(this.data), priorValue);
+        const paths = this._getPaths(changed);
         const watchers = findWatchers_1.findWatchers(this.dbPath);
         const event = {
             transactionId,
             crudAction,
             value: util_1.withoutMeta(this.data),
-            priorValue: util_1.withoutMeta(priorValue),
+            priorValue,
             dbPath: this.dbPath
         };
         if (crudAction === "update") {
@@ -815,7 +820,7 @@ class Record extends FireModel_1.FireModel {
             }
             this.isDirty = false;
             // write audit if option is turned on
-            this._writeAudit(crudAction, newValues, priorValue);
+            this._writeAudit(crudAction, priorValue, priorValue);
             // send confirm event
             if (!options.silent && !options.silentAcceptance) {
                 if (watchers.length === 0) {
@@ -842,12 +847,12 @@ class Record extends FireModel_1.FireModel {
         }
         catch (e) {
             // send failure event
+            // TODO: need to send both "attempted" value and "rollback" value
             this.dispatch(createWatchEvent_1.createWatchEvent(actionTypeFailure, this, {
                 transactionId,
                 crudAction,
                 value: this.data,
                 dbPath: this.dbPath
-                // paths
             }));
             throw new DatabaseCrudFailure_1.RecordCrudFailure(this, crudAction, transactionId, e);
         }
@@ -920,7 +925,7 @@ class Record extends FireModel_1.FireModel {
         if (!this.db) {
             throw new errors_1.FireModelError(`Attempt to save Record failed as the Database has not been connected yet. Try setting FireModel's defaultDb first.`, "firemodel/db-not-ready");
         }
-        await this._localCrudOperation("add" /* add */, this.data, options);
+        await this._localCrudOperation("add" /* add */, undefined, options);
         return this;
     }
 }
