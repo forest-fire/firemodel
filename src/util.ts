@@ -4,6 +4,8 @@ import { Model } from "./Model";
 import { hashToArray } from "typed-conversions";
 import { propertiesByModel } from "./decorators/model-meta/property-store";
 import equal from "fast-deep-equal";
+import { IFmChangedProperties } from "./@types";
+import { getModelMeta } from "./ModelMeta";
 
 export function normalized(...args: string[]) {
   return args
@@ -56,11 +58,16 @@ export interface IComparisonResult {
   removed: string[];
 }
 
-export function compareHashes<T extends IDictionary = IDictionary>(
+export function compareHashes<T extends Model>(
   from: Partial<T>,
-  to: Partial<T>
-) {
-  const results: IComparisonResult = {
+  to: Partial<T>,
+  /**
+   * optionally explicitly state properties so that relationships
+   * can be filtered away
+   */
+  modelProps?: Array<keyof T & string>
+): IFmChangedProperties<T> {
+  const results: IFmChangedProperties<T> = {
     added: [],
     changed: [],
     removed: []
@@ -69,13 +76,27 @@ export function compareHashes<T extends IDictionary = IDictionary>(
   from = from ? from : {};
   to = to ? to : {};
 
-  const keys = new Set([...Object.keys(from), ...Object.keys(to)]);
-  Array.from(keys).forEach(i => {
+  let keys: Array<keyof T & string> = Array.from(
+    new Set<keyof T & string>([
+      ...(Object.keys(from) as Array<keyof T & string>),
+      ...Object.keys(to)
+    ] as Array<keyof T & string>)
+  )
+    // META should never be part of comparison
+    .filter(i => i !== "META")
+    // neither should private properties indicated by underscore
+    .filter(i => i.slice(0, 1) !== "_");
+
+  if (modelProps) {
+    keys = keys.filter(i => modelProps.includes(i));
+  }
+
+  keys.forEach(i => {
     if (!to[i]) {
       results.added.push(i);
-    } else if (!from[i]) {
+    } else if (from[i] === null) {
       results.removed.push(i);
-    } else if (!equal(from, to)) {
+    } else if (!equal(from[i], to[i])) {
       results.changed.push(i);
     }
   });
@@ -102,10 +123,17 @@ export function getAllPropertiesFromClassStructure<T extends Model>(model: T) {
   return properties.map(p => p.property);
 }
 
-export function withoutMeta<T extends Model>(model: T) {
-  if (model.META) {
+export function withoutMetaOrPrivate<T extends Model>(model: T) {
+  if (model && model.META) {
     model = { ...model };
     delete model.META;
+  }
+  if (model) {
+    Object.keys((key: keyof T & string) => {
+      if (key.slice(0, 1) === "_") {
+        delete model[key];
+      }
+    });
   }
   return model;
 }

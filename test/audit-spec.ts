@@ -16,7 +16,7 @@ describe("Auditing ->’", () => {
       FireModel.defaultDb = db;
     });
 
-    it.only("writes to auditing table when adding a Record", async () => {
+    it("writes to auditing table when adding a Record", async () => {
       const person = await Record.add(Person, {
         name: "Johhny Rocket",
         age: 20
@@ -28,6 +28,7 @@ describe("Auditing ->’", () => {
         .to.haveOwnProperty("action")
         .and.to.equal("added");
       const p2 = await Record.get(Person, log[0].recordId);
+
       expect(p2.data.name).to.equal("Johhny Rocket");
     });
 
@@ -45,6 +46,7 @@ describe("Auditing ->’", () => {
       expect(log[0])
         .to.haveOwnProperty("action")
         .and.to.equal("updated");
+
       expect(log[0].changes).to.have.lengthOf(2);
       const changedProps = new Set(log[0].changes.map(i => i.property));
       expect(changedProps.has("lastUpdated")).to.equal(true);

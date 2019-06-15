@@ -145,6 +145,8 @@ describe("Record > ", () => {
     expect(roger.get("tags")).to.haveOwnProperty("456");
     // CHANGE REFLECTED after pulling from DB
     const bugs = await Record.get(Person, "8888");
+    console.log(bugs.data);
+
     expect(bugs.get("tags")).to.haveOwnProperty("456");
     expect(bugs.get("scratchpad")).to.haveOwnProperty("foo");
   });
