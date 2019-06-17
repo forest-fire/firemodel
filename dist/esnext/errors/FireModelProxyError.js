@@ -5,6 +5,7 @@ export class FireModelProxyError extends FireModelError {
         this.firemodel = true;
         this.originalError = e;
         this.message = context ? `${context}. ${e.message}.` : e.message;
+        this.stack = e.stack;
     }
 }
 //# sourceMappingURL=FireModelProxyError.js.map

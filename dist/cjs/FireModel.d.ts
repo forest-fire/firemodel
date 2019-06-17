@@ -1,8 +1,10 @@
 import { Model } from "./Model";
+declare type Record<T> = import("./Record").Record<T>;
 import { IDictionary } from "common-types";
 import { IReduxDispatch } from "./VuexWrapper";
 import { RealTimeDB, IFirebaseConfig, IFirebaseAdminConfig } from "abstracted-firebase";
 import { IFmModelMeta, IFmModelPropertyMeta, IFmModelRelationshipMeta } from "./decorators/types";
+import { IFmChangedProperties } from "./@types";
 export declare class FireModel<T extends Model> {
     /**
     * Any FireModel transaction needs to connect to the database
@@ -84,9 +86,10 @@ export declare class FireModel<T extends Model> {
     protected _model: T;
     protected _modelConstructor: new () => T;
     protected _db: RealTimeDB;
-    protected _getPaths(changes: IDictionary): IMultiPathUpdates[];
+    protected _getPaths(rec: Record<T>, deltas: IFmChangedProperties<T>): IDictionary;
 }
 export interface IMultiPathUpdates {
     path: string;
     value: any;
 }
+export {};

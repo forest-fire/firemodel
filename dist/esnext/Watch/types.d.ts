@@ -50,9 +50,9 @@ export interface IFmEvent<T> {
      *
      * An array of property names who's value has changed
      */
-    changed?: string[];
-    added?: string[];
-    removed?: string[];
+    changed?: Array<keyof T>;
+    added?: Array<keyof T>;
+    removed?: Array<keyof T>;
     /**
      * **priorValue**
      *
