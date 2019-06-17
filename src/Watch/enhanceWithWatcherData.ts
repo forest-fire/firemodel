@@ -14,8 +14,8 @@ export function enhanceEventWithWatcherData<T>(
 
   event.localPath =
     watcher.watcherSource === "list"
-      ? pathJoin(meta.localPrefix, record.pluralName)
-      : pathJoin(meta.localPrefix, meta.localModelName);
+      ? pathJoin(meta.localPrefix || "", record.pluralName)
+      : pathJoin(meta.localPrefix || "", meta.localModelName);
   if (watcher.watcherSource === "list") {
     event.localPostfix = meta.localPostfix;
   }

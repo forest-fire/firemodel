@@ -231,8 +231,8 @@ export interface IFMRecordExternalEvent<T extends Model = Model>
   previousChildKey?: string;
 }
 
-export type IFMRecordEvent<T = Model> = IFMRecordClientEvent<T> &
-  IFMRecordExternalEvent<T>;
+// export type IFmRecordEvent<T = Model> = IFMRecordClientEvent<T> &
+//   IFMRecordExternalEvent<T>;
 
 export interface IFMAction {
   type: string;

@@ -378,7 +378,7 @@ class Watch {
         else {
             val = value;
         }
-        this._query = new serialized_query_1.SerializedQuery()
+        this._query = new serialized_query_1.SerializedQuery(this._query.path)
             .orderByChild(property)
             .where(operation, val);
         return this;

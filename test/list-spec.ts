@@ -1,5 +1,5 @@
 // tslint:disable:no-implicit-dependencies
-import { Record, List } from "../src/index";
+import { Record, List, IFmRecordEvent } from "../src/index";
 import { DB, SerializedQuery } from "abstracted-admin";
 import * as chai from "chai";
 import * as helpers from "./testing/helpers";
@@ -8,7 +8,7 @@ import "reflect-metadata";
 import { Person } from "./testing/person";
 import { FireModel } from "../src/FireModel";
 import { Mock } from "../src/Mock";
-import { IFMRecordEvent, FmEvents } from "../src/state-mgmt";
+import { FmEvents } from "../src/state-mgmt";
 
 describe("List class: ", () => {
   let db: DB;
@@ -350,8 +350,8 @@ describe("List class: ", () => {
 
   it("using remove() able to change local state, db state, and state mgmt", async () => {
     await Mock(Person, db).generate(10);
-    const events: Array<IFMRecordEvent<Person>> = [];
-    Record.dispatch = (evt: IFMRecordEvent<Person>) => events.push(evt);
+    const events: Array<IFmRecordEvent<Person>> = [];
+    Record.dispatch = (evt: IFmRecordEvent<Person>) => events.push(evt);
     const peeps = await List.all(Person);
     const id = peeps.data[1].id;
     const removed = await peeps.removeById(id);
@@ -370,8 +370,8 @@ describe("List class: ", () => {
 
   it("using add() changes local state, db state, and state mgmt", async () => {
     await Mock(Person, db).generate(10);
-    const events: Array<IFMRecordEvent<Person>> = [];
-    Record.dispatch = (evt: IFMRecordEvent<Person>) => events.push(evt);
+    const events: Array<IFmRecordEvent<Person>> = [];
+    Record.dispatch = (evt: IFmRecordEvent<Person>) => events.push(evt);
     const peeps = await List.all(Person);
     expect(peeps).to.have.lengthOf(10);
     const newRec = await peeps.add({

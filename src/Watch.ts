@@ -527,7 +527,7 @@ export class Watch<T extends Model = Model> {
     } else {
       val = value;
     }
-    this._query = new SerializedQuery<T>()
+    this._query = new SerializedQuery<T>(this._query.path)
       .orderByChild(property)
       .where(operation, val);
     return this;

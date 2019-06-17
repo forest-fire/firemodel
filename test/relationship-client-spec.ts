@@ -1,12 +1,12 @@
 // tslint:disable:no-implicit-dependencies
-import { Record, fks } from "../src";
+import { Record, IFmRecordEvent } from "../src";
 import { DB } from "abstracted-client";
 import * as chai from "chai";
 const expect = chai.expect;
 import "reflect-metadata";
 import { FireModel } from "../src/FireModel";
 import { FancyPerson } from "./testing/FancyPerson";
-import { IFMRecordEvent, FmEvents } from "../src/state-mgmt";
+import { FmEvents } from "../src/state-mgmt";
 import { List } from "../src/List";
 import { Company } from "./testing/Company";
 
@@ -24,8 +24,8 @@ const addFatherAndChildren = async () => {
     name: "Pops",
     age: 46
   });
-  const events: IFMRecordEvent[] = [];
-  Record.dispatch = (evt: IFMRecordEvent) => events.push(evt);
+  const events: IFmRecordEvent[] = [];
+  Record.dispatch = (evt: IFmRecordEvent) => events.push(evt);
   await father.addToRelationship("children", [bob.id, chrissy.id]);
 
   return {
@@ -61,8 +61,8 @@ describe("Relationship > ", () => {
     });
     expect(person.id).to.exist.and.to.be.a("string");
     const lastUpdated = person.data.lastUpdated;
-    const events: IFMRecordEvent[] = [];
-    Record.dispatch = (evt: IFMRecordEvent) => events.push(evt);
+    const events: IFmRecordEvent[] = [];
+    Record.dispatch = (evt: IFmRecordEvent) => events.push(evt);
 
     await person.addToRelationship("cars", "car12345");
 
@@ -99,8 +99,8 @@ describe("Relationship > ", () => {
       name: "Pops",
       age: 46
     });
-    const events: IFMRecordEvent[] = [];
-    Record.dispatch = (evt: IFMRecordEvent) => events.push(evt);
+    const events: IFmRecordEvent[] = [];
+    Record.dispatch = (evt: IFmRecordEvent) => events.push(evt);
     await bob.addToRelationship("parents", father.id);
     // local person record is updated
     expect(bob.data.parents[father.id]).to.equal(true);

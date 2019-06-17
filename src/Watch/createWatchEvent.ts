@@ -1,6 +1,6 @@
-import { FmEvents, IFMRecordEvent, IFMRecordClientEvent } from "../state-mgmt";
+import { FmEvents, IFMRecordClientEvent } from "../state-mgmt";
 
-import { Record } from "..";
+import { Record, IFmRecordEvent } from "..";
 import { IFmEvent } from "./types";
 /**
  * expands a locally originated event into a full featured
@@ -11,7 +11,7 @@ export function createWatchEvent<T>(
   record: Record<T>,
   event: IFmEvent<T>
 ) {
-  const payload: IFMRecordClientEvent<T> = {
+  const payload: IFmRecordEvent<T> = {
     type,
     key: record.id,
     modelName: record.modelName,
@@ -24,5 +24,5 @@ export function createWatchEvent<T>(
     localPostfix: record.META.localPostfix,
     ...event
   };
-  return payload as IFMRecordEvent<T>;
+  return payload;
 }
