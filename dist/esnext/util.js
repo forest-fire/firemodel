@@ -30,21 +30,38 @@ export function updateToAuditChanges(changed, prior) {
         return prev;
     }, []);
 }
-export function compareHashes(from, to) {
+export function compareHashes(from, to, 
+/**
+ * optionally explicitly state properties so that relationships
+ * can be filtered away
+ */
+modelProps) {
     const results = {
         added: [],
         changed: [],
         removed: []
     };
-    const keys = new Set([...Object.keys(from), ...Object.keys(to)]);
-    Array.from(keys).forEach(i => {
+    from = from ? from : {};
+    to = to ? to : {};
+    let keys = Array.from(new Set([
+        ...Object.keys(from),
+        ...Object.keys(to)
+    ]))
+        // META should never be part of comparison
+        .filter(i => i !== "META")
+        // neither should private properties indicated by underscore
+        .filter(i => i.slice(0, 1) !== "_");
+    if (modelProps) {
+        keys = keys.filter(i => modelProps.includes(i));
+    }
+    keys.forEach(i => {
         if (!to[i]) {
             results.added.push(i);
         }
-        else if (!from[i]) {
+        else if (from[i] === null) {
             results.removed.push(i);
         }
-        else if (!equal(from, to)) {
+        else if (!equal(from[i], to[i])) {
             results.changed.push(i);
         }
     });
@@ -62,10 +79,17 @@ export function getAllPropertiesFromClassStructure(model) {
     }
     return properties.map(p => p.property);
 }
-export function withoutMeta(model) {
-    if (model.META) {
+export function withoutMetaOrPrivate(model) {
+    if (model && model.META) {
         model = Object.assign({}, model);
         delete model.META;
+    }
+    if (model) {
+        Object.keys((key) => {
+            if (key.slice(0, 1) === "_") {
+                delete model[key];
+            }
+        });
     }
     return model;
 }

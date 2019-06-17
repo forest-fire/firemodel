@@ -39,21 +39,38 @@ function updateToAuditChanges(changed, prior) {
     }, []);
 }
 exports.updateToAuditChanges = updateToAuditChanges;
-function compareHashes(from, to) {
+function compareHashes(from, to, 
+/**
+ * optionally explicitly state properties so that relationships
+ * can be filtered away
+ */
+modelProps) {
     const results = {
         added: [],
         changed: [],
         removed: []
     };
-    const keys = new Set([...Object.keys(from), ...Object.keys(to)]);
-    Array.from(keys).forEach(i => {
+    from = from ? from : {};
+    to = to ? to : {};
+    let keys = Array.from(new Set([
+        ...Object.keys(from),
+        ...Object.keys(to)
+    ]))
+        // META should never be part of comparison
+        .filter(i => i !== "META")
+        // neither should private properties indicated by underscore
+        .filter(i => i.slice(0, 1) !== "_");
+    if (modelProps) {
+        keys = keys.filter(i => modelProps.includes(i));
+    }
+    keys.forEach(i => {
         if (!to[i]) {
             results.added.push(i);
         }
-        else if (!from[i]) {
+        else if (from[i] === null) {
             results.removed.push(i);
         }
-        else if (!fast_deep_equal_1.default(from, to)) {
+        else if (!fast_deep_equal_1.default(from[i], to[i])) {
             results.changed.push(i);
         }
     });
@@ -73,14 +90,21 @@ function getAllPropertiesFromClassStructure(model) {
     return properties.map(p => p.property);
 }
 exports.getAllPropertiesFromClassStructure = getAllPropertiesFromClassStructure;
-function withoutMeta(model) {
-    if (model.META) {
+function withoutMetaOrPrivate(model) {
+    if (model && model.META) {
         model = Object.assign({}, model);
         delete model.META;
     }
+    if (model) {
+        Object.keys((key) => {
+            if (key.slice(0, 1) === "_") {
+                delete model[key];
+            }
+        });
+    }
     return model;
 }
-exports.withoutMeta = withoutMeta;
+exports.withoutMetaOrPrivate = withoutMetaOrPrivate;
 function capitalize(str) {
     return str.slice(0, 1).toUpperCase() + str.slice(1);
 }

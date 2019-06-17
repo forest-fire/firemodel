@@ -1,3 +1,4 @@
+import { pathJoin } from "common-types";
 import { getModelMeta } from "./ModelMeta";
 // tslint:disable-next-line:no-var-requires
 const pluralize = require("pluralize");
@@ -138,12 +139,20 @@ export class FireModel {
     }
     //#endregion
     //#region PROTECTED INTERFACE
-    _getPaths(changes) {
-        return Object.keys(changes).reduce((prev, current) => {
-            const path = current;
-            const value = changes[current];
-            return [].concat(prev, [{ path, value }]);
-        }, []);
+    _getPaths(rec, deltas) {
+        const added = (deltas.added || []).reduce((agg, curr) => {
+            agg[pathJoin(this.dbPath, curr)] = rec.get(curr);
+            return agg;
+        }, {});
+        const removed = (deltas.removed || []).reduce((agg, curr) => {
+            agg[pathJoin(this.dbPath, curr)] = null;
+            return agg;
+        }, {});
+        const updated = (deltas.changed || []).reduce((agg, curr) => {
+            agg[pathJoin(this.dbPath, curr)] = rec.get(curr);
+            return agg;
+        }, {});
+        return Object.assign({}, added, removed, updated);
     }
 }
 FireModel.auditLogs = "/auditing";

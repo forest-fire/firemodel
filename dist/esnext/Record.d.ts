@@ -311,7 +311,7 @@ export declare class Record<T extends Model> extends FireModel<T> {
      *
      * Writes an audit log if the record is configured for audit logs
      */
-    protected _writeAudit(action: IFmCrudOperations, propertyValues: Partial<T>, priorValue: Partial<T>): Promise<void>;
+    protected _writeAudit(action: IFmCrudOperations, currentValue: Partial<T>, priorValue: Partial<T>): Promise<void>;
     /**
      * **_localCrudOperation**
      *
