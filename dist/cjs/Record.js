@@ -228,7 +228,9 @@ class Record extends FireModel_1.FireModel {
         try {
             r = Record.create(model, options);
             if (!payload.id) {
-                payload.id = firebase_key_1.key();
+                payload.id = r.db.isMockDb
+                    ? firebase_key_1.key()
+                    : await r.db.getPushKey(r.dbOffset);
             }
             await r._initialize(payload, options);
             const defaultValues = r.META.properties.filter(i => i.defaultValue !== undefined);
@@ -424,22 +426,16 @@ class Record extends FireModel_1.FireModel {
         if (!this.existsOnDB) {
             throw common_types_1.createError("invalid-operation/not-on-db", `Invalid Operation: you can not push to property "${property}" before saving the record to the database`);
         }
-        const key = firebase_key_1.key();
+        const key = this.db.isMockDb
+            ? firebase_key_1.key()
+            : await this.db.getPushKey(path_1.pathJoin(this.dbPath, property));
+        await this.db.set(path_1.pathJoin(this.dbOffset, key, property), value);
+        await this.db.set(path_1.pathJoin(path_1.pathJoin(this.dbOffset, key), "lastUpdated"), new Date().getTime());
+        // set firemodel state locally
         const currentState = this.get(property) || {};
         const newState = Object.assign({}, currentState, { [key]: value });
-        // set state locally
         this.set(property, newState);
-        // push updates to db
-        const write = this.db.multiPathSet(`${this.dbPath}/`);
-        write.add({ path: `lastUpdated`, value: new Date().getTime() });
-        write.add({ path: `${property}/${key}`, value });
-        try {
-            await write.execute();
-        }
-        catch (e) {
-            throw common_types_1.createError("multi-path/write-error", "", e);
-        }
-        return key;
+        return newState;
     }
     /**
      * **update**

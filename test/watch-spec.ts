@@ -6,7 +6,7 @@ import * as chai from "chai";
 const expect = chai.expect;
 import { FireModel } from "../src/FireModel";
 import { Watch } from "../src/Watch";
-import { Person } from "./testing/person";
+import { Person } from "./testing/Person";
 import { PersonWithLocalAndPrefix } from "./testing/PersonWithLocalAndPrefix";
 import { setupEnv } from "./testing/helpers";
 import { IReduxAction } from "../src/VuexWrapper";

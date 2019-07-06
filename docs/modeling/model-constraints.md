@@ -114,7 +114,7 @@ The Firebase **Real Time Database** is great but it has certain limits and one o
 SELECT * from Products where geoCode = "12345" AND status != "archived";
 ```
 
-This is a totally reasonable SQL query but in Firebase the `AND` clause is not an option. So does this matter? It turns out that in many cases it does not. 
+This is a totally reasonable SQL query but in Firebase the `AND` clause is not an option. So does this matter? It turns out that in many cases it does not.
 
 Typically in modern SPA's you want to bring a data type in large part into the client state management framework (e.g., Redux, Vuex, etc.) and then use GETTERs to reduce that state or shape it on the framework. In other cases, there is a genuine need to reduce the data coming back from the server but that can be done prior to mutating (*adding/updating*) it into the client's state management framework.
 

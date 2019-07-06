@@ -1,7 +1,7 @@
 // tslint:disable:no-implicit-dependencies
 import { Record, IFmRecordEvent, IFmChangedProperties } from "../src";
 import * as chai from "chai";
-import { Person } from "./testing/person";
+import { Person } from "./testing/Person";
 import { PersonWithLocal } from "./testing/PersonWithLocal";
 import { PersonWithLocalAndPrefix } from "./testing/PersonWithLocalAndPrefix";
 import { IMultiPathUpdates, FireModel } from "../src/FireModel";

@@ -4,7 +4,7 @@ import { DB } from "abstracted-admin";
 import * as chai from "chai";
 const expect = chai.expect;
 import "reflect-metadata";
-import { Person } from "./testing/person";
+import { Person } from "./testing/Person";
 import { Person as Peeps } from "./testing/PersonAsPeeps";
 import { FireModel } from "../src/FireModel";
 import { FmEvents } from "../src/state-mgmt";

@@ -34,6 +34,8 @@ While there aren't stark differences in behavior between these constraints it mi
      }
      ```
 
+   - The `@pushKey` decorator tells **firemodel** that the given property is a dictionary/hash which conforms to Firebase's normal "array representation" (aka, a *dictionary* who's keys are Firebase generated keys derived from the Firebase `push` function). This is very useful when you have multiple clients who might be pushing content to the same "firebase array" because using the Firebase `push` operation ensures that any and all updates are serialized and that the new keys have a natural sort order based on time that they were received (many people don't know that embedded into the Firebase key is a precise datetime stamp which measures down to the milisecond)
+
 2. **Built-in Meta** - the remaining constraints that are built in to **FireModel** "out of the box" are `min`, `max`, `length`, and `desc`. These properties are available to your code and you'll find them quite easily as the typing is included to ensure these properties are exposed via your editor's autocomplete. For instance, to get the minimum age in our `Person` example above:
 
     ```typescript

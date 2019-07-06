@@ -3,7 +3,7 @@ import { Record } from "../src";
 import { DB } from "abstracted-admin";
 import * as chai from "chai";
 import { Klass } from "./testing/klass";
-import { Person } from "./testing/person";
+import { Person } from "./testing/Person";
 const expect = chai.expect;
 
 describe.skip("schema() decorator: ", () => {

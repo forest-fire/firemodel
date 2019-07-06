@@ -8,7 +8,6 @@ import {
   fk,
   hasMany,
   belongsTo,
-  IFmHasMany,
   fks,
   OneWay
 } from "../../src";

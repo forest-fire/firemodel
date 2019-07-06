@@ -5,7 +5,7 @@ import * as chai from "chai";
 import * as helpers from "./testing/helpers";
 const expect = chai.expect;
 import "reflect-metadata";
-import { Person } from "./testing/person";
+import { Person } from "./testing/Person";
 import { FireModel } from "../src/FireModel";
 import { Mock } from "../src/Mock";
 import { FmEvents } from "../src/state-mgmt";

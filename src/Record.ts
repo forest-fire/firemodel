@@ -1,7 +1,14 @@
 // tslint:disable-next-line:no-implicit-dependencies
 import { RealTimeDB, IMultiPathSet } from "abstracted-firebase";
 import { Model } from "./Model";
-import { createError, IDictionary, Omit, Nullable, wait } from "common-types";
+import {
+  createError,
+  IDictionary,
+  Omit,
+  Nullable,
+  wait,
+  fk
+} from "common-types";
 import { key as fbKey } from "firebase-key";
 import { FireModel } from "./FireModel";
 import { IReduxDispatch } from "./VuexWrapper";
@@ -119,9 +126,7 @@ export class Record<T extends Model> extends FireModel<T> {
     if (this.data.id ? false : true) {
       throw createError(
         "record/not-ready",
-        `you can not ask for the dbPath before setting an "id" property [ ${
-          this.modelName
-        } ]`
+        `you can not ask for the dbPath before setting an "id" property [ ${this.modelName} ]`
       );
     }
 
@@ -190,9 +195,7 @@ export class Record<T extends Model> extends FireModel<T> {
   public set id(val: string) {
     if (this.data.id) {
       throw new FireModelError(
-        `You may not re-set the ID of a record [ ${this.modelName}.id ${
-          this.data.id
-        } => ${val} ].`,
+        `You may not re-set the ID of a record [ ${this.modelName}.id ${this.data.id} => ${val} ].`,
         "firemodel/not-allowed"
       );
     }
@@ -320,7 +323,9 @@ export class Record<T extends Model> extends FireModel<T> {
     try {
       r = Record.create(model, options);
       if (!payload.id) {
-        (payload as T).id = fbKey();
+        (payload as T).id = r.db.isMockDb
+          ? fbKey()
+          : await r.db.getPushKey(r.dbOffset);
       }
       await r._initialize(payload as T, options);
       const defaultValues = r.META.properties.filter(
@@ -572,7 +577,7 @@ export class Record<T extends Model> extends FireModel<T> {
   public async pushKey<K extends keyof T>(
     property: K,
     value: T[K][keyof T[K]]
-  ) {
+  ): Promise<fk> {
     if (this.META.pushKeys.indexOf(property as any) === -1) {
       throw createError(
         "invalid-operation/not-pushkey",
@@ -586,20 +591,18 @@ export class Record<T extends Model> extends FireModel<T> {
         `Invalid Operation: you can not push to property "${property}" before saving the record to the database`
       );
     }
-    const key = fbKey();
+    const key = this.db.isMockDb
+      ? fbKey()
+      : await this.db.getPushKey(pathJoin(this.dbPath, property));
+    await this.db.set(pathJoin(this.dbOffset, key, property), value);
+    await this.db.set(
+      pathJoin(pathJoin(this.dbOffset, key), "lastUpdated"),
+      new Date().getTime()
+    );
+    // set firemodel state locally
     const currentState = this.get(property) || {};
     const newState = { ...(currentState as any), [key]: value };
-    // set state locally
     this.set(property, newState);
-    // push updates to db
-    const write = this.db.multiPathSet(`${this.dbPath}/`);
-    write.add({ path: `lastUpdated`, value: new Date().getTime() });
-    write.add({ path: `${property}/${key}`, value });
-    try {
-      await write.execute();
-    } catch (e) {
-      throw createError("multi-path/write-error", "", e);
-    }
 
     return key;
   }
@@ -1202,11 +1205,7 @@ export class Record<T extends Model> extends FireModel<T> {
       if (value ? false : true) {
         throw createError(
           "record/not-ready",
-          `You can not ask for the ${forProp} on a model like "${
-            this.modelName
-          }" which has a dynamic property of "${prop}" before setting that property [ id: ${
-            this.id
-          } ].`
+          `You can not ask for the ${forProp} on a model like "${this.modelName}" which has a dynamic property of "${prop}" before setting that property [ id: ${this.id} ].`
         );
       }
       if (!["string", "number"].includes(typeof value)) {
