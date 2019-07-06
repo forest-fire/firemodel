@@ -15,7 +15,7 @@ export class Person extends Model {
 }
 ```
 
-> **note:** we know that due to the _opininated_ nature of FireModel the "id" properties must be strings. The `fk` type is just an alias for "string" but convey's more context
+> **note:** we know that due to the _opininated_ nature of Firemodel the "id" properties must be strings. The `fk` type is just an alias for "string" but convey's more context
 
 So what will this model look like when we mock it? The answer is:
 
@@ -49,7 +49,7 @@ await Mock(Person, db)
   .generate(10);
 ```
 
-In both scenarios we create 10 `Person` records in the mock database and in both cases our relationships have FK id's attached (2 per a "hasMany", obviously just one for a "belongsTo"); but in "Scenario B" we go a step further and actually create records in the Mock DB for the FK links as well. 
+In both scenarios we create 10 `Person` records in the mock database and in both cases our relationships have FK id's attached (2 per a "hasMany", obviously just one for a "belongsTo"); but in "Scenario B" we go a step further and actually create records in the Mock DB for the FK links as well.
 
 If that's not enough control for you, maybe you should book yourself a therapist appointment as you're likely suffering from a control-related maledy. If you're too busy for that appointment at the moment, there is a bit of temporary relief we can provide ... the `createRelationshipLinks()` and `followRelationshipLinks()` methods will accept an optional configuration example. Let's look at an example:
 

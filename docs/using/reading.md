@@ -35,7 +35,7 @@ const id = joe.key();
 
 ### Using a `Record`
 
-This is kinda ok but I always found it a bit awkward. In comparison, here's how you'd do the same thing with **FireModel**:
+This is kinda ok but I always found it a bit awkward. In comparison, here's how you'd do the same thing with **Firemodel**:
 
 ```typescript
 const joe = await Record.get(Person, "1234");
@@ -69,7 +69,7 @@ A few things to note:
   };
   ```
 
-  FireModel is not changing how data is stored in the database but instead is exposing it to you in a more familiar way with the `id` property sitting alongside the other properties of your schema/model.
+  Firemodel is not changing how data is stored in the database but instead is exposing it to you in a more familiar way with the `id` property sitting alongside the other properties of your schema/model.
 
 - Since we have passed in the _model_ to `Record` it is now fully type-aware of all the properties and relationships that exist. And of course the Record API is also typed so if you miss-spell anything it is genuinely your fault. :)
 

@@ -1,10 +1,10 @@
 # Relationships
 
-Once you have defined relationships inside of your models, you can make use of them through the `Record` class. The value of relationships is not only that you can create links between entities but that you can maintain denormalized two-way links between these entities without any effort from the consumer of the **FireModel** library.
+Once you have defined relationships inside of your models, you can make use of them through the `Record` class. The value of relationships is not only that you can create links between entities but that you can maintain denormalized two-way links between these entities without any effort from the consumer of the **Firemodel** library.
 
-This two way links allow easy navigation from both sides of the relationship to the other. In traditional Relationsional DB's this is all addressed for you assuming you keep your data model to [2nd (or 3rd) normal form](https://en.wikipedia.org/wiki/Second_normal_form) but this linking is left up to you in a database like Firebase. Fortunately when using **FireModel** this linking is done for you and you as the consumer of FireModel can go back to _using_ relationships and not worrying about maintaining them.
+This two way links allow easy navigation from both sides of the relationship to the other. In traditional Relationsional DB's this is all addressed for you assuming you keep your data model to [2nd (or 3rd) normal form](https://en.wikipedia.org/wiki/Second_normal_form) but this linking is left up to you in a database like Firebase. Fortunately when using **Firemodel** this linking is done for you and you as the consumer of Firemodel can go back to _using_ relationships and not worrying about maintaining them.
 
-In **FireModel** you will first define the relationships in the model definitions (see [modeling Relationships](/modeling/relationships.html)) and then _use_ them with the API provided by the `Record` class. There are two API's you will use depending on the _cardinality_ (see next section) of the relationship or you can opt to use a more generic syntax and use the same API for all relationship cardinalities. Here are some simple examples:
+In **Firemodel** you will first define the relationships in the model definitions (see [modeling Relationships](/modeling/relationships.html)) and then _use_ them with the API provided by the `Record` class. There are two API's you will use depending on the _cardinality_ (see next section) of the relationship or you can opt to use a more generic syntax and use the same API for all relationship cardinalities. Here are some simple examples:
 
 ```typescript
 const joe = await Record.add(Person, { name: "Joe", age: 41 });
@@ -121,7 +121,7 @@ The methods you will use to work with a `1:M` relationship are:
 - `removeFromRelationship` - removes one of the FK relationships on the given property
 - `clearRelationships` - removes ALL FK relationships of a given property
 
-> **Note:** these same properties can be used for `M:M` relationships; **FireModel** will ensure in
+> **Note:** these same properties can be used for `M:M` relationships; **Firemodel** will ensure in
 > both cases that the appopriate DB paths are updated
 
 ### Aliases
@@ -198,7 +198,7 @@ export interface IFmRelationshipOptions {
    * set this to `true` and it will throw the `firemodel/duplicate-relationship`
    * error.
    *
-   * If this remains in the default state of `false` and FireModel can detect this
+   * If this remains in the default state of `false` and Firemodel can detect this
    * state without doing any additional DB queries it will fire a
    * `RELATIONSHIP_DUPLICATE_ADD` dispatch event. This shouldn't be relied on but
    * can sometimes proactively alert developers in development of unintended
@@ -243,7 +243,7 @@ Here's a diagram that illustrates the dispatch events when we originate the chan
 
 <process-flow>graph LR;Event("RELATIONSHIP_ADDED_LOCALLY")-->Outcome{"both models updated?"}; Outcome-->|yes|Confirmation["RELATIONSHIP_ADDED_CONFIRMATION"]; Outcome-->|no|Rollback["RELATIONSHIP_ADDED_ROLLBACK"]; style Rollback stroke: red,stroke-width:2;</process-flow>
 
-The first thing to note is that **FireModel** uses Firebase's often underestimated "multi-path set" operation to ensure that both models are set or neither are. This ensures the [_atomicity_](https://en.wikipedia.org/wiki/Atomicity_(database_systems)) of the transaction. However, in the case of optimistic changes that consumer may choose to make at the stage of the `RELATIONSHIP_ADDED_LOCALLY` stage, the _rollback_ event must be used to rollback these changes.
+The first thing to note is that **Firemodel** uses Firebase's often underestimated "multi-path set" operation to ensure that both models are set or neither are. This ensures the [_atomicity_](https://en.wikipedia.org/wiki/Atomicity_(database_systems)) of the transaction. However, in the case of optimistic changes that consumer may choose to make at the stage of the `RELATIONSHIP_ADDED_LOCALLY` stage, the _rollback_ event must be used to rollback these changes.
 
 Interestingly, when a relationship is originated _outside_ of Firemodel (not recommended) it will show up as two events. One for each model:
 
@@ -255,7 +255,7 @@ Obviously if some external agent were to _try_ and update a relationship and fai
 
 ## Errors
 
-All errors that are encountered will be some derivative of the `FireModelError` class with both `code` and `name` properties to work off of. You should be sure to always handle errors with
+All errors that are encountered will be some derivative of the `FiremodelError` class with both `code` and `name` properties to work off of. You should be sure to always handle errors with
 `try..catch` blocks although the level in your application/function will be left up to you. Errors you may encounter when working with relationships include:
 
 | Reln Specific Error | Record error |

@@ -2,7 +2,7 @@
 
 ### Primary API Surface
 
-Before we move into the Advanced Topics section let's quickly review the primary tools we'll use while working with **FireModel**:
+Before we move into the Advanced Topics section let's quickly review the primary tools we'll use while working with **Firemodel**:
 
 1.  `Record` - gives us access and tools to work on a singular model
 2.  `List` - let's us retrieve and work with lists of records (or a particular type)
@@ -13,10 +13,10 @@ Before we move into the Advanced Topics section let's quickly review the primary
 All of the above classes need to be provided access to the database by leverage either the `abstraced-client` (firebase client sdk) or `abstracted-admin` (firebase admin sdk) client libraries. If -- like most projects -- you're only connecting to a single database you can set this once (see below) and you're done.
 
 ```typescript
-import { FireModel } from "firemodel";
+import { Firemodel } from "firemodel";
 import { DB } from "abstracted-admin";
 const db = await DB.connect(); // instantiates and then waits for DB connection
-FireModel.defaultDb = db; // sets the default DB for Record, List, and Watch
+Firemodel.defaultDb = db; // sets the default DB for Record, List, and Watch
 ```
 
 If you _do_ need multiple databases you can always include the database connection as part of the `options` parameters of any of the classes accessor methods. For instance:

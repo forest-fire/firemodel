@@ -3,16 +3,16 @@ sidebarDepth: 3
 ---
 # Responding to Events
 
-**FireModel** has two related concepts of _events_ and _dispatch_; at a summary level they are:
+**Firemodel** has two related concepts of _events_ and _dispatch_; at a summary level they are:
 
-- `Events` - an asynchronous means of signalling change in either the database (aka, CRUD events) or the state of FireModel (aka, non-CRUD events)
-- `Dispatch` - a way of plugging into the event stream produced by FireModel, so that your application can respond to events
+- `Events` - an asynchronous means of signalling change in either the database (aka, CRUD events) or the state of Firemodel (aka, non-CRUD events)
+- `Dispatch` - a way of plugging into the event stream produced by Firemodel, so that your application can respond to events
 
 In the following two sections we will explore both in more detail.
 
 ## Events
 
-Let us first explore the events which we may be encountering when using FireModel.
+Let us first explore the events which we may be encountering when using Firemodel.
 
 ### CRUD Events
 

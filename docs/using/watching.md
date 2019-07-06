@@ -27,7 +27,7 @@ const { watchId:watch2 } = await Watch.list(Person)
   .start();
 ```
 
-> **Note:** you _do not_ have to specify the dispatch on calls to `Watch` so long as your dispatch function has been set on `FireModel.dispatch`.
+> **Note:** you _do not_ have to specify the dispatch on calls to `Watch` so long as your dispatch function has been set on `Firemodel.dispatch`.
 
 > **Note:** the call to `start()` returns a Promise to a [`IWatcherItem`](https://github.com/forest-fire/firemodel/blob/master/src/Watch.ts#L44) object
 
@@ -62,4 +62,4 @@ We've talked about _what_ watching is and _how_ it works mechanistically but we'
 
 In both cases the common thread is a long running Javascript thread which enables the efficient use of Firebase's websocket connection to not only _send_ updates to the database but also to ensure that the locally cached state is kept current. Where watchers are less useful is in a serverless function or any situation where there is a very short execution lifespan. 
 
-In the [Frontend State Management](./frontend-state-mgmt.html) we cover a powerful way to integrate **FireModel** with a Frontend State Management solution but before reading that be sure to have a look at the next section ([Responding to Events](./dispatch-and-events.html))  to better understand what *events* are available and how to connect into them.
+In the [Frontend State Management](./frontend-state-mgmt.html) we cover a powerful way to integrate **Firemodel** with a Frontend State Management solution but before reading that be sure to have a look at the next section ([Responding to Events](./dispatch-and-events.html))  to better understand what *events* are available and how to connect into them.

@@ -13,7 +13,7 @@ export class Person extends Model {
 
 You can probably look at this and understand most of it, but here's a quick point-by-point analysis:
 
-1. **@model** - By stating that this class is a `@model` we are in effect activating for use throughout **FireModel**
+1. **@model** - By stating that this class is a `@model` we are in effect activating for use throughout **Firemodel**
 2. **Model class** - We extend the `Model` class ... more on that later but in essence we get a few opinionated properties for free.
 3. **Typing** - Each of the properties in our model are typed using standard Typescript nomenclature
 4. **@property** - By using the `@property` decorator we are capturing the type information about the property for the run-time environment.

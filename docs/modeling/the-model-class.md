@@ -1,6 +1,6 @@
 # The "Model" Class
 
-**FireModel** is an opinionated framework and part of it's opinion is that it expects all of your models to _extend_ the `Model` class. What does that do? It's actually rather simple, this class has NO implementation but rather just provides a few data properties for you models:
+**Firemodel** is an opinionated framework and part of it's opinion is that it expects all of your models to _extend_ the `Model` class. What does that do? It's actually rather simple, this class has NO implementation but rather just provides a few data properties for you models:
 
 ```typescript
 export abstract class Model {

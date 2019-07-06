@@ -23,22 +23,22 @@ With that introduction, we suggest two primary modes of interacting with Firebas
   authApi.createUserWithEmailAndPassword(email, password);
   ```
 
-2. **Opinionated, FireModel aware.**
+2. **Opinionated, Firemodel aware.**
 
-  The **FireModel** library brings forward the idea of "models" and -- should we choose to do so -- we can opt-in to a more FireModel way of doing Authentication and Authorization.
+  The **Firemodel** library brings forward the idea of "models" and -- should we choose to do so -- we can opt-in to a more Firemodel way of doing Authentication and Authorization.
 
-## The FireModel Way
+## The Firemodel Way
 
-For the rest of this section we will focus only on the opinionated **FireModel** way of doing authentication/authorization. Not because it's "better" but because the Firebase way is already documented on the Firebase site.
+For the rest of this section we will focus only on the opinionated **Firemodel** way of doing authentication/authorization. Not because it's "better" but because the Firebase way is already documented on the Firebase site.
 
 First off, let's cover a set of assumptions we are making:
 
 ### Assumptions
 
 - You have some sort of **backend API** which can be used to handle secure operations
-- While you may choose _any_ backend to service these endpoints, FireModel will provide **AWS Lambda** functions as exports which you can use for more of an "out of the box" experience.
+- While you may choose _any_ backend to service these endpoints, Firemodel will provide **AWS Lambda** functions as exports which you can use for more of an "out of the box" experience.
 - We will use Firebase's concept of [**Custom Claims**](https://firebase.google.com/docs/auth/admin/custom-claims) to provide a more robust authorization regime within our apps
-- The `CustomClaim` and `CustomClaimRequest` models that FireModel defines will be used to help the front and backend's interact in a coordinated way.
+- The `CustomClaim` and `CustomClaimRequest` models that Firemodel defines will be used to help the front and backend's interact in a coordinated way.
 - The `CustomClaimApp` model will serve to regulate which "applications" are able to be involved in the Authentication/Authorization handshaking. Applications will require client identification of the following attributes:
   - "http referrer" (where did the request come from),
   - "db config" (which database was the user connected to),
@@ -56,7 +56,7 @@ Creating a "known user" (versus an anonymous user) from the frontend will operat
 In the above example, the authentication process was email/password but other flows will follow a similar path. The detailed steps are:
 
 1. The frontend client calls `createEmailUser()` and specifies not only the email/password pairing but includes a **url** to the backend endpoint. Optionally, requested "roles" are added.
-2. **FireModel** will use a direct call to **Firebase** to start the process. This establishes the username/password and should quickly return with a User object that is neither verified nor associated with any "custom claims".
+2. **Firemodel** will use a direct call to **Firebase** to start the process. This establishes the username/password and should quickly return with a User object that is neither verified nor associated with any "custom claims".
 3. Once returning from the **Firebase** API call, `createEmailUser()` will pass the newly created UID, requested "custom claims", and the prior UID of the anonymous user (if the client had been logged in as an anonymous user).
 4. The backend will evaluate:
    - Does the frontend have the right qualifications to be identified as originating from a known "App" (e.g., records of model `CustomClaimApp`); if not then disable user, if so then associate user to the app.

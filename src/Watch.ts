@@ -17,7 +17,7 @@ import {
   IComparisonOperator,
   FmModelConstructor
 } from "./@types/general";
-import { IPrimaryKey, ICompositeKey } from "./@types/record-types";
+import { IPrimaryKey } from "./@types/record-types";
 import { FmEvents, IFmDispatchWatchContext } from "./state-mgmt";
 import { getAllPropertiesFromClassStructure } from "./util";
 import {
@@ -232,9 +232,7 @@ export class Watch<T extends Model = Model> {
 
     if (coreDispatch.name === "defaultDispatch") {
       throw new FireModelError(
-        `Attempt to start a ${this._watcherSource} watcher on "${
-          this._query.path
-        }" but no dispatcher has been assigned. Make sure to explicitly set the dispatch function or use "FireModel.dispatch = xxx" to setup a default dispatch function.`,
+        `Attempt to start a ${this._watcherSource} watcher on "${this._query.path}" but no dispatcher has been assigned. Make sure to explicitly set the dispatch function or use "FireModel.dispatch = xxx" to setup a default dispatch function.`,
         `firemodel/invalid-dispatch`
       );
     }

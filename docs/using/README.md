@@ -1,4 +1,4 @@
-# Start Using FireModel
+# Start Using Firemodel
 
 ![](../images/data-stream-1000.jpg)
 
