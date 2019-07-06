@@ -1,7 +1,7 @@
 // tslint:disable:no-implicit-dependencies
-import { Record, IFmRecordEvent } from "../src";
+import { Record, IFmRecordEvent, IFmChangedProperties } from "../src";
 import * as chai from "chai";
-import { Person } from "./testing/person";
+import { Person } from "./testing/Person";
 import { PersonWithLocal } from "./testing/PersonWithLocal";
 import { PersonWithLocalAndPrefix } from "./testing/PersonWithLocalAndPrefix";
 import { IMultiPathUpdates, FireModel } from "../src/FireModel";
@@ -9,6 +9,7 @@ import { FmEvents } from "../src/state-mgmt";
 import { DB } from "abstracted-admin";
 import { wait } from "./testing/helpers";
 import { IVuexDispatch, VeuxWrapper } from "../src/VuexWrapper";
+import { compareHashes, withoutMetaOrPrivate } from "../src/util";
 const expect = chai.expect;
 
 describe("Dispatch →", () => {
@@ -19,24 +20,44 @@ describe("Dispatch →", () => {
     Record.defaultDb = db;
     Record.dispatch = null;
   });
-  it("_getPaths() decomposes the update into an array of discrete update paths", async () => {
-    const person = Record.create(Person);
-    (person as any)._data.id = "12345"; // cheating a bit here
-    const lastUpdated = new Date().getTime();
-    const updated = {
-      name: "Roger Rabbit",
-      lastUpdated
-    };
-    const result: IMultiPathUpdates[] = (person as any)._getPaths(updated);
 
-    // expect(result.length).to.equal(2);
-    result.map(i => {
-      expect(i).to.haveOwnProperty("path");
-      expect(i).to.haveOwnProperty("value");
-      if (i.path.indexOf("lastUpdated") !== -1) {
-        expect(i.value).to.equal(lastUpdated);
-      } else {
-        expect(i.value).to.equal("Roger Rabbit");
+  it("_getPaths() decomposes the changes into an array of discrete update paths", async () => {
+    const person = await Record.add(Person, {
+      name: "Bob",
+      gender: "male"
+    });
+
+    const p2 = await Record.createWith(Person, {
+      id: person.id,
+      name: "Bob Marley",
+      age: 55,
+      gender: null
+    });
+    const validProperties = person.META.properties.map(
+      i => i.property
+    ) as Array<keyof Person & string>;
+
+    const deltas = compareHashes(p2.data, person.data, validProperties);
+    console.log(deltas);
+    const result: IFmChangedProperties<Person> = (person as any)._getPaths(
+      p2,
+      deltas
+    );
+
+    expect(deltas.added).to.include("age");
+    expect(deltas.changed).to.include("name");
+    expect(deltas.removed).to.include("gender");
+    Object.keys(result).map((key: keyof typeof result) => {
+      if (key.includes("company")) {
+        expect(result[key]).to.equal(null);
+      }
+
+      if (key.includes("age")) {
+        expect(result[key]).to.equal(55);
+      }
+
+      if (key.includes("name")) {
+        expect(result[key]).to.equal("Bob Marley");
       }
     });
   });

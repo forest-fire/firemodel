@@ -228,7 +228,9 @@ class Record extends FireModel_1.FireModel {
         try {
             r = Record.create(model, options);
             if (!payload.id) {
-                payload.id = firebase_key_1.key();
+                payload.id = r.db.isMockDb
+                    ? firebase_key_1.key()
+                    : await r.db.getPushKey(r.dbOffset);
             }
             await r._initialize(payload, options);
             const defaultValues = r.META.properties.filter(i => i.defaultValue !== undefined);
@@ -424,22 +426,16 @@ class Record extends FireModel_1.FireModel {
         if (!this.existsOnDB) {
             throw common_types_1.createError("invalid-operation/not-on-db", `Invalid Operation: you can not push to property "${property}" before saving the record to the database`);
         }
-        const key = firebase_key_1.key();
+        const key = this.db.isMockDb
+            ? firebase_key_1.key()
+            : await this.db.getPushKey(path_1.pathJoin(this.dbPath, property));
+        await this.db.set(path_1.pathJoin(this.dbOffset, key, property), value);
+        await this.db.set(path_1.pathJoin(path_1.pathJoin(this.dbOffset, key), "lastUpdated"), new Date().getTime());
+        // set firemodel state locally
         const currentState = this.get(property) || {};
         const newState = Object.assign({}, currentState, { [key]: value });
-        // set state locally
         this.set(property, newState);
-        // push updates to db
-        const write = this.db.multiPathSet(`${this.dbPath}/`);
-        write.add({ path: `lastUpdated`, value: new Date().getTime() });
-        write.add({ path: `${property}/${key}`, value });
-        try {
-            await write.execute();
-        }
-        catch (e) {
-            throw common_types_1.createError("multi-path/write-error", "", e);
-        }
-        return key;
+        return newState;
     }
     /**
      * **update**
@@ -687,31 +683,41 @@ class Record extends FireModel_1.FireModel {
      *
      * Writes an audit log if the record is configured for audit logs
      */
-    async _writeAudit(action, propertyValues, priorValue) {
-        if (this.META.audit) {
-            const changes = Object.keys(propertyValues).reduce((prev, curr) => {
-                const after = propertyValues[curr];
-                const before = priorValue[curr];
-                const propertyAction = !before
-                    ? "added"
-                    : !after
-                        ? "removed"
-                        : "updated";
-                const payload = {
-                    before,
-                    after,
-                    property: curr,
-                    action: propertyAction
+    async _writeAudit(action, currentValue, priorValue) {
+        currentValue = currentValue ? currentValue : {};
+        priorValue = priorValue ? priorValue : {};
+        try {
+            if (this.META.audit) {
+                const deltas = util_1.compareHashes(currentValue, priorValue);
+                const auditLogEntries = [];
+                const added = deltas.added.forEach(a => auditLogEntries.push({
+                    action: "added",
+                    property: a,
+                    before: null,
+                    after: currentValue[a]
+                }));
+                deltas.changed.forEach(c => auditLogEntries.push({
+                    action: "updated",
+                    property: c,
+                    before: priorValue[c],
+                    after: currentValue[c]
+                }));
+                const removed = deltas.removed.forEach(r => auditLogEntries.push({
+                    action: "removed",
+                    property: r,
+                    before: priorValue[r],
+                    after: null
+                }));
+                const pastTense = {
+                    add: "added",
+                    update: "updated",
+                    remove: "removed"
                 };
-                prev.push(payload);
-                return prev;
-            }, []);
-            const pastTense = {
-                add: "added",
-                update: "updated",
-                remove: "removed"
-            };
-            await Audit_1.writeAudit(this.id, this.pluralName, pastTense[action], util_1.updateToAuditChanges(propertyValues, priorValue), { db: this.db });
+                await Audit_1.writeAudit(this.id, this.pluralName, pastTense[action], auditLogEntries, { db: this.db });
+            }
+        }
+        catch (e) {
+            throw new errors_1.FireModelProxyError(e);
         }
     }
     /**
@@ -772,13 +778,12 @@ class Record extends FireModel_1.FireModel {
         const [actionTypeStart, actionTypeEnd, actionTypeFailure] = lookup[crudAction];
         this.isDirty = true;
         // Set aside prior value
-        const { changed, added, removed } = util_1.compareHashes(util_1.withoutMeta(this.data), priorValue);
-        const paths = this._getPaths(changed);
+        const { changed, added, removed } = util_1.compareHashes(util_1.withoutMetaOrPrivate(this.data), util_1.withoutMetaOrPrivate(priorValue));
         const watchers = findWatchers_1.findWatchers(this.dbPath);
         const event = {
             transactionId,
             crudAction,
-            value: util_1.withoutMeta(this.data),
+            value: util_1.withoutMetaOrPrivate(this.data),
             priorValue,
             dbPath: this.dbPath
         };
@@ -810,17 +815,21 @@ class Record extends FireModel_1.FireModel {
                 this.db.mock.silenceEvents();
             }
             this._data.lastUpdated = new Date().getTime();
-            if (crudAction === "remove") {
-                this.db.remove(this.dbPath);
-            }
-            else {
-                const mps = this.db.multiPathSet(this.dbPath);
-                paths.map(path => mps.add(path));
-                await mps.execute();
+            switch (crudAction) {
+                case "remove":
+                    await this.db.remove(this.dbPath);
+                    break;
+                case "add":
+                    await this.db.set(this.dbPath, this.data);
+                    break;
+                case "update":
+                    const paths = this._getPaths(this, { changed, added, removed });
+                    this.db.update("/", paths);
+                    break;
             }
             this.isDirty = false;
             // write audit if option is turned on
-            this._writeAudit(crudAction, priorValue, priorValue);
+            this._writeAudit(crudAction, this.data, priorValue);
             // send confirm event
             if (!options.silent && !options.silentAcceptance) {
                 if (watchers.length === 0) {
@@ -828,7 +837,7 @@ class Record extends FireModel_1.FireModel {
                         transactionId,
                         crudAction,
                         watcherSource: "unknown",
-                        value: util_1.withoutMeta(this.data),
+                        value: util_1.withoutMetaOrPrivate(this.data),
                         dbPath: this.dbPath
                     }));
                 }
@@ -847,11 +856,11 @@ class Record extends FireModel_1.FireModel {
         }
         catch (e) {
             // send failure event
-            // TODO: need to send both "attempted" value and "rollback" value
             this.dispatch(createWatchEvent_1.createWatchEvent(actionTypeFailure, this, {
                 transactionId,
                 crudAction,
-                value: this.data,
+                // priorValue is the "rollback value"
+                value: priorValue,
                 dbPath: this.dbPath
             }));
             throw new DatabaseCrudFailure_1.RecordCrudFailure(this, crudAction, transactionId, e);

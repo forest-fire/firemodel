@@ -201,7 +201,8 @@ module.exports = {
             "model-constraints",
             "property-constraints",
             "relationships",
-            "security-constraints",
+            "db-permissions",
+            "db-indexes",
             "the-model-class"
           ]
         },

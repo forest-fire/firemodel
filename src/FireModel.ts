@@ -1,7 +1,7 @@
 import { Model } from "./Model";
 // prettier-ignore
 type Record<T> = import("./Record").Record<T>;
-import { IDictionary } from "common-types";
+import { IDictionary, pathJoin } from "common-types";
 import { IReduxDispatch } from "./VuexWrapper";
 import { getModelMeta } from "./ModelMeta";
 import {
@@ -14,7 +14,7 @@ import {
   IFmModelPropertyMeta,
   IFmModelRelationshipMeta
 } from "./decorators/types";
-import { ILocalStateManagement } from "./@types";
+import { ILocalStateManagement, IFmChangedProperties } from "./@types";
 // tslint:disable-next-line:no-var-requires
 const pluralize = require("pluralize");
 const defaultDispatch = (context: IDictionary) => "";
@@ -203,15 +203,24 @@ const db = await FireModel.connect(DB, options);
 
   //#region PROTECTED INTERFACE
 
-  protected _getPaths(changes: IDictionary): IMultiPathUpdates[] {
-    return Object.keys(changes).reduce(
-      (prev: any[], current: Extract<keyof typeof changes, string>) => {
-        const path = current;
-        const value = changes[current];
-        return [].concat(prev, [{ path, value }]);
-      },
-      []
-    );
+  protected _getPaths(
+    rec: Record<T>,
+    deltas: IFmChangedProperties<T>
+  ): IDictionary {
+    const added = (deltas.added || []).reduce((agg: IDictionary, curr) => {
+      agg[pathJoin(this.dbPath, curr)] = rec.get(curr);
+      return agg;
+    }, {});
+    const removed = (deltas.removed || []).reduce((agg: IDictionary, curr) => {
+      agg[pathJoin(this.dbPath, curr)] = null;
+      return agg;
+    }, {});
+    const updated = (deltas.changed || []).reduce((agg: IDictionary, curr) => {
+      agg[pathJoin(this.dbPath, curr)] = rec.get(curr);
+      return agg;
+    }, {});
+
+    return { ...added, ...removed, ...updated };
   }
 
   //#endregion

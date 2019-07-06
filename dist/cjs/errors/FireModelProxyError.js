@@ -7,6 +7,7 @@ class FireModelProxyError extends _1.FireModelError {
         this.firemodel = true;
         this.originalError = e;
         this.message = context ? `${context}. ${e.message}.` : e.message;
+        this.stack = e.stack;
     }
 }
 exports.FireModelProxyError = FireModelProxyError;

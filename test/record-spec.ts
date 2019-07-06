@@ -4,7 +4,7 @@ import { DB } from "abstracted-admin";
 import * as chai from "chai";
 const expect = chai.expect;
 import "reflect-metadata";
-import { Person } from "./testing/person";
+import { Person } from "./testing/Person";
 import { Person as Peeps } from "./testing/PersonAsPeeps";
 import { FireModel } from "../src/FireModel";
 import { FmEvents } from "../src/state-mgmt";
@@ -145,6 +145,8 @@ describe("Record > ", () => {
     expect(roger.get("tags")).to.haveOwnProperty("456");
     // CHANGE REFLECTED after pulling from DB
     const bugs = await Record.get(Person, "8888");
+    console.log(bugs.data);
+
     expect(bugs.get("tags")).to.haveOwnProperty("456");
     expect(bugs.get("scratchpad")).to.haveOwnProperty("foo");
   });

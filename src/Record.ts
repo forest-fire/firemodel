@@ -1,7 +1,14 @@
 // tslint:disable-next-line:no-implicit-dependencies
 import { RealTimeDB, IMultiPathSet } from "abstracted-firebase";
 import { Model } from "./Model";
-import { createError, IDictionary, Omit, Nullable, wait } from "common-types";
+import {
+  createError,
+  IDictionary,
+  Omit,
+  Nullable,
+  wait,
+  fk
+} from "common-types";
 import { key as fbKey } from "firebase-key";
 import { FireModel } from "./FireModel";
 import { IReduxDispatch } from "./VuexWrapper";
@@ -20,7 +27,7 @@ import { writeAudit, IAuditChange, IAuditOperations } from "./Audit";
 import {
   updateToAuditChanges,
   compareHashes,
-  withoutMeta,
+  withoutMetaOrPrivate,
   capitalize
 } from "./util";
 import {
@@ -119,9 +126,7 @@ export class Record<T extends Model> extends FireModel<T> {
     if (this.data.id ? false : true) {
       throw createError(
         "record/not-ready",
-        `you can not ask for the dbPath before setting an "id" property [ ${
-          this.modelName
-        } ]`
+        `you can not ask for the dbPath before setting an "id" property [ ${this.modelName} ]`
       );
     }
 
@@ -190,9 +195,7 @@ export class Record<T extends Model> extends FireModel<T> {
   public set id(val: string) {
     if (this.data.id) {
       throw new FireModelError(
-        `You may not re-set the ID of a record [ ${this.modelName}.id ${
-          this.data.id
-        } => ${val} ].`,
+        `You may not re-set the ID of a record [ ${this.modelName}.id ${this.data.id} => ${val} ].`,
         "firemodel/not-allowed"
       );
     }
@@ -320,7 +323,9 @@ export class Record<T extends Model> extends FireModel<T> {
     try {
       r = Record.create(model, options);
       if (!payload.id) {
-        (payload as T).id = fbKey();
+        (payload as T).id = r.db.isMockDb
+          ? fbKey()
+          : await r.db.getPushKey(r.dbOffset);
       }
       await r._initialize(payload as T, options);
       const defaultValues = r.META.properties.filter(
@@ -572,7 +577,7 @@ export class Record<T extends Model> extends FireModel<T> {
   public async pushKey<K extends keyof T>(
     property: K,
     value: T[K][keyof T[K]]
-  ) {
+  ): Promise<fk> {
     if (this.META.pushKeys.indexOf(property as any) === -1) {
       throw createError(
         "invalid-operation/not-pushkey",
@@ -586,20 +591,18 @@ export class Record<T extends Model> extends FireModel<T> {
         `Invalid Operation: you can not push to property "${property}" before saving the record to the database`
       );
     }
-    const key = fbKey();
+    const key = this.db.isMockDb
+      ? fbKey()
+      : await this.db.getPushKey(pathJoin(this.dbPath, property));
+    await this.db.set(pathJoin(this.dbOffset, key, property), value);
+    await this.db.set(
+      pathJoin(pathJoin(this.dbOffset, key), "lastUpdated"),
+      new Date().getTime()
+    );
+    // set firemodel state locally
     const currentState = this.get(property) || {};
     const newState = { ...(currentState as any), [key]: value };
-    // set state locally
     this.set(property, newState);
-    // push updates to db
-    const write = this.db.multiPathSet(`${this.dbPath}/`);
-    write.add({ path: `lastUpdated`, value: new Date().getTime() });
-    write.add({ path: `${property}/${key}`, value });
-    try {
-      await write.execute();
-    } catch (e) {
-      throw createError("multi-path/write-error", "", e);
-    }
 
     return key;
   }
@@ -935,31 +938,38 @@ export class Record<T extends Model> extends FireModel<T> {
    */
   protected async _writeAudit(
     action: IFmCrudOperations,
-    propertyValues: Partial<T>,
+    currentValue: Partial<T>,
     priorValue: Partial<T>
   ) {
-    propertyValues = propertyValues ? propertyValues : {};
+    currentValue = currentValue ? currentValue : {};
+    priorValue = priorValue ? priorValue : {};
     try {
       if (this.META.audit) {
-        const changes = Object.keys(propertyValues).reduce<IAuditChange[]>(
-          (prev: IAuditChange[], curr: Extract<keyof T, string>) => {
-            const after = propertyValues[curr];
-            const before = priorValue[curr];
-            const propertyAction = !before
-              ? "added"
-              : !after
-              ? "removed"
-              : "updated";
-            const payload: IAuditChange = {
-              before,
-              after,
-              property: curr,
-              action: propertyAction
-            };
-            prev.push(payload);
-            return prev;
-          },
-          []
+        const deltas = compareHashes<T>(currentValue, priorValue);
+        const auditLogEntries: IAuditChange[] = [];
+        const added = deltas.added.forEach(a =>
+          auditLogEntries.push({
+            action: "added",
+            property: a,
+            before: null,
+            after: currentValue[a]
+          })
+        );
+        deltas.changed.forEach(c =>
+          auditLogEntries.push({
+            action: "updated",
+            property: c,
+            before: priorValue[c],
+            after: currentValue[c]
+          })
+        );
+        const removed = deltas.removed.forEach(r =>
+          auditLogEntries.push({
+            action: "removed",
+            property: r,
+            before: priorValue[r],
+            after: null
+          })
         );
 
         const pastTense = {
@@ -972,7 +982,7 @@ export class Record<T extends Model> extends FireModel<T> {
           this.id,
           this.pluralName,
           pastTense[action] as IAuditOperations,
-          updateToAuditChanges(propertyValues, priorValue),
+          auditLogEntries,
           { db: this.db }
         );
       }
@@ -1051,25 +1061,26 @@ export class Record<T extends Model> extends FireModel<T> {
     this.isDirty = true;
     // Set aside prior value
     const { changed, added, removed } = compareHashes<Partial<T>>(
-      withoutMeta<T>(this.data),
-      priorValue
+      withoutMetaOrPrivate<T>(this.data),
+      withoutMetaOrPrivate<T>(priorValue)
     );
 
-    const paths = this._getPaths(changed);
     const watchers = findWatchers(this.dbPath);
     const event: IFmEvent<T> = {
       transactionId,
       crudAction,
-      value: withoutMeta<T>(this.data),
+      value: withoutMetaOrPrivate<T>(this.data),
       priorValue,
       dbPath: this.dbPath
     };
+
     if (crudAction === "update") {
       event.priorValue = priorValue as T;
       event.added = added;
       event.changed = changed;
       event.removed = removed;
     }
+
     if (watchers.length === 0) {
       event.watcherSource = "unknown";
       if (!options.silent) {
@@ -1098,17 +1109,24 @@ export class Record<T extends Model> extends FireModel<T> {
         this.db.mock.silenceEvents();
       }
       this._data.lastUpdated = new Date().getTime();
-      if (crudAction === "remove") {
-        this.db.remove(this.dbPath);
-      } else {
-        const mps = this.db.multiPathSet(this.dbPath);
-        paths.map(path => mps.add(path));
-        await mps.execute();
+
+      switch (crudAction) {
+        case "remove":
+          await this.db.remove(this.dbPath);
+          break;
+        case "add":
+          await this.db.set(this.dbPath, this.data);
+          break;
+        case "update":
+          const paths = this._getPaths(this, { changed, added, removed });
+          this.db.update("/", paths);
+          break;
       }
+
       this.isDirty = false;
 
       // write audit if option is turned on
-      this._writeAudit(crudAction, priorValue, priorValue);
+      this._writeAudit(crudAction, this.data, priorValue);
 
       // send confirm event
       if (!options.silent && !options.silentAcceptance) {
@@ -1118,7 +1136,7 @@ export class Record<T extends Model> extends FireModel<T> {
               transactionId,
               crudAction,
               watcherSource: "unknown",
-              value: withoutMeta(this.data),
+              value: withoutMetaOrPrivate(this.data),
               dbPath: this.dbPath
             })
           );
@@ -1141,12 +1159,12 @@ export class Record<T extends Model> extends FireModel<T> {
       }
     } catch (e) {
       // send failure event
-      // TODO: need to send both "attempted" value and "rollback" value
       this.dispatch(
         createWatchEvent(actionTypeFailure, this, {
           transactionId,
           crudAction,
-          value: this.data,
+          // priorValue is the "rollback value"
+          value: priorValue,
           dbPath: this.dbPath
         })
       );
@@ -1187,11 +1205,7 @@ export class Record<T extends Model> extends FireModel<T> {
       if (value ? false : true) {
         throw createError(
           "record/not-ready",
-          `You can not ask for the ${forProp} on a model like "${
-            this.modelName
-          }" which has a dynamic property of "${prop}" before setting that property [ id: ${
-            this.id
-          } ].`
+          `You can not ask for the ${forProp} on a model like "${this.modelName}" which has a dynamic property of "${prop}" before setting that property [ id: ${this.id} ].`
         );
       }
       if (!["string", "number"].includes(typeof value)) {
