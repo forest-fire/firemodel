@@ -161,6 +161,8 @@ export interface IFmRecordWatchContext<T> {
   modelConstructor: FmModelConstructor<T>;
   /** dynamic path properties on the database */
   dynamicPathProperties: string[];
+  /** the composite key which is being watched */
+  compositeKey: ICompositeKey<T>;
   /** the path in your local state management where this Record should go */
   localPath: string;
   localModelName?: string;

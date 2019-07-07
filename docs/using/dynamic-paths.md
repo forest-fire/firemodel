@@ -172,7 +172,7 @@ It's when we start talking about _relationships_ and _mocks_ of relationships th
 
 As this mindmap suggests, there are a lot of ways that model's can relate (and this diagram only illustrates some of them). On the one hand, however, relating one model to another is a pretty straight forward thing. Adding _dynamic paths_ simply means that instead of using `fk` which just points to the other record's `id` we must point to the **Composite Key**. Also, it has been mentioned previously that in the case of FK's we use the string based notation that you can get from `record.compositeKeyRef`. So what's so complicated?
 
-Well from a testing standpoint there are a lot of edge cases but let's not worry ourselves over that level of detail. If you want to understand it check out the tests in [`dynamic-offset-spec.ts`](). What we do want to cover is the following subtlies of mock data that we will want to create:
+Well from a testing standpoint there are a lot of edge cases but let's not worry ourselves over that level of detail. If you want to understand it check out the tests in [`dynamic-offset-spec.ts`](../../test/dynamic-offset-spec.ts). What we do want to cover is the following subtlies of mock data that we will want to create:
 
 - **Signature.** Does a model with a dynamic path referencing another model with the same dynamic signature always relate to the same path? In other words, if both a `Product` and `Order` are dynamically pathed on a specific `geo`; should there be a rule that forces Mock to observe that rule?
 - **Reflexive.** What about the same situation as above but where `Product` has an inverse relationship to itself?

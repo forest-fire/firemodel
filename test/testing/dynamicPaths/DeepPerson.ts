@@ -32,7 +32,7 @@ export default class DeepPerson extends Model {
   // prettier-ignore
   @property @mock("placeImage", 640, 480) photo?: string;
   // prettier-ignore
-  @property @mock("phoneNumber") phoneNumber: string;
+  @property @mock("phoneNumber") phoneNumber?: string;
   // prettier-ignore
   @hasOne(() => School, "students") school?: fk;
   // prettier-ignore

@@ -27,7 +27,7 @@ const { watchId:watch2 } = await Watch.list(Person)
   .start();
 ```
 
-> **Note:** you _do not_ have to specify the dispatch on calls to `Watch` so long as your dispatch function has been set on `Firemodel.dispatch`.
+> **Note:** you _do not_ have to specify the dispatch on calls to `Watch` so long as your dispatch function has been set on `FireModel.dispatch`.
 
 > **Note:** the call to `start()` returns a Promise to a [`IWatcherItem`](https://github.com/forest-fire/firemodel/blob/master/src/Watch.ts#L44) object
 

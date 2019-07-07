@@ -4,7 +4,7 @@
 
 ```typescript
 import FireModel from "firemodel";
-Firemodel.exportDexie('/models/dexie');
+FireModel.exportDexie('/models/dexie');
 ```
 
-And this would produce the appropriate schema definition for you models to be managed by Dexie. As this is not yet implemented feel free to consider this PR territory (or you can magically wish me more time). 
+And this would produce the appropriate schema definition for you models to be managed by Dexie. As this is not yet implemented feel free to consider this PR territory (or you can magically wish me more time).

@@ -34,6 +34,6 @@ export interface ISchemaOptions<T extends Model = any> {
 }
 ```
 
-The `id`, `lastUpdated`, and `createdAt` properties need no introduction as they're very commonly found in apps and frameworks so we'll assume you "get it". 
+The `id`, `lastUpdated`, and `createdAt` properties need no introduction as they're very commonly found in apps and frameworks so we'll assume you "get it".
 
 The last one is a bit odd that it's all CAPS but that's with the aim of not interfering with any namespace you'd want to use for your models. This property is where all the meta-information about the property is stored for run-time access. This includes the _type_ but also any constraints that were set on the property as well.

@@ -17,7 +17,7 @@ import {
   IComparisonOperator,
   FmModelConstructor
 } from "./@types/general";
-import { IPrimaryKey } from "./@types/record-types";
+import { IPrimaryKey, ICompositeKey } from "./@types/record-types";
 import { FmEvents, IFmDispatchWatchContext } from "./state-mgmt";
 import { getAllPropertiesFromClassStructure } from "./util";
 import {
@@ -161,8 +161,13 @@ export class Watch<T extends Model = Model> {
     o._localPath = r.localPath;
     o._localPostfix = r.META.localPostfix;
     o._dynamicProperties = r.dynamicPathComponents;
+    o._compositeKey = r.compositeKey;
 
     return o as Omit<Watch, IWatchListQueries | "toString">;
+  }
+
+  public static offsets<T extends Model>(offsetHash: Partial<T>) {
+    Watch.offsets = offsetHash;
   }
 
   public static list<T extends Model>(
@@ -200,6 +205,7 @@ export class Watch<T extends Model = Model> {
   protected _localPath: string;
   protected _localPostfix: string;
   protected _dynamicProperties: string[];
+  protected _compositeKey: ICompositeKey<T>;
   protected _watcherSource: "record" | "list";
   protected _classProperties: string[];
 
@@ -220,6 +226,7 @@ export class Watch<T extends Model = Model> {
       modelConstructor: this._modelConstructor,
       query: this._query,
       dynamicPathProperties: this._dynamicProperties,
+      compositeKey: this._compositeKey,
       localPath: this._localPath,
       localPostfix: this._localPostfix,
       modelName: this._modelName,
@@ -234,6 +241,12 @@ export class Watch<T extends Model = Model> {
       throw new FireModelError(
         `Attempt to start a ${this._watcherSource} watcher on "${this._query.path}" but no dispatcher has been assigned. Make sure to explicitly set the dispatch function or use "FireModel.dispatch = xxx" to setup a default dispatch function.`,
         `firemodel/invalid-dispatch`
+      );
+    }
+
+    if (!this.db) {
+      throw new FireModelError(
+        `Attempt to start a watcher before the database connection has been established!`
       );
     }
     const dispatchCallback = WatchDispatcher<T>(context)(coreDispatch);
@@ -255,7 +268,7 @@ export class Watch<T extends Model = Model> {
         errorMessage: e.message,
         errorCode: e.code || e.name || "firemodel/watcher-failed"
       });
-      return;
+      throw e;
     }
 
     const watcherItem: IWatcherItem = {

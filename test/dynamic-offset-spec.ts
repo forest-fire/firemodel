@@ -1,7 +1,7 @@
 // tslint:disable:no-implicit-dependencies
 import { DB } from "abstracted-admin";
 import * as chai from "chai";
-import { Record, FireModel, Mock, List } from "../src";
+import { Record, FireModel, Mock, List, Watch, FmEvents } from "../src";
 import DeepPerson, { IDeepName } from "./testing/dynamicPaths/DeepPerson";
 import { DeeperPerson } from "./testing/dynamicPaths/DeeperPerson";
 import { MockedPerson } from "./testing/dynamicPaths/MockedPerson";
@@ -17,6 +17,8 @@ import {
 import Company from "./testing/dynamicPaths/Company";
 import { HumanAttribute } from "./testing/dynamicPaths/HumanAttribute";
 import { IDictionary } from "common-types";
+import { FancyPerson } from "./testing/FancyPerson";
+import { IReduxAction } from "../src/VuexWrapper";
 
 const expect = chai.expect;
 
@@ -395,6 +397,49 @@ describe("MOCK uses dynamic dbOffsets", () => {
     } catch (e) {
       expect(e.code).to.equal("mock-not-ready");
     }
+  });
+});
+
+describe.only("WATCHers work with dynamic dbOffsets", () => {
+  beforeEach(async () => {
+    FireModel.defaultDb = await DB.connect({ mocking: true });
+  });
+
+  it("Watching a RECORD with a dbOffset works", async () => {
+    const events: IReduxAction[] = [];
+    const dispatch = (evt: IReduxAction) => {
+      events.push(evt);
+    };
+    FireModel.dispatch = dispatch;
+    const watcher = await Watch.record(DeepPerson, {
+      id: "12345",
+      group: "CA"
+    }).start();
+    expect(watcher).to.haveOwnProperty("watcherId");
+    expect(watcher.watcherSource).to.equal("record");
+    expect(watcher.eventType).to.equal("value");
+    expect(watcher.dbPath).to.equal("/group/CA/testing/deepPeople/12345");
+    const person = await Record.add(DeepPerson, {
+      id: "12345",
+      group: "CA",
+      age: 23,
+      name: { first: "Charlie", last: "Chaplin" }
+    });
+    expect(events.map(i => i.type)).to.include(
+      FmEvents.RECORD_ADDED_CONFIRMATION
+    );
+  });
+
+  it("Watching a LIST with a dbOffset works", async () => {
+    const events: IReduxAction[] = [];
+    const dispatch = (evt: IReduxAction) => {
+      events.push(evt);
+    };
+    FireModel.dispatch = dispatch;
+    const watcher = await Watch.offsets({ state: "CA" })
+      .list(DeepPerson)
+      .all()
+      .start();
   });
 });
 

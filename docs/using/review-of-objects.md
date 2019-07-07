@@ -16,7 +16,7 @@ All of the above classes need to be provided access to the database by leverage 
 import FireModel from "firemodel";
 import { DB } from "abstracted-admin";
 const db = await DB.connect(); // instantiates and then waits for DB connection
-Firemodel.defaultDb = db; // sets the default DB for Record, List, and Watch
+FireModel.defaultDb = db; // sets the default DB for Record, List, and Watch
 ```
 
 If you _do_ need multiple databases you can always include the database connection as part of the `options` parameters of any of the classes accessor methods. For instance:

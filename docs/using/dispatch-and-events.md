@@ -12,7 +12,7 @@ In the following two sections we will explore both in more detail.
 
 ## Events
 
-Let us first explore the events which we may be encountering when using Firemodel.
+Let us first explore the events which we may be encountering when using FireModel.
 
 ### CRUD Events
 
@@ -29,7 +29,7 @@ When it comes to CRUD based events, there are two primary categories of events/m
 |                | RECORD_CHANGED_ROLLBACK |
 |                | *RECORD_MOVED_ROLLBACK* |
 
-How you encounter these events will depend on whether the frontend app is _originating_ the state change or it is passively receiving an event from some other actor. 
+How you encounter these events will depend on whether the frontend app is _originating_ the state change or it is passively receiving an event from some other actor.
 
 #### Origination Flow
 

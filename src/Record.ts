@@ -321,12 +321,13 @@ export class Record<T extends Model> extends FireModel<T> {
   ) {
     let r: Record<T>;
     try {
-      r = Record.create(model, options);
+      r = Record.createWith(model, payload as Partial<T>, options);
       if (!payload.id) {
         (payload as T).id = r.db.isMockDb
           ? fbKey()
           : await r.db.getPushKey(r.dbOffset);
       }
+
       await r._initialize(payload as T, options);
       const defaultValues = r.META.properties.filter(
         i => i.defaultValue !== undefined
@@ -1109,13 +1110,14 @@ export class Record<T extends Model> extends FireModel<T> {
         this.db.mock.silenceEvents();
       }
       this._data.lastUpdated = new Date().getTime();
+      const path = this.dbPath;
 
       switch (crudAction) {
         case "remove":
           await this.db.remove(this.dbPath);
           break;
         case "add":
-          await this.db.set(this.dbPath, this.data);
+          await this.db.set(path, this.data);
           break;
         case "update":
           const paths = this._getPaths(this, { changed, added, removed });

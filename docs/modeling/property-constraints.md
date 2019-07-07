@@ -43,7 +43,7 @@ This cateogory is meta-information which **Firemodel** not only stores but also 
 
 ### **Built-in Meta**
 
-These constraints are built in to **Firemodel** "out of the box" and therefore immediately available to your code as in _import_ but they are not enforced by Firemodel. The enforcement is left to you in your implementation.
+These constraints are built in to **Firemodel** "out of the box" and therefore immediately available to your code as in _import_ but they are not enforced by FireModel. The enforcement is left to you in your implementation.
 
 Examples are `min`, `max`, `length`, and `desc`. For instance, to get the minimum age in our `Person` example above:
 
@@ -64,5 +64,3 @@ export function foobar(value: any) {
   return propertyDecorator({ foobar: value });
 }
 ```
-
-Ok, that's it for properties for now. Let's move onto relationships ...

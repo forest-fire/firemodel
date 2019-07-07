@@ -1,6 +1,6 @@
 # Reading from Firebase
 
-There are a few ways that you might _read_ data from the database but the two most common are read a singular record or to want a _list_ of records. Conveniently these goals can easily be achieved with the `Record` and `List` classes. 
+There are a few ways that you might _read_ data from the database but the two most common are read a singular record or to want a _list_ of records. Conveniently these goals can easily be achieved with the `Record` and `List` classes.
 
 In our examples we will be working with a `Person` _model_ which we've defined as (see ["modeling" section](../modeling/) if this is confusing):
 
@@ -72,9 +72,6 @@ A few things to note:
   Firemodel is not changing how data is stored in the database but instead is exposing it to you in a more familiar way with the `id` property sitting alongside the other properties of your schema/model.
 
 - Since we have passed in the _model_ to `Record` it is now fully type-aware of all the properties and relationships that exist. And of course the Record API is also typed so if you miss-spell anything it is genuinely your fault. :)
-
-
-
 
 ## Getting a list of Records
 
