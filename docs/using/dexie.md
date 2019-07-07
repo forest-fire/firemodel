@@ -3,7 +3,7 @@
 [Dexie](http://dexie.org/) is a great little API for working with IndexDB and now that service workers have gained large scale adoption it's more and more likely you'll want to look into modern client storage. The idea is that (not implemented yet), that **Firemodel** will expose a simple API such as:
 
 ```typescript
-import { Firemodel } from "firemodel";
+import FireModel from "firemodel";
 Firemodel.exportDexie('/models/dexie');
 ```
 
