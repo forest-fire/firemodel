@@ -1,6 +1,6 @@
 # Setting up Mocking
 
-The mocking functionality exposed by **FireModel** is via the `Mock` function. Let's just start with an example as hopefully a lot of it self-explanatory and super basic:
+The mocking functionality exposed by **Firemodel** is via the `Mock` function. Let's just start with an example as hopefully a lot of it self-explanatory and super basic:
 
 ```typescript
 import { Mock } from "firemodel";

@@ -1,6 +1,6 @@
 import { RealTimeDB } from "abstracted-firebase";
 import { Model } from "./Model";
-import { Omit, Nullable } from "common-types";
+import { Omit, Nullable, fk } from "common-types";
 import { FireModel } from "./FireModel";
 import { IReduxDispatch } from "./VuexWrapper";
 import { IFMEventName, IFmCrudOperations, IFmDispatchOptions } from "./state-mgmt/index";
@@ -29,7 +29,17 @@ export interface IWriteOperation {
 export declare class Record<T extends Model> extends FireModel<T> {
     static defaultDb: RealTimeDB;
     static dispatch: IReduxDispatch;
-    static dynamicPathProperties<T extends Model = Model>(model: new () => T): string[];
+    /**
+     * **dynamicPathProperties**
+     *
+     * An array of "dynamic properties" that are derived fom the "dbOffset" to
+     * produce the "dbPath". Note: this does NOT include the `id` property.
+     */
+    static dynamicPathProperties<T extends Model = Model>(
+    /**
+     * the **Model** who's properties are being interogated
+     */
+    model: new () => T): string[];
     readonly data: Readonly<T>;
     /**
     * deprecated
@@ -203,7 +213,7 @@ export declare class Record<T extends Model> extends FireModel<T> {
      * Pushes new values onto properties on the record
      * which have been stated to be a "pushKey"
      */
-    pushKey<K extends keyof T>(property: K, value: T[K][keyof T[K]]): Promise<Record<T>>;
+    pushKey<K extends keyof T>(property: K, value: T[K][keyof T[K]]): Promise<fk>;
     /**
      * **update**
      *

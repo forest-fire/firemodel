@@ -1,7 +1,7 @@
 // tslint:disable:no-implicit-dependencies
 import { DB } from "abstracted-admin";
 import * as chai from "chai";
-import { Record, FireModel, Mock, List } from "../src";
+import { Record, FireModel, Mock, List, Watch, FmEvents } from "../src";
 import DeepPerson, { IDeepName } from "./testing/dynamicPaths/DeepPerson";
 import { DeeperPerson } from "./testing/dynamicPaths/DeeperPerson";
 import { MockedPerson } from "./testing/dynamicPaths/MockedPerson";
@@ -17,6 +17,8 @@ import {
 import Company from "./testing/dynamicPaths/Company";
 import { HumanAttribute } from "./testing/dynamicPaths/HumanAttribute";
 import { IDictionary } from "common-types";
+import { FancyPerson } from "./testing/FancyPerson";
+import { IReduxAction } from "../src/VuexWrapper";
 
 const expect = chai.expect;
 
@@ -267,10 +269,10 @@ describe("LIST uses static offsets() with static API methods", () => {
     db.mock.updateDB({});
   });
 
-  it("LIST.offsets() returns LIST API", async () => {
-    const api = List.offsets({ geoCode: "1234" });
-    expect(List).to.have.ownProperty("all");
-    expect(List).to.have.ownProperty("where");
+  it.skip("LIST.offsets() returns LIST API", async () => {
+    // const api = List.offsets({ geoCode: "1234" });
+    // expect(List).to.have.ownProperty("all");
+    // expect(List).to.have.ownProperty("where");
   });
 
   it("List.all works with offsets", async () => {
@@ -278,7 +280,7 @@ describe("LIST uses static offsets() with static API methods", () => {
     await Mock(DeepPerson).generate(5, { group: "test2" });
     await Mock(DeepPerson).generate(5, { group: "test3" });
 
-    const people = await List.offsets({ group: "test" }).all(DeepPerson);
+    const people = await List.all(DeepPerson, { offsets: { group: "test" } });
     expect(people.length).to.equal(3);
   });
 
@@ -286,11 +288,9 @@ describe("LIST uses static offsets() with static API methods", () => {
     await Mock(DeepPerson).generate(3, { group: "test", age: 32 });
     await Mock(DeepPerson).generate(6, { group: "test", age: 45 });
     await Mock(DeepPerson).generate(5, { group: "test2", age: 45 });
-    const people = await List.offsets({ group: "test" }).where(
-      DeepPerson,
-      "age",
-      45
-    );
+    const people = await List.where(DeepPerson, "age", 45, {
+      offsets: { group: "test" }
+    });
     expect(people.length).to.equal(6);
     expect(people.filter(i => i.age === 45)).is.length(6);
   });
@@ -395,6 +395,82 @@ describe("MOCK uses dynamic dbOffsets", () => {
     } catch (e) {
       expect(e.code).to.equal("mock-not-ready");
     }
+  });
+});
+
+describe("WATCHers work with dynamic dbOffsets", () => {
+  beforeEach(async () => {
+    FireModel.defaultDb = await DB.connect({ mocking: true });
+  });
+
+  afterEach(async () => {
+    FireModel.defaultDb.remove("/group", true);
+  });
+
+  it("Watching a RECORD with a dbOffset works", async () => {
+    const events: IReduxAction[] = [];
+    const dispatch = (evt: IReduxAction) => {
+      events.push(evt);
+    };
+    FireModel.dispatch = dispatch;
+    const watchRecord = await Watch.record(DeepPerson, {
+      id: "12345",
+      group: "CA"
+    });
+
+    expect(watchRecord.start).to.be.a("function");
+    expect(watchRecord.dispatch).to.be.a("function");
+
+    const watcher = await watchRecord.start();
+
+    expect(watcher).to.haveOwnProperty("watcherId");
+    expect(watcher.watcherSource).to.equal("record");
+    expect(watcher.eventType).to.equal("value");
+    expect(watcher.dbPath).to.equal("/group/CA/testing/deepPeople/12345");
+    const person = await Record.add(DeepPerson, {
+      id: "12345",
+      group: "CA",
+      age: 23,
+      name: { first: "Charlie", last: "Chaplin" }
+    });
+
+    expect(events.map(i => i.type)).to.include(
+      FmEvents.RECORD_ADDED_CONFIRMATION
+    );
+  });
+
+  it("Watching a LIST with a dbOffset works", async () => {
+    const events: IReduxAction[] = [];
+    const dispatch = (evt: IReduxAction) => {
+      events.push(evt);
+    };
+    FireModel.dispatch = dispatch;
+
+    const watchList = Watch.list(DeepPerson).offsets({ group: "CA" });
+
+    expect(watchList.start).to.be.a("function");
+    expect(watchList.all).to.be.a("function");
+    expect(watchList.where).to.be.a("function");
+    expect(watchList.since).to.be.a("function");
+    expect(watchList.recent).to.be.a("function");
+    expect(watchList.before).to.be.a("function");
+    expect(watchList.after).to.be.a("function");
+
+    const watcher = await watchList.all().start();
+
+    expect(watcher)
+      .to.haveOwnProperty("watcherId")
+      .and.to.be.a("string");
+
+    await Record.add(DeepPerson, {
+      name: { first: "Robert", last: "Kennedy" },
+      age: 55,
+      group: "CA"
+    });
+
+    expect(events.map(i => i.type)).to.include(
+      FmEvents.RECORD_ADDED_CONFIRMATION
+    );
   });
 });
 

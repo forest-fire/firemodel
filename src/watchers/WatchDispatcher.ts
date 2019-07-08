@@ -48,22 +48,10 @@ export const WatchDispatcher = <T>(context: IFmDispatchWatchContext<T>) => (
         ? { id: event.key, ...event.value }
         : { id: event.key };
 
-    const rec = Record.createWith(context.modelConstructor, recId);
-
-    let compositeKey;
-    try {
-      compositeKey = rec.compositeKey;
-    } catch (e) {
-      throw new FireModelProxyError(
-        e,
-        `While responding to a watcher event [ id: ${context.watcherId}, ${
-          context.query.path
-        } ] there was a problem getting the composite key for a ${capitalize(
-          rec.modelName
-        )}::${rec.id} model`,
-        `firemodel/composite-key`
-      );
-    }
+    const rec = Record.createWith(
+      context.modelConstructor,
+      context.compositeKey
+    );
 
     const contextualizedEvent: IFmContextualizedWatchEvent<T> = {
       ...{
@@ -72,8 +60,7 @@ export const WatchDispatcher = <T>(context: IFmDispatchWatchContext<T>) => (
             ? event.value === null || event.paths === null
               ? FmEvents.RECORD_REMOVED
               : FmEvents.RECORD_CHANGED
-            : typeLookup[event.eventType as keyof typeof typeLookup],
-        compositeKey
+            : typeLookup[event.eventType as keyof typeof typeLookup]
       },
       ...context,
       ...event

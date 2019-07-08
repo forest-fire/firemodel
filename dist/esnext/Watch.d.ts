@@ -1,17 +1,30 @@
-import { epochWithMilliseconds, IDictionary, Omit } from "common-types";
 import { Model } from "./Model";
-import { SerializedQuery } from "serialized-query";
 import { IReduxDispatch } from "./VuexWrapper";
 declare type RealTimeDB = import("abstracted-firebase").RealTimeDB;
-import { IModelOptions, IComparisonOperator, FmModelConstructor } from "./@types/general";
+import { IModelOptions } from "./@types/general";
 import { IPrimaryKey } from "./@types/record-types";
-import { IWatcherItem, IWatchListQueries, IWatchEventClassification, IFmWatcherStartOptions } from "./Watch/types";
+import { IWatcherItem } from "./watchers/types";
+import { WatchList } from "./watchers/WatchList";
+import { WatchRecord } from "./watchers/WatchRecord";
+/**
+ * A static library for interacting with _watchers_. It
+ * provides the entry point into the watcher API and then
+ * hands off to either `WatchList` or `WatchRecord`.
+ */
 export declare class Watch<T extends Model = Model> {
+    /**
+     * Sets the default database for all Firemodel
+     * classes such as `FireModel`, `Record`, and `List`
+     */
     static defaultDb: RealTimeDB;
+    /**
+     * Sets the default dispatch for all Firemodel
+     * classes such as `FireModel`, `Record`, and `List`
+     */
     static dispatch: IReduxDispatch;
     /** returns a full list of all watchers */
-    static readonly inventory: IDictionary<IWatcherItem>;
-    static toJSON(): IDictionary<IWatcherItem>;
+    static readonly inventory: import("common-types").IDictionary<IWatcherItem>;
+    static toJSON(): import("common-types").IDictionary<IWatcherItem>;
     /**
      * lookup
      *
@@ -39,147 +52,15 @@ export declare class Watch<T extends Model = Model> {
      * the composite key, or an object representation of the composite
      * key.
      */
-    static record<T extends Model>(modelConstructor: new () => T, pk: IPrimaryKey<T>, options?: IModelOptions): Pick<Watch<Model>, "start" | "dispatch">;
-    static list<T extends Model>(modelConstructor: new () => T, options?: IModelOptions): Pick<Watch<Model>, IWatchListQueries>;
-    protected _query: SerializedQuery;
-    protected _modelConstructor: FmModelConstructor<any>;
-    protected _eventType: IWatchEventClassification;
-    protected _dispatcher: IReduxDispatch;
-    protected _db: RealTimeDB;
-    protected _modelName: string;
-    protected _localModelName: string;
-    protected _pluralName: string;
-    protected _localPath: string;
-    protected _localPostfix: string;
-    protected _dynamicProperties: string[];
-    protected _watcherSource: "record" | "list";
-    protected _classProperties: string[];
+    static record<T extends Model>(modelConstructor: new () => T, pk: IPrimaryKey<T>, options?: IModelOptions): WatchRecord<Model>;
+    static list<T extends Model>(
     /**
-     * **start**
-     *
-     * executes the watcher so that it becomes actively watched
+     * The **Model** subType which this list watcher will watch
      */
-    start(options?: IFmWatcherStartOptions): Promise<IWatcherItem>;
+    modelConstructor: new () => T, 
     /**
-     * **dispatch**
-     *
-     * allows you to state an explicit dispatch function which will be called
-     * when this watcher detects a change; by default it will use the "default dispatch"
-     * set on FireModel.dispatch.
+     * optionally state the _dynamic path_ properties which offset the **dbPath**
      */
-    dispatch(d: IReduxDispatch): Omit<Watch, IWatchListQueries | "toString" | "dispatch">;
-    /**
-     * **since**
-     *
-     * Watch for all records that have changed since a given date
-     *
-     * @param when  the datetime in milliseconds or a string format that works with new Date(x)
-     * @param limit  optionally limit the records returned to a max number
-     */
-    since(when: epochWithMilliseconds | string, limit?: number): Omit<Watch, IWatchListQueries | "toString">;
-    /**
-     * **dormantSince**
-     *
-     * Watch for all records that have NOT changed since a given date (opposite of "since")
-     *
-     * @param when  the datetime in milliseconds or a string format that works with new Date(x)
-     * @param limit  optionally limit the records returned to a max number
-     */
-    dormantSince(when: epochWithMilliseconds | string, limit?: number): Omit<Watch, IWatchListQueries | "toString">;
-    /**
-     * **after**
-     *
-     * Watch all records that were created after a given date
-     *
-     * @param when  the datetime in milliseconds or a string format that works with new Date(x)
-     * @param limit  optionally limit the records returned to a max number
-     */
-    after(when: epochWithMilliseconds | string, limit?: number): Omit<Watch, IWatchListQueries | "toString">;
-    /**
-     * **before**
-     *
-     * Watch all records that were created before a given date
-     *
-     * @param when  the datetime in milliseconds or a string format that works with new Date(x)
-     * @param limit  optionally limit the records returned to a max number
-     */
-    before(when: epochWithMilliseconds | string, limit?: number): Omit<Watch, IWatchListQueries | "toString">;
-    /**
-     * **first**
-     *
-     * Watch for a given number of records; starting with the first/earliest records (createdAt).
-     * Optionally you can state an ID from which to start from. This is useful for a pagination
-     * strategy.
-     *
-     * @param howMany  the datetime in milliseconds or a string format that works with new Date(x)
-     * @param startAt  the ID reference to a record in the list (if used for pagination, add the last record in the list to this value)
-     */
-    first(howMany: number, startAt?: string): Omit<Watch, IWatchListQueries | "toString">;
-    /**
-     * **last**
-     *
-     * Watch for a given number of records; starting with the last/most-recently added records
-     * (e.g., createdAt). Optionally you can state an ID from which to start from.
-     * This is useful for a pagination strategy.
-     *
-     * @param howMany  the datetime in milliseconds or a string format that works with new Date(x)
-     * @param startAt  the ID reference to a record in the list (if used for pagination, add the last record in the list to this value)
-     */
-    last(howMany: number, startAt?: string): Omit<Watch, IWatchListQueries | "toString">;
-    /**
-     * **recent**
-     *
-     * Watch for a given number of records; starting with the recent/most-recently updated records
-     * (e.g., lastUpdated). Optionally you can state an ID from which to start from.
-     * This is useful for a pagination strategy.
-     *
-     * @param howMany  the datetime in milliseconds or a string format that works with new Date(x)
-     * @param startAt  the ID reference to a record in the list (if used for pagination, add the recent record in the list to this value)
-     */
-    recent(howMany: number, startAt?: string): Omit<Watch, IWatchListQueries | "toString">;
-    /**
-     * **inactive**
-     *
-     * Watch for a given number of records; starting with the inactive/most-inactively added records
-     * (e.g., lastUpdated). Optionally you can state an ID from which to start from.
-     * This is useful for a pagination strategy.
-     *
-     * @param howMany  the datetime in milliseconds or a string format that works with new Date(x)
-     * @param startAt  the ID reference to a record in the list (if used for pagination, add the inactive record in the list to this value)
-     */
-    inactive(howMany: number, startAt?: string): Omit<Watch, IWatchListQueries | "toString">;
-    /**
-     * **fromQuery**
-     *
-     * Watch for all records that conform to a passed in query
-     *
-     * @param query
-     */
-    fromQuery(inputQuery: SerializedQuery): Omit<Watch, IWatchListQueries | "toString">;
-    /**
-     * **all**
-     *
-     * Watch for all records of a given type
-     *
-     * @param limit it you want to limit the results a max number of records
-     */
-    all(limit?: number): Omit<Watch, IWatchListQueries | "toString">;
-    /**
-     * **where**
-     *
-     * Watch for all records where a specified property is
-     * equal, less-than, or greater-than a certain value
-     *
-     * @param property the property which the comparison operater is being compared to
-     * @param value either just a value (in which case "equality" is the operator), or a tuple with operator followed by value (e.g., [">", 34])
-     */
-    where<K extends keyof T>(property: K, value: T[K] | [IComparisonOperator, T[K]]): Omit<Watch, IWatchListQueries | "toString">;
-    toString(): string;
-    protected readonly db: RealTimeDB;
-}
-export interface IWatcherApiPostQuery {
-    /** executes the watcher so that it becomes actively watched */
-    start: () => void;
-    dispatch: IReduxDispatch;
+    offsets?: Partial<T>): WatchList<T>;
 }
 export {};

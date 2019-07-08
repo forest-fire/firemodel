@@ -3,10 +3,10 @@ sidebarDepth: 3
 ---
 # Responding to Events
 
-**FireModel** has two related concepts of _events_ and _dispatch_; at a summary level they are:
+**Firemodel** has two related concepts of _events_ and _dispatch_; at a summary level they are:
 
-- `Events` - an asynchronous means of signalling change in either the database (aka, CRUD events) or the state of FireModel (aka, non-CRUD events)
-- `Dispatch` - a way of plugging into the event stream produced by FireModel, so that your application can respond to events
+- `Events` - an asynchronous means of signalling change in either the database (aka, CRUD events) or the state of Firemodel (aka, non-CRUD events)
+- `Dispatch` - a way of plugging into the event stream produced by Firemodel, so that your application can respond to events
 
 In the following two sections we will explore both in more detail.
 
@@ -29,7 +29,7 @@ When it comes to CRUD based events, there are two primary categories of events/m
 |                | RECORD_CHANGED_ROLLBACK |
 |                | *RECORD_MOVED_ROLLBACK* |
 
-How you encounter these events will depend on whether the frontend app is _originating_ the state change or it is passively receiving an event from some other actor. 
+How you encounter these events will depend on whether the frontend app is _originating_ the state change or it is passively receiving an event from some other actor.
 
 #### Origination Flow
 

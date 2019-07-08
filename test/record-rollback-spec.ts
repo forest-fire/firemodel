@@ -10,11 +10,13 @@ describe("Rolling back a record => ", () => {
     FireModel.defaultDb = db;
   });
 
-  it("local Record value is reset to the rolled-back state when handling the error", async () => {
-    //
+  // TODO: write test
+  it.skip("local Record value is reset to the rolled-back state when handling the error", async () => {
+    throw new Error("test not written");
   });
 
-  it("dispatch() sends the original value on rollback", async () => {
+  // TODO: write test
+  it.skip("dispatch() sends the original value on rollback", async () => {
     throw new Error("test not written");
   });
 });

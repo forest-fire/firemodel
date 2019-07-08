@@ -4,7 +4,7 @@ import { IFirebaseWatchEvent, IPathSetter } from "abstracted-firebase";
 import { FmModelConstructor } from "./general";
 import { Model } from "../Model";
 import { FmEvents } from "../state-mgmt";
-import { IWatcherSource } from "../Watch/types";
+import { IWatcherSource } from "../watchers/types";
 
 export type IFmEventType =
   | "value"

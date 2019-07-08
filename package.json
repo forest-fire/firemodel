@@ -1,6 +1,6 @@
 {
   "name": "firemodel",
-  "version": "0.28.1",
+  "version": "0.29.0",
   "description": "Modeling, Access, and Mocking for Firebase Projects",
   "license": "MIT",
   "repository": "https://github.com/forest-fire/firemodel",
@@ -59,10 +59,10 @@
     "@types/rimraf": "^2.0.2",
     "@types/set-value": "^2.0.0",
     "@types/stack-trace": "^0.0.28",
-    "@vuepress/plugin-back-to-top": "^1.0.0",
-    "@vuepress/plugin-last-updated": "^1.0.0",
-    "@vuepress/plugin-medium-zoom": "^1.0.0",
-    "@vuepress/plugin-pwa": "^1.0.0",
+    "@vuepress/plugin-back-to-top": "^1.0.2",
+    "@vuepress/plugin-last-updated": "^1.0.2",
+    "@vuepress/plugin-medium-zoom": "^1.0.2",
+    "@vuepress/plugin-pwa": "^1.0.2",
     "abstracted-admin": "^0.27.7",
     "abstracted-client": "^0.27.7",
     "async-shelljs": "^0.1.2",
@@ -82,7 +82,7 @@
     "tslint-config-prettier": "^1.18.0",
     "typescript": "^3.5.1",
     "vue-property-decorator": "^8.1.1",
-    "vuepress": "^1.0.0",
+    "vuepress": "^1.0.2",
     "vuepress-plugin-autometa": "^0.1.10"
   },
   "engines": {

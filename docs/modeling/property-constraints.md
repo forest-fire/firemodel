@@ -1,3 +1,6 @@
+---
+sidebarDepth: 3
+---
 # Property Constraints
 
 ## Intro
@@ -23,10 +26,12 @@ Now we turn our attention to providing meta-information to the individual proper
 
 While there aren't stark differences in behavior between these constraints it might be worthwhile drawing up some categories:
 
-1. **Responsive Meta** - this cateogory would be meta-information in which **FireModel** not only stores meta information but also responds based on the decorator.
+### Responsive Meta
 
-   - The `@mock` decorator allows for detailed meta-characteristics of your data to be stored in your models and then _mocked_ whenever you need them. See the [mocking](/mocking/) section for more  details.
-   - The `@defaultValue` decorator allows you to state values for some of your model's properties to take on if they are not specified. Unlike the _mock_ these values are not used for testing purposes but rather for real life defaults. This allows your models to initialize into a known  state without requiring the caller to state every required property any time they are adding/creating a new record.
+This cateogory is meta-information which **Firemodel** not only stores but also behaviorly responds to.
+
+- The `@mock` decorator allows for detailed meta-characteristics of your data to be stored in your models and then _mocked_ whenever you need them. See the [mocking](/mocking/) section for more  details.
+- The `@defaultValue` decorator allows you to state values for some of your model's properties to take on if they are not specified. Unlike the _mock_ these values are not used for testing purposes but rather for real life defaults. This allows your models to initialize into a known  state without requiring the caller to state every required property any time they are adding/creating a new record.
 
      ```typescript
      export FooBar extends Model {
@@ -34,24 +39,28 @@ While there aren't stark differences in behavior between these constraints it mi
      }
      ```
 
-   - The `@pushKey` decorator tells **firemodel** that the given property is a dictionary/hash which conforms to Firebase's normal "array representation" (aka, a *dictionary* who's keys are Firebase generated keys derived from the Firebase `push` function). This is very useful when you have multiple clients who might be pushing content to the same "firebase array" because using the Firebase `push` operation ensures that any and all updates are serialized and that the new keys have a natural sort order based on time that they were received (many people don't know that embedded into the Firebase key is a precise datetime stamp which measures down to the milisecond)
+- The `@pushKey` decorator tells **firemodel** that the given property is a dictionary/hash which conforms to Firebase's normal "array representation" (aka, a *dictionary* who's keys are Firebase generated keys derived from the Firebase `push` function). This is very useful when you have multiple clients who might be pushing content to the same "firebase array" because using the Firebase `push` operation ensures that any and all updates are serialized and that the new keys have a natural sort order based on time that they were received (many people don't know that embedded into the Firebase key is a precise datetime stamp which measures down to the milisecond)
 
-2. **Built-in Meta** - the remaining constraints that are built in to **FireModel** "out of the box" are `min`, `max`, `length`, and `desc`. These properties are available to your code and you'll find them quite easily as the typing is included to ensure these properties are exposed via your editor's autocomplete. For instance, to get the minimum age in our `Person` example above:
+### **Built-in Meta**
 
-    ```typescript
-    if(age > person.META.property('age').min) { ... }
-    ```
+These constraints are built in to **Firemodel** "out of the box" and therefore immediately available to your code as in _import_ but they are not enforced by FireModel. The enforcement is left to you in your implementation.
 
-3. **Your Meta** - you can add your own meta data too through one of two ways:
+Examples are `min`, `max`, `length`, and `desc`. For instance, to get the minimum age in our `Person` example above:
 
-    - there is a built-in decorator called `@constrain(prop: string, value: any)` which lets you associate any name/value pair with a property.
-    - you can also add your own decorator by creating something like this: 
+```typescript
+if(age > person.META.property('age').min) { ... }
+```
 
-    ```typescript
-    import {propertyDecorator} from 'firemodel';
-    export function foobar(value: any) {
-      return propertyDecorator({ foobar: value });
-    }
-    ```
+### Your Meta
 
-Ok, that's it for properties for now. Let's move onto relationships ...
+The final category of property meta is that which you add yourself. This can be done one of two ways:
+
+- there is a built-in decorator called `@constrain(prop: string, value: any)` which lets you associate any name/value pair with a property.
+- you can also add your own decorator by creating something like this:
+
+```typescript
+import {propertyDecorator} from 'firemodel';
+export function foobar(value: any) {
+  return propertyDecorator({ foobar: value });
+}
+```

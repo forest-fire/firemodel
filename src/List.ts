@@ -9,7 +9,7 @@ import { IReduxDispatch } from "./VuexWrapper";
 import { pathJoin } from "./path";
 import { getModelMeta } from "./ModelMeta";
 import { FmEvents, IFMRecordListEvent } from "./state-mgmt";
-import { IModelOptions } from "./@types/general";
+import { IModelOptions, IListOptions } from "./@types/general";
 
 const DEFAULT_IF_NOT_FOUND = "__DO_NOT_USE__";
 
@@ -87,20 +87,11 @@ export class List<T extends Model> extends FireModel<T> {
     FireModel.dispatch = fn;
   }
 
-  /**
-   * Allows you to build a LIST on a model which has dynamic dbOffsets
-   * by statically initializing the dynamic segments up front
-   */
-  public static offsets(offsets: IDictionary<string | number>) {
-    List._offsets = offsets;
-    return List;
-  }
-
   public static create<T extends Model>(
     model: new () => T,
-    options: IModelOptions = {}
+    options?: IListOptions<T>
   ) {
-    return new List<T>(model);
+    return new List<T>(model, options);
   }
 
   /**
@@ -113,7 +104,7 @@ export class List<T extends Model> extends FireModel<T> {
   public static async fromQuery<T extends Model>(
     model: new () => T,
     query: SerializedQuery<T>,
-    options: IModelOptions = {}
+    options: IListOptions<T> = {}
   ): Promise<List<T>> {
     const list = List.create(model, options);
 
@@ -143,7 +134,7 @@ export class List<T extends Model> extends FireModel<T> {
    */
   public static async all<T extends Model>(
     model: new () => T,
-    options: IModelOptions = {}
+    options: IListOptions<T> = {}
   ): Promise<List<T>> {
     const query = new SerializedQuery<T>().orderByChild("lastUpdated");
     const list = await List.fromQuery<T>(model, query, options);
@@ -162,7 +153,7 @@ export class List<T extends Model> extends FireModel<T> {
   public static async first<T extends Model>(
     model: new () => T,
     howMany: number,
-    options: IModelOptions = {}
+    options: IListOptions<T> = {}
   ): Promise<List<T>> {
     const query = new SerializedQuery<T>()
       .orderByChild("createdAt")
@@ -186,7 +177,7 @@ export class List<T extends Model> extends FireModel<T> {
     model: new () => T,
     howMany: number,
     offset: number = 0,
-    options: IModelOptions = {}
+    options: IListOptions<T> = {}
   ): Promise<List<T>> {
     const query = new SerializedQuery<T>()
       .orderByChild("lastUpdated")
@@ -208,7 +199,7 @@ export class List<T extends Model> extends FireModel<T> {
   public static async since<T extends Model>(
     model: new () => T,
     since: epochWithMilliseconds,
-    options: IModelOptions = {}
+    options: IListOptions<T> = {}
   ): Promise<List<T>> {
     if (typeof since !== "number") {
       const e = new Error(
@@ -229,7 +220,7 @@ export class List<T extends Model> extends FireModel<T> {
   public static async inactive<T extends Model>(
     model: new () => T,
     howMany: number,
-    options: IModelOptions = {}
+    options: IListOptions<T> = {}
   ): Promise<List<T>> {
     const query = new SerializedQuery<T>()
       .orderByChild("lastUpdated")
@@ -242,7 +233,7 @@ export class List<T extends Model> extends FireModel<T> {
   public static async last<T extends Model>(
     model: new () => T,
     howMany: number,
-    options: IModelOptions = {}
+    options: IListOptions<T> = {}
   ): Promise<List<T>> {
     const query = new SerializedQuery<T>()
       .orderByChild("createdAt")
@@ -256,7 +247,7 @@ export class List<T extends Model> extends FireModel<T> {
     model: new () => T,
     property: K,
     value: T[K] | [IComparisonOperator, T[K]],
-    options: IModelOptions = {}
+    options: IListOptions<T> = {}
   ) {
     let operation: IComparisonOperator = "=";
     let val = value;
@@ -272,13 +263,13 @@ export class List<T extends Model> extends FireModel<T> {
     return list;
   }
 
-  private static _offsets: IDictionary<string | number>;
+  protected _offsets: Partial<T>;
 
   //#endregion
 
   private _data: T[] = [];
 
-  constructor(model: new () => T, options: IModelOptions = {}) {
+  constructor(model: new () => T, options: IListOptions<T> = {}) {
     super();
     this._modelConstructor = model;
     this._model = new model();
@@ -287,6 +278,9 @@ export class List<T extends Model> extends FireModel<T> {
       if (!FireModel.defaultDb) {
         FireModel.defaultDb = options.db;
       }
+    }
+    if (options.offsets) {
+      this._offsets = options.offsets;
     }
   }
 
@@ -343,9 +337,7 @@ export class List<T extends Model> extends FireModel<T> {
         return defaultIfNotFound as any;
       } else {
         const e = new Error(
-          `find(fn) did not find a value in the List [ length: ${
-            this.data.length
-          } ]`
+          `find(fn) did not find a value in the List [ length: ${this.data.length} ]`
         );
         e.name = "NotFound";
         throw e;
@@ -470,9 +462,7 @@ export class List<T extends Model> extends FireModel<T> {
       if (!ignoreOnNotFound) {
         const e = createError(
           `firemodel/not-allowed`,
-          `Could not remove "${id}" in list of ${
-            this.pluralName
-          } as the ID was not found!`
+          `Could not remove "${id}" in list of ${this.pluralName} as the ID was not found!`
         );
         e.name = "NotFound";
         throw e;
@@ -530,18 +520,18 @@ export class List<T extends Model> extends FireModel<T> {
       return dbOffset;
     }
 
-    Object.keys(List._offsets).forEach(prop => {
-      const value = List._offsets[prop];
+    Object.keys(this._offsets).forEach(prop => {
+      const value = this._offsets[(prop as unknown) as keyof T];
 
       if (!["string", "number"].includes(typeof value)) {
         throw createError(
           "record/not-allowed",
-          `The dynamic dbOffsest is using the property "${prop}" on ${
+          `The dynamic dbOffest is using the property "${prop}" on ${
             this.modelName
           } as a part of the route path but that property must be either a string or a number and instead was a ${typeof prop}`
         );
       }
-      dbOffset = dbOffset.replace(`:${prop}`, String(List._offsets[prop]));
+      dbOffset = dbOffset.replace(`:${prop}`, String(value));
     });
 
     return dbOffset;

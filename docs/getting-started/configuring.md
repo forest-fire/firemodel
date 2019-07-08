@@ -2,7 +2,7 @@
 next: "/modeling/"
 ---
 
-# Configuring FireModel
+# Configuring Firemodel
 
 ### Typescript
 
@@ -17,7 +17,7 @@ While it may be possible to use this framework without Typescript, it's not inte
 }
 ```
 
-This is primarily to ensure you can use decorators which are central to the syntax of **FireModel**. Strictly speaking you probably don't need the "es2017" library but that gives you async/await and let's be honest ... you really want that right?
+This is primarily to ensure you can use decorators which are central to the syntax of **Firemodel**. Strictly speaking you probably don't need the "es2017" library but that gives you async/await and let's be honest ... you really want that right?
 
 ### Next Step
 

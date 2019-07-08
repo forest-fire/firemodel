@@ -6,6 +6,20 @@ export interface IModelOptions {
   logger?: ILogger;
   db?: import("abstracted-firebase").RealTimeDB;
 }
+
+/**
+ * **List Options**
+ *
+ * provides a means to configure the list, options include:
+ *
+ * - `logger`: add in a logger function instead of default
+ * - `offsets`: for dynamic paths, specify the dynamic properties needed
+ * - `db`: allows you to specify a non-default Firebase DB
+ */
+export interface IListOptions<T> extends IModelOptions {
+  offsets?: Partial<T>;
+}
+
 export interface IMetaData {
   attributes: IDictionary;
   relationships: IDictionary<IRelationship>;

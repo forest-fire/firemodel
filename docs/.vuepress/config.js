@@ -3,7 +3,7 @@ module.exports = {
     "@vuepress/pwa": {
       serviceWorker: true,
       updatePopup: {
-        message: "New FireModel content is available",
+        message: "New Firemodel content is available",
         buttonText: "Refresh"
       }
     },
@@ -12,7 +12,7 @@ module.exports = {
     "@vuepress/medium-zoom": true,
     autometa: {
       site: {
-        name: "FireModel"
+        name: "Firemodel"
       },
       canonical_base: "https://firemodel.info",
       author: {
@@ -21,7 +21,7 @@ module.exports = {
       }
     }
   },
-  title: "FireModel",
+  title: "Firemodel",
   description: "Modeling, Access, and Mocking for Firebase Projects",
   head: [
     ["meta", { name: "apple-mobile-web-app-capable", content: "yes" }],
@@ -73,7 +73,7 @@ module.exports = {
       "link",
       { rel: "icon", href: "/icon/icon-rounded-512.png", sizes: "512x512" }
     ],
-    ["link", { rel: "manifest", href: "manifest.json" }],
+    ["link", { rel: "manifest", href: "/manifest.json" }],
     [
       "link",
       {
@@ -194,30 +194,31 @@ module.exports = {
       ],
       "/modeling/": [
         {
-          title: "Modeling in FireModel",
+          title: "Modeling in Firemodel",
           children: [
             "/modeling/",
+            "the-model-class",
             "first-model",
             "model-constraints",
             "property-constraints",
+            "dynamic-paths",
             "relationships",
             "db-permissions",
-            "db-indexes",
-            "the-model-class"
+            "db-indexes"
           ]
         },
         {
           title: "📓 Other Sections",
           collapsable: false,
           children: [
-            ["/using/", "Using FireModel"],
-            ["/mocking/", "Mocking in FireModel"]
+            ["/using/", "Using Firemodel"],
+            ["/mocking/", "Mocking in Firemodel"]
           ]
         }
       ],
       "/using/": [
         {
-          title: "Using FireModel",
+          title: "Using Firemodel",
           collapsable: false,
           children: [
             "/using/",
@@ -246,8 +247,8 @@ module.exports = {
           title: "📓 Other Sections",
           collapsable: false,
           children: [
-            ["/modeling/", "Modeling in FireModel"],
-            ["/mocking/", "Mocking in FireModel"]
+            ["/modeling/", "Modeling in Firemodel"],
+            ["/mocking/", "Mocking in Firemodel"]
           ]
         }
       ],
@@ -267,8 +268,8 @@ module.exports = {
           title: "📓 Other Sections",
           collapsable: false,
           children: [
-            ["/modeling/", "Modeling in FireModel"],
-            ["/using/", "Using FireModel"]
+            ["/modeling/", "Modeling in Firemodel"],
+            ["/using/", "Using Firemodel"]
           ]
         }
       ]

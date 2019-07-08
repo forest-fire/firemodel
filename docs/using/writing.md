@@ -2,7 +2,7 @@
 
 ## Adding records
 
-Adding new records in **FireModel** can be done with _both_ the `Record` and `List` classes. Let's start with the `Record` class:
+Adding new records in **Firemodel** can be done with _both_ the `Record` and `List` classes. Let's start with the `Record` class:
 
 ```typescript
 const newPerson = await Record.add(Person, {
@@ -70,7 +70,7 @@ In the Firebase SDK -- as well as `abstracted-admin` / `abstracted-client` -- th
 await ref('people/1234').update({ favoriteColor: "blue" });
 ```
 
-That same idea is carried forward to **FireModel**. So, for instance, if were to execute:
+That same idea is carried forward to **Firemodel**. So, for instance, if were to execute:
 
 ```typescript
 const person = Record.get(Person, '1234');

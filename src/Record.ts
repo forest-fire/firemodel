@@ -20,7 +20,7 @@ import {
   IFmCrudOperations,
   IFmDispatchOptions
 } from "./state-mgmt/index";
-import { createWatchEvent } from "./Watch/createWatchEvent";
+import { createWatchEvent } from "./watchers/createWatchEvent";
 import { pathJoin } from "./path";
 import { getModelMeta } from "./ModelMeta";
 import { writeAudit, IAuditChange, IAuditOperations } from "./Audit";
@@ -41,9 +41,9 @@ import {
   IFmRelationshipOptionsForHasMany,
   createCompositeKey
 } from ".";
-import { findWatchers } from "./Watch/findWatchers";
-import { IFmEvent } from "./Watch/types";
-import { enhanceEventWithWatcherData } from "./Watch/enhanceWithWatcherData";
+import { findWatchers } from "./watchers/findWatchers";
+import { IFmEvent } from "./watchers/types";
+import { enhanceEventWithWatcherData } from "./watchers/enhanceWithWatcherData";
 import { isHasManyRelationship } from "./verifications/isHasManyRelationship";
 import {
   NotHasManyRelationship,
@@ -93,7 +93,16 @@ export class Record<T extends Model> extends FireModel<T> {
     FireModel.dispatch = fn;
   }
 
+  /**
+   * **dynamicPathProperties**
+   *
+   * An array of "dynamic properties" that are derived fom the "dbOffset" to
+   * produce the "dbPath". Note: this does NOT include the `id` property.
+   */
   public static dynamicPathProperties<T extends Model = Model>(
+    /**
+     * the **Model** who's properties are being interogated
+     */
     model: new () => T
   ) {
     return Record.create(model).dynamicPathComponents;
@@ -321,12 +330,13 @@ export class Record<T extends Model> extends FireModel<T> {
   ) {
     let r: Record<T>;
     try {
-      r = Record.create(model, options);
+      r = Record.createWith(model, payload as Partial<T>, options);
       if (!payload.id) {
         (payload as T).id = r.db.isMockDb
           ? fbKey()
           : await r.db.getPushKey(r.dbOffset);
       }
+
       await r._initialize(payload as T, options);
       const defaultValues = r.META.properties.filter(
         i => i.defaultValue !== undefined
@@ -473,7 +483,7 @@ export class Record<T extends Model> extends FireModel<T> {
   //#region INSTANCE DEFINITION
   private _existsOnDB: boolean = false;
   private _writeOperations: IWriteOperation[] = [];
-  private _data?: Partial<T>;
+  private _data?: Partial<T> = {};
 
   constructor(model: new () => T, options: IRecordOptions = {}) {
     super();
@@ -531,12 +541,13 @@ export class Record<T extends Model> extends FireModel<T> {
     data: Partial<T>,
     options: IRecordOptions = {}
   ): Promise<void> {
-    Object.keys(data).map(key => {
-      this._data[key as keyof T] = data[key as keyof T];
-    });
+    if (data) {
+      Object.keys(data).map(key => {
+        this._data[key as keyof T] = data[key as keyof T];
+      });
+    }
 
     const relationships = getModelMeta(this).relationships;
-
     const hasOneRels: Array<keyof T> = (relationships || [])
       .filter(r => r.relType === "hasOne")
       .map(r => r.property) as Array<keyof T>;
@@ -1109,13 +1120,14 @@ export class Record<T extends Model> extends FireModel<T> {
         this.db.mock.silenceEvents();
       }
       this._data.lastUpdated = new Date().getTime();
+      const path = this.dbPath;
 
       switch (crudAction) {
         case "remove":
           await this.db.remove(this.dbPath);
           break;
         case "add":
-          await this.db.set(this.dbPath, this.data);
+          await this.db.set(path, this.data);
           break;
         case "update":
           const paths = this._getPaths(this, { changed, added, removed });

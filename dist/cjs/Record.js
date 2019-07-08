@@ -15,14 +15,14 @@ const firebase_key_1 = require("firebase-key");
 const FireModel_1 = require("./FireModel");
 const buildDeepRelationshipLinks_1 = require("./record/buildDeepRelationshipLinks");
 const index_1 = require("./state-mgmt/index");
-const createWatchEvent_1 = require("./Watch/createWatchEvent");
+const createWatchEvent_1 = require("./watchers/createWatchEvent");
 const path_1 = require("./path");
 const ModelMeta_1 = require("./ModelMeta");
 const Audit_1 = require("./Audit");
 const util_1 = require("./util");
 const _1 = require(".");
-const findWatchers_1 = require("./Watch/findWatchers");
-const enhanceWithWatcherData_1 = require("./Watch/enhanceWithWatcherData");
+const findWatchers_1 = require("./watchers/findWatchers");
+const enhanceWithWatcherData_1 = require("./watchers/enhanceWithWatcherData");
 const isHasManyRelationship_1 = require("./verifications/isHasManyRelationship");
 const errors_1 = require("./errors");
 const buildRelationshipPaths_1 = require("./record/relationships/buildRelationshipPaths");
@@ -38,6 +38,7 @@ class Record extends FireModel_1.FireModel {
         //#region INSTANCE DEFINITION
         this._existsOnDB = false;
         this._writeOperations = [];
+        this._data = {};
         this._modelConstructor = model;
         this._model = new model();
         this._data = new model();
@@ -52,7 +53,17 @@ class Record extends FireModel_1.FireModel {
     static set dispatch(fn) {
         FireModel_1.FireModel.dispatch = fn;
     }
-    static dynamicPathProperties(model) {
+    /**
+     * **dynamicPathProperties**
+     *
+     * An array of "dynamic properties" that are derived fom the "dbOffset" to
+     * produce the "dbPath". Note: this does NOT include the `id` property.
+     */
+    static dynamicPathProperties(
+    /**
+     * the **Model** who's properties are being interogated
+     */
+    model) {
         return Record.create(model).dynamicPathComponents;
     }
     get data() {
@@ -226,7 +237,7 @@ class Record extends FireModel_1.FireModel {
     static async add(model, payload, options = {}) {
         let r;
         try {
-            r = Record.create(model, options);
+            r = Record.createWith(model, payload, options);
             if (!payload.id) {
                 payload.id = r.db.isMockDb
                     ? firebase_key_1.key()
@@ -371,9 +382,11 @@ class Record extends FireModel_1.FireModel {
      */
     async _initialize(data, options = {}) {
         var e_1, _a;
-        Object.keys(data).map(key => {
-            this._data[key] = data[key];
-        });
+        if (data) {
+            Object.keys(data).map(key => {
+                this._data[key] = data[key];
+            });
+        }
         const relationships = ModelMeta_1.getModelMeta(this).relationships;
         const hasOneRels = (relationships || [])
             .filter(r => r.relType === "hasOne")
@@ -435,7 +448,7 @@ class Record extends FireModel_1.FireModel {
         const currentState = this.get(property) || {};
         const newState = Object.assign({}, currentState, { [key]: value });
         this.set(property, newState);
-        return newState;
+        return key;
     }
     /**
      * **update**
@@ -815,12 +828,13 @@ class Record extends FireModel_1.FireModel {
                 this.db.mock.silenceEvents();
             }
             this._data.lastUpdated = new Date().getTime();
+            const path = this.dbPath;
             switch (crudAction) {
                 case "remove":
                     await this.db.remove(this.dbPath);
                     break;
                 case "add":
-                    await this.db.set(this.dbPath, this.data);
+                    await this.db.set(path, this.data);
                     break;
                 case "update":
                     const paths = this._getPaths(this, { changed, added, removed });

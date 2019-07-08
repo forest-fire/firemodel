@@ -16,7 +16,7 @@ As you can see here we've added the `employer` field and given it a type of "fk"
 
 ## Relationship Definitions
 
-While the manual way of doing things is straight forward you'll be missing out on some of the functionality provided by **FireModel** through it's support for two types of relationships:
+While the manual way of doing things is straight forward you'll be missing out on some of the functionality provided by **Firemodel** through it's support for two types of relationships:
 
 1. `hasOne` - a 1:M relationship
 2. `hasMany` - a M:1 or M:M relationship
@@ -93,7 +93,7 @@ export class Person extends Model {
 }
 ```
 
-In the above model you will run into problems because both `mother` and `father` have an _inverse_ of `children`. This means that when a new child is added, FireModel will not know whether that child's record should add the inverse key to `mother` or `father`. The system is _lossy_ and so there is no way to automatically manage this.
+In the above model you will run into problems because both `mother` and `father` have an _inverse_ of `children`. This means that when a new child is added, Firemodel will not know whether that child's record should add the inverse key to `mother` or `father`. The system is _lossy_ and so there is no way to automatically manage this.
 
 One option to address the above scenario is to manually manage this (aka, no inverse properties). Another might be to change the structure of the model to avoid the lossy conditions. There is one final way to manage this which should be done with some caution:
 

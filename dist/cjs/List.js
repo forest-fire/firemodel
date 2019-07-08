@@ -29,6 +29,9 @@ class List extends FireModel_1.FireModel {
                 FireModel_1.FireModel.defaultDb = options.db;
             }
         }
+        if (options.offsets) {
+            this._offsets = options.offsets;
+        }
     }
     //#region STATIC Interfaces
     /**
@@ -81,16 +84,8 @@ class List extends FireModel_1.FireModel {
     static set dispatch(fn) {
         FireModel_1.FireModel.dispatch = fn;
     }
-    /**
-     * Allows you to build a LIST on a model which has dynamic dbOffsets
-     * by statically initializing the dynamic segments up front
-     */
-    static offsets(offsets) {
-        List._offsets = offsets;
-        return List;
-    }
-    static create(model, options = {}) {
-        return new List(model);
+    static create(model, options) {
+        return new List(model, options);
     }
     /**
      * Creates a List<T> which is populated with the passed in query
@@ -401,12 +396,12 @@ class List extends FireModel_1.FireModel {
         if (dbOffset.indexOf(":") === -1) {
             return dbOffset;
         }
-        Object.keys(List._offsets).forEach(prop => {
-            const value = List._offsets[prop];
+        Object.keys(this._offsets).forEach(prop => {
+            const value = this._offsets[prop];
             if (!["string", "number"].includes(typeof value)) {
-                throw common_types_1.createError("record/not-allowed", `The dynamic dbOffsest is using the property "${prop}" on ${this.modelName} as a part of the route path but that property must be either a string or a number and instead was a ${typeof prop}`);
+                throw common_types_1.createError("record/not-allowed", `The dynamic dbOffest is using the property "${prop}" on ${this.modelName} as a part of the route path but that property must be either a string or a number and instead was a ${typeof prop}`);
             }
-            dbOffset = dbOffset.replace(`:${prop}`, String(List._offsets[prop]));
+            dbOffset = dbOffset.replace(`:${prop}`, String(value));
         });
         return dbOffset;
     }
