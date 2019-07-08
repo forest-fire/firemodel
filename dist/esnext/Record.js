@@ -10,14 +10,14 @@ import { key as fbKey } from "firebase-key";
 import { FireModel } from "./FireModel";
 import { buildDeepRelationshipLinks } from "./record/buildDeepRelationshipLinks";
 import { FmEvents } from "./state-mgmt/index";
-import { createWatchEvent } from "./Watch/createWatchEvent";
+import { createWatchEvent } from "./watchers/createWatchEvent";
 import { pathJoin } from "./path";
 import { getModelMeta } from "./ModelMeta";
 import { writeAudit } from "./Audit";
 import { compareHashes, withoutMetaOrPrivate, capitalize } from "./util";
 import { createCompositeKey } from ".";
-import { findWatchers } from "./Watch/findWatchers";
-import { enhanceEventWithWatcherData } from "./Watch/enhanceWithWatcherData";
+import { findWatchers } from "./watchers/findWatchers";
+import { enhanceEventWithWatcherData } from "./watchers/enhanceWithWatcherData";
 import { isHasManyRelationship } from "./verifications/isHasManyRelationship";
 import { NotHasManyRelationship, NotHasOneRelationship, FireModelError, FireModelProxyError } from "./errors";
 import { buildRelationshipPaths } from "./record/relationships/buildRelationshipPaths";
@@ -33,6 +33,7 @@ export class Record extends FireModel {
         //#region INSTANCE DEFINITION
         this._existsOnDB = false;
         this._writeOperations = [];
+        this._data = {};
         this._modelConstructor = model;
         this._model = new model();
         this._data = new model();
@@ -47,7 +48,17 @@ export class Record extends FireModel {
     static set dispatch(fn) {
         FireModel.dispatch = fn;
     }
-    static dynamicPathProperties(model) {
+    /**
+     * **dynamicPathProperties**
+     *
+     * An array of "dynamic properties" that are derived fom the "dbOffset" to
+     * produce the "dbPath". Note: this does NOT include the `id` property.
+     */
+    static dynamicPathProperties(
+    /**
+     * the **Model** who's properties are being interogated
+     */
+    model) {
         return Record.create(model).dynamicPathComponents;
     }
     get data() {
@@ -221,7 +232,7 @@ export class Record extends FireModel {
     static async add(model, payload, options = {}) {
         let r;
         try {
-            r = Record.create(model, options);
+            r = Record.createWith(model, payload, options);
             if (!payload.id) {
                 payload.id = r.db.isMockDb
                     ? fbKey()
@@ -366,9 +377,11 @@ export class Record extends FireModel {
      */
     async _initialize(data, options = {}) {
         var e_1, _a;
-        Object.keys(data).map(key => {
-            this._data[key] = data[key];
-        });
+        if (data) {
+            Object.keys(data).map(key => {
+                this._data[key] = data[key];
+            });
+        }
         const relationships = getModelMeta(this).relationships;
         const hasOneRels = (relationships || [])
             .filter(r => r.relType === "hasOne")
@@ -430,7 +443,7 @@ export class Record extends FireModel {
         const currentState = this.get(property) || {};
         const newState = Object.assign({}, currentState, { [key]: value });
         this.set(property, newState);
-        return newState;
+        return key;
     }
     /**
      * **update**
@@ -810,12 +823,13 @@ export class Record extends FireModel {
                 this.db.mock.silenceEvents();
             }
             this._data.lastUpdated = new Date().getTime();
+            const path = this.dbPath;
             switch (crudAction) {
                 case "remove":
                     await this.db.remove(this.dbPath);
                     break;
                 case "add":
-                    await this.db.set(this.dbPath, this.data);
+                    await this.db.set(path, this.data);
                     break;
                 case "update":
                     const paths = this._getPaths(this, { changed, added, removed });

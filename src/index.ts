@@ -6,7 +6,7 @@ export { Mock } from "./Mock";
 export { FireModel } from "./FireModel";
 export { Audit } from "./Audit";
 export { Watch } from "./Watch";
-export * from "./Watch/types";
+export * from "./watchers/types";
 export { IReduxDispatch, IVuexDispatch, VeuxWrapper } from "./VuexWrapper";
 export * from "./state-mgmt/index";
 export * from "./@types/index";

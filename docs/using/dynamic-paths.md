@@ -61,14 +61,13 @@ const product = Record.remove(Product, { id: "prod-id", state: "CT"} );
 
 ### Getting a List
 
-Unlike operating with `Record`, `List`'s do need a new operator to work effectively. As you see below we've added the `offsets()` modifier; otherwise the API surface is exactly the same.
+Unlike operating with `Record`, `List`'s need a little more work to build in the _offset properties_ needed to build out their database path. This is achieved by adding an `offsets` to the _options_ parameter passed in:
 
 ```typescript
-const products = List.offsets({ state: 'CT' }).all(Product);
-const products = List.offsets({ state: 'CT' }).where(Product, 'status', 'active');
+const offsets = { state: 'CT' };
+const products = List.all(Product, { offsets });
+const products = List.where(Product, 'status', 'active', { offsets });
 ```
-
-> Note: if you multiple dynamic properties in a path they must **all** be defined in the `offsets()` call (except the `id` itself).
 
 ## Watching
 
@@ -82,12 +81,22 @@ const { watchId } = await Watch.record(Product, { id: "1234", state: "CT" })
 
 ### Watching a List
 
-Similar to the CRUD API, we must state the non-`id` properties of the composite key in the `offsets()` function; otherwise the API remains the same to non-dynamic path models:
+Similar to the CRUD API, we must explicitly state the non-`id` properties of the composite key. We can do that by adding the offsets as a property of `options` or directly in the `offsets()` function:
 
 ```typescript
+// add as part of options
+const offsets = { state: "CT" };
 const { watchId } = await Watch
+  .list(Product, { offsets })
+  .all()
+  .start();
+
+// add with the `offsets()` method
+const { watchId } = await Watch
+  .list(Product)
   .offsets({ state: "CT" })
-  .list(Product).all().start();
+  .all()
+  .start();
 ```
 
 ### Relationships

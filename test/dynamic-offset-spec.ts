@@ -269,10 +269,10 @@ describe("LIST uses static offsets() with static API methods", () => {
     db.mock.updateDB({});
   });
 
-  it("LIST.offsets() returns LIST API", async () => {
-    const api = List.offsets({ geoCode: "1234" });
-    expect(List).to.have.ownProperty("all");
-    expect(List).to.have.ownProperty("where");
+  it.skip("LIST.offsets() returns LIST API", async () => {
+    // const api = List.offsets({ geoCode: "1234" });
+    // expect(List).to.have.ownProperty("all");
+    // expect(List).to.have.ownProperty("where");
   });
 
   it("List.all works with offsets", async () => {
@@ -280,7 +280,7 @@ describe("LIST uses static offsets() with static API methods", () => {
     await Mock(DeepPerson).generate(5, { group: "test2" });
     await Mock(DeepPerson).generate(5, { group: "test3" });
 
-    const people = await List.offsets({ group: "test" }).all(DeepPerson);
+    const people = await List.all(DeepPerson, { offsets: { group: "test" } });
     expect(people.length).to.equal(3);
   });
 
@@ -288,11 +288,9 @@ describe("LIST uses static offsets() with static API methods", () => {
     await Mock(DeepPerson).generate(3, { group: "test", age: 32 });
     await Mock(DeepPerson).generate(6, { group: "test", age: 45 });
     await Mock(DeepPerson).generate(5, { group: "test2", age: 45 });
-    const people = await List.offsets({ group: "test" }).where(
-      DeepPerson,
-      "age",
-      45
-    );
+    const people = await List.where(DeepPerson, "age", 45, {
+      offsets: { group: "test" }
+    });
     expect(people.length).to.equal(6);
     expect(people.filter(i => i.age === 45)).is.length(6);
   });
@@ -400,9 +398,13 @@ describe("MOCK uses dynamic dbOffsets", () => {
   });
 });
 
-describe.only("WATCHers work with dynamic dbOffsets", () => {
+describe("WATCHers work with dynamic dbOffsets", () => {
   beforeEach(async () => {
     FireModel.defaultDb = await DB.connect({ mocking: true });
+  });
+
+  afterEach(async () => {
+    FireModel.defaultDb.remove("/group", true);
   });
 
   it("Watching a RECORD with a dbOffset works", async () => {
@@ -411,10 +413,16 @@ describe.only("WATCHers work with dynamic dbOffsets", () => {
       events.push(evt);
     };
     FireModel.dispatch = dispatch;
-    const watcher = await Watch.record(DeepPerson, {
+    const watchRecord = await Watch.record(DeepPerson, {
       id: "12345",
       group: "CA"
-    }).start();
+    });
+
+    expect(watchRecord.start).to.be.a("function");
+    expect(watchRecord.dispatch).to.be.a("function");
+
+    const watcher = await watchRecord.start();
+
     expect(watcher).to.haveOwnProperty("watcherId");
     expect(watcher.watcherSource).to.equal("record");
     expect(watcher.eventType).to.equal("value");
@@ -425,6 +433,7 @@ describe.only("WATCHers work with dynamic dbOffsets", () => {
       age: 23,
       name: { first: "Charlie", last: "Chaplin" }
     });
+
     expect(events.map(i => i.type)).to.include(
       FmEvents.RECORD_ADDED_CONFIRMATION
     );
@@ -436,10 +445,32 @@ describe.only("WATCHers work with dynamic dbOffsets", () => {
       events.push(evt);
     };
     FireModel.dispatch = dispatch;
-    const watcher = await Watch.offsets({ state: "CA" })
-      .list(DeepPerson)
-      .all()
-      .start();
+
+    const watchList = Watch.list(DeepPerson).offsets({ group: "CA" });
+
+    expect(watchList.start).to.be.a("function");
+    expect(watchList.all).to.be.a("function");
+    expect(watchList.where).to.be.a("function");
+    expect(watchList.since).to.be.a("function");
+    expect(watchList.recent).to.be.a("function");
+    expect(watchList.before).to.be.a("function");
+    expect(watchList.after).to.be.a("function");
+
+    const watcher = await watchList.all().start();
+
+    expect(watcher)
+      .to.haveOwnProperty("watcherId")
+      .and.to.be.a("string");
+
+    await Record.add(DeepPerson, {
+      name: { first: "Robert", last: "Kennedy" },
+      age: 55,
+      group: "CA"
+    });
+
+    expect(events.map(i => i.type)).to.include(
+      FmEvents.RECORD_ADDED_CONFIRMATION
+    );
   });
 });
 
