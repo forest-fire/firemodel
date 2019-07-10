@@ -381,7 +381,7 @@ export class Record<T extends Model> extends FireModel<T> {
    */
   public static async update<T extends Model>(
     model: new () => T,
-    id: string,
+    id: string | ICompositeKey<T>,
     updates: Nullable<Partial<T>>,
     options: IRecordOptions = {}
   ) {

@@ -142,7 +142,7 @@ export declare class Record<T extends Model> extends FireModel<T> {
      * @param updates properties to update; this is a non-destructive operation so properties not expressed will remain unchanged. Also, because values are _nullable_ you can set a property to `null` to REMOVE it from the database.
      * @param options
      */
-    static update<T extends Model>(model: new () => T, id: string, updates: Nullable<Partial<T>>, options?: IRecordOptions): Promise<Record<T>>;
+    static update<T extends Model>(model: new () => T, id: string | ICompositeKey<T>, updates: Nullable<Partial<T>>, options?: IRecordOptions): Promise<Record<T>>;
     /**
      * **createWith**
      *
