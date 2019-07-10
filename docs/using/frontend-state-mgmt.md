@@ -24,7 +24,7 @@ import { Record, VeuxWrapper } from 'firemodel';
 Record.dispatch = VuexWrapper(dispatch);
 ```
 
-> **Note:** The [`VuexWrapper`](https://github.com/forest-fire/firemodel/blob/master/src/VuexWrapper.ts) is just a simple mapper which addresses the mild variant between Redux and Vuex's callback requirements.
+> **Note:** The [`VuexWrapper`](https://vuex.firemodel.info) is just a simple mapper which addresses the mild variant between Redux and Vuex's callback requirements.
 
 ### Redux
 
