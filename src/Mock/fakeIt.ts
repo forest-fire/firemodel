@@ -21,7 +21,6 @@ export default function fakeIt<T = any>(
     case "number":
     case "Number":
       const options = Array.isArray(rest[0]) ? rest[0][0] : undefined;
-
       return options && typeof options === "object"
         ? helper.faker.random.number(options)
         : helper.faker.random.number({ min: 1, max: 100 });

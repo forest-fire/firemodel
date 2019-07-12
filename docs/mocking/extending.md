@@ -66,6 +66,9 @@ So the obvious next question is ... what named properties are there? Glad you're
 
 All you need to do is choose any of the above and add the `@mock([named tag])` as a modifier to the property. There are a few more named contexts which take additional params:
 
+- **number** - `mock("number", { min: 0, max: 1000, precision: 0 })`
+  - allows you to get a number of a any combination of a stated _min_, _max_, or _precision_.
+  - if no parameter value is stated then the number will be between 1 and 100
 - **random** - `@mock("random", ...arrayOfThings)`
   - using a normal distribution, chooses one of the array items each time
 - **sequence** = `@mock("shuffle", ...arrayOfThings)`
