@@ -43,10 +43,10 @@ So the obvious next question is ... what named properties are there? Glad you're
 - longitude
 - gender
 - date (alias for `dateRecent`)
-  - datePast
-  - dateFuture
-  - dateRecent
-  - dateSoon
+  - datePast (or datePastString for `string` return instead of `Date`)
+  - dateFuture (or dateFutureString for `string` return instead of `Date`)
+  - dateRecent (or dateRecentString for `string` return instead of `Date`)
+  - dateSoon (or dateSoonString for `string` return instead of `Date`)
 - images
   - avatar
   - imageAnimal
