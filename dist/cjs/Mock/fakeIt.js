@@ -2,6 +2,9 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const index_1 = require("../index");
 const sequence = {};
+function makeDateString(aDate) {
+    return `${aDate.getFullYear()}-${aDate.getMonth() + 1}-${aDate.getDate()}`;
+}
 function fakeIt(helper, type, ...rest) {
     switch (type) {
         case "id":
@@ -66,19 +69,27 @@ function fakeIt(helper, type, ...rest) {
         case "date":
         case "dateRecent":
             return helper.faker.date.recent();
+        case "dateRecentString":
+            return makeDateString(helper.faker.date.recent());
         case "dateMiliseconds":
         case "dateRecentMiliseconds":
             return helper.faker.date.recent().getTime();
         case "datePast":
             return helper.faker.date.past();
+        case "datePastString":
+            return makeDateString(helper.faker.date.past());
         case "datePastMiliseconds":
             return helper.faker.date.past().getTime();
         case "dateFuture":
             return helper.faker.date.future();
+        case "dateFutureString":
+            return makeDateString(helper.faker.date.future());
         case "dateFutureMiliseconds":
             return helper.faker.date.future().getTime();
         case "dateSoon":
             return helper.faker.date.soon();
+        case "dateSoonString":
+            return makeDateString(helper.faker.date.soon());
         case "dateSoonMiliseconds":
             return helper.faker.date.soon().getTime();
         case "imageAvatar":

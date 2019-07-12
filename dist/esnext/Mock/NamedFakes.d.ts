@@ -29,13 +29,17 @@ declare const NamedFakes: {
     jobTitle: boolean;
     date: boolean;
     dateRecent: boolean;
+    dateRecentString: boolean;
     dateMiliseconds: boolean;
     dateRecentMiliseconds: boolean;
     datePast: boolean;
+    datePastString: boolean;
     datePastMiliseconds: boolean;
     dateFuture: boolean;
+    dateFutureString: boolean;
     dateFutureMiliseconds: boolean;
     dateSoon: boolean;
+    dateSoonString: boolean;
     dateSoonMiliseconds: boolean;
     imageAvatar: boolean;
     imageAnimal: boolean;
