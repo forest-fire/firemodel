@@ -29,7 +29,7 @@ export default function mockValue<T extends Model>(
       ? mockType(helper)
       : fakeIt(helper, mockType as keyof typeof NamedFakes, mockParameters);
   } else {
-    return fakeIt(
+    return fakeIt<T>(
       helper,
       (Object.keys(NamedFakes).includes(propMeta.property)
         ? PropertyNamePatterns[propMeta.property]

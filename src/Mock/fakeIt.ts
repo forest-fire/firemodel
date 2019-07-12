@@ -8,7 +8,7 @@ function makeDateString(aDate: Date): string {
   return `${aDate.getFullYear()}-${aDate.getMonth() + 1}-${aDate.getDate()}`;
 }
 
-export default function fakeIt(
+export default function fakeIt<T = any>(
   helper: MockHelper,
   type: keyof typeof NamedFakes,
   ...rest: any[]
@@ -54,6 +54,8 @@ export default function fakeIt(
       return helper.faker.address.city();
     case "state":
       return helper.faker.address.state();
+    case "zipCode":
+      return helper.faker.address.zipCode();
     case "stateAbbr":
       return helper.faker.address.stateAbbr();
     case "country":
@@ -64,8 +66,20 @@ export default function fakeIt(
       return helper.faker.address.latitude();
     case "longitude":
       return helper.faker.address.longitude();
+    /**
+     * Adds a gender of "male", "female" or "other" but with more likelihood of
+     * male or female.
+     */
     case "gender":
-      return helper.faker.helpers.shuffle(["male", "female", "other"]);
+      return helper.faker.helpers.shuffle([
+        "male",
+        "female",
+        "male",
+        "female",
+        "male",
+        "female",
+        "other"
+      ]);
     case "age":
       return helper.faker.random.number({ min: 1, max: 99 });
     case "ageChild":
@@ -79,6 +93,7 @@ export default function fakeIt(
     case "date":
     case "dateRecent":
       return helper.faker.date.recent();
+    /** returns string based date in format of "YYYY-MM-DD" */
     case "dateRecentString":
       return makeDateString(helper.faker.date.recent());
     case "dateMiliseconds":
@@ -86,12 +101,14 @@ export default function fakeIt(
       return helper.faker.date.recent().getTime();
     case "datePast":
       return helper.faker.date.past();
+    /** returns string based date in format of "YYYY-MM-DD" */
     case "datePastString":
       return makeDateString(helper.faker.date.past());
     case "datePastMiliseconds":
       return helper.faker.date.past().getTime();
     case "dateFuture":
       return helper.faker.date.future();
+    /** returns string based date in format of "YYYY-MM-DD" */
     case "dateFutureString":
       return makeDateString(helper.faker.date.future());
     case "dateFutureMiliseconds":
@@ -134,6 +151,25 @@ export default function fakeIt(
       return helper.faker.random.uuid();
     case "random":
       return helper.faker.random.arrayElement(rest[0]);
+    case "distribution":
+      const num = Math.random() * 100;
+      let start: number = 0;
+      let outcome: T;
+      const distribution = rest[0].forEach((i: [number, T]) => {
+        const [percentage, value] = i;
+        if (num > start && num < start + percentage) {
+          outcome = value;
+        }
+        start = start + percentage;
+      });
+      if (!outcome) {
+        throw new Error(
+          `The mock distribution fell outside the range of probability; make sure that your percentages add up to 100 [ ${num}, ${rest[0].map(
+            (i: [number, string]) => i[0]
+          )} ]`
+        );
+      }
+
     case "sequence":
       const prop = helper.context.property;
       const items = rest[0];

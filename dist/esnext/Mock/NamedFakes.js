@@ -16,6 +16,7 @@ const NamedFakes = {
     streetAddress: true,
     city: true,
     state: true,
+    zipCode: true,
     stateAbbr: true,
     country: true,
     countryCode: true,
@@ -59,6 +60,7 @@ const NamedFakes = {
     uuid: true,
     random: true,
     sequence: true,
+    distribution: true,
     placeImage: true,
     placeHolder: true
 };
