@@ -16,6 +16,7 @@ declare const NamedFakes: {
     streetAddress: boolean;
     city: boolean;
     state: boolean;
+    zipCode: boolean;
     stateAbbr: boolean;
     country: boolean;
     countryCode: boolean;
@@ -29,13 +30,17 @@ declare const NamedFakes: {
     jobTitle: boolean;
     date: boolean;
     dateRecent: boolean;
+    dateRecentString: boolean;
     dateMiliseconds: boolean;
     dateRecentMiliseconds: boolean;
     datePast: boolean;
+    datePastString: boolean;
     datePastMiliseconds: boolean;
     dateFuture: boolean;
+    dateFutureString: boolean;
     dateFutureMiliseconds: boolean;
     dateSoon: boolean;
+    dateSoonString: boolean;
     dateSoonMiliseconds: boolean;
     imageAvatar: boolean;
     imageAnimal: boolean;
@@ -55,6 +60,7 @@ declare const NamedFakes: {
     uuid: boolean;
     random: boolean;
     sequence: boolean;
+    distribution: boolean;
     placeImage: boolean;
     placeHolder: boolean;
 };

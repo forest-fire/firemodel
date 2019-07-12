@@ -37,6 +37,7 @@ So the obvious next question is ... what named properties are there? Glad you're
   - county
   - state
   - stateAbbr
+  - zipCode
   - country
   - countryCode
 - latitude
@@ -65,13 +66,15 @@ So the obvious next question is ... what named properties are there? Glad you're
 
 All you need to do is choose any of the above and add the `@mock([named tag])` as a modifier to the property. There are a few more named contexts which take additional params:
 
-- `random` - @mock("random", ...arrayOfThings);
+- **random** - `@mock("random", ...arrayOfThings)`
   - using a normal distribution, chooses one of the array items each time
-- `sequence` = @mock("shuffle", ...arrayOfThings);
+- **sequence** = `@mock("shuffle", ...arrayOfThings)`
   - sequentially applies each array item and then repeats if none are left
-- `placeImage` - @mock("placeImage", width, heigh, type)
+- **distribution** = `@mock("distribution", [40, "male"], [50, "female"], [10, "other])`
+  - similar to random but it allows you to state the percentage chance of each possible outcome
+- **placeImage** - `@mock("placeImage", width, heigh, type)`
   - types are "animals", "architecture", "people", "nature", "people", and "tech". Default type is "any"
-- `placeHolder` - @mock("placeHolder", size, backgroundColor, textColor)
+- **placeHolder** - `@mock("placeHolder", size, backgroundColor, textColor)`
   - *size* can be a single number like "300" which represents both height and width or it can separate height from width with "300x100"
   - *backgroundColor* and *textColor* are hex values like FFFFFF (white), 0000FF (blue), etc.
 
