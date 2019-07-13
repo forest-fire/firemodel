@@ -36,9 +36,10 @@ export default function API(db, modelConstructor) {
                 // be used to dig us out of this deficit; we should
                 // consider openning this up
                 // TODO: consider openning up other mockTypes to fill in the compositeKey
-                const validMocks = ["sequence", "random"];
+                const validMocks = ["sequence", "random", "distribution"];
                 notCovered.forEach(key => {
-                    const mock = record.META.property(key).mockType;
+                    const prop = record.META.property(key) || {};
+                    const mock = prop.mockType;
                     if (!mock ||
                         (typeof mock !== "function" && !validMocks.includes(mock))) {
                         throw new FireModelError(`The mock for the "${record.modelName}" model has dynamic segments and "${key}" was neither set as a fixed value in the exception parameter [ ${Object.keys(exceptions || {})} ] of generate() nor was the model constrained by a @mock type ${mock ? `[ ${mock} ]` : ""} which is deemed valid. Valid named mocks are ${JSON.stringify(validMocks)}; all bespoke mocks are accepted as valid.`, `firemodel/mock-not-ready`);
