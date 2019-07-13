@@ -8,11 +8,55 @@ function makeDateString(aDate: Date): string {
   return `${aDate.getFullYear()}-${aDate.getMonth() + 1}-${aDate.getDate()}`;
 }
 
+function getDistribution<T = any>(...distribution: Array<[number, T]>) {
+  const num = Math.floor(Math.random() * 100) + 1;
+  let start = 1;
+  let outcome;
+  const d = distribution.map(i => {
+    const [percentage, value] = i;
+    const end = start + percentage - 1;
+    const val = { start, end, value };
+    start = start + percentage;
+    return val;
+  });
+
+  d.forEach(i => {
+    if (num >= i.start && num <= i.end) {
+      outcome = i.value;
+      // console.log("set", num, `${start} => ${start + percentage}`);
+    }
+  });
+  if (!outcome) {
+    throw new Error(
+      `The mock distribution's random number [ ${num} ] fell outside the range of probability; make sure that your percentages add up to 100 [ ${distribution
+        .map(i => i[0])
+        .join(", ")} ]`
+    );
+  }
+
+  return outcome;
+}
+
 export default function fakeIt<T = any>(
   helper: MockHelper,
   type: keyof typeof NamedFakes,
   ...rest: any[]
 ) {
+  function getNumber(numOptions: {
+    min?: number;
+    max?: number;
+    precision?: number;
+  }) {
+    return numOptions && typeof numOptions === "object"
+      ? helper.faker.random.number(numOptions)
+      : helper.faker.random.number({ min: 1, max: 100 });
+  }
+
+  /** for mocks which use a hash-based second param */
+  function options(defaultValue: IDictionary = {}): IDictionary {
+    return rest[0] ? { ...defaultValue, ...rest[0] } : undefined;
+  }
+
   switch (type) {
     case "id":
       return fbKey();
@@ -20,11 +64,37 @@ export default function fakeIt<T = any>(
       return helper.faker.lorem.words(5);
     case "number":
     case "Number":
-      const options = Array.isArray(rest[0]) ? rest[0][0] : undefined;
+      return getNumber(options());
+    case "price":
+      const price = options({
+        symbol: "$",
+        min: 1,
+        max: 100,
+        precision: 2,
+        variableCents: false
+      });
+      let cents: string;
+      if (price.variableCents) {
+        cents = getDistribution(
+          [40, "00"],
+          [30, "99"],
+          [30, String(getNumber({ min: 1, max: 98 }))]
+        );
+        if (cents.length === 1) {
+          cents = cents + "0";
+        }
+      }
 
-      return options && typeof options === "object"
-        ? helper.faker.random.number(options)
-        : helper.faker.random.number({ min: 1, max: 100 });
+      const priceAmt = helper.faker.commerce.price(
+        price.min,
+        price.max,
+        price.precision,
+        price.symbol
+      );
+
+      return price.variableCents
+        ? priceAmt.replace(".00", "." + cents)
+        : priceAmt;
     case "Boolean":
       return Math.random() > 0.49 ? true : false;
     case "Object":
@@ -152,23 +222,7 @@ export default function fakeIt<T = any>(
     case "random":
       return helper.faker.random.arrayElement(rest[0]);
     case "distribution":
-      const num = Math.random() * 100;
-      let start: number = 0;
-      let outcome: T;
-      const distribution = rest[0].forEach((i: [number, T]) => {
-        const [percentage, value] = i;
-        if (num > start && num < start + percentage) {
-          outcome = value;
-        }
-        start = start + percentage;
-      });
-      if (!outcome) {
-        throw new Error(
-          `The mock distribution fell outside the range of probability; make sure that your percentages add up to 100 [ ${num}, ${rest[0].map(
-            (i: [number, string]) => i[0]
-          )} ]`
-        );
-      }
+      return getDistribution(...rest);
 
     case "sequence":
       const prop = helper.context.property;
