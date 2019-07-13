@@ -4,6 +4,7 @@ const NamedFakes = {
   number: true,
   /** alias for "number" */
   Number: true,
+  price: true,
   Boolean: true,
   Object: true,
   name: true,

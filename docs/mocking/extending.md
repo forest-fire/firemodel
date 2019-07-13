@@ -69,6 +69,11 @@ All you need to do is choose any of the above and add the `@mock([named tag])` a
 - **number** - `mock("number", { min: 0, max: 1000, precision: 0 })`
   - allows you to get a number of a any combination of a stated _min_, _max_, or _precision_.
   - if no parameter value is stated then the number will be between 1 and 100
+  - if you want a number with two decimal places to the right then you'd set precision to `.01`
+- **price** -`mock("price", { min: 10, max: 1000, symbol: "£" })`
+  - the `precision` defaults to 2
+  - The currency symbol default to "$" but can be set to whatever character you please
+  - by default the "cents" component is always 0 but you can set it to a variant amount with `{variableCents}: true}`; when this is set it distributes 40% of values to 0 cents, 30% to 99 cents, and the remaining 30% to a random number
 - **random** - `@mock("random", ...arrayOfThings)`
   - using a normal distribution, chooses one of the array items each time
 - **sequence** = `@mock("shuffle", ...arrayOfThings)`
