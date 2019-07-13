@@ -118,7 +118,7 @@ describe("Test parameterized mock built-in fakes", () => {
         [90, "often"]
       );
       expect(["often", "rarely", "almostNever"]).to.include(val);
-      totals[val]++;
+      totals[val as keyof typeof totals]++;
     }
 
     expect(totals.often).to.be.greaterThan(totals.rarely);

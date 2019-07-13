@@ -51,9 +51,10 @@ export default function API<T>(db: RealTimeDB, modelConstructor: new () => T) {
         // be used to dig us out of this deficit; we should
         // consider openning this up
         // TODO: consider openning up other mockTypes to fill in the compositeKey
-        const validMocks = ["sequence", "random"];
+        const validMocks = ["sequence", "random", "distribution"];
         notCovered.forEach(key => {
-          const mock = record.META.property(key as keyof T).mockType;
+          const prop: IDictionary = record.META.property(key as keyof T) || {};
+          const mock = prop.mockType;
           if (
             !mock ||
             (typeof mock !== "function" && !validMocks.includes(mock as string))
