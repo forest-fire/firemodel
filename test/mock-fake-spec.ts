@@ -131,4 +131,20 @@ describe("Test parameterized mock built-in fakes", () => {
       response.replace(/[0-9]{4}\-[0-9]{2}\-[0-9]{2}/, "replaced")
     ).to.equal("replaced");
   });
+
+  it("number mocks can set a max and min value which will be respected", async () => {
+    for (let i = 0; i < 100; i++) {
+      const response = fakeIt(helper, "number", { min: 1, max: 25 });
+      expect(response)
+        .to.be.greaterThan(0)
+        .and.lessThan(26);
+    }
+
+    for (let i = 0; i < 100; i++) {
+      const response = fakeIt(helper, "number", { min: 50, max: 99 });
+      expect(response)
+        .to.be.greaterThan(49)
+        .and.lessThan(100);
+    }
+  });
 });
