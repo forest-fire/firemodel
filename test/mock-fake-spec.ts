@@ -109,7 +109,6 @@ describe("Test parameterized mock built-in fakes", () => {
   it("Distribution works as expected", async () => {
     const totals = { often: 0, rarely: 0, almostNever: 0 };
     for (let i = 0; i < 3000; i++) {
-      const dist = [];
       const val = fakeIt(
         helper,
         "distribution",
@@ -123,5 +122,13 @@ describe("Test parameterized mock built-in fakes", () => {
 
     expect(totals.often).to.be.greaterThan(totals.rarely);
     expect(totals.rarely).to.be.greaterThan(totals.almostNever);
+  });
+
+  it("datePastString returns a proper string notation", async () => {
+    const response = fakeIt(helper, "datePastString");
+    expect(response).to.be.a("string");
+    expect(
+      response.replace(/[0-9]{4}\-[0-9]{2}\-[0-9]{2}/, "replaced")
+    ).to.equal("replaced");
   });
 });

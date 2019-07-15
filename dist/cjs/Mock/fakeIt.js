@@ -1,10 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const index_1 = require("../index");
+const date_fns_1 = require("date-fns");
 const sequence = {};
-function makeDateString(aDate) {
-    return `${aDate.getFullYear()}-${aDate.getMonth() + 1}-${aDate.getDate()}`;
-}
 function getDistribution(...distribution) {
     const num = Math.floor(Math.random() * 100) + 1;
     let start = 1;
@@ -134,7 +132,7 @@ function fakeIt(helper, type, ...rest) {
             return helper.faker.date.recent();
         /** returns string based date in format of "YYYY-MM-DD" */
         case "dateRecentString":
-            return makeDateString(helper.faker.date.recent());
+            return date_fns_1.format(helper.faker.date.recent(), "YYYY-MM-DD");
         case "dateMiliseconds":
         case "dateRecentMiliseconds":
             return helper.faker.date.recent().getTime();
@@ -142,20 +140,20 @@ function fakeIt(helper, type, ...rest) {
             return helper.faker.date.past();
         /** returns string based date in format of "YYYY-MM-DD" */
         case "datePastString":
-            return makeDateString(helper.faker.date.past());
+            return date_fns_1.format(helper.faker.date.past(), "YYYY-MM-DD");
         case "datePastMiliseconds":
             return helper.faker.date.past().getTime();
         case "dateFuture":
             return helper.faker.date.future();
         /** returns string based date in format of "YYYY-MM-DD" */
         case "dateFutureString":
-            return makeDateString(helper.faker.date.future());
+            return date_fns_1.format(helper.faker.date.future(), "YYYY-MM-DD");
         case "dateFutureMiliseconds":
             return helper.faker.date.future().getTime();
         case "dateSoon":
             return helper.faker.date.soon();
         case "dateSoonString":
-            return makeDateString(helper.faker.date.soon());
+            return date_fns_1.format(helper.faker.date.soon(), "YYYY-MM-DD");
         case "dateSoonMiliseconds":
             return helper.faker.date.soon().getTime();
         case "imageAvatar":
