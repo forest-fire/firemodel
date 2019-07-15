@@ -15,6 +15,7 @@ declare const NamedFakes: {
     companyName: boolean;
     address: boolean;
     streetAddress: boolean;
+    fullAddress: boolean;
     city: boolean;
     state: boolean;
     zipCode: boolean;
@@ -23,6 +24,7 @@ declare const NamedFakes: {
     countryCode: boolean;
     latitude: boolean;
     longitude: boolean;
+    coordinate: boolean;
     gender: boolean;
     age: boolean;
     ageChild: boolean;

@@ -42,7 +42,7 @@ export default function fakeIt(helper, type, ...rest) {
             return helper.faker.lorem.words(5);
         case "number":
         case "Number":
-            return getNumber(options());
+            return getNumber(options({ min: 0, max: 1000 }));
         case "price":
             const price = options({
                 symbol: "$",
@@ -84,7 +84,9 @@ export default function fakeIt(helper, type, ...rest) {
                 "  " +
                 helper.faker.address.zipCode());
         case "streetAddress":
-            return helper.faker.address.streetAddress();
+            return helper.faker.address.streetAddress(false);
+        case "fullAddress":
+            return helper.faker.address.streetAddress(true);
         case "city":
             return helper.faker.address.city();
         case "state":
@@ -101,6 +103,11 @@ export default function fakeIt(helper, type, ...rest) {
             return helper.faker.address.latitude();
         case "longitude":
             return helper.faker.address.longitude();
+        case "coordinate":
+            return {
+                latitude: helper.faker.address.latitude(),
+                longitude: helper.faker.address.longitude()
+            };
         /**
          * Adds a gender of "male", "female" or "other" but with more likelihood of
          * male or female.
