@@ -25,16 +25,19 @@ export default function mockValue<T extends Model>(
   const { type, mockType, mockParameters } = propMeta;
 
   if (mockType) {
+    // MOCK is defined
     return typeof mockType === "function"
       ? mockType(helper)
-      : fakeIt(helper, mockType as keyof typeof NamedFakes, mockParameters);
+      : fakeIt(
+          helper,
+          mockType as keyof typeof NamedFakes,
+          ...(mockParameters || [])
+        );
   } else {
-    return fakeIt<T>(
-      helper,
-      (Object.keys(NamedFakes).includes(propMeta.property)
-        ? PropertyNamePatterns[propMeta.property]
-        : type) as keyof typeof NamedFakes,
-      mockParameters
-    );
+    // MOCK is undefined
+    const fakedMockType = (Object.keys(NamedFakes).includes(propMeta.property)
+      ? PropertyNamePatterns[propMeta.property]
+      : type) as keyof typeof NamedFakes;
+    return fakeIt<T>(helper, fakedMockType, ...(mockParameters || []));
   }
 }

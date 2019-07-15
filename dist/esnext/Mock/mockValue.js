@@ -11,14 +11,17 @@ export default function mockValue(db, propMeta, ...rest) {
     const helper = new MockHelper(propMeta);
     const { type, mockType, mockParameters } = propMeta;
     if (mockType) {
+        // MOCK is defined
         return typeof mockType === "function"
             ? mockType(helper)
-            : fakeIt(helper, mockType, mockParameters);
+            : fakeIt(helper, mockType, ...(mockParameters || []));
     }
     else {
-        return fakeIt(helper, (Object.keys(NamedFakes).includes(propMeta.property)
+        // MOCK is undefined
+        const fakedMockType = (Object.keys(NamedFakes).includes(propMeta.property)
             ? PropertyNamePatterns[propMeta.property]
-            : type), mockParameters);
+            : type);
+        return fakeIt(helper, fakedMockType, ...(mockParameters || []));
     }
 }
 //# sourceMappingURL=mockValue.js.map

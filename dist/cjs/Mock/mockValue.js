@@ -16,14 +16,17 @@ function mockValue(db, propMeta, ...rest) {
     const helper = new firemock_1.MockHelper(propMeta);
     const { type, mockType, mockParameters } = propMeta;
     if (mockType) {
+        // MOCK is defined
         return typeof mockType === "function"
             ? mockType(helper)
-            : fakeIt_1.default(helper, mockType, mockParameters);
+            : fakeIt_1.default(helper, mockType, ...(mockParameters || []));
     }
     else {
-        return fakeIt_1.default(helper, (Object.keys(NamedFakes_1.default).includes(propMeta.property)
+        // MOCK is undefined
+        const fakedMockType = (Object.keys(NamedFakes_1.default).includes(propMeta.property)
             ? PropertyNamePatterns_1.default[propMeta.property]
-            : type), mockParameters);
+            : type);
+        return fakeIt_1.default(helper, fakedMockType, ...(mockParameters || []));
     }
 }
 exports.default = mockValue;
