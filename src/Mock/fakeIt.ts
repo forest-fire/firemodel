@@ -2,11 +2,9 @@ import { MockHelper } from "firemock";
 import NamedFakes from "./NamedFakes";
 import { fbKey } from "../index";
 import { IDictionary } from "common-types";
+import { format } from "date-fns";
 
 const sequence: IDictionary<number> = {};
-function makeDateString(aDate: Date): string {
-  return `${aDate.getFullYear()}-${aDate.getMonth() + 1}-${aDate.getDate()}`;
-}
 
 function getDistribution<T = any>(...distribution: Array<[number, T]>) {
   const num = Math.floor(Math.random() * 100) + 1;
@@ -165,7 +163,7 @@ export default function fakeIt<T = any>(
       return helper.faker.date.recent();
     /** returns string based date in format of "YYYY-MM-DD" */
     case "dateRecentString":
-      return makeDateString(helper.faker.date.recent());
+      return format(helper.faker.date.recent(), "YYYY-MM-DD");
     case "dateMiliseconds":
     case "dateRecentMiliseconds":
       return helper.faker.date.recent().getTime();
@@ -173,20 +171,20 @@ export default function fakeIt<T = any>(
       return helper.faker.date.past();
     /** returns string based date in format of "YYYY-MM-DD" */
     case "datePastString":
-      return makeDateString(helper.faker.date.past());
+      return format(helper.faker.date.past(), "YYYY-MM-DD");
     case "datePastMiliseconds":
       return helper.faker.date.past().getTime();
     case "dateFuture":
       return helper.faker.date.future();
     /** returns string based date in format of "YYYY-MM-DD" */
     case "dateFutureString":
-      return makeDateString(helper.faker.date.future());
+      return format(helper.faker.date.future(), "YYYY-MM-DD");
     case "dateFutureMiliseconds":
       return helper.faker.date.future().getTime();
     case "dateSoon":
       return helper.faker.date.soon();
     case "dateSoonString":
-      return makeDateString(helper.faker.date.soon());
+      return format(helper.faker.date.soon(), "YYYY-MM-DD");
     case "dateSoonMiliseconds":
       return helper.faker.date.soon().getTime();
     case "imageAvatar":
