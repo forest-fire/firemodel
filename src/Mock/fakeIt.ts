@@ -168,7 +168,6 @@ export default function fakeIt<T = any>(
     case "date":
     case "dateRecent":
       return helper.faker.date.recent();
-    /** returns string based date in format of "YYYY-MM-DD" */
     case "dateRecentString":
       return format(helper.faker.date.recent(), "YYYY-MM-DD");
     case "dateMiliseconds":
@@ -176,7 +175,6 @@ export default function fakeIt<T = any>(
       return helper.faker.date.recent().getTime();
     case "datePast":
       return helper.faker.date.past();
-    /** returns string based date in format of "YYYY-MM-DD" */
     case "datePastString":
       return format(helper.faker.date.past(), "YYYY-MM-DD");
     case "datePastMiliseconds":
@@ -245,12 +243,12 @@ export default function fakeIt<T = any>(
       return items[sequence[prop]];
     case "placeImage":
       // TODO: determine why data structure is an array of arrays
-      const [width, height, imgType] = rest[0];
+      const [width, height, imgType] = rest;
       return `https://placeimg.com/${width}/${height}/${
         imgType ? imgType : "all"
       }`;
     case "placeHolder":
-      const [size, backgroundColor, textColor] = rest[0];
+      const [size, backgroundColor, textColor] = rest;
       let url = `https://via.placeholder.com/${size}`;
       if (backgroundColor) {
         url += `/${backgroundColor}`;
