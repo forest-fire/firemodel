@@ -86,9 +86,15 @@ describe("Record > ", () => {
     const bart = await Record.get(Person, "1234", { db });
     const k1 = await bart.pushKey("tags", "doh!");
     const k2 = await bart.pushKey("tags", "whazzup?");
+    // local tests
     expect(bart.data.tags[k1]).to.equal("doh!");
     expect(bart.data.tags[k2]).to.equal("whazzup?");
     expect(Object.keys(bart.data.tags).length).to.equal(2);
+
+    // db tests
+    const bartAgain = await Record.get(Person, "1234", { db });
+    expect(bartAgain.data.tags[k1]).to.equal("doh!");
+    expect(bartAgain.data.tags[k2]).to.equal("whazzup?");
   });
 
   it("using pushKey updates lastUpdated", async () => {
@@ -145,7 +151,6 @@ describe("Record > ", () => {
     expect(roger.get("tags")).to.haveOwnProperty("456");
     // CHANGE REFLECTED after pulling from DB
     const bugs = await Record.get(Person, "8888");
-    console.log(bugs.data);
 
     expect(bugs.get("tags")).to.haveOwnProperty("456");
     expect(bugs.get("scratchpad")).to.haveOwnProperty("foo");
