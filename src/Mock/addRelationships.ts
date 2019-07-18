@@ -7,6 +7,9 @@ import { IMockConfig, IMockResponse } from "./types";
 import { processHasMany } from "./processHasMany";
 import { processHasOne } from "./processHasOne";
 
+/**
+ * Adds relationships to mocked records
+ */
 export default function addRelationships<T extends Model>(
   db: RealTimeDB,
   config: IMockConfig,
@@ -17,7 +20,6 @@ export default function addRelationships<T extends Model>(
     const relnResults: Array<IMockResponse<T>> = [];
 
     if (config.relationshipBehavior !== "ignore") {
-      // const p = new Parallel<IMockResponse<T>>("Adding Relationships to Mock");
       for (const rel of relns) {
         if (
           !config.cardinality ||
@@ -44,6 +46,7 @@ export default function addRelationships<T extends Model>(
         }
       }
     }
+
     return [
       {
         id: record.id,

@@ -355,14 +355,13 @@ describe("MOCK uses dynamic dbOffsets", () => {
     fkStructuralChecksForHasMany(db.mock.db.group.test.testing.deepPeople);
   });
 
-  it.only("Mock() mocks on dynamic path and creates appropriate FK bi-directionally with using followRelationshipLinks()", async () => {
+  it("Mock() mocks on dynamic path and creates appropriate FK bi-directionally with using followRelationshipLinks()", async () => {
     await Mock(DeepPerson)
       .followRelationshipLinks()
       .generate(2, { group: "test" });
     // basics
     expect(db.mock.db.group.test.testing.deepPeople).is.an("object");
     expect(db.mock.db.hobbies).is.an("object");
-    // console.log(JSON.stringify(db.mock.db, null, 2));
     expect(db.mock.db.test.testing.companies).is.an("object");
     // FK checks
     fkStructuralChecksForHasMany(db.mock.db.group.test.testing.deepPeople);

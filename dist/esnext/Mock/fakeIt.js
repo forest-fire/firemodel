@@ -190,12 +190,12 @@ export default function fakeIt(helper, type, ...rest) {
         case "uuid":
             return helper.faker.random.uuid();
         case "random":
-            return helper.faker.random.arrayElement(rest[0]);
+            return helper.faker.random.arrayElement(rest);
         case "distribution":
             return getDistribution(...rest);
         case "sequence":
             const prop = helper.context.property;
-            const items = rest[0];
+            const items = rest;
             if (typeof sequence[prop] === "undefined") {
                 sequence[prop] = 0;
             }

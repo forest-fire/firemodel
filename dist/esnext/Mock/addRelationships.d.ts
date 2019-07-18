@@ -3,4 +3,7 @@ import { IDictionary } from "common-types";
 import { Model } from "../Model";
 import { Record } from "../Record";
 import { IMockConfig, IMockResponse } from "./types";
+/**
+ * Adds relationships to mocked records
+ */
 export default function addRelationships<T extends Model>(db: RealTimeDB, config: IMockConfig, exceptions?: IDictionary): (record: Record<T>) => Promise<IMockResponse<T>[]>;
