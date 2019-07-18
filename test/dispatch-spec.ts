@@ -38,7 +38,6 @@ describe("Dispatch →", () => {
     ) as Array<keyof Person & string>;
 
     const deltas = compareHashes(p2.data, person.data, validProperties);
-    console.log(deltas);
     const result: IFmChangedProperties<Person> = (person as any)._getPaths(
       p2,
       deltas
