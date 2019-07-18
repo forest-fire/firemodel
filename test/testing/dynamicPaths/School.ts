@@ -1,7 +1,7 @@
 import { model, Model, property, hasMany, fks, mock } from "../../../src";
 import DeepPerson from "./DeepPerson";
 
-@model({})
+@model()
 export default class School extends Model {
   // prettier-ignore
   @property @mock("companyName") name: string;
