@@ -107,8 +107,8 @@ function fakeIt(helper, type, ...rest) {
             return helper.faker.address.longitude();
         case "coordinate":
             return {
-                latitude: helper.faker.address.latitude(),
-                longitude: helper.faker.address.longitude()
+                latitude: Number(helper.faker.address.latitude()),
+                longitude: Number(helper.faker.address.longitude())
             };
         /**
          * Adds a gender of "male", "female" or "other" but with more likelihood of

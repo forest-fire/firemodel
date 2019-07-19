@@ -1,9 +1,9 @@
 // tslint:disable:no-unused-expression
 export type NonProperties<T> = {
-  [P in keyof T]: T[P] extends () => any ? never : P
+  [P in keyof T]: T[P] extends () => any ? never : P;
 }[keyof T];
 export type Properties<T> = Pick<T, NonProperties<T>>;
-import { IDictionary, epochWithMilliseconds, datetime } from "common-types";
+import { epochWithMilliseconds } from "common-types";
 import { property, mock } from "./decorators/constraints";
 import { model } from "./decorators/model";
 import { index, uniqueIndex } from "./decorators/indexing";
@@ -12,6 +12,7 @@ import { IFmModelMeta } from "./decorators/types";
 @model()
 export class Model {
   // prettier-ignore
+  // TODO: This should be made required and the API updated to make it optional where appropriate
   /** The primary-key for the record */
   @property @uniqueIndex public id?: string;
   // prettier-ignore
