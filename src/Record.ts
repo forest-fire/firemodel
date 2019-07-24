@@ -1097,13 +1097,13 @@ export class Record<T extends Model> extends FireModel<T> {
       if (!options.silent) {
         // Note: if used on frontend, the mutations must be careful to
         // set this to the right path considering there is no watcher
-        this.dispatch(createWatchEvent(actionTypeStart, this, event));
+        await this.dispatch(createWatchEvent(actionTypeStart, this, event));
       }
     } else {
       // For each watcher watching this DB path ...
-      watchers.forEach(watcher => {
+      for (const watcher of watchers) {
         if (!options.silent) {
-          this.dispatch(
+          await this.dispatch(
             createWatchEvent(
               actionTypeStart,
               this,
@@ -1111,7 +1111,7 @@ export class Record<T extends Model> extends FireModel<T> {
             )
           );
         }
-      });
+      }
     }
 
     // Send CRUD to Firebase
@@ -1143,7 +1143,7 @@ export class Record<T extends Model> extends FireModel<T> {
       // send confirm event
       if (!options.silent && !options.silentAcceptance) {
         if (watchers.length === 0) {
-          this.dispatch(
+          await this.dispatch(
             createWatchEvent(actionTypeEnd, this, {
               transactionId,
               crudAction,
@@ -1153,9 +1153,9 @@ export class Record<T extends Model> extends FireModel<T> {
             })
           );
         } else {
-          watchers.forEach(watcher => {
+          for (const watcher of watchers) {
             if (!options.silent) {
-              this.dispatch(
+              await this.dispatch(
                 createWatchEvent(actionTypeEnd, this, {
                   ...enhanceEventWithWatcherData(this, watcher, event),
                   transactionId,
@@ -1163,7 +1163,7 @@ export class Record<T extends Model> extends FireModel<T> {
                 })
               );
             }
-          });
+          }
         }
       }
       if (this.db.isMockDb && options.silent) {
@@ -1171,7 +1171,7 @@ export class Record<T extends Model> extends FireModel<T> {
       }
     } catch (e) {
       // send failure event
-      this.dispatch(
+      await this.dispatch(
         createWatchEvent(actionTypeFailure, this, {
           transactionId,
           crudAction,
