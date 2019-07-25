@@ -68,6 +68,7 @@ export class WatchList extends WatchBase {
         }
         this._watcherSource = "list-of-records";
         this._eventType = "value";
+        return this;
     }
     /**
      * **since**

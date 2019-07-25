@@ -70,6 +70,7 @@ class WatchList extends WatchBase_1.WatchBase {
         }
         this._watcherSource = "list-of-records";
         this._eventType = "value";
+        return this;
     }
     /**
      * **since**

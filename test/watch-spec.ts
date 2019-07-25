@@ -12,6 +12,9 @@ import { setupEnv } from "./testing/helpers";
 import { IReduxAction } from "../src/VuexWrapper";
 import { FmEvents } from "../src/state-mgmt";
 import { wait, IDictionary } from "common-types";
+import { WatchList } from "../src/watchers/WatchList";
+import { getWatchList } from "../src/watchers/watchSubclasses";
+import { getWatcherPool } from "../src/watchers/watcherPool";
 
 setupEnv();
 
@@ -184,5 +187,25 @@ describe("Watch →", () => {
     expectedTypes.forEach(e => {
       expect(eventTypes).to.include(e);
     });
+  });
+});
+
+describe.only("Watch.list(XXX).ids()", () => {
+  it("WatchList instantiated with ids() method", async () => {
+    const wl = Watch.list(Person).ids("1234", "4567", "8989");
+    expect(wl).to.be.instanceOf(WatchList);
+    expect((wl as any)._underlyingRecordWatchers).to.have.lengthOf(3);
+  });
+
+  it("Starting WatchList only has a single and appropriate entry in watcher pool", async () => {
+    const wl = Watch.list(Person).ids("1234", "4567", "8989");
+    FireModel.dispatch = () => undefined;
+    FireModel.defaultDb = await DB.connect({ mocking: true });
+    const wId = await wl.start();
+    const pool = getWatcherPool();
+    expect(Object.keys(pool)).to.be.lengthOf(1);
+    expect(Object.keys(pool)).includes(wId.watcherId);
+    expect(wId.query).is.an("array");
+    expect(wId.dbPath).is.an("array");
   });
 });

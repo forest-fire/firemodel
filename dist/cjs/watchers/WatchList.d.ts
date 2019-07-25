@@ -36,7 +36,7 @@ export declare class WatchList<T extends Model> extends WatchBase<T> {
      *
      * @param ids the list of FK references (simple or composite)
      */
-    ids(...ids: Array<IPrimaryKey<T>>): void;
+    ids(...ids: Array<IPrimaryKey<T>>): this;
     /**
      * **since**
      *

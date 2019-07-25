@@ -87,6 +87,8 @@ export class WatchList<T extends Model> extends WatchBase<T> {
     }
     this._watcherSource = "list-of-records";
     this._eventType = "value";
+
+    return this;
   }
 
   /**
