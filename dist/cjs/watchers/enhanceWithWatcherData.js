@@ -7,9 +7,9 @@ function enhanceEventWithWatcherData(record, watcher, event) {
     event.watcher = watcher.watcherId;
     event.watcherSource = watcher.watcherSource;
     event.localPath =
-        watcher.watcherSource === "list"
-            ? common_types_1.pathJoin(meta.localPrefix || "", record.pluralName)
-            : common_types_1.pathJoin(meta.localPrefix || "", meta.localModelName);
+        watcher.watcherSource === "record"
+            ? common_types_1.pathJoin(meta.localPrefix || "", meta.localModelName)
+            : common_types_1.pathJoin(meta.localPrefix || "", record.pluralName);
     if (watcher.watcherSource === "list") {
         event.localPostfix = meta.localPostfix;
     }
