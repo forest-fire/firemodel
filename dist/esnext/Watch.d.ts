@@ -52,7 +52,7 @@ export declare class Watch<T extends Model = Model> {
      * the composite key, or an object representation of the composite
      * key.
      */
-    static record<T extends Model>(modelConstructor: new () => T, pk: IPrimaryKey<T>, options?: IModelOptions): WatchRecord<Model>;
+    static record<T extends Model>(modelConstructor: new () => T, pk: IPrimaryKey<T>, options?: IModelOptions): WatchRecord<T>;
     static list<T extends Model>(
     /**
      * The **Model** subType which this list watcher will watch

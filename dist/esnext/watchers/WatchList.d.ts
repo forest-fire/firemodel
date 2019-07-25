@@ -1,6 +1,6 @@
 import { WatchBase } from "./WatchBase";
 import { Model } from "../Model";
-import { IListOptions } from "../@types";
+import { IListOptions, IPrimaryKey } from "../@types";
 import { SerializedQuery, IComparisonOperator } from "serialized-query";
 import { epochWithMilliseconds } from "common-types";
 export declare class WatchList<T extends Model> extends WatchBase<T> {
@@ -21,6 +21,22 @@ export declare class WatchList<T extends Model> extends WatchBase<T> {
      * @param offsetDict
      */
     offsets(offsetDict: Partial<T>): this;
+    /**
+     * **ids**
+     *
+     * There are times where you know an array of IDs which you want to watch as a `list`
+     * and calling a series of **record** watchers would not work because -- for a given model
+     * -- you can only watch one (this is due to the fact that a _record_ watcher does not
+     * offset the record by it's ID). This is the intended use-case for this type of _list_
+     * watcher.
+     *
+     * It is worth noting that with this watcher the frontend will indeed get an array of
+     * records but from a **Firebase** standpoint this is not a "list watcher" but instead
+     * a series of "record watchers".
+     *
+     * @param ids the list of FK references (simple or composite)
+     */
+    ids(...ids: Array<IPrimaryKey<T>>): this;
     /**
      * **since**
      *

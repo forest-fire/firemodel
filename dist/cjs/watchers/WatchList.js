@@ -5,6 +5,7 @@ const List_1 = require("../List");
 const Record_1 = require("../Record");
 const serialized_query_1 = require("serialized-query");
 const util_1 = require("../util");
+const __1 = require("..");
 class WatchList extends WatchBase_1.WatchBase {
     constructor() {
         super(...arguments);
@@ -46,6 +47,29 @@ class WatchList extends WatchBase_1.WatchBase {
         this._offsets = offsetDict;
         const lst = List_1.List.create(this._modelConstructor, this._options);
         this.setPathDependantProperties();
+        return this;
+    }
+    /**
+     * **ids**
+     *
+     * There are times where you know an array of IDs which you want to watch as a `list`
+     * and calling a series of **record** watchers would not work because -- for a given model
+     * -- you can only watch one (this is due to the fact that a _record_ watcher does not
+     * offset the record by it's ID). This is the intended use-case for this type of _list_
+     * watcher.
+     *
+     * It is worth noting that with this watcher the frontend will indeed get an array of
+     * records but from a **Firebase** standpoint this is not a "list watcher" but instead
+     * a series of "record watchers".
+     *
+     * @param ids the list of FK references (simple or composite)
+     */
+    ids(...ids) {
+        for (const id of ids) {
+            this._underlyingRecordWatchers.push(__1.Watch.record(this._modelConstructor, id));
+        }
+        this._watcherSource = "list-of-records";
+        this._eventType = "value";
         return this;
     }
     /**

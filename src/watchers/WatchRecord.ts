@@ -2,7 +2,7 @@ import { Model } from "../Model";
 import { WatchBase } from "./WatchBase";
 import { IPrimaryKey, IModelOptions } from "../@types";
 import { FireModelError } from "../errors";
-import { Watch, Record } from "..";
+import { Record } from "..";
 import { SerializedQuery } from "serialized-query";
 
 export class WatchRecord<T extends Model> extends WatchBase<T> {
@@ -17,7 +17,7 @@ export class WatchRecord<T extends Model> extends WatchBase<T> {
         "firemodel/no-pk"
       );
     }
-    const o = new WatchRecord();
+    const o = new WatchRecord<T>();
     // if options hash has a DB reference; use it
     if (o.db) {
       o._db = options.db;
@@ -26,7 +26,7 @@ export class WatchRecord<T extends Model> extends WatchBase<T> {
     o._eventType = "value";
     o._watcherSource = "record";
 
-    const r = Record.createWith(modelConstructor, pk);
+    const r = Record.createWith<T>(modelConstructor, pk);
     o._query = new SerializedQuery(`${r.dbPath}`);
     o._modelConstructor = modelConstructor;
     o._modelName = r.modelName;

@@ -8,6 +8,13 @@ import { addToWatcherPool } from "./watcherPool";
  * The base class which both `WatchList` and `WatchRecord` derive.
  */
 export class WatchBase {
+    constructor() {
+        /**
+         * this is only to accomodate the list watcher using `ids` which is an aggregate of
+         * `record` watchers.
+         */
+        this._underlyingRecordWatchers = [];
+    }
     /**
      * **start**
      *
@@ -15,7 +22,8 @@ export class WatchBase {
      * actively watched
      */
     async start(options = {}) {
-        const watcherId = "w" + String(this._query.hashCode());
+        const watchIdPrefix = this._watcherSource === "list-of-records" ? "wlr" : "w";
+        const watcherId = watchIdPrefix + String(this._query.hashCode());
         const watcherName = options.name || `not-specified-${watcherId}`;
         // create a dispatch function with context
         const context = {
@@ -43,7 +51,15 @@ export class WatchBase {
         const dispatchCallback = WatchDispatcher(context)(coreDispatch);
         try {
             if (this._eventType === "value") {
-                this.db.watch(this._query, ["value"], dispatchCallback);
+                if (this._watcherSource === "list-of-records") {
+                    // Watch all "ids" added to the list of records
+                    this._underlyingRecordWatchers.forEach(r => {
+                        this.db.watch(r._query, ["value"], dispatchCallback);
+                    });
+                }
+                else {
+                    this.db.watch(this._query, ["value"], dispatchCallback);
+                }
             }
             else {
                 this.db.watch(this._query, ["child_added", "child_changed", "child_moved", "child_removed"], dispatchCallback);
@@ -58,14 +74,19 @@ export class WatchBase {
             });
             throw e;
         }
+        // TODO: this needs to be set back to `IWatcherItem`
         const watcherItem = {
             watcherId,
             watcherName,
             eventType: this._eventType,
             watcherSource: this._watcherSource,
             dispatch: this._dispatcher || FireModel.dispatch,
-            query: this._query,
-            dbPath: this._query.path,
+            query: this._watcherSource === "list-of-records"
+                ? this._underlyingRecordWatchers.map(i => i._query)
+                : this._query,
+            dbPath: this._watcherSource === "list-of-records"
+                ? this._underlyingRecordWatchers.map(i => i._query.path)
+                : this._query.path,
             localPath: this._localPath,
             createdAt: new Date().getTime()
         };

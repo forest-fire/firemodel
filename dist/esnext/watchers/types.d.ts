@@ -85,16 +85,39 @@ export interface IFmEvent<T> {
 export declare type IWatchEventClassification = "child" | "value";
 export declare type IQuerySetter = (q: SerializedQuery) => void;
 export declare type IWatchListQueries = "all" | "first" | "last" | "since" | "dormantSince" | "where" | "fromQuery" | "after" | "before" | "recent" | "inactive";
-export declare type IWatcherSource = "list" | "record" | "unknown";
-export interface IWatcherItem {
+export declare type IWatcherSource = "list" | "record" | "list-of-records" | "unknown";
+export interface IWatcherItemBase {
     watcherId: string;
     /** if defined, pass along the string name off the watcher */
     watcherName?: string;
     watcherSource: IWatcherSource;
     eventType: IWatchEventClassification;
-    query: SerializedQuery;
+    query: SerializedQuery | SerializedQuery[];
     createdAt: number;
     dispatch: IReduxDispatch;
-    dbPath: string;
+    dbPath: string | string[];
     localPath: string;
 }
+/**
+ * When watching a "list-of-records" you are really watching
+ * a basket/array of underlying record watchers.
+ */
+export interface IWatcherItemListofRecords extends IWatcherItemBase {
+    watcherSource: "list-of-records";
+    query: SerializedQuery[];
+    dbPath: string[];
+    eventType: "child";
+}
+export interface IWatcherItemList extends IWatcherItemBase {
+    watcherSource: "list";
+    query: SerializedQuery;
+    dbPath: string;
+    eventType: "child";
+}
+export interface IWatcherItemRecord extends IWatcherItemBase {
+    watcherSource: "record";
+    query: SerializedQuery;
+    dbPath: string;
+    eventType: "value";
+}
+export declare type IWatcherItem = IWatcherItemList | IWatcherItemRecord | IWatcherItemListofRecords;
