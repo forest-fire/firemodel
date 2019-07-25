@@ -5,9 +5,9 @@ export function enhanceEventWithWatcherData(record, watcher, event) {
     event.watcher = watcher.watcherId;
     event.watcherSource = watcher.watcherSource;
     event.localPath =
-        watcher.watcherSource === "list"
-            ? pathJoin(meta.localPrefix || "", record.pluralName)
-            : pathJoin(meta.localPrefix || "", meta.localModelName);
+        watcher.watcherSource === "record"
+            ? pathJoin(meta.localPrefix || "", meta.localModelName)
+            : pathJoin(meta.localPrefix || "", record.pluralName);
     if (watcher.watcherSource === "list") {
         event.localPostfix = meta.localPostfix;
     }
