@@ -9,7 +9,11 @@ const typed_conversions_1 = require("typed-conversions");
  * path or a parent of this path.
  */
 function findWatchers(dbPath) {
-    return typed_conversions_1.hashToArray(Watch_1.Watch.inventory).filter(i => dbPath.includes(i.query.path));
+    return typed_conversions_1.hashToArray(Watch_1.Watch.inventory).filter(i => Array.isArray(i.query)
+        ? /** handles the "list-of-records" use case */
+            i.query.map(p => p.path).includes(dbPath)
+        : /** handles the standard use case */
+            dbPath.includes(i.query.path));
 }
 exports.findWatchers = findWatchers;
 //# sourceMappingURL=findWatchers.js.map

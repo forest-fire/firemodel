@@ -5,17 +5,6 @@ export type FmModelConstructor<T extends Model> = new () => T;
 export interface IModelOptions {
   logger?: ILogger;
   db?: import("abstracted-firebase").RealTimeDB;
-  /**
-   * Optionally state that the primary key (composite or
-   * simple) is included as part of the local state tree.
-   *
-   * This is important for _record_ watchers where a given
-   * model has more than one record being watched.
-   *
-   * The "offset" which will be added to the local state tree
-   *
-   */
-  usePrimaryKeyAsOffset?: boolean;
 }
 
 /**

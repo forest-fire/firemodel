@@ -6,6 +6,7 @@ import { FmModelConstructor } from "../@types/general";
 import { FmRelationshipType } from "../decorators/types";
 import { IValueBasedWatchEvent } from "abstracted-firebase";
 import { IDictionary } from "common-types";
+import { IWatcherSource } from "../watchers/types";
 export declare type Extractable<T, U> = T extends U ? any : never;
 export declare type NotString<T> = string extends T ? never : any;
 export declare type IFmCrudOperation = "add" | "update" | "remove";
@@ -158,7 +159,7 @@ export interface IFmDispatchWatchContext<T extends Model = Model> extends IFmRec
      * indicates whether watcher involved in firing this event
      * was a RECORD or LIST
      */
-    watcherSource: "list" | "record";
+    watcherSource: IWatcherSource;
     /**
      * an identifier of which active watcher which triggered to create this event,
      * not populated in the case of a client triggered event

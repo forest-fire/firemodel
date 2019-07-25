@@ -9,6 +9,10 @@ import { hashToArray } from "typed-conversions";
  */
 export function findWatchers(dbPath: string) {
   return hashToArray(Watch.inventory).filter(i =>
-    dbPath.includes(i.query.path as string)
+    Array.isArray(i.query)
+      ? /** handles the "list-of-records" use case */
+        i.query.map(p => p.path).includes(dbPath)
+      : /** handles the standard use case */
+        dbPath.includes(i.query.path)
   );
 }

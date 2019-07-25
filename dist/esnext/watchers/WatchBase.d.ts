@@ -4,12 +4,13 @@ import { FmModelConstructor, ICompositeKey } from "../@types";
 import { IWatchEventClassification, IFmWatcherStartOptions, IWatcherItem } from "./types";
 import { IReduxDispatch } from "../VuexWrapper";
 import { RealTimeDB } from "abstracted-firebase";
+import { WatchRecord } from "./WatchRecord";
 /**
  * The base class which both `WatchList` and `WatchRecord` derive.
  */
 export declare class WatchBase<T extends Model> {
     protected _query: SerializedQuery;
-    protected _modelConstructor: FmModelConstructor<any>;
+    protected _modelConstructor: FmModelConstructor<T>;
     protected _eventType: IWatchEventClassification;
     protected _dispatcher: IReduxDispatch;
     protected _db: RealTimeDB;
@@ -20,7 +21,14 @@ export declare class WatchBase<T extends Model> {
     protected _localPostfix: string;
     protected _dynamicProperties: string[];
     protected _compositeKey: ICompositeKey<T>;
-    protected _watcherSource: "record" | "list";
+    /**
+     * this is only to accomodate the list watcher using `ids` which is an aggregate of
+     * `record` watchers.
+     */
+    protected _underlyingRecordWatchers: Array<WatchRecord<T>>;
+    protected _watcherSource: "record" | "list"
+    /** a "list of records" is an array of record-watchers which maps to an array in local state */
+     | "list-of-records";
     protected _classProperties: string[];
     /**
      * **start**

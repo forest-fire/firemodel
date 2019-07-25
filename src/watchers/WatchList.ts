@@ -1,12 +1,14 @@
 import { WatchBase } from "./WatchBase";
 import { Model } from "../Model";
-import { IModelOptions, IListOptions } from "../@types";
+import { IListOptions, IFkReference, IPrimaryKey } from "../@types";
 import { List } from "../List";
 import { Record } from "../Record";
 import { SerializedQuery, IComparisonOperator } from "serialized-query";
 import { getAllPropertiesFromClassStructure } from "../util";
 import { epochWithMilliseconds } from "common-types";
-import { ListenOptions } from "net";
+import { WatchRecord } from "./WatchRecord";
+import { IWatcherItem } from "./types";
+import { Watch } from "..";
 
 export class WatchList<T extends Model> extends WatchBase<T> {
   public static list<T extends Model>(
@@ -60,6 +62,31 @@ export class WatchList<T extends Model> extends WatchBase<T> {
     this.setPathDependantProperties();
 
     return this;
+  }
+
+  /**
+   * **ids**
+   *
+   * There are times where you know an array of IDs which you want to watch as a `list`
+   * and calling a series of **record** watchers would not work because -- for a given model
+   * -- you can only watch one (this is due to the fact that a _record_ watcher does not
+   * offset the record by it's ID). This is the intended use-case for this type of _list_
+   * watcher.
+   *
+   * It is worth noting that with this watcher the frontend will indeed get an array of
+   * records but from a **Firebase** standpoint this is not a "list watcher" but instead
+   * a series of "record watchers".
+   *
+   * @param ids the list of FK references (simple or composite)
+   */
+  public ids(...ids: Array<IPrimaryKey<T>>) {
+    for (const id of ids) {
+      this._underlyingRecordWatchers.push(
+        Watch.record<T>(this._modelConstructor, id)
+      );
+    }
+    this._watcherSource = "list-of-records";
+    this._eventType = "value";
   }
 
   /**

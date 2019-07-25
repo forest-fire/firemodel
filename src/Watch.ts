@@ -128,9 +128,7 @@ export class Watch<T extends Model = Model> {
   public static record<T extends Model>(
     modelConstructor: new () => T,
     pk: IPrimaryKey<T>,
-    options: IModelOptions = {
-      usePrimaryKeyAsOffset: true
-    }
+    options: IModelOptions = {}
   ) {
     return WatchRecord.record(modelConstructor, pk, options);
   }

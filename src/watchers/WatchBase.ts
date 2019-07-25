@@ -14,13 +14,14 @@ import { WatchDispatcher } from "./WatchDispatcher";
 import { waitForInitialization } from "./watchInitialization";
 import { createError } from "common-types";
 import { addToWatcherPool } from "./watcherPool";
+import { WatchRecord } from "./WatchRecord";
 
 /**
  * The base class which both `WatchList` and `WatchRecord` derive.
  */
 export class WatchBase<T extends Model> {
   protected _query: SerializedQuery;
-  protected _modelConstructor: FmModelConstructor<any>;
+  protected _modelConstructor: FmModelConstructor<T>;
   protected _eventType: IWatchEventClassification;
   protected _dispatcher: IReduxDispatch;
   protected _db: RealTimeDB;
@@ -31,7 +32,16 @@ export class WatchBase<T extends Model> {
   protected _localPostfix: string;
   protected _dynamicProperties: string[];
   protected _compositeKey: ICompositeKey<T>;
-  protected _watcherSource: "record" | "list";
+  /**
+   * this is only to accomodate the list watcher using `ids` which is an aggregate of
+   * `record` watchers.
+   */
+  protected _underlyingRecordWatchers: Array<WatchRecord<T>> = [];
+  protected _watcherSource:
+    | "record"
+    | "list"
+    /** a "list of records" is an array of record-watchers which maps to an array in local state */
+    | "list-of-records";
   protected _classProperties: string[];
 
   /**
@@ -43,7 +53,9 @@ export class WatchBase<T extends Model> {
   public async start(
     options: IFmWatcherStartOptions = {}
   ): Promise<IWatcherItem> {
-    const watcherId = "w" + String(this._query.hashCode());
+    const watchIdPrefix =
+      this._watcherSource === "list-of-records" ? "wlr" : "w";
+    const watcherId = watchIdPrefix + String(this._query.hashCode());
     const watcherName = options.name || `not-specified-${watcherId}`;
     // create a dispatch function with context
     const context: IFmDispatchWatchContext<T> = {
@@ -79,7 +91,14 @@ export class WatchBase<T extends Model> {
 
     try {
       if (this._eventType === "value") {
-        this.db.watch(this._query, ["value"], dispatchCallback);
+        if (this._watcherSource === "list-of-records") {
+          // Watch all "ids" added to the list of records
+          this._underlyingRecordWatchers.forEach(r => {
+            this.db.watch(r._query, ["value"], dispatchCallback);
+          });
+        } else {
+          this.db.watch(this._query, ["value"], dispatchCallback);
+        }
       } else {
         this.db.watch(
           this._query,
@@ -97,14 +116,21 @@ export class WatchBase<T extends Model> {
       throw e;
     }
 
-    const watcherItem: IWatcherItem = {
+    // TODO: this needs to be set back to `IWatcherItem`
+    const watcherItem: any = {
       watcherId,
       watcherName,
       eventType: this._eventType,
       watcherSource: this._watcherSource,
       dispatch: this._dispatcher || FireModel.dispatch,
-      query: this._query,
-      dbPath: this._query.path as string,
+      query:
+        this._watcherSource === "list-of-records"
+          ? this._underlyingRecordWatchers.map(i => i._query)
+          : this._query,
+      dbPath:
+        this._watcherSource === "list-of-records"
+          ? this._underlyingRecordWatchers.map(i => i._query.path)
+          : this._query.path,
       localPath: this._localPath,
       createdAt: new Date().getTime()
     };

@@ -6,6 +6,7 @@ import { FmModelConstructor } from "../@types/general";
 import { FmRelationshipType } from "../decorators/types";
 import { IValueBasedWatchEvent } from "abstracted-firebase";
 import { IDictionary } from "common-types";
+import { IWatcherSource } from "../watchers/types";
 
 //#region generalized structures
 
@@ -184,7 +185,7 @@ export interface IFmDispatchWatchContext<T extends Model = Model>
    * indicates whether watcher involved in firing this event
    * was a RECORD or LIST
    */
-  watcherSource: "list" | "record";
+  watcherSource: IWatcherSource;
   /**
    * an identifier of which active watcher which triggered to create this event,
    * not populated in the case of a client triggered event
