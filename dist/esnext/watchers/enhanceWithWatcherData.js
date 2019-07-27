@@ -1,7 +1,8 @@
 import { pathJoin } from "common-types";
 import { getModelMeta } from "../ModelMeta";
-export function enhanceEventWithWatcherData(record, watcher, event) {
+export function provideLocalEventWithWatcherContext(record, watcher, event) {
     const meta = getModelMeta(record);
+    const output = Object.assign({}, event, { watcherId: watcher.watcherId, watcherSource: watcher.watcherSource });
     event.watcher = watcher.watcherId;
     event.watcherSource = watcher.watcherSource;
     event.localPath =
@@ -11,7 +12,11 @@ export function enhanceEventWithWatcherData(record, watcher, event) {
     if (watcher.watcherSource === "list") {
         event.localPostfix = meta.localPostfix;
     }
-    event.localPrefix = meta.localPrefix;
-    return event;
+    if (watcher.watcherSource === "list-of-records") {
+        output.dbPath = record.dbPath;
+        output.query = watcher.query.find(q => (q._path = record.dbPath));
+    }
+    output.localPrefix = meta.localPrefix;
+    return output;
 }
 //# sourceMappingURL=enhanceWithWatcherData.js.map

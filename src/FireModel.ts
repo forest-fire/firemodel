@@ -14,10 +14,10 @@ import {
   IFmModelPropertyMeta,
   IFmModelRelationshipMeta
 } from "./decorators/types";
-import { ILocalStateManagement, IFmChangedProperties } from "./@types";
+import { IFmChangedProperties, IFmRecordEvent } from "./@types";
 // tslint:disable-next-line:no-var-requires
 const pluralize = require("pluralize");
-const defaultDispatch = (context: IDictionary) => "";
+const defaultDispatch: IReduxDispatch = async context => "";
 
 export class FireModel<T extends Model> {
   public static get defaultDb() {
@@ -43,7 +43,7 @@ export class FireModel<T extends Model> {
    * all subsequent transactions will use this dispatch function unless they are
    * explicitly passed another.
    */
-  public static set dispatch(fn: IReduxDispatch) {
+  public static set dispatch(fn: IReduxDispatch & Partial<IFmRecordEvent>) {
     if (!fn) {
       FireModel._dispatchActive = false;
       FireModel._dispatch = defaultDispatch;
@@ -133,9 +133,7 @@ export class FireModel<T extends Model> {
     }
     if (!this._db) {
       const e = new Error(
-        `Can't get DB as it has not been set yet for this instance and no default database exists [ ${
-          this.modelName
-        } ]!`
+        `Can't get DB as it has not been set yet for this instance and no default database exists [ ${this.modelName} ]!`
       );
       e.name = "FireModel::NoDatabase";
       throw e;
@@ -188,7 +186,8 @@ const db = await FireModel.connect(DB, options);
   private static _defaultDb: RealTimeDB;
   private static _dispatchActive: boolean = false;
   /** the dispatch function used to interact with frontend frameworks */
-  private static _dispatch: IReduxDispatch = defaultDispatch;
+  private static _dispatch: IReduxDispatch &
+    Partial<IFmRecordEvent> = defaultDispatch;
 
   //#endregion
 

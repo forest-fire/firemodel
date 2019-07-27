@@ -43,7 +43,7 @@ import {
 } from ".";
 import { findWatchers } from "./watchers/findWatchers";
 import { IFmEvent } from "./watchers/types";
-import { enhanceEventWithWatcherData } from "./watchers/enhanceWithWatcherData";
+import { provideLocalEventWithWatcherContext } from "./watchers/enhanceWithWatcherData";
 import { isHasManyRelationship } from "./verifications/isHasManyRelationship";
 import {
   NotHasManyRelationship,
@@ -133,6 +133,8 @@ export class Record<T extends Model> extends FireModel<T> {
    */
   public get dbPath() {
     if (this.data.id ? false : true) {
+      // tslint:disable-next-line: no-debugger
+      debugger;
       throw createError(
         "record/not-ready",
         `you can not ask for the dbPath before setting an "id" property [ ${this.modelName} ]`
@@ -426,6 +428,7 @@ export class Record<T extends Model> extends FireModel<T> {
     options: IRecordOptions = {}
   ) {
     const rec = Record.create(model, options);
+
     if (options.setDeepRelationships === true) {
       throw new FireModelError(
         `Trying to create a ${capitalize(
@@ -1107,7 +1110,7 @@ export class Record<T extends Model> extends FireModel<T> {
             createWatchEvent(
               actionTypeStart,
               this,
-              enhanceEventWithWatcherData(this, watcher, event)
+              provideLocalEventWithWatcherContext(this, watcher, event)
             )
           );
         }
@@ -1157,7 +1160,7 @@ export class Record<T extends Model> extends FireModel<T> {
             if (!options.silent) {
               await this.dispatch(
                 createWatchEvent(actionTypeEnd, this, {
-                  ...enhanceEventWithWatcherData(this, watcher, event),
+                  ...provideLocalEventWithWatcherContext(this, watcher, event),
                   transactionId,
                   crudAction
                 })

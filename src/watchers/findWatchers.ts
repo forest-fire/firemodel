@@ -1,17 +1,36 @@
 import { Watch } from "../Watch";
 import { hashToArray } from "typed-conversions";
+import { IWatcherItem } from "./types";
+import { SerializedQuery } from "serialized-query";
 
 /**
  * **findWatchers**
  *
  * Given a database path, finds all the watchers which are watching this
- * path or a parent of this path.
+ * path or a parent of this path. This must consider a normal **list** or
+ * **record** watcher but also a **list-of-records** where instead of a
+ * `1:1` relationship between "watcher" and Firebase listener there is instead
+ * a `1:M` relationship.
  */
-export function findWatchers(dbPath: string) {
+export function findWatchers(
+  /** the database path where change was detected */
+  dbPath: string
+) {
+  const inspectListofRecords = (watcher: IWatcherItem) => {
+    const paths = (watcher.query as SerializedQuery[]).map(i => i.path);
+    let found = false;
+    paths.forEach(p => {
+      if (dbPath.includes(p)) {
+        found = true;
+      }
+    });
+    return found;
+  };
+
   return hashToArray(Watch.inventory).filter(i =>
-    Array.isArray(i.query)
+    i.watcherSource === "list-of-records"
       ? /** handles the "list-of-records" use case */
-        i.query.map(p => p.path).includes(dbPath)
+        inspectListofRecords(i)
       : /** handles the standard use case */
         dbPath.includes(i.query.path)
   );

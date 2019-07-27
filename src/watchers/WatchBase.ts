@@ -8,7 +8,7 @@ import {
 } from "./types";
 import { IReduxDispatch } from "../VuexWrapper";
 import { RealTimeDB } from "abstracted-firebase";
-import { IFmDispatchWatchContext, FireModel, FmEvents } from "..";
+import { IFmDispatchWatchContextBase, FireModel, FmEvents } from "..";
 import { FireModelError } from "../errors";
 import { WatchDispatcher } from "./WatchDispatcher";
 import { waitForInitialization } from "./watchInitialization";
@@ -53,16 +53,27 @@ export class WatchBase<T extends Model> {
   public async start(
     options: IFmWatcherStartOptions = {}
   ): Promise<IWatcherItem> {
-    const watchIdPrefix =
-      this._watcherSource === "list-of-records" ? "wlr" : "w";
-    const watcherId = watchIdPrefix + String(this._query.hashCode());
-    const watcherName = options.name || `not-specified-${watcherId}`;
-    // create a dispatch function with context
-    const context: IFmDispatchWatchContext<T> = {
+    const isListOfRecords = this._watcherSource === "list-of-records";
+    const watchIdPrefix = isListOfRecords ? "wlr" : "w";
+    const watchHashCode = isListOfRecords
+      ? String(this._underlyingRecordWatchers[0]._query.hashCode())
+      : String(this._query.hashCode());
+    const watcherId = watchIdPrefix + "-" + watchHashCode;
+    const watcherName = options.name || `${watcherId}`;
+    const watcherPath =
+      this._watcherSource === "list-of-records"
+        ? this._underlyingRecordWatchers.map(i => i._query.path)
+        : this._query.path;
+    const query =
+      this._watcherSource === "list-of-records"
+        ? this._underlyingRecordWatchers.map(i => i._query)
+        : this._query;
+    // context that comes purely from the Watcher
+    const watchContext: IFmDispatchWatchContextBase<T> = {
       watcherId,
       watcherName,
       modelConstructor: this._modelConstructor,
-      query: this._query,
+      query,
       dynamicPathProperties: this._dynamicProperties,
       compositeKey: this._compositeKey,
       localPath: this._localPath,
@@ -70,9 +81,11 @@ export class WatchBase<T extends Model> {
       modelName: this._modelName,
       localModelName: this._localModelName || "not-relevant",
       pluralName: this._pluralName,
-      watcherPath: this._query.path as string,
+      watcherPath,
       watcherSource: this._watcherSource
     };
+    // Use the bespoke dispatcher for this class if it's available;
+    // if not then fall back to the default Firemodel dispatch
     const coreDispatch = this._dispatcher || FireModel.dispatch;
 
     if (coreDispatch.name === "defaultDispatch") {
@@ -87,7 +100,11 @@ export class WatchBase<T extends Model> {
         `Attempt to start a watcher before the database connection has been established!`
       );
     }
-    const dispatchCallback = WatchDispatcher<T>(context)(coreDispatch);
+
+    // The dispatcher will now have all the context it needs to publish events
+    // in a consistent fashion; this dispatch function will be used both by
+    // both locally originated events AND server based events.
+    const dispatchCallback = WatchDispatcher<T>(watchContext)(coreDispatch);
 
     try {
       if (this._eventType === "value") {

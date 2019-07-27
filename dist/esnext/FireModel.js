@@ -2,7 +2,7 @@ import { pathJoin } from "common-types";
 import { getModelMeta } from "./ModelMeta";
 // tslint:disable-next-line:no-var-requires
 const pluralize = require("pluralize");
-const defaultDispatch = (context) => "";
+const defaultDispatch = async (context) => "";
 export class FireModel {
     static get defaultDb() {
         return FireModel._defaultDb;

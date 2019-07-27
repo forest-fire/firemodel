@@ -17,7 +17,7 @@ import { writeAudit } from "./Audit";
 import { compareHashes, withoutMetaOrPrivate, capitalize } from "./util";
 import { createCompositeKey } from ".";
 import { findWatchers } from "./watchers/findWatchers";
-import { enhanceEventWithWatcherData } from "./watchers/enhanceWithWatcherData";
+import { provideLocalEventWithWatcherContext } from "./watchers/enhanceWithWatcherData";
 import { isHasManyRelationship } from "./verifications/isHasManyRelationship";
 import { NotHasManyRelationship, NotHasOneRelationship, FireModelError, FireModelProxyError } from "./errors";
 import { buildRelationshipPaths } from "./record/relationships/buildRelationshipPaths";
@@ -83,6 +83,8 @@ export class Record extends FireModel {
      */
     get dbPath() {
         if (this.data.id ? false : true) {
+            // tslint:disable-next-line: no-debugger
+            debugger;
             throw createError("record/not-ready", `you can not ask for the dbPath before setting an "id" property [ ${this.modelName} ]`);
         }
         return [
@@ -813,7 +815,7 @@ export class Record extends FireModel {
             // For each watcher watching this DB path ...
             for (const watcher of watchers) {
                 if (!options.silent) {
-                    await this.dispatch(createWatchEvent(actionTypeStart, this, enhanceEventWithWatcherData(this, watcher, event)));
+                    await this.dispatch(createWatchEvent(actionTypeStart, this, provideLocalEventWithWatcherContext(this, watcher, event)));
                 }
             }
         }
@@ -853,7 +855,7 @@ export class Record extends FireModel {
                 else {
                     for (const watcher of watchers) {
                         if (!options.silent) {
-                            await this.dispatch(createWatchEvent(actionTypeEnd, this, Object.assign({}, enhanceEventWithWatcherData(this, watcher, event), { transactionId,
+                            await this.dispatch(createWatchEvent(actionTypeEnd, this, Object.assign({}, provideLocalEventWithWatcherContext(this, watcher, event), { transactionId,
                                 crudAction })));
                         }
                     }

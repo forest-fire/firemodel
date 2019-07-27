@@ -8,32 +8,41 @@ import {
 } from "abstracted-firebase";
 import {
   FmEvents,
-  IFmDispatchWatchContext,
+  IFmDispatchWatchContextBase,
   IFmContextualizedWatchEvent
 } from "../state-mgmt";
 import { Record } from "../Record";
 import { hasInitialized } from "./watchInitialization";
 import { FireModelError, FireModelProxyError } from "../errors";
 import { capitalize } from "../util";
+import { IFmRecordEvent } from "../@types";
 
 /**
  * **watchDispatcher**
  *
  * Wraps Firebase event detail (meager) with as much context as is possible
  */
-export const WatchDispatcher = <T>(context: IFmDispatchWatchContext<T>) => (
-  /** a generic redux dispatch function; called by database on event */
-  clientHandler: IReduxDispatch<IFmContextualizedWatchEvent<T>>
+export const WatchDispatcher = <T>(
+  watcherContext: IFmDispatchWatchContextBase<T>
+) => (
+  /**
+   * a base/generic redux dispatch function; typically provided
+   * by the frontend state management framework
+   */
+  coreDispatchFn: IReduxDispatch
 ) => {
-  if (typeof clientHandler !== "function") {
+  if (typeof coreDispatchFn !== "function") {
     throw new FireModelError(
       `A watcher is being setup but the dispatch function is not a valid function!`,
       "firemodel/not-allowed"
     );
   }
 
-  return (event: IValueBasedWatchEvent & IPathBasedWatchEvent) => {
-    hasInitialized[context.watcherId] = true;
+  // Handle incoming events ...
+  return async (
+    event: IValueBasedWatchEvent & IPathBasedWatchEvent & IFmRecordEvent<T>
+  ) => {
+    hasInitialized[watcherContext.watcherId] = true;
 
     const typeLookup: IDictionary = {
       child_added: FmEvents.RECORD_ADDED,
@@ -43,15 +52,12 @@ export const WatchDispatcher = <T>(context: IFmDispatchWatchContext<T>) => (
       value: FmEvents.RECORD_CHANGED
     };
 
-    const recId =
+    const recordProps =
       typeof event.value === "object"
         ? { id: event.key, ...event.value }
         : { id: event.key };
 
-    const rec = Record.createWith(
-      context.modelConstructor,
-      context.compositeKey
-    );
+    const rec = Record.createWith(watcherContext.modelConstructor, recordProps);
 
     const contextualizedEvent: IFmContextualizedWatchEvent<T> = {
       ...{
@@ -62,11 +68,12 @@ export const WatchDispatcher = <T>(context: IFmDispatchWatchContext<T>) => (
               : FmEvents.RECORD_CHANGED
             : typeLookup[event.eventType as keyof typeof typeLookup]
       },
-      ...context,
-      ...event
+      ...watcherContext,
+      ...event,
+      dbPath: rec.dbPath
     };
 
-    return clientHandler(contextualizedEvent);
+    return coreDispatchFn(contextualizedEvent);
   };
 };
 

@@ -1,3 +1,4 @@
 import { IFmEvent, IWatcherItem } from "./types";
 import { Record } from "../Record";
-export declare function enhanceEventWithWatcherData<T>(record: Record<T>, watcher: IWatcherItem, event: IFmEvent<T>): IFmEvent<T>;
+import { IFmRecordEvent } from "../@types/watcher-types";
+export declare function provideLocalEventWithWatcherContext<T, K = IFmRecordEvent<T>>(record: Record<T>, watcher: IWatcherItem, event: IFmEvent<T>): K;

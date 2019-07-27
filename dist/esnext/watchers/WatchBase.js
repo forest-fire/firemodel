@@ -22,15 +22,25 @@ export class WatchBase {
      * actively watched
      */
     async start(options = {}) {
-        const watchIdPrefix = this._watcherSource === "list-of-records" ? "wlr" : "w";
-        const watcherId = watchIdPrefix + String(this._query.hashCode());
-        const watcherName = options.name || `not-specified-${watcherId}`;
-        // create a dispatch function with context
-        const context = {
+        const isListOfRecords = this._watcherSource === "list-of-records";
+        const watchIdPrefix = isListOfRecords ? "wlr" : "w";
+        const watchHashCode = isListOfRecords
+            ? String(this._underlyingRecordWatchers[0]._query.hashCode())
+            : String(this._query.hashCode());
+        const watcherId = watchIdPrefix + "-" + watchHashCode;
+        const watcherName = options.name || `${watcherId}`;
+        const watcherPath = this._watcherSource === "list-of-records"
+            ? this._underlyingRecordWatchers.map(i => i._query.path)
+            : this._query.path;
+        const query = this._watcherSource === "list-of-records"
+            ? this._underlyingRecordWatchers.map(i => i._query)
+            : this._query;
+        // context that comes purely from the Watcher
+        const watchContext = {
             watcherId,
             watcherName,
             modelConstructor: this._modelConstructor,
-            query: this._query,
+            query,
             dynamicPathProperties: this._dynamicProperties,
             compositeKey: this._compositeKey,
             localPath: this._localPath,
@@ -38,9 +48,11 @@ export class WatchBase {
             modelName: this._modelName,
             localModelName: this._localModelName || "not-relevant",
             pluralName: this._pluralName,
-            watcherPath: this._query.path,
+            watcherPath,
             watcherSource: this._watcherSource
         };
+        // Use the bespoke dispatcher for this class if it's available;
+        // if not then fall back to the default Firemodel dispatch
         const coreDispatch = this._dispatcher || FireModel.dispatch;
         if (coreDispatch.name === "defaultDispatch") {
             throw new FireModelError(`Attempt to start a ${this._watcherSource} watcher on "${this._query.path}" but no dispatcher has been assigned. Make sure to explicitly set the dispatch function or use "FireModel.dispatch = xxx" to setup a default dispatch function.`, `firemodel/invalid-dispatch`);
@@ -48,7 +60,10 @@ export class WatchBase {
         if (!this.db) {
             throw new FireModelError(`Attempt to start a watcher before the database connection has been established!`);
         }
-        const dispatchCallback = WatchDispatcher(context)(coreDispatch);
+        // The dispatcher will now have all the context it needs to publish events
+        // in a consistent fashion; this dispatch function will be used both by
+        // both locally originated events AND server based events.
+        const dispatchCallback = WatchDispatcher(watchContext)(coreDispatch);
         try {
             if (this._eventType === "value") {
                 if (this._watcherSource === "list-of-records") {

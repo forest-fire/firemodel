@@ -9,6 +9,15 @@ export function addToWatcherPool(item) {
 export function clearWatcherPool() {
     watcherPool = {};
 }
+/**
+ * Each watcher must have it's own `dispatch()` function which
+ * is reponsible for capturing the "context". This will be used
+ * both by locally originated events (which have more info) and
+ * server based events.
+ */
+export function addDispatchForWatcher(code, dispatch) {
+    //
+}
 export function removeFromWatcherPool(code) {
     delete watcherPool[code];
     return watcherPool;

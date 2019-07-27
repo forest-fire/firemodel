@@ -88,6 +88,8 @@ class Record extends FireModel_1.FireModel {
      */
     get dbPath() {
         if (this.data.id ? false : true) {
+            // tslint:disable-next-line: no-debugger
+            debugger;
             throw common_types_1.createError("record/not-ready", `you can not ask for the dbPath before setting an "id" property [ ${this.modelName} ]`);
         }
         return [
@@ -818,7 +820,7 @@ class Record extends FireModel_1.FireModel {
             // For each watcher watching this DB path ...
             for (const watcher of watchers) {
                 if (!options.silent) {
-                    await this.dispatch(createWatchEvent_1.createWatchEvent(actionTypeStart, this, enhanceWithWatcherData_1.enhanceEventWithWatcherData(this, watcher, event)));
+                    await this.dispatch(createWatchEvent_1.createWatchEvent(actionTypeStart, this, enhanceWithWatcherData_1.provideLocalEventWithWatcherContext(this, watcher, event)));
                 }
             }
         }
@@ -858,7 +860,7 @@ class Record extends FireModel_1.FireModel {
                 else {
                     for (const watcher of watchers) {
                         if (!options.silent) {
-                            await this.dispatch(createWatchEvent_1.createWatchEvent(actionTypeEnd, this, Object.assign({}, enhanceWithWatcherData_1.enhanceEventWithWatcherData(this, watcher, event), { transactionId,
+                            await this.dispatch(createWatchEvent_1.createWatchEvent(actionTypeEnd, this, Object.assign({}, enhanceWithWatcherData_1.provideLocalEventWithWatcherContext(this, watcher, event), { transactionId,
                                 crudAction })));
                         }
                     }

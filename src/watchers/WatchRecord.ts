@@ -27,7 +27,7 @@ export class WatchRecord<T extends Model> extends WatchBase<T> {
     o._watcherSource = "record";
 
     const r = Record.createWith<T>(modelConstructor, pk);
-    o._query = new SerializedQuery(`${r.dbPath}`);
+    o._query = new SerializedQuery<T>(`${r.dbPath}`);
     o._modelConstructor = modelConstructor;
     o._modelName = r.modelName;
     o._localModelName = r.META.localModelName;

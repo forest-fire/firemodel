@@ -254,7 +254,7 @@ export class WatchList<T extends Model> extends WatchBase<T> {
    *
    * @param query
    */
-  public fromQuery(inputQuery: SerializedQuery): WatchList<T> {
+  public fromQuery(inputQuery: SerializedQuery<T>): WatchList<T> {
     this._query = inputQuery;
 
     return this;

@@ -120,7 +120,7 @@ export interface IFMRecordListEvent<T extends Model = Model> {
     hashCode: number;
     records: T[];
 }
-export interface IFMRelationshipEvent<T extends Model = Model> extends IFmDispatchWatchContext<T> {
+export interface IFMRelationshipEvent<T extends Model = Model> extends IFmDispatchWatchContextBase<T> {
     fk: string;
     fkCompositeKey: ICompositeKey;
     fkModelName: string;
@@ -152,9 +152,12 @@ export interface IFmRecordWatchContext<T> {
  * along with what was sent by Firebase itself. This additional "context"
  * is defined as IFmDispatchWatchContext
  */
-export interface IFmDispatchWatchContext<T extends Model = Model> extends IFmRecordWatchContext<T> {
-    /** the query the watcher is based on */
-    query: SerializedQuery;
+export interface IFmDispatchWatchContextBase<T extends Model = Model> extends IFmRecordWatchContext<T> {
+    /**
+     * the query the watcher is based on; if this is a `list-of-records`
+     * then there will be 1:M serialized queries underlying
+     */
+    query: SerializedQuery | SerializedQuery[];
     /**
      * indicates whether watcher involved in firing this event
      * was a RECORD or LIST
@@ -165,10 +168,25 @@ export interface IFmDispatchWatchContext<T extends Model = Model> extends IFmRec
      * not populated in the case of a client triggered event
      */
     watcherId?: string;
-    watcherPath?: string;
+    /**
+     * The _path_ that the watcher is looking for changes at. If this is a
+     * `list-of-records` then this will be an array of paths.
+     */
+    watcherPath?: string | string[];
     /** an easy to remember name that can be used to lookup the watcher later */
     watcherName?: string;
 }
+export interface IFmDipatchWatchContextForListOfRecords extends IFmDispatchWatchContextBase {
+    watcherSource: "list-of-records";
+    query: SerializedQuery[];
+    watcherPath?: string[];
+}
+export interface IFmDipatchWatchContextDefault extends IFmDispatchWatchContextBase {
+    watcherSource: "list" | "record";
+    query: SerializedQuery;
+    watcherPath?: string;
+}
+export declare type IFmDispatchWatchContext = IFmDipatchWatchContextDefault | IFmDipatchWatchContextForListOfRecords;
 /**
  * An event triggered locally by a Firemodel CRUD
  * operation.
@@ -195,7 +213,7 @@ export interface IFMRecordClientEvent<T extends Model = Model> extends IFmRecord
 /**
  * an event picked up by an active WATCHER on the database
  */
-export interface IFMRecordExternalEvent<T extends Model = Model> extends IFmDispatchWatchContext<T> {
+export interface IFMRecordExternalEvent<T extends Model = Model> extends IFmDispatchWatchContextBase<T> {
     /** the value of the Record after the change */
     value: T;
     /** the key/ID the previous state; provided only on child_moved and child_changed */
@@ -215,7 +233,8 @@ export interface IFMValueAction extends IFMAction {
     model: string;
     query: SerializedQuery | null;
 }
-export interface IFmContextualizedWatchEvent<T = any> extends IFmDispatchWatchContext<T>, IValueBasedWatchEvent {
+export interface IFmContextualizedWatchEvent<T = any> extends IFmDispatchWatchContextBase<T>, IValueBasedWatchEvent {
     type: FmEvents;
     compositeKey: ICompositeKey<T>;
+    dbPath: string;
 }

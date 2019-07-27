@@ -12,5 +12,5 @@ export class DeeperPerson extends Model {
   @property public age: number;
   @property public group: string;
   @property public subGroup: string;
-  @property public phoneNumber: string;
+  @property public phoneNumber?: string;
 }
