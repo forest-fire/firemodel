@@ -360,7 +360,6 @@ describe("List class: ", () => {
 
     expect(eventTypes).to.contain(FmEvents.RECORD_REMOVED_CONFIRMATION);
     expect(eventTypes).to.contain(FmEvents.RECORD_REMOVED_LOCALLY);
-    expect(eventTypes).to.contain(FmEvents.RECORD_LIST);
 
     const peeps2 = await List.all(Person);
     expect(peeps2).to.have.length(9);

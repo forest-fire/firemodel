@@ -9,6 +9,6 @@ import { IFmEvent } from "../@types";
  * event information (like the `key` and `dbPath`) to provide a rich
  * data environment for the `dispatch` function to operate with.
  */
-export declare const WatchDispatcher: <T>(coreDispatchFn: IReduxDispatch<import("../VuexWrapper").IReduxAction, any>) => (watcherContext: IWatcherItem<T>) => (event: IValueBasedWatchEvent | IFmLocalEvent<T> | (IPathBasedWatchEvent & {
+export declare const WatchDispatcher: <T>(coreDispatchFn: IReduxDispatch<import("../VuexWrapper").IReduxAction, any>) => (watcherContext: IWatcherItem<T>) => (event: IValueBasedWatchEvent | (IPathBasedWatchEvent & {
     value?: any;
-})) => Promise<IFmEvent<T>>;
+}) | IFmLocalEvent<T>) => Promise<IFmEvent<T>>;

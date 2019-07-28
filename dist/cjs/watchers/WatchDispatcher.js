@@ -46,7 +46,8 @@ watcherContext) => {
         };
         /**
          * _local events_ will be explicit about the **Action**
-         * they are trying to set
+         * they are trying to set; in comparison the server events
+         * will be determined at run time (using watcher context)
          */
         if (event.type) {
             eventContext.type = event.type;

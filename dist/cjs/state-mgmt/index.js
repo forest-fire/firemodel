@@ -6,12 +6,6 @@ function promoteStringToFMEvents(k) {
 /** Enumeration of all Firemodel Actions that will be fired */
 var FmEvents;
 (function (FmEvents) {
-    /** a list of records has been queried from DB and being dispatched to FE State Mgmt */
-    FmEvents["RECORD_LIST"] = "@firemodel/RECORD_LIST";
-    /** a list of records was SET to a new list of records */
-    FmEvents["LIST_SET"] = "@firemodel/LIST_SET";
-    /** a list of records removed */
-    FmEvents["LIST_CLEAR"] = "@firemodel/LIST_CLEAR";
     /** A record has been added locally */
     FmEvents["RECORD_ADDED_LOCALLY"] = "@firemodel/RECORD_ADDED_LOCALLY";
     /** A record which was added locally has now been confirmed by Firebase */
@@ -61,7 +55,7 @@ var FmEvents;
     /** Relationship removal has been confirmed by database */
     FmEvents["RELATIONSHIP_REMOVED_CONFIRMATION"] = "@firemodel/RELATIONSHIP_REMOVED_CONFIRMATION";
     /** Relationship removal failed and must be rolled back if client updated optimistically */
-    FmEvents["RELATIONSHIP_REMOVED_ROLLBACK"] = "@firemodel/RELATIONSHIP_REMOVED_CONFIRMATION";
+    FmEvents["RELATIONSHIP_REMOVED_ROLLBACK"] = "@firemodel/RELATIONSHIP_REMOVED_ROLLBACK";
     /** Relationship has been added locally */
     FmEvents["RELATIONSHIP_ADDED_LOCALLY"] = "@firemodel/RELATIONSHIP_ADDED_LOCALLY";
     /** Relationship add has been confirmed by database */
@@ -75,11 +69,9 @@ var FmEvents;
     /** Relationship set failed and must be rolled back if client updated optimistically */
     FmEvents["RELATIONSHIP_SET_ROLLBACK"] = "@firemodel/RELATIONSHIP_ADDED_ROLLBACK";
     /** A relationship was "added" but it already existed; this is typically non-action oriented */
-    FmEvents["RELATIONSHIP_DUPLICATE_ADD"] = "@firemodel/RELATIONSHIP_ADDED_ROLLBACK";
+    FmEvents["RELATIONSHIP_DUPLICATE_ADD"] = "@firemodel/RELATIONSHIP_DUPLICATE_ADD";
     FmEvents["APP_CONNECTED"] = "@firemodel/APP_CONNECTED";
     FmEvents["APP_DISCONNECTED"] = "@firemodel/APP_DISCONNECTED";
-    FmEvents["ERROR_UNKNOWN_EVENT"] = "@firemodel/UNKNOWN_EVENT";
-    FmEvents["ERROR_OTHER"] = "@firemodel/OTHER_ERROR";
 })(FmEvents = exports.FmEvents || (exports.FmEvents = {}));
 //#endregion
 //#region specific events

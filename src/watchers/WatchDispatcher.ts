@@ -9,7 +9,7 @@ import { Record } from "../Record";
 import { hasInitialized } from "./watchInitialization";
 import { FireModelError } from "../errors";
 import { IWatcherItem, IFmLocalEvent } from "./types";
-import { IFmEvent } from "../@types";
+import { IFmEvent, IFmServerEvent } from "../@types";
 
 /**
  * **watchDispatcher**
@@ -37,10 +37,7 @@ export const WatchDispatcher = <T>(
 
   // Handle incoming events ...
   return async (
-    event:
-      | IValueBasedWatchEvent
-      | IPathBasedWatchEvent & { value?: any }
-      | IFmLocalEvent<T>
+    event: IFmServerEvent | IFmLocalEvent<T>
   ): Promise<IFmEvent<T>> => {
     hasInitialized[watcherContext.watcherId] = true;
 
@@ -75,13 +72,14 @@ export const WatchDispatcher = <T>(
 
     /**
      * _local events_ will be explicit about the **Action**
-     * they are trying to set
+     * they are trying to set; in comparison the server events
+     * will be determined at run time (using watcher context)
      */
     if ((event as IFmLocalEvent<T>).type) {
       eventContext.type = (event as IFmLocalEvent<T>).type;
     }
 
-    const reduxAction = {
+    const reduxAction: IFmEvent<T> = {
       ...watcherContext,
       ...eventContext,
       ...event

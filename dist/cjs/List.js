@@ -6,7 +6,6 @@ const common_types_1 = require("common-types");
 const FireModel_1 = require("./FireModel");
 const path_1 = require("./path");
 const ModelMeta_1 = require("./ModelMeta");
-const state_mgmt_1 = require("./state-mgmt");
 const DEFAULT_IF_NOT_FOUND = "__DO_NOT_USE__";
 function addTimestamps(obj) {
     const datetime = new Date().getTime();
@@ -98,18 +97,6 @@ class List extends FireModel_1.FireModel {
         const list = List.create(model, options);
         query.setPath(list.dbPath);
         await list.load(query);
-        // TODO: should this have a dispatch?
-        list.dispatch({
-            type: state_mgmt_1.FmEvents.RECORD_LIST,
-            modelName: list.modelName,
-            pluralName: list.pluralName,
-            dbPath: list.dbPath,
-            localPath: list.localPath,
-            modelConstructor: list._modelConstructor,
-            query,
-            hashCode: query.hashCode(),
-            records: list.data
-        });
         return list;
     }
     /**

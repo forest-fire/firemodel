@@ -1,11 +1,5 @@
-import { SerializedQuery } from "serialized-query";
-import { Model } from "../Model";
-import { IMultiPathUpdates } from "../FireModel";
 import { ICompositeKey } from "../@types/record-types";
 import { FmModelConstructor } from "../@types/general";
-import { FmRelationshipType } from "../decorators/types";
-import { IDictionary } from "common-types";
-import { IWatcherSource } from "../watchers/types";
 export declare type Extractable<T, U> = T extends U ? any : never;
 export declare type NotString<T> = string extends T ? never : any;
 export declare type IFmCrudOperation = "add" | "update" | "remove";
@@ -21,12 +15,6 @@ export interface IFmDispatchOptions {
 }
 /** Enumeration of all Firemodel Actions that will be fired */
 export declare enum FmEvents {
-    /** a list of records has been queried from DB and being dispatched to FE State Mgmt */
-    RECORD_LIST = "@firemodel/RECORD_LIST",
-    /** a list of records was SET to a new list of records */
-    LIST_SET = "@firemodel/LIST_SET",
-    /** a list of records removed */
-    LIST_CLEAR = "@firemodel/LIST_CLEAR",
     /** A record has been added locally */
     RECORD_ADDED_LOCALLY = "@firemodel/RECORD_ADDED_LOCALLY",
     /** A record which was added locally has now been confirmed by Firebase */
@@ -76,7 +64,7 @@ export declare enum FmEvents {
     /** Relationship removal has been confirmed by database */
     RELATIONSHIP_REMOVED_CONFIRMATION = "@firemodel/RELATIONSHIP_REMOVED_CONFIRMATION",
     /** Relationship removal failed and must be rolled back if client updated optimistically */
-    RELATIONSHIP_REMOVED_ROLLBACK = "@firemodel/RELATIONSHIP_REMOVED_CONFIRMATION",
+    RELATIONSHIP_REMOVED_ROLLBACK = "@firemodel/RELATIONSHIP_REMOVED_ROLLBACK",
     /** Relationship has been added locally */
     RELATIONSHIP_ADDED_LOCALLY = "@firemodel/RELATIONSHIP_ADDED_LOCALLY",
     /** Relationship add has been confirmed by database */
@@ -90,43 +78,9 @@ export declare enum FmEvents {
     /** Relationship set failed and must be rolled back if client updated optimistically */
     RELATIONSHIP_SET_ROLLBACK = "@firemodel/RELATIONSHIP_ADDED_ROLLBACK",
     /** A relationship was "added" but it already existed; this is typically non-action oriented */
-    RELATIONSHIP_DUPLICATE_ADD = "@firemodel/RELATIONSHIP_ADDED_ROLLBACK",
+    RELATIONSHIP_DUPLICATE_ADD = "@firemodel/RELATIONSHIP_DUPLICATE_ADD",
     APP_CONNECTED = "@firemodel/APP_CONNECTED",
-    APP_DISCONNECTED = "@firemodel/APP_DISCONNECTED",
-    ERROR_UNKNOWN_EVENT = "@firemodel/UNKNOWN_EVENT",
-    ERROR_OTHER = "@firemodel/OTHER_ERROR"
-}
-export interface IFMChangedPath {
-    /** a dot delimited property path to the location for local state */
-    localPath: string;
-    /** a dot delimited property path to the location in the database */
-    dbPath: string;
-    /** the value to set at this path */
-    value: any;
-}
-/**
- * The payload triggered when a LIST object pulls back datasets from
- * the database.
- */
-export interface IFMRecordListEvent<T extends Model = Model> {
-    type: IFMEventName<T>;
-    modelName: string;
-    pluralName: string;
-    dbPath: string;
-    localPath: string;
-    modelConstructor: new () => T;
-    query: SerializedQuery;
-    hashCode: number;
-    records: T[];
-}
-export interface IFMRelationshipEvent<T extends Model = Model> extends IFmDispatchWatchContextBase<T> {
-    fk: string;
-    fkCompositeKey: ICompositeKey;
-    fkModelName: string;
-    fkPluralName: string;
-    fkConstructor?: FmModelConstructor<T>;
-    fkRelType?: FmRelationshipType;
-    fkLocalPath?: string;
+    APP_DISCONNECTED = "@firemodel/APP_DISCONNECTED"
 }
 export interface IFmRecordWatchContext<T> {
     /** the name of the Model who's record has changed */
@@ -146,95 +100,7 @@ export interface IFmRecordWatchContext<T> {
     localPostfix?: string;
 }
 /**
- * When the watch is setup by the Watch() function, context about the
- * model, etc. is captured so that dispatch can include this information
- * along with what was sent by Firebase itself. This additional "context"
- * is defined as IFmDispatchWatchContext
- */
-export interface IFmDispatchWatchContextBase<T extends Model = Model> extends IFmRecordWatchContext<T> {
-    /**
-     * The query used to setup the watcher; if this is a
-     * `list-of-records` then this will be an array of queries;
-     * one for each _record watcher_ which has been setup.
-     */
-    query: SerializedQuery | SerializedQuery[];
-    /**
-     * indicates whether watcher involved in firing this event
-     * was a RECORD or LIST
-     */
-    watcherSource: IWatcherSource;
-    /**
-     * an identifier of which active watcher which triggered to create this event,
-     * not populated in the case of a client triggered event
-     */
-    watcherId?: string;
-    /**
-     * The _path_ that the watcher is looking for changes at. If this is a
-     * `list-of-records` then this will be an array of paths.
-     */
-    watcherPath?: string | string[];
-    /** an easy to remember name that can be used to lookup the watcher later */
-    watcherName?: string;
-}
-export interface IFmDipatchWatchContextForListOfRecords extends IFmDispatchWatchContextBase {
-    watcherSource: "list-of-records";
-    query: SerializedQuery[];
-    watcherPath?: string[];
-}
-export interface IFmDipatchWatchContextDefault extends IFmDispatchWatchContextBase {
-    watcherSource: "list" | "record";
-    query: SerializedQuery;
-    watcherPath?: string;
-}
-export declare type IFmDispatchWatchContext = IFmDipatchWatchContextDefault | IFmDipatchWatchContextForListOfRecords;
-/**
- * An event triggered locally by a Firemodel CRUD
- * operation.
- */
-export interface IFMRecordClientEvent<T extends Model = Model> extends IFmRecordWatchContext<T> {
-    type: string;
-    value: T | null;
-    /**
-     * paths that will be updated; this is only provided on client originated events
-     */
-    paths?: IMultiPathUpdates[];
-    /**
-     * Properties which were changed with their prior values notated
-     */
-    changed?: IDictionary;
-    dbPath: string;
-    localPath: string;
-    compositeKey: ICompositeKey<T>;
-    key: string;
-    errorCode?: string | number;
-    errorMessage?: string;
-    transactionId: string;
-}
-/**
- * an event picked up by an active WATCHER on the database
- */
-export interface IFMRecordExternalEvent<T extends Model = Model> extends IFmDispatchWatchContextBase<T> {
-    /** the value of the Record after the change */
-    value: T;
-    /** the key/ID the previous state; provided only on child_moved and child_changed */
-    previousChildKey?: string;
-}
-export interface IFMAction {
-    type: string;
-    payload: any;
-}
-export interface IFMChildAction extends IFMAction {
-    key: string;
-    path: string;
-    model: string;
-    query: SerializedQuery | null;
-}
-export interface IFMValueAction extends IFMAction {
-    model: string;
-    query: SerializedQuery | null;
-}
-/**
- * Extra meta-data that comes from combining
+ * The extra meta-data that comes from combining
  * the _watcher context_ and the _event_
  */
 export interface IDispatchEventContext<T = any> {
