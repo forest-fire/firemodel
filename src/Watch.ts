@@ -109,7 +109,7 @@ export class Watch<T extends Model = Model> {
     } else {
       const registry = getWatcherPool()[hashCode];
       db.unWatch(
-        registry.eventType === "child"
+        registry.eventFamily === "child"
           ? "value"
           : ["child_added", "child_changed", "child_moved", "child_removed"],
         registry.dispatch

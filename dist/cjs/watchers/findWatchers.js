@@ -15,7 +15,7 @@ function findWatchers(
 /** the database path where change was detected */
 dbPath) {
     const inspectListofRecords = (watcher) => {
-        const paths = watcher.query.map(i => i.path);
+        const paths = watcher.watcherPaths;
         let found = false;
         paths.forEach(p => {
             if (dbPath.includes(p)) {

@@ -29,7 +29,7 @@ import {
   createCompositeKey
 } from ".";
 import { findWatchers } from "./watchers/findWatchers";
-import { IFmEvent, IWatcherItem } from "./watchers/types";
+import { IFmLocalEvent, IWatcherItem } from "./watchers/types";
 import { isHasManyRelationship } from "./verifications/isHasManyRelationship";
 import {
   NotHasManyRelationship,
@@ -1067,7 +1067,7 @@ export class Record<T extends Model> extends FireModel<T> {
     );
 
     const watchers: Array<IWatcherItem<T>> = findWatchers(this.dbPath) as any;
-    const event: IFmEvent<T> = {
+    const event: Omit<IFmLocalEvent<T>, "type"> = {
       transactionId,
       crudAction,
       eventType: "local",

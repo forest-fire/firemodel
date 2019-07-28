@@ -10,4 +10,4 @@ import { IWatcherItem } from "./types";
  */
 export declare function findWatchers(
 /** the database path where change was detected */
-dbPath: string): IWatcherItem[];
+dbPath: string): IWatcherItem<any>[];

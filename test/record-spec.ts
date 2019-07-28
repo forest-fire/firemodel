@@ -1,5 +1,5 @@
 // tslint:disable:no-implicit-dependencies
-import { Record, List, IFmRecordEvent } from "../src";
+import { Record, List, IFmEvent, IFmLocalEvent } from "../src";
 import { DB } from "abstracted-admin";
 import * as chai from "chai";
 const expect = chai.expect;
@@ -40,8 +40,9 @@ describe("Record > ", () => {
   });
 
   it(`Record's static add() fires client events`, async () => {
-    const events: IFmRecordEvent[] = [];
-    Record.dispatch = (payload: IFmRecordEvent) => events.push(payload);
+    const events: Array<IFmLocalEvent<Person>> = [];
+    Record.dispatch = async (payload: IFmLocalEvent<Person>) =>
+      events.push(payload);
     const r = await Record.add(Person, {
       name: "Bob",
       age: 40
@@ -164,8 +165,8 @@ describe("Record > ", () => {
       lastUpdated: 12345
     });
     const roger = await Record.get(Person, "8888");
-    const events: IFmRecordEvent[] = [];
-    FireModel.dispatch = (evt: IFmRecordEvent) => events.push(evt);
+    const events: IFmEvent[] = [];
+    FireModel.dispatch = async (evt: IFmEvent) => events.push(evt);
     expect(roger.dispatchIsActive).to.equal(true);
     await roger.update({
       name: "Roger Rabbit, III",
@@ -201,8 +202,8 @@ describe("Record > ", () => {
     expect(peeps.length).to.equal(10);
     const person = Record.createWith(Person, peeps.data[0]);
     const id = person.id;
-    const events: IFmRecordEvent[] = [];
-    FireModel.dispatch = (evt: IFmRecordEvent) => events.push(evt);
+    const events: IFmEvent[] = [];
+    FireModel.dispatch = async (evt: IFmEvent) => events.push(evt);
     await person.remove();
 
     expect(events).to.have.lengthOf(2);
@@ -224,8 +225,8 @@ describe("Record > ", () => {
     const peeps = await List.all(Person);
     const id = peeps.data[0].id;
     expect(peeps.length).to.equal(10);
-    const events: IFmRecordEvent[] = [];
-    FireModel.dispatch = (evt: IFmRecordEvent) => events.push(evt);
+    const events: IFmEvent[] = [];
+    FireModel.dispatch = async (evt: IFmEvent) => events.push(evt);
     const removed = await Record.remove(Person, id);
     expect(removed.id).to.equal(id);
     expect(events).to.have.lengthOf(2);

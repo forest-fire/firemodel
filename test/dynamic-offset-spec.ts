@@ -443,7 +443,7 @@ describe("WATCHers work with dynamic dbOffsets", () => {
 
   it("Watching a LIST with a dbOffset works", async () => {
     const events: IReduxAction[] = [];
-    const dispatch = (evt: IReduxAction) => {
+    const dispatch = async (evt: IReduxAction) => {
       events.push(evt);
     };
     FireModel.dispatch = dispatch;

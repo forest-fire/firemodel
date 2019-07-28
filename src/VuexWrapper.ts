@@ -1,15 +1,19 @@
 import { IDictionary } from "common-types";
+import { IFmLocalEvent } from "./watchers/types";
+import { IFMEventName } from "./state-mgmt";
 
 /**
  * The Vuex equivalent of a Redux dispatch call
  */
-export type IVuexDispatch<I = IReduxAction, O = any> = (
+export type IVuexDispatch<I = IFmLocalEvent<any>, O = any> = (
   type: string,
   payload: Omit<I, "type">
 ) => Promise<O>;
 
-/** the normal call signature of a redux dispatch call */
-export type IReduxDispatch<T = IReduxAction, O = any> = (
+/**
+ * the normal call signature of a **Redux** `dispatch()` call
+ */
+export type IReduxDispatch<T extends IReduxAction = IReduxAction, O = any> = (
   payload: T
 ) => Promise<O>;
 

@@ -1,5 +1,5 @@
 // tslint:disable:no-implicit-dependencies
-import { Record, Mock, IFmRecordEvent } from "../src";
+import { Record, Mock, IFmEvent, IFmLocalEvent } from "../src";
 import { DB } from "abstracted-client";
 import { DB as Admin, SerializedQuery } from "abstracted-admin";
 import * as chai from "chai";
@@ -13,7 +13,6 @@ import { IReduxAction } from "../src/VuexWrapper";
 import { FmEvents, IDispatchEventContext } from "../src/state-mgmt";
 import { wait, IDictionary } from "common-types";
 import { WatchList } from "../src/watchers/WatchList";
-import { getWatchList } from "../src/watchers/watchSubclasses";
 import { getWatcherPool } from "../src/watchers/watcherPool";
 import { DeeperPerson } from "./testing/dynamicPaths/DeeperPerson";
 
@@ -76,8 +75,8 @@ describe("Watch →", () => {
 
   it("Watching CRUD actions on List", async () => {
     FireModel.defaultDb = realDB;
-    const events: IReduxAction[] = [];
-    const cb = async (event: IReduxAction) => {
+    const events: Array<IFmLocalEvent<Person>> = [];
+    const cb = async (event: IFmLocalEvent<Person>) => {
       events.push(event);
     };
     await realDB.remove("/authenticated/people");
@@ -215,8 +214,8 @@ describe("Watch.list(XXX).ids()", () => {
 
   it('An event, when encountered, is correctly associated with the "list of records" watcher', async () => {
     FireModel.defaultDb = await DB.connect({ mocking: true });
-    const events: Array<IDispatchEventContext<Person>> = [];
-    const cb = async (event: IDispatchEventContext<Person>) => {
+    const events: Array<IFmEvent<Person>> = [];
+    const cb = async (event: IFmEvent<Person>) => {
       events.push(event);
     };
     const watcher = await Watch.list(Person)
@@ -264,8 +263,8 @@ describe("Watch.list(XXX).ids()", () => {
 
   it("The Watch.list(xyz).ids(...) works when the model has a composite key", async () => {
     FireModel.defaultDb = await DB.connect({ mocking: true });
-    const events: Array<IDispatchEventContext<Person>> = [];
-    const cb = async (event: IDispatchEventContext<Person>) => {
+    const events: Array<IFmEvent<Person>> = [];
+    const cb = async (event: IFmEvent<Person>) => {
       events.push(event);
     };
     const watcher = Watch.list(DeeperPerson);

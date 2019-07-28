@@ -14,10 +14,11 @@ import {
   IFmModelPropertyMeta,
   IFmModelRelationshipMeta
 } from "./decorators/types";
-import { IFmChangedProperties, IFmRecordEvent } from "./@types";
+import { IFmChangedProperties, IFmEvent } from "./@types";
+import { IFmLocalEvent } from "./watchers/types";
 // tslint:disable-next-line:no-var-requires
 const pluralize = require("pluralize");
-const defaultDispatch: IReduxDispatch = async context => "";
+const defaultDispatch: IReduxDispatch<any, any> = async context => "";
 
 export class FireModel<T extends Model> {
   public static get defaultDb() {
@@ -43,7 +44,7 @@ export class FireModel<T extends Model> {
    * all subsequent transactions will use this dispatch function unless they are
    * explicitly passed another.
    */
-  public static set dispatch(fn: IReduxDispatch & Partial<IFmRecordEvent>) {
+  public static set dispatch(fn: IReduxDispatch) {
     if (!fn) {
       FireModel._dispatchActive = false;
       FireModel._dispatch = defaultDispatch;
@@ -186,8 +187,7 @@ const db = await FireModel.connect(DB, options);
   private static _defaultDb: RealTimeDB;
   private static _dispatchActive: boolean = false;
   /** the dispatch function used to interact with frontend frameworks */
-  private static _dispatch: IReduxDispatch &
-    Partial<IFmRecordEvent> = defaultDispatch;
+  private static _dispatch: IReduxDispatch = defaultDispatch;
 
   //#endregion
 

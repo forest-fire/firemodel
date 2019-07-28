@@ -25,7 +25,9 @@ class Watch {
     static set dispatch(d) {
         FireModel_1.FireModel.dispatch = d;
     }
-    /** returns a full list of all watchers */
+    /**
+     * returns a full list of all watchers
+     */
     static get inventory() {
         return watcherPool_1.getWatcherPool();
     }
@@ -81,7 +83,7 @@ class Watch {
         }
         else {
             const registry = watcherPool_1.getWatcherPool()[hashCode];
-            db.unWatch(registry.eventType === "child"
+            db.unWatch(registry.eventFamily === "child"
                 ? "value"
                 : ["child_added", "child_changed", "child_moved", "child_removed"], registry.dispatch);
             watcherPool_1.removeFromWatcherPool(hashCode);

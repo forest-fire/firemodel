@@ -218,7 +218,9 @@ class List extends FireModel_1.FireModel {
      */
     get localPath() {
         const meta = this._model.META || ModelMeta_1.getModelMeta(this._model);
-        return path_1.pathJoin(meta.localPrefix, this.pluralName);
+        return path_1.pathJoin(meta.localPrefix, meta.localModelName !== this.modelName
+            ? meta.localModelName
+            : this.pluralName);
     }
     /**
      * Used with local state management tools, it provides a postfix to the state tree path

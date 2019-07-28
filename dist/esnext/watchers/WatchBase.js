@@ -111,6 +111,7 @@ export class WatchBase {
         const watcherPaths = this._watcherSource === "list-of-records"
             ? this._underlyingRecordWatchers.map(i => i._query.path)
             : [this._query.path];
+        // TODO: fix this bullshit typing; should be: SerializedQuery<T> | Array<SerializedQuery<T>>
         const query = this._watcherSource === "list-of-records"
             ? this._underlyingRecordWatchers.map(i => i._query)
             : this._query;

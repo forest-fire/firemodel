@@ -35,7 +35,8 @@ watcherContext) => {
         const rec = Record.createWith(watcherContext.modelConstructor, recordProps);
         const eventContext = {
             type: watcherContext.eventFamily === "value"
-                ? event.value === null || event.paths === null
+                ? event.value === null ||
+                    event.paths === null
                     ? FmEvents.RECORD_REMOVED
                     : FmEvents.RECORD_CHANGED
                 : typeLookup[event.eventType],
@@ -52,7 +53,4 @@ watcherContext) => {
         return coreDispatchFn(reduxAction);
     };
 };
-function isValueBasedEvent(evt, context) {
-    return evt.eventType === "value";
-}
 //# sourceMappingURL=WatchDispatcher.js.map

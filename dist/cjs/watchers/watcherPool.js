@@ -10,6 +10,10 @@ function addToWatcherPool(item) {
     watcherPool[item.watcherId] = item;
 }
 exports.addToWatcherPool = addToWatcherPool;
+function getFromWatcherPool(code) {
+    return watcherPool[code];
+}
+exports.getFromWatcherPool = getFromWatcherPool;
 function clearWatcherPool() {
     watcherPool = {};
 }

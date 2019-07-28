@@ -1,6 +1,11 @@
+import { epoch } from "common-types";
 import { IMultiPathUpdates } from "../FireModel";
 import { IFmCrudOperations, IReduxDispatch } from "..";
 import { SerializedQuery } from "serialized-query";
+import { Model } from "../Model";
+import { ICompositeKey } from "../@types";
+import { EventType } from "@firebase/database-types";
+import { FmEvents } from "../state-mgmt";
 export interface IFmWatcherStartOptions {
     /**
      * optionally provide a callback to be called when
@@ -12,24 +17,24 @@ export interface IFmWatcherStartOptions {
     /** optionally give the watcher a name to make lookup easier when stopping */
     name?: string;
 }
-export interface IFmEvent<T> {
+/**
+ * Meta information for events that are originated from **Firemodel**. This event
+ * type is then extended with _watcher context_ and
+ */
+export interface IFmLocalEvent<T> {
+    /** a FireModel event must state a type */
+    type: FmEvents;
+    /** same as `value.id` but added to provide consistency to Firebase events */
+    key: string;
     /**
      * A Unique ID for the given event payload
      */
     transactionId: string;
     /**
-     * The ID of the watcher(s) which are waiting for changes
-     * at this DB path (or a parent of this path); it is possible
-     * that there will be NO watchers at this path but in many
-     * cases this will indicate a misconfiguration.
+     * the specific CRUD action being performed
      */
-    watcher?: string;
-    /**
-     * Indicates the scope of record/records that the
-     * watcher is watching on
-     */
-    watcherSource?: IWatcherSource;
     crudAction?: IFmCrudOperations;
+    eventType: EventType | "local";
     /**
      * The event's payload value
      */
@@ -61,24 +66,6 @@ export interface IFmEvent<T> {
      * the old/prior value.
      */
     priorValue?: T;
-    /**
-     * **dbPath**
-     *
-     * The path in the database that this record came from
-     */
-    dbPath: string;
-    /**
-     * **localPath**
-     *
-     * The path in the local state tree where this record will go
-     */
-    localPath?: string;
-    /**
-     * If the watcher is a "list watcher" than the postfix is added
-     * so that handlers now where to put the list off the `localPath`
-     */
-    localPostfix?: string;
-    localPrefix?: string;
     errorCode?: string | number;
     errorMessage?: string;
 }
@@ -86,38 +73,97 @@ export declare type IWatchEventClassification = "child" | "value";
 export declare type IQuerySetter = (q: SerializedQuery) => void;
 export declare type IWatchListQueries = "all" | "first" | "last" | "since" | "dormantSince" | "where" | "fromQuery" | "after" | "before" | "recent" | "inactive";
 export declare type IWatcherSource = "list" | "record" | "list-of-records" | "unknown";
-export interface IWatcherItemBase {
+export interface IWatcherItemBase<T extends Model = Model> {
     watcherId: string;
     /** if defined, pass along the string name off the watcher */
     watcherName?: string;
+    /**
+     * Indicates whether the watcher is watching a **list**, a **record**,
+     * or a **list of records**.
+     */
     watcherSource: IWatcherSource;
-    eventType: IWatchEventClassification;
-    query: SerializedQuery | SerializedQuery[];
-    createdAt: number;
+    /**
+     * The properties on the underlying _model_ which are needed
+     * to compose the `CompositeKey` (excluding the `id` property)
+     */
+    dynamicPathProperties: string[];
+    /**
+     * If the underlying _model_ has a dynamic path then this key
+     * will be an object containing `id` as well as all dynamic
+     * path properties.
+     *
+     * If the _model_ does **not** have a dynamic path then this
+     * will just be a string value for the key (same as `id`)
+     */
+    compositeKey: ICompositeKey<T>;
+    /**
+     * A constructor to build a model of the underlying model type
+     */
+    modelConstructor: new () => T;
+    /** the _singular_ name of the Model */
+    modelName: string;
+    /** the _plural_ name of the Model */
+    pluralName: string;
+    /** the _local_ name of the Model */
+    localModelName: string;
+    /**
+     * Indicates the **Firebase** event type/family; either `value` or `child`
+     */
+    eventFamily: IWatchEventClassification;
+    query: SerializedQuery<T> | Array<SerializedQuery<T>>;
+    /**
+     * The date/time when this watcher was started.
+     */
+    createdAt: epoch;
+    /**
+     * The _dispatch_ function used to send **Actions** to the state management framework
+     */
     dispatch: IReduxDispatch;
-    dbPath: string | string[];
+    /**
+     * An array of of paths which this watcher is
+     * watching. It will only be a _single_ path if
+     * the watcher is a `list` or `record` watcher.
+     */
+    watcherPaths: string[];
+    /**
+     * the _local path_ in the frontend's state management
+     * state tree to store this watcher's results.
+     */
     localPath: string;
+    /**
+     * The _postfix_ string which resides off the root of the
+     * local state management's state module. By default this
+     * is `all` but can be modified on a per-model basis.
+     */
+    localPostfix: string;
 }
 /**
  * When watching a "list-of-records" you are really watching
  * a basket/array of underlying record watchers.
  */
-export interface IWatcherItemListofRecords extends IWatcherItemBase {
+export interface IWatcherItemListofRecords<T extends Model = Model> extends IWatcherItemBase<T> {
     watcherSource: "list-of-records";
-    query: SerializedQuery[];
-    dbPath: string[];
-    eventType: "child";
+    /**
+     * The underlying _record queries_ used to achieve
+     * the `list-of-records` watcher.
+     */
+    query: Array<SerializedQuery<T>>;
+    eventFamily: "child";
 }
-export interface IWatcherItemList extends IWatcherItemBase {
+export interface IWatcherItemList<T extends Model = Model> extends IWatcherItemBase<T> {
     watcherSource: "list";
-    query: SerializedQuery;
-    dbPath: string;
-    eventType: "child";
+    /**
+     * The query setup to watch a `List`
+     */
+    query: SerializedQuery<T>;
+    eventFamily: "child";
 }
-export interface IWatcherItemRecord extends IWatcherItemBase {
+export interface IWatcherItemRecord<T extends Model = Model> extends IWatcherItemBase<T> {
     watcherSource: "record";
-    query: SerializedQuery;
-    dbPath: string;
-    eventType: "value";
+    /**
+     * The query setup to watch a `Record`
+     */
+    query: SerializedQuery<T>;
+    eventFamily: "value";
 }
-export declare type IWatcherItem = IWatcherItemList | IWatcherItemRecord | IWatcherItemListofRecords;
+export declare type IWatcherItem<T extends Model = Model> = IWatcherItemList<T> | IWatcherItemRecord<T> | IWatcherItemListofRecords<T>;

@@ -6,10 +6,10 @@ Object.defineProperty(exports, "__esModule", { value: true });
  */
 function VeuxWrapper(vuexDispatch) {
     /** vuex wrapped redux dispatch function */
-    return (reduxAction) => {
+    return async (reduxAction) => {
         const type = reduxAction.type;
         delete reduxAction.type;
-        vuexDispatch(type, reduxAction);
+        return vuexDispatch(type, reduxAction);
     };
 }
 exports.VeuxWrapper = VeuxWrapper;

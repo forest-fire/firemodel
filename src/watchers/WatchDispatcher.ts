@@ -1,8 +1,6 @@
 import { IReduxDispatch } from "../VuexWrapper";
 import { IDictionary } from "common-types";
 import {
-  IFirebaseWatchEvent,
-  IFirebaseWatchContext,
   IValueBasedWatchEvent,
   IPathBasedWatchEvent
 } from "abstracted-firebase";
@@ -10,7 +8,8 @@ import { FmEvents, IDispatchEventContext } from "../state-mgmt";
 import { Record } from "../Record";
 import { hasInitialized } from "./watchInitialization";
 import { FireModelError } from "../errors";
-import { IWatcherItem, IFmEvent } from "./types";
+import { IWatcherItem, IFmLocalEvent } from "./types";
+import { IFmEvent } from "../@types";
 
 /**
  * **watchDispatcher**
@@ -38,8 +37,11 @@ export const WatchDispatcher = <T>(
 
   // Handle incoming events ...
   return async (
-    event: IValueBasedWatchEvent | IPathBasedWatchEvent | IFmEvent<T>
-  ) => {
+    event:
+      | IValueBasedWatchEvent
+      | IPathBasedWatchEvent & { value?: any }
+      | IFmLocalEvent<T>
+  ): Promise<IFmEvent<T>> => {
     hasInitialized[watcherContext.watcherId] = true;
 
     const typeLookup: IDictionary = {
@@ -60,7 +62,8 @@ export const WatchDispatcher = <T>(
     const eventContext: IDispatchEventContext<T> = {
       type:
         watcherContext.eventFamily === "value"
-          ? event.value === null || event.paths === null
+          ? (event as IValueBasedWatchEvent).value === null ||
+            (event as IPathBasedWatchEvent).paths === null
             ? FmEvents.RECORD_REMOVED
             : FmEvents.RECORD_CHANGED
           : (typeLookup[
@@ -74,8 +77,8 @@ export const WatchDispatcher = <T>(
      * _local events_ will be explicit about the **Action**
      * they are trying to set
      */
-    if (event.type) {
-      eventContext.type = event.type;
+    if ((event as IFmLocalEvent<T>).type) {
+      eventContext.type = (event as IFmLocalEvent<T>).type;
     }
 
     const reduxAction = {
@@ -87,10 +90,3 @@ export const WatchDispatcher = <T>(
     return coreDispatchFn(reduxAction);
   };
 };
-
-function isValueBasedEvent(
-  evt: IFirebaseWatchEvent,
-  context: IFirebaseWatchContext
-): evt is IValueBasedWatchEvent {
-  return evt.eventType === "value";
-}

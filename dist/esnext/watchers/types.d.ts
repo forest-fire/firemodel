@@ -18,10 +18,12 @@ export interface IFmWatcherStartOptions {
     name?: string;
 }
 /**
- * Meta information for events that are originated from **Firemodel**
+ * Meta information for events that are originated from **Firemodel**. This event
+ * type is then extended with _watcher context_ and
  */
-export interface IFmEvent<T> {
-    type?: FmEvents;
+export interface IFmLocalEvent<T> {
+    /** a FireModel event must state a type */
+    type: FmEvents;
     /** same as `value.id` but added to provide consistency to Firebase events */
     key: string;
     /**
@@ -146,7 +148,7 @@ export interface IWatcherItemListofRecords<T extends Model = Model> extends IWat
      * the `list-of-records` watcher.
      */
     query: Array<SerializedQuery<T>>;
-    eventType: "child";
+    eventFamily: "child";
 }
 export interface IWatcherItemList<T extends Model = Model> extends IWatcherItemBase<T> {
     watcherSource: "list";
@@ -154,7 +156,7 @@ export interface IWatcherItemList<T extends Model = Model> extends IWatcherItemB
      * The query setup to watch a `List`
      */
     query: SerializedQuery<T>;
-    eventType: "child";
+    eventFamily: "child";
 }
 export interface IWatcherItemRecord<T extends Model = Model> extends IWatcherItemBase<T> {
     watcherSource: "record";
@@ -162,6 +164,6 @@ export interface IWatcherItemRecord<T extends Model = Model> extends IWatcherIte
      * The query setup to watch a `Record`
      */
     query: SerializedQuery<T>;
-    eventType: "value";
+    eventFamily: "value";
 }
 export declare type IWatcherItem<T extends Model = Model> = IWatcherItemList<T> | IWatcherItemRecord<T> | IWatcherItemListofRecords<T>;

@@ -81,7 +81,7 @@ export class Watch {
         }
         else {
             const registry = getWatcherPool()[hashCode];
-            db.unWatch(registry.eventType === "child"
+            db.unWatch(registry.eventFamily === "child"
                 ? "value"
                 : ["child_added", "child_changed", "child_moved", "child_removed"], registry.dispatch);
             removeFromWatcherPool(hashCode);

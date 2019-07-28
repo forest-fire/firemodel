@@ -4,7 +4,7 @@ import { IDictionary } from "common-types";
 import { IReduxDispatch } from "./VuexWrapper";
 import { RealTimeDB, IFirebaseConfig, IFirebaseAdminConfig } from "abstracted-firebase";
 import { IFmModelMeta, IFmModelPropertyMeta, IFmModelRelationshipMeta } from "./decorators/types";
-import { IFmChangedProperties, IFmRecordEvent } from "./@types";
+import { IFmChangedProperties } from "./@types";
 export declare class FireModel<T extends Model> {
     /**
     * Any FireModel transaction needs to connect to the database
@@ -26,7 +26,7 @@ export declare class FireModel<T extends Model> {
     * The default dispatch function which should be called/notified whenever
     * a write based transaction has modified state.
     */
-    static dispatch: IReduxDispatch & Partial<IFmRecordEvent>;
+    static dispatch: IReduxDispatch;
     /**
      * The name of the model; typically a "sigular" name
      */
@@ -49,7 +49,7 @@ export declare class FireModel<T extends Model> {
      * meta information -- contained on the given model
      */
     readonly relationships: IFmModelRelationshipMeta[];
-    readonly dispatch: IReduxDispatch<import("./VuexWrapper").IReduxAction, any> & Partial<IFmRecordEvent<Model>>;
+    readonly dispatch: IReduxDispatch<import("./VuexWrapper").IReduxAction, any>;
     static readonly isDefaultDispatch: boolean;
     readonly dispatchIsActive: boolean;
     /** the connected real-time database */

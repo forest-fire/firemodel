@@ -1,10 +1,14 @@
 import { IReduxDispatch } from "../VuexWrapper";
 import { IValueBasedWatchEvent, IPathBasedWatchEvent } from "abstracted-firebase";
-import { IFmDispatchWatchContextBase } from "../state-mgmt";
-import { IFmRecordEvent } from "../@types";
+import { IWatcherItem, IFmLocalEvent } from "./types";
+import { IFmEvent } from "../@types";
 /**
  * **watchDispatcher**
  *
- * Wraps Firebase event detail (meager) with as much context as is possible
+ * Wraps both start-time _watcher context_ and combines that with
+ * event information (like the `key` and `dbPath`) to provide a rich
+ * data environment for the `dispatch` function to operate with.
  */
-export declare const WatchDispatcher: <T>(watcherContext: IFmDispatchWatchContextBase<T>) => (coreDispatchFn: IReduxDispatch<import("../VuexWrapper").IReduxAction, any>) => (event: IValueBasedWatchEvent & IPathBasedWatchEvent & IFmRecordEvent<T>) => Promise<any>;
+export declare const WatchDispatcher: <T>(coreDispatchFn: IReduxDispatch<import("../VuexWrapper").IReduxAction, any>) => (watcherContext: IWatcherItem<T>) => (event: IValueBasedWatchEvent | IFmLocalEvent<T> | (IPathBasedWatchEvent & {
+    value?: any;
+})) => Promise<IFmEvent<T>>;

@@ -3,7 +3,7 @@ import { IMultiPathUpdates } from "../FireModel";
 import { IFmCrudOperations, IReduxDispatch } from "..";
 import { SerializedQuery } from "serialized-query";
 import { Model } from "../Model";
-import { ICompositeKey } from "../@types";
+import { ICompositeKey, IFmEventType } from "../@types";
 // tslint:disable-next-line: no-implicit-dependencies
 import { EventType } from "@firebase/database-types";
 import { FmEvents } from "../state-mgmt";
@@ -21,10 +21,12 @@ export interface IFmWatcherStartOptions {
 }
 
 /**
- * Meta information for events that are originated from **Firemodel**
+ * Meta information for events that are originated from **Firemodel**. This event
+ * type is then extended with _watcher context_ and
  */
-export interface IFmEvent<T> {
-  type?: FmEvents;
+export interface IFmLocalEvent<T> {
+  /** a FireModel event must state a type */
+  type: FmEvents;
   /** same as `value.id` but added to provide consistency to Firebase events */
   key: string;
   /**
@@ -167,7 +169,7 @@ export interface IWatcherItemListofRecords<T extends Model = Model>
    * the `list-of-records` watcher.
    */
   query: Array<SerializedQuery<T>>;
-  eventType: "child";
+  eventFamily: "child";
 }
 
 export interface IWatcherItemList<T extends Model = Model>
@@ -177,7 +179,7 @@ export interface IWatcherItemList<T extends Model = Model>
    * The query setup to watch a `List`
    */
   query: SerializedQuery<T>;
-  eventType: "child";
+  eventFamily: "child";
 }
 
 export interface IWatcherItemRecord<T extends Model = Model>
@@ -187,7 +189,7 @@ export interface IWatcherItemRecord<T extends Model = Model>
    * The query setup to watch a `Record`
    */
   query: SerializedQuery<T>;
-  eventType: "value";
+  eventFamily: "value";
 }
 
 export type IWatcherItem<T extends Model = Model> =
