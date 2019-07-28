@@ -1,5 +1,4 @@
-import { IFmLocalEvent } from "../watchers/types";
-import { IReduxAction } from ".";
+import { IReduxAction, IFmLocalEvent } from "./index";
 
 /**
  * The Vuex equivalent of a Redux dispatch call

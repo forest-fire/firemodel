@@ -1,4 +1,4 @@
-import { IWatcherItem } from "./types";
+import { IWatcherItem } from "../state-mgmt";
 /**
  * **findWatchers**
  *

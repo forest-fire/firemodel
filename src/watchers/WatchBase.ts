@@ -1,12 +1,8 @@
 import { Model } from "../Model";
 import { SerializedQuery } from "serialized-query";
 import { FmModelConstructor, ICompositeKey } from "../@types";
-import {
-  IWatchEventClassification,
-  IFmWatcherStartOptions,
-  IWatcherItem
-} from "./types";
-import { IReduxDispatch } from "../state-mgmt";
+import { IWatchEventClassification, IFmWatcherStartOptions } from "./types";
+import { IReduxDispatch, IWatcherItem } from "../state-mgmt";
 import { RealTimeDB } from "abstracted-firebase";
 import { FireModel, FmEvents } from "../index";
 import { FireModelError } from "../errors";

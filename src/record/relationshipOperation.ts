@@ -1,8 +1,4 @@
-import {
-  IFmRelationshipOperation,
-  IFkReference,
-  IFmRelationshipOptions
-} from "../@types";
+import { IFmRelationshipOperation, IFmRelationshipOptions } from "../@types";
 import { Record } from "../Record";
 import { Model } from "../Model";
 import {
@@ -13,19 +9,16 @@ import {
 import { IDictionary } from "common-types";
 import { getModelMeta } from "../ModelMeta";
 import { UnknownRelationshipProblem } from "../errors/relationships/UnknownRelationshipProblem";
-import { discoverRootPath } from "./reduceHashToRelativePaths";
 import { FireModelError } from "../errors";
-import { IMultiPathSet } from "abstracted-firebase";
 import { extractFksFromPaths } from "./extractFksFromPaths";
 import { locallyUpdateFkOnRecord } from "./locallyUpdateFkOnRecord";
-import { capitalize } from "../util";
 import { sendRelnDispatchEvent } from "./relationships/sendRelnDispatchEvent";
 
 /**
  * **relationshipOperation**
  *
  * updates the current Record while also executing the appropriate two-phased commit
- * with the `dispatch()` function; looking to associate with watchers where ever possible
+ * with the `dispatch()` function; looking to associate with watchers wherever possible
  */
 export async function relationshipOperation<T extends Model>(
   rec: Record<T>,

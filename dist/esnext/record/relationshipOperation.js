@@ -9,7 +9,7 @@ import { sendRelnDispatchEvent } from "./relationships/sendRelnDispatchEvent";
  * **relationshipOperation**
  *
  * updates the current Record while also executing the appropriate two-phased commit
- * with the `dispatch()` function; looking to associate with watchers where ever possible
+ * with the `dispatch()` function; looking to associate with watchers wherever possible
  */
 export async function relationshipOperation(rec, 
 /**

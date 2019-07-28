@@ -6,9 +6,7 @@ import { Record } from "../Record";
 import { SerializedQuery, IComparisonOperator } from "serialized-query";
 import { getAllPropertiesFromClassStructure } from "../util";
 import { epochWithMilliseconds } from "common-types";
-import { WatchRecord } from "./WatchRecord";
-import { IWatcherItem } from "./types";
-import { Watch } from "..";
+import { Watch } from "../index";
 
 export class WatchList<T extends Model> extends WatchBase<T> {
   public static list<T extends Model>(

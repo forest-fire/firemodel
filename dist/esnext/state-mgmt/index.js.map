@@ -1,1 +1,1 @@
-{"version":3,"file":"index.js","sourceRoot":"","sources":["../../../src/state-mgmt/index.ts"],"names":[],"mappings":"AACA,cAAc,WAAW,CAAC;AAE1B,cAAc,eAAe,CAAC;AAK9B,SAAS,uBAAuB,CAE9B,CAAI;IACJ,OAAO,CAAC,CAAC;AACX,CAAC"}
+{"version":3,"file":"index.js","sourceRoot":"","sources":["../../../src/state-mgmt/index.ts"],"names":[],"mappings":"AACA,cAAc,WAAW,CAAC;AAE1B,cAAc,eAAe,CAAC;AAM9B,SAAS,uBAAuB,CAE9B,CAAI;IACJ,OAAO,CAAC,CAAC;AACX,CAAC"}

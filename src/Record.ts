@@ -4,7 +4,7 @@ import { Model } from "./Model";
 import { createError, IDictionary, Omit, Nullable, fk } from "common-types";
 import { key as fbKey } from "firebase-key";
 import { FireModel } from "./FireModel";
-import { IReduxDispatch } from "./state-mgmt";
+import { IReduxDispatch, IFmLocalEvent, IWatcherItem } from "./state-mgmt";
 import { buildDeepRelationshipLinks } from "./record/buildDeepRelationshipLinks";
 
 import {
@@ -29,7 +29,6 @@ import {
   createCompositeKey
 } from ".";
 import { findWatchers } from "./watchers/findWatchers";
-import { IFmLocalEvent, IWatcherItem } from "./watchers/types";
 import { isHasManyRelationship } from "./verifications/isHasManyRelationship";
 import {
   NotHasManyRelationship,

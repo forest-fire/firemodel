@@ -1,5 +1,5 @@
 import { IDictionary } from "common-types";
-import { IWatcherItem } from "./types";
+import { IWatcherItem } from "../state-mgmt/index";
 import { Model } from "../Model";
 /**
  * indicates which watcherId's have returned their initial

@@ -1,6 +1,5 @@
 import { IDictionary, wait } from "common-types";
-import { IWatcherItem } from "./types";
-import { read } from "fs";
+import { IWatcherItem } from "../state-mgmt/index";
 import { Model } from "../Model";
 
 /**

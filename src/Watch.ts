@@ -1,11 +1,10 @@
 import { Model } from "./Model";
-import { IReduxDispatch } from "./state-mgmt";
+import { IReduxDispatch, IWatcherItem } from "./state-mgmt";
 import { FireModel } from "./FireModel";
 type RealTimeDB = import("abstracted-firebase").RealTimeDB;
 
 import { IModelOptions } from "./@types/general";
 import { IPrimaryKey } from "./@types/record-types";
-import { IWatcherItem } from "./watchers/types";
 import { FireModelError } from "./errors";
 import {
   getWatcherPool,

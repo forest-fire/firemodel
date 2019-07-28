@@ -1,6 +1,5 @@
 import { IDictionary } from "common-types";
-import { IWatcherItem } from "./types";
-import { IReduxDispatch } from "../state-mgmt";
+import { IReduxDispatch, IWatcherItem } from "../state-mgmt";
 
 /** a cache of all the watched  */
 let watcherPool: IDictionary<IWatcherItem<any>> = {};

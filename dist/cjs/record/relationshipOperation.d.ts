@@ -7,7 +7,7 @@ import { FireModelError } from "../errors";
  * **relationshipOperation**
  *
  * updates the current Record while also executing the appropriate two-phased commit
- * with the `dispatch()` function; looking to associate with watchers where ever possible
+ * with the `dispatch()` function; looking to associate with watchers wherever possible
  */
 export declare function relationshipOperation<T extends Model>(rec: Record<T>, 
 /**

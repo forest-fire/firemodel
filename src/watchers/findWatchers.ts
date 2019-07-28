@@ -1,9 +1,6 @@
 import { Watch } from "../Watch";
 import { hashToArray } from "typed-conversions";
-import { IWatcherItem, IWatcherItemList } from "./types";
-import { SerializedQuery } from "serialized-query";
-import { Model } from "../Model";
-import { IDictionary } from "common-types";
+import { IWatcherItem, IWatcherItemList } from "../state-mgmt";
 
 /**
  * **findWatchers**

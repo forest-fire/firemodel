@@ -3,6 +3,7 @@ export * from "./actions";
 export * from "./redux";
 export * from "./VuexWrapper";
 export * from "./events";
+export * from "./watcher-context";
 export declare type Extractable<T, U> = T extends U ? any : never;
 export declare type NotString<T> = string extends T ? never : any;
 export declare type IFmCrudOperation = "add" | "update" | "remove";

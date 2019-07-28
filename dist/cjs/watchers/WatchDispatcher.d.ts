@@ -1,6 +1,5 @@
 import { IValueBasedWatchEvent, IPathBasedWatchEvent } from "abstracted-firebase";
-import { IReduxDispatch, IFmWatchEvent } from "../state-mgmt";
-import { IWatcherItem, IFmLocalEvent } from "./types";
+import { IReduxDispatch, IFmWatchEvent, IWatcherItem, IFmLocalEvent } from "../state-mgmt";
 /**
  * **watchDispatcher**
  *

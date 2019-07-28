@@ -8,12 +8,13 @@ import {
   IDispatchEventContext,
   IReduxDispatch,
   IFmWatchEvent,
-  IFmServerEvent
+  IFmServerEvent,
+  IWatcherItem,
+  IFmLocalEvent
 } from "../state-mgmt";
 import { Record } from "../Record";
 import { hasInitialized } from "./watchInitialization";
 import { FireModelError } from "../errors";
-import { IWatcherItem, IFmLocalEvent } from "./types";
 
 /**
  * **watchDispatcher**
