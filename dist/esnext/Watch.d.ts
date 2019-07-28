@@ -22,9 +22,11 @@ export declare class Watch<T extends Model = Model> {
      * classes such as `FireModel`, `Record`, and `List`
      */
     static dispatch: IReduxDispatch;
-    /** returns a full list of all watchers */
-    static readonly inventory: import("common-types").IDictionary<IWatcherItem>;
-    static toJSON(): import("common-types").IDictionary<IWatcherItem>;
+    /**
+     * returns a full list of all watchers
+     */
+    static readonly inventory: import("common-types").IDictionary<IWatcherItem<any>>;
+    static toJSON(): import("common-types").IDictionary<IWatcherItem<any>>;
     /**
      * lookup
      *

@@ -409,7 +409,7 @@ describe("WATCHers work with dynamic dbOffsets", () => {
 
   it("Watching a RECORD with a dbOffset works", async () => {
     const events: IReduxAction[] = [];
-    const dispatch = (evt: IReduxAction) => {
+    const dispatch = async (evt: IReduxAction) => {
       events.push(evt);
     };
     FireModel.dispatch = dispatch;
@@ -425,8 +425,10 @@ describe("WATCHers work with dynamic dbOffsets", () => {
 
     expect(watcher).to.haveOwnProperty("watcherId");
     expect(watcher.watcherSource).to.equal("record");
-    expect(watcher.eventType).to.equal("value");
-    expect(watcher.dbPath).to.equal("/group/CA/testing/deepPeople/12345");
+    expect(watcher.eventFamily).to.equal("value");
+    expect(watcher.watcherPaths[0]).to.equal(
+      "/group/CA/testing/deepPeople/12345"
+    );
     const person = await Record.add(DeepPerson, {
       id: "12345",
       group: "CA",

@@ -33,9 +33,10 @@ describe("Client state management", () => {
 
   it("when using a LIST, the localPath is the prefix, pluralName (assuming no dynamic components)", async () => {
     const people = await List.all(Person);
-    expect(people.localPath).to.equal(
-      pathJoin(people.META.localPrefix, people.pluralName)
-    );
+    expect(
+      people.localPath,
+      `localPath should combine prefix [ ${people.META.localPrefix} ] and pluralName [ ${people.pluralName} ]`
+    ).to.equal(pathJoin(people.META.localPrefix, people.pluralName));
     expect(people.localPostfix).to.equal("all");
   });
 

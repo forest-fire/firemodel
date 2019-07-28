@@ -10,7 +10,7 @@ import { Person } from "./testing/Person";
 import { PersonWithLocalAndPrefix } from "./testing/PersonWithLocalAndPrefix";
 import { setupEnv } from "./testing/helpers";
 import { IReduxAction } from "../src/VuexWrapper";
-import { FmEvents, IFmContextualizedWatchEvent } from "../src/state-mgmt";
+import { FmEvents, IDispatchEventContext } from "../src/state-mgmt";
 import { wait, IDictionary } from "common-types";
 import { WatchList } from "../src/watchers/WatchList";
 import { getWatchList } from "../src/watchers/watchSubclasses";
@@ -37,7 +37,7 @@ describe("Watch →", () => {
     expect(watcherId).to.be.a("string");
 
     expect(Watch.lookup(watcherId)).to.be.an("object");
-    expect(Watch.lookup(watcherId)).to.haveOwnProperty("eventType");
+    expect(Watch.lookup(watcherId)).to.haveOwnProperty("eventFamily");
     expect(Watch.lookup(watcherId)).to.haveOwnProperty("query");
     expect(Watch.lookup(watcherId)).to.haveOwnProperty("createdAt");
   });
@@ -52,8 +52,8 @@ describe("Watch →", () => {
     const w = await Watch.record(Person, "1234").start();
 
     expect(Watch.inventory[w.watcherId]).to.be.an("object");
-    expect(Watch.inventory[w.watcherId].eventType).to.equal("value");
-    expect(Watch.inventory[w.watcherId].dbPath).to.equal(
+    expect(Watch.inventory[w.watcherId].eventFamily).to.equal("value");
+    expect(Watch.inventory[w.watcherId].watcherPaths[0]).to.equal(
       "authenticated/people/1234"
     );
 
@@ -136,24 +136,27 @@ describe("Watch →", () => {
     }
   });
 
-  it("Watching a List uses pluralName for localPath", async () => {
+  it("Watching a List uses pluralName for localPath unless localModelName is set", async () => {
     FireModel.defaultDb = await DB.connect({ mocking: true });
     Watch.reset();
     const personId = (await Mock(PersonWithLocalAndPrefix).generate(1)).pop()
       .id;
     const person = await Record.get(PersonWithLocalAndPrefix, personId);
 
-    await Watch.list(PersonWithLocalAndPrefix)
-      .all()
-      .start();
     const events: IDictionary[] = [];
     FireModel.dispatch = async evt => {
       events.push(evt);
     };
+    await Watch.list(PersonWithLocalAndPrefix)
+      .all()
+      .start();
     await Record.add(PersonWithLocalAndPrefix, person.data);
+    console.log(events);
+
     events.forEach(evt => {
       expect(evt.localPath).to.equal(
-        `${person.META.localPrefix}/${person.pluralName}`
+        `${person.META.localPrefix}/${person.META.localModelName ||
+          person.pluralName}`
       );
     });
   });
@@ -207,13 +210,13 @@ describe("Watch.list(XXX).ids()", () => {
     expect(Object.keys(pool)).to.be.lengthOf(1);
     expect(Object.keys(pool)).includes(wId.watcherId);
     expect(wId.query).is.an("array");
-    expect(wId.dbPath).is.an("array");
+    expect(wId.watcherPaths).is.an("array");
   });
 
   it('An event, when encountered, is correctly associated with the "list of records" watcher', async () => {
     FireModel.defaultDb = await DB.connect({ mocking: true });
-    const events: Array<IFmContextualizedWatchEvent<Person>> = [];
-    const cb = async (event: IFmContextualizedWatchEvent<Person>) => {
+    const events: Array<IDispatchEventContext<Person>> = [];
+    const cb = async (event: IDispatchEventContext<Person>) => {
       events.push(event);
     };
     const watcher = await Watch.list(Person)
@@ -241,7 +244,6 @@ describe("Watch.list(XXX).ids()", () => {
       e => e.type === FmEvents.RECORD_CHANGED
     );
     const recordIdsChanged = recordsChanged.map(i => i.key);
-    console.log(recordsChanged);
     expect(recordsChanged).lengthOf(2);
 
     recordsChanged.forEach(i => {
@@ -262,8 +264,8 @@ describe("Watch.list(XXX).ids()", () => {
 
   it("The Watch.list(xyz).ids(...) works when the model has a composite key", async () => {
     FireModel.defaultDb = await DB.connect({ mocking: true });
-    const events: Array<IFmContextualizedWatchEvent<Person>> = [];
-    const cb = async (event: IFmContextualizedWatchEvent<Person>) => {
+    const events: Array<IDispatchEventContext<Person>> = [];
+    const cb = async (event: IDispatchEventContext<Person>) => {
       events.push(event);
     };
     const watcher = Watch.list(DeeperPerson);

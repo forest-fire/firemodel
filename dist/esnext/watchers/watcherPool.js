@@ -6,6 +6,9 @@ export function getWatcherPool() {
 export function addToWatcherPool(item) {
     watcherPool[item.watcherId] = item;
 }
+export function getFromWatcherPool(code) {
+    return watcherPool[code];
+}
 export function clearWatcherPool() {
     watcherPool = {};
 }

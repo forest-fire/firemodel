@@ -1,7 +1,9 @@
 import { Watch } from "../Watch";
 import { hashToArray } from "typed-conversions";
-import { IWatcherItem } from "./types";
+import { IWatcherItem, IWatcherItemList } from "./types";
 import { SerializedQuery } from "serialized-query";
+import { Model } from "../Model";
+import { IDictionary } from "common-types";
 
 /**
  * **findWatchers**
@@ -17,7 +19,7 @@ export function findWatchers(
   dbPath: string
 ) {
   const inspectListofRecords = (watcher: IWatcherItem) => {
-    const paths = (watcher.query as SerializedQuery[]).map(i => i.path);
+    const paths = watcher.watcherPaths;
     let found = false;
     paths.forEach(p => {
       if (dbPath.includes(p)) {

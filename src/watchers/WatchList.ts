@@ -313,6 +313,7 @@ export class WatchList<T extends Model> extends WatchBase<T> {
         ...this._options,
         offsets: this._offsets
       });
+
       this._query = new SerializedQuery<T>(lst.dbPath);
       this._modelName = lst.modelName;
       this._pluralName = lst.pluralName;

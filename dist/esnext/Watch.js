@@ -23,7 +23,9 @@ export class Watch {
     static set dispatch(d) {
         FireModel.dispatch = d;
     }
-    /** returns a full list of all watchers */
+    /**
+     * returns a full list of all watchers
+     */
     static get inventory() {
         return getWatcherPool();
     }

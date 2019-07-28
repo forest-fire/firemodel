@@ -145,9 +145,12 @@ describe("Dispatch →", () => {
   it("When @model decorator and setting localModelName we can override the localPath", async () => {
     const events: Array<IFmRecordEvent<Person>> = [];
     const types = new Set<string>();
-    const vueDispatch: IVuexDispatch = (type, payload: any) => {
+    const vueDispatch: IVuexDispatch<IFmRecordEvent<Person>> = async (
+      type,
+      payload
+    ) => {
       types.add(type);
-      events.push({ ...payload, ...{ type } });
+      events.push({ ...payload, ...{ type } } as any);
     };
     const person = await Record.add(PersonWithLocal, {
       name: "Jane",
@@ -159,14 +162,17 @@ describe("Dispatch →", () => {
     });
 
     events.forEach(event =>
-      expect(event.localPath).to.equal(person.META.localModelName)
+      expect(
+        event.localPath,
+        `The localPath [ ${event.localPath} ] should equal the model's localModelName [ ${person.META.localModelName}`
+      )
     );
   });
 
   it("The when dispatching events without a listener the source is 'unknown'", async () => {
     const events: Array<IFmRecordEvent<Person>> = [];
     const types = new Set<string>();
-    const vueDispatch: IVuexDispatch = (type, payload: any) => {
+    const vueDispatch: IVuexDispatch = async (type, payload: any) => {
       types.add(type);
       events.push({ ...payload, ...{ type } });
     };
@@ -178,6 +184,7 @@ describe("Dispatch →", () => {
     await person.update({
       age: 12
     });
+    console.log(events);
 
     events.forEach(event => expect(event.watcherSource).to.equal("unknown"));
   });

@@ -301,7 +301,12 @@ export class List<T extends Model> extends FireModel<T> {
    */
   public get localPath() {
     const meta = this._model.META || getModelMeta(this._model);
-    return pathJoin(meta.localPrefix, this.pluralName);
+    return pathJoin(
+      meta.localPrefix,
+      meta.localModelName !== this.modelName
+        ? meta.localModelName
+        : this.pluralName
+    );
   }
 
   /**

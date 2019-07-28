@@ -3,7 +3,10 @@ import { IDictionary } from "common-types";
 /**
  * The Vuex equivalent of a Redux dispatch call
  */
-export type IVuexDispatch = (type: string, payload: IDictionary) => void;
+export type IVuexDispatch<I = IReduxAction, O = any> = (
+  type: string,
+  payload: Omit<I, "type">
+) => Promise<O>;
 
 /** the normal call signature of a redux dispatch call */
 export type IReduxDispatch<T = IReduxAction, O = any> = (
@@ -22,11 +25,13 @@ export interface IReduxAction extends IDictionary {
  * wraps a Vuex function's to Mutation.commit() function so it's
  * signature looks like a Redux call to dispatch
  */
-export function VeuxWrapper(vuexDispatch: IVuexDispatch) {
+export function VeuxWrapper<O = any>(
+  vuexDispatch: IVuexDispatch<IReduxAction, O>
+) {
   /** vuex wrapped redux dispatch function */
-  return (reduxAction: IReduxAction) => {
+  return async (reduxAction: IReduxAction) => {
     const type = reduxAction.type;
     delete reduxAction.type;
-    vuexDispatch(type, reduxAction);
+    return vuexDispatch(type, reduxAction);
   };
 }

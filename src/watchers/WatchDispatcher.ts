@@ -1,35 +1,33 @@
 import { IReduxDispatch } from "../VuexWrapper";
-import { IDictionary, createError } from "common-types";
+import { IDictionary } from "common-types";
 import {
   IFirebaseWatchEvent,
   IFirebaseWatchContext,
   IValueBasedWatchEvent,
   IPathBasedWatchEvent
 } from "abstracted-firebase";
-import {
-  FmEvents,
-  IFmDispatchWatchContextBase,
-  IFmContextualizedWatchEvent
-} from "../state-mgmt";
+import { FmEvents, IDispatchEventContext } from "../state-mgmt";
 import { Record } from "../Record";
 import { hasInitialized } from "./watchInitialization";
-import { FireModelError, FireModelProxyError } from "../errors";
-import { capitalize } from "../util";
-import { IFmRecordEvent } from "../@types";
+import { FireModelError } from "../errors";
+import { IWatcherItem, IFmEvent } from "./types";
 
 /**
  * **watchDispatcher**
  *
- * Wraps Firebase event detail (meager) with as much context as is possible
+ * Wraps both start-time _watcher context_ and combines that with
+ * event information (like the `key` and `dbPath`) to provide a rich
+ * data environment for the `dispatch` function to operate with.
  */
 export const WatchDispatcher = <T>(
-  watcherContext: IFmDispatchWatchContextBase<T>
-) => (
   /**
    * a base/generic redux dispatch function; typically provided
    * by the frontend state management framework
    */
   coreDispatchFn: IReduxDispatch
+) => (
+  /** context provided by the watcher at the time in which the watcher was setup */
+  watcherContext: IWatcherItem<T>
 ) => {
   if (typeof coreDispatchFn !== "function") {
     throw new FireModelError(
@@ -40,7 +38,7 @@ export const WatchDispatcher = <T>(
 
   // Handle incoming events ...
   return async (
-    event: IValueBasedWatchEvent & IPathBasedWatchEvent & IFmRecordEvent<T>
+    event: IValueBasedWatchEvent | IPathBasedWatchEvent | IFmEvent<T>
   ) => {
     hasInitialized[watcherContext.watcherId] = true;
 
@@ -59,21 +57,34 @@ export const WatchDispatcher = <T>(
 
     const rec = Record.createWith(watcherContext.modelConstructor, recordProps);
 
-    const contextualizedEvent: IFmContextualizedWatchEvent<T> = {
-      ...{
-        type:
-          event.eventType === "value"
-            ? event.value === null || event.paths === null
-              ? FmEvents.RECORD_REMOVED
-              : FmEvents.RECORD_CHANGED
-            : typeLookup[event.eventType as keyof typeof typeLookup]
-      },
-      ...watcherContext,
-      ...event,
+    const eventContext: IDispatchEventContext<T> = {
+      type:
+        watcherContext.eventFamily === "value"
+          ? event.value === null || event.paths === null
+            ? FmEvents.RECORD_REMOVED
+            : FmEvents.RECORD_CHANGED
+          : (typeLookup[
+              event.eventType as keyof typeof typeLookup
+            ] as FmEvents),
+
       dbPath: rec.dbPath
     };
 
-    return coreDispatchFn(contextualizedEvent);
+    /**
+     * _local events_ will be explicit about the **Action**
+     * they are trying to set
+     */
+    if (event.type) {
+      eventContext.type = event.type;
+    }
+
+    const reduxAction = {
+      ...watcherContext,
+      ...eventContext,
+      ...event
+    };
+
+    return coreDispatchFn(reduxAction);
   };
 };
 

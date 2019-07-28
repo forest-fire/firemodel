@@ -2,7 +2,7 @@ import { IDictionary } from "common-types";
 /**
  * The Vuex equivalent of a Redux dispatch call
  */
-export declare type IVuexDispatch = (type: string, payload: IDictionary) => void;
+export declare type IVuexDispatch<I = IReduxAction, O = any> = (type: string, payload: Omit<I, "type">) => Promise<O>;
 /** the normal call signature of a redux dispatch call */
 export declare type IReduxDispatch<T = IReduxAction, O = any> = (payload: T) => Promise<O>;
 /**
@@ -16,4 +16,4 @@ export interface IReduxAction extends IDictionary {
  * wraps a Vuex function's to Mutation.commit() function so it's
  * signature looks like a Redux call to dispatch
  */
-export declare function VeuxWrapper(vuexDispatch: IVuexDispatch): (reduxAction: IReduxAction) => void;
+export declare function VeuxWrapper<O = any>(vuexDispatch: IVuexDispatch<IReduxAction, O>): (reduxAction: IReduxAction) => Promise<O>;

@@ -4,10 +4,10 @@
  */
 export function VeuxWrapper(vuexDispatch) {
     /** vuex wrapped redux dispatch function */
-    return (reduxAction) => {
+    return async (reduxAction) => {
         const type = reduxAction.type;
         delete reduxAction.type;
-        vuexDispatch(type, reduxAction);
+        return vuexDispatch(type, reduxAction);
     };
 }
 //# sourceMappingURL=VuexWrapper.js.map

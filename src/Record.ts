@@ -1,14 +1,7 @@
 // tslint:disable-next-line:no-implicit-dependencies
 import { RealTimeDB, IMultiPathSet } from "abstracted-firebase";
 import { Model } from "./Model";
-import {
-  createError,
-  IDictionary,
-  Omit,
-  Nullable,
-  wait,
-  fk
-} from "common-types";
+import { createError, IDictionary, Omit, Nullable, fk } from "common-types";
 import { key as fbKey } from "firebase-key";
 import { FireModel } from "./FireModel";
 import { IReduxDispatch } from "./VuexWrapper";
@@ -20,16 +13,10 @@ import {
   IFmCrudOperations,
   IFmDispatchOptions
 } from "./state-mgmt/index";
-import { createWatchEvent } from "./watchers/createWatchEvent";
 import { pathJoin } from "./path";
 import { getModelMeta } from "./ModelMeta";
 import { writeAudit, IAuditChange, IAuditOperations } from "./Audit";
-import {
-  updateToAuditChanges,
-  compareHashes,
-  withoutMetaOrPrivate,
-  capitalize
-} from "./util";
+import { compareHashes, withoutMetaOrPrivate, capitalize } from "./util";
 import {
   IFkReference,
   ICompositeKey,
@@ -42,8 +29,7 @@ import {
   createCompositeKey
 } from ".";
 import { findWatchers } from "./watchers/findWatchers";
-import { IFmEvent } from "./watchers/types";
-import { provideLocalEventWithWatcherContext } from "./watchers/enhanceWithWatcherData";
+import { IFmEvent, IWatcherItem } from "./watchers/types";
 import { isHasManyRelationship } from "./verifications/isHasManyRelationship";
 import {
   NotHasManyRelationship,
@@ -59,6 +45,7 @@ import { createCompositeKeyFromFkString } from "./record/createCompositeKeyFromF
 import { RecordCrudFailure } from "./errors/record/DatabaseCrudFailure";
 import { IFmModelMeta } from "./decorators";
 import copy from "fast-copy";
+import { WatchDispatcher } from "./watchers/WatchDispatcher";
 
 /**
  * a Model that doesn't require the ID tag (or the META tag which not a true
@@ -1079,13 +1066,14 @@ export class Record<T extends Model> extends FireModel<T> {
       withoutMetaOrPrivate<T>(priorValue)
     );
 
-    const watchers = findWatchers(this.dbPath);
+    const watchers: Array<IWatcherItem<T>> = findWatchers(this.dbPath) as any;
     const event: IFmEvent<T> = {
       transactionId,
       crudAction,
+      eventType: "local",
+      key: this.id,
       value: withoutMetaOrPrivate<T>(this.data),
-      priorValue,
-      dbPath: this.dbPath
+      priorValue
     };
 
     if (crudAction === "update") {
@@ -1096,23 +1084,25 @@ export class Record<T extends Model> extends FireModel<T> {
     }
 
     if (watchers.length === 0) {
-      event.watcherSource = "unknown";
       if (!options.silent) {
         // Note: if used on frontend, the mutations must be careful to
         // set this to the right path considering there is no watcher
-        await this.dispatch(createWatchEvent(actionTypeStart, this, event));
+        await this.dispatch({
+          type: actionTypeStart,
+          ...event,
+          transactionId,
+          crudAction,
+          watcherSource: "unknown",
+          value: withoutMetaOrPrivate(this.data),
+          dbPath: this.dbPath
+        });
       }
     } else {
       // For each watcher watching this DB path ...
+      const dispatch = WatchDispatcher<T>(this.dispatch);
       for (const watcher of watchers) {
         if (!options.silent) {
-          await this.dispatch(
-            createWatchEvent(
-              actionTypeStart,
-              this,
-              provideLocalEventWithWatcherContext(this, watcher, event)
-            )
-          );
+          await dispatch(watcher)({ type: actionTypeStart, ...event });
         }
       }
     }
@@ -1146,25 +1136,20 @@ export class Record<T extends Model> extends FireModel<T> {
       // send confirm event
       if (!options.silent && !options.silentAcceptance) {
         if (watchers.length === 0) {
-          await this.dispatch(
-            createWatchEvent(actionTypeEnd, this, {
-              transactionId,
-              crudAction,
-              watcherSource: "unknown",
-              value: withoutMetaOrPrivate(this.data),
-              dbPath: this.dbPath
-            })
-          );
+          await this.dispatch({
+            type: actionTypeEnd,
+            ...event,
+            transactionId,
+            crudAction,
+            watcherSource: "unknown",
+            value: withoutMetaOrPrivate(this.data),
+            dbPath: this.dbPath
+          });
         } else {
+          const dispatch = WatchDispatcher<T>(this.dispatch);
           for (const watcher of watchers) {
             if (!options.silent) {
-              await this.dispatch(
-                createWatchEvent(actionTypeEnd, this, {
-                  ...provideLocalEventWithWatcherContext(this, watcher, event),
-                  transactionId,
-                  crudAction
-                })
-              );
+              await dispatch(watcher)({ type: actionTypeEnd, ...event });
             }
           }
         }
@@ -1174,15 +1159,15 @@ export class Record<T extends Model> extends FireModel<T> {
       }
     } catch (e) {
       // send failure event
-      await this.dispatch(
-        createWatchEvent(actionTypeFailure, this, {
-          transactionId,
-          crudAction,
-          // priorValue is the "rollback value"
-          value: priorValue,
-          dbPath: this.dbPath
-        })
-      );
+      await this.dispatch({
+        type: actionTypeFailure,
+        ...event,
+        transactionId,
+        crudAction,
+        watcherSource: "unknown",
+        value: withoutMetaOrPrivate(this.data),
+        dbPath: this.dbPath
+      });
 
       throw new RecordCrudFailure(this, crudAction, transactionId, e);
     }

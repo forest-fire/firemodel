@@ -37,7 +37,9 @@ export class Watch<T extends Model = Model> {
     FireModel.dispatch = d;
   }
 
-  /** returns a full list of all watchers */
+  /**
+   * returns a full list of all watchers
+   */
   public static get inventory() {
     return getWatcherPool();
   }

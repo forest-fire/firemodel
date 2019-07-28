@@ -1,16 +1,21 @@
 import { IDictionary } from "common-types";
 import { IWatcherItem } from "./types";
 import { IReduxDispatch } from "../VuexWrapper";
+import { Model } from "../Model";
 
 /** a cache of all the watched  */
-let watcherPool: IDictionary<IWatcherItem> = {};
+let watcherPool: IDictionary<IWatcherItem<any>> = {};
 
 export function getWatcherPool() {
   return watcherPool;
 }
 
-export function addToWatcherPool(item: IWatcherItem) {
+export function addToWatcherPool<T = IWatcherItem<any>>(item: IWatcherItem<T>) {
   watcherPool[item.watcherId] = item;
+}
+
+export function getFromWatcherPool(code: keyof typeof watcherPool) {
+  return watcherPool[code];
 }
 
 export function clearWatcherPool() {

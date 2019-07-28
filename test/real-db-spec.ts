@@ -1,12 +1,5 @@
 // tslint:disable:no-implicit-dependencies
-import {
-  Record,
-  List,
-  Watch,
-  Mock,
-  FmEvents,
-  IFmContextualizedWatchEvent
-} from "../src";
+import { Record, List, Watch, FmEvents, IDispatchEventContext } from "../src";
 import { DB } from "abstracted-admin";
 import * as chai from "chai";
 const expect = chai.expect;
@@ -110,7 +103,7 @@ describe("Tests using REAL db =>’", () => {
     expect(eventTypes).to.include(FmEvents.RECORD_ADDED);
     const added = events
       .filter(e => e.type === FmEvents.RECORD_ADDED)
-      .pop() as IFmContextualizedWatchEvent;
+      .pop() as IDispatchEventContext;
     expect(added.key).to.equal(jack.id);
     events = [];
     // child path updated directly

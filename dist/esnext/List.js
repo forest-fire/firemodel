@@ -216,7 +216,9 @@ export class List extends FireModel {
      */
     get localPath() {
         const meta = this._model.META || getModelMeta(this._model);
-        return pathJoin(meta.localPrefix, this.pluralName);
+        return pathJoin(meta.localPrefix, meta.localModelName !== this.modelName
+            ? meta.localModelName
+            : this.pluralName);
     }
     /**
      * Used with local state management tools, it provides a postfix to the state tree path

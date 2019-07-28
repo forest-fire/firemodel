@@ -4,7 +4,6 @@ import { IMultiPathUpdates } from "../FireModel";
 import { ICompositeKey } from "../@types/record-types";
 import { FmModelConstructor } from "../@types/general";
 import { FmRelationshipType } from "../decorators/types";
-import { IValueBasedWatchEvent } from "abstracted-firebase";
 import { IDictionary } from "common-types";
 import { IWatcherSource } from "../watchers/types";
 export declare type Extractable<T, U> = T extends U ? any : never;
@@ -154,8 +153,9 @@ export interface IFmRecordWatchContext<T> {
  */
 export interface IFmDispatchWatchContextBase<T extends Model = Model> extends IFmRecordWatchContext<T> {
     /**
-     * the query the watcher is based on; if this is a `list-of-records`
-     * then there will be 1:M serialized queries underlying
+     * The query used to setup the watcher; if this is a
+     * `list-of-records` then this will be an array of queries;
+     * one for each _record watcher_ which has been setup.
      */
     query: SerializedQuery | SerializedQuery[];
     /**
@@ -233,8 +233,11 @@ export interface IFMValueAction extends IFMAction {
     model: string;
     query: SerializedQuery | null;
 }
-export interface IFmContextualizedWatchEvent<T = any> extends IFmDispatchWatchContextBase<T>, IValueBasedWatchEvent {
+/**
+ * Extra meta-data that comes from combining
+ * the _watcher context_ and the _event_
+ */
+export interface IDispatchEventContext<T = any> {
     type: FmEvents;
-    compositeKey: ICompositeKey<T>;
     dbPath: string;
 }

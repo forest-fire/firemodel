@@ -5,14 +5,18 @@ import { FireModelError } from "../errors";
 /**
  * **watchDispatcher**
  *
- * Wraps Firebase event detail (meager) with as much context as is possible
+ * Wraps both start-time _watcher context_ and combines that with
+ * event information (like the `key` and `dbPath`) to provide a rich
+ * data environment for the `dispatch` function to operate with.
  */
-export const WatchDispatcher = (watcherContext) => (
+export const WatchDispatcher = (
 /**
  * a base/generic redux dispatch function; typically provided
  * by the frontend state management framework
  */
-coreDispatchFn) => {
+coreDispatchFn) => (
+/** context provided by the watcher at the time in which the watcher was setup */
+watcherContext) => {
     if (typeof coreDispatchFn !== "function") {
         throw new FireModelError(`A watcher is being setup but the dispatch function is not a valid function!`, "firemodel/not-allowed");
     }
@@ -29,14 +33,23 @@ coreDispatchFn) => {
         const recordProps = typeof event.value === "object"
             ? Object.assign({ id: event.key }, event.value) : { id: event.key };
         const rec = Record.createWith(watcherContext.modelConstructor, recordProps);
-        const contextualizedEvent = Object.assign({
-            type: event.eventType === "value"
+        const eventContext = {
+            type: watcherContext.eventFamily === "value"
                 ? event.value === null || event.paths === null
                     ? FmEvents.RECORD_REMOVED
                     : FmEvents.RECORD_CHANGED
-                : typeLookup[event.eventType]
-        }, watcherContext, event, { dbPath: rec.dbPath });
-        return coreDispatchFn(contextualizedEvent);
+                : typeLookup[event.eventType],
+            dbPath: rec.dbPath
+        };
+        /**
+         * _local events_ will be explicit about the **Action**
+         * they are trying to set
+         */
+        if (event.type) {
+            eventContext.type = event.type;
+        }
+        const reduxAction = Object.assign({}, watcherContext, eventContext, event);
+        return coreDispatchFn(reduxAction);
     };
 };
 function isValueBasedEvent(evt, context) {
