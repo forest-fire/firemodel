@@ -1,15 +1,19 @@
-import { IReduxDispatch } from "../VuexWrapper";
 import { IDictionary } from "common-types";
 import {
   IValueBasedWatchEvent,
   IPathBasedWatchEvent
 } from "abstracted-firebase";
-import { FmEvents, IDispatchEventContext } from "../state-mgmt";
+import {
+  FmEvents,
+  IDispatchEventContext,
+  IReduxDispatch,
+  IFmWatchEvent,
+  IFmServerEvent
+} from "../state-mgmt";
 import { Record } from "../Record";
 import { hasInitialized } from "./watchInitialization";
 import { FireModelError } from "../errors";
 import { IWatcherItem, IFmLocalEvent } from "./types";
-import { IFmEvent, IFmServerEvent } from "../@types";
 
 /**
  * **watchDispatcher**
@@ -38,7 +42,7 @@ export const WatchDispatcher = <T>(
   // Handle incoming events ...
   return async (
     event: IFmServerEvent | IFmLocalEvent<T>
-  ): Promise<IFmEvent<T>> => {
+  ): Promise<IFmWatchEvent<T>> => {
     hasInitialized[watcherContext.watcherId] = true;
 
     const typeLookup: IDictionary = {
@@ -79,7 +83,7 @@ export const WatchDispatcher = <T>(
       eventContext.type = (event as IFmLocalEvent<T>).type;
     }
 
-    const reduxAction: IFmEvent<T> = {
+    const reduxAction: IFmWatchEvent<T> = {
       ...watcherContext,
       ...eventContext,
       ...event

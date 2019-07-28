@@ -2,7 +2,7 @@ import { Model } from "../Model";
 import { SerializedQuery } from "serialized-query";
 import { FmModelConstructor, ICompositeKey } from "../@types";
 import { IWatchEventClassification, IFmWatcherStartOptions, IWatcherItem } from "./types";
-import { IReduxDispatch } from "../VuexWrapper";
+import { IReduxDispatch } from "../state-mgmt";
 import { RealTimeDB } from "abstracted-firebase";
 import { WatchRecord } from "./WatchRecord";
 /**
@@ -61,6 +61,6 @@ export declare class WatchBase<T extends Model> {
      * it is also used externally by locally triggered events as well
      */
     buildWatcherItem(name?: string): IWatcherItem<T>;
-    protected getCoreDispatch(): IReduxDispatch<import("../VuexWrapper").IReduxAction, any>;
+    protected getCoreDispatch(): IReduxDispatch<import("..").IReduxAction, any>;
     protected readonly db: RealTimeDB;
 }

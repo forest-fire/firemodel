@@ -16,7 +16,7 @@ import { Mock as FireMock } from "firemock";
 import { FancyPerson } from "./testing/FancyPerson";
 import { Car } from "./testing/Car";
 import { Company } from "./testing/Company";
-import { IReduxAction } from "../src/VuexWrapper";
+import { IReduxAction } from "../src/state-mgmt/VuexWrapper";
 import { IDictionary, wait } from "common-types";
 import * as helpers from "./testing/helpers";
 const expect = chai.expect;

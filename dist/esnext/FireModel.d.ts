@@ -1,7 +1,7 @@
 import { Model } from "./Model";
 declare type Record<T> = import("./Record").Record<T>;
 import { IDictionary } from "common-types";
-import { IReduxDispatch } from "./VuexWrapper";
+import { IReduxDispatch } from "./state-mgmt";
 import { RealTimeDB, IFirebaseConfig, IFirebaseAdminConfig } from "abstracted-firebase";
 import { IFmModelMeta, IFmModelPropertyMeta, IFmModelRelationshipMeta } from "./decorators/types";
 import { IFmChangedProperties } from "./@types";
@@ -49,7 +49,7 @@ export declare class FireModel<T extends Model> {
      * meta information -- contained on the given model
      */
     readonly relationships: IFmModelRelationshipMeta[];
-    readonly dispatch: IReduxDispatch<import("./VuexWrapper").IReduxAction, any>;
+    readonly dispatch: IReduxDispatch<import("./state-mgmt").IReduxAction, any>;
     static readonly isDefaultDispatch: boolean;
     readonly dispatchIsActive: boolean;
     /** the connected real-time database */

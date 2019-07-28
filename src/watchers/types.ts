@@ -3,7 +3,7 @@ import { IMultiPathUpdates } from "../FireModel";
 import { IFmCrudOperations, IReduxDispatch } from "..";
 import { SerializedQuery } from "serialized-query";
 import { Model } from "../Model";
-import { ICompositeKey, IFmEventType } from "../@types";
+import { ICompositeKey } from "../@types";
 // tslint:disable-next-line: no-implicit-dependencies
 import { EventType } from "@firebase/database-types";
 import { FmEvents } from "../state-mgmt";
@@ -192,6 +192,10 @@ export interface IWatcherItemRecord<T extends Model = Model>
   eventFamily: "value";
 }
 
+/**
+ * The meta information provided when a watcher is started;
+ * it is also added to events when they have watcher context.
+ */
 export type IWatcherItem<T extends Model = Model> =
   | IWatcherItemList<T>
   | IWatcherItemRecord<T>

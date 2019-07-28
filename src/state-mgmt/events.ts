@@ -1,6 +1,6 @@
 import { Model } from "../Model";
-import { IDispatchEventContext } from "../state-mgmt";
-import { IFmLocalEvent } from "../watchers/types";
+import { IDispatchEventContext, FmEvents } from "./index";
+import { IFmLocalEvent, IWatcherItem } from "../watchers/types";
 import {
   IValueBasedWatchEvent,
   IPathBasedWatchEvent
@@ -30,5 +30,15 @@ export type IFmServerOrLocalEvent<T> = IFmServerEvent | IFmLocalEvent<T>;
  * This represents the payload which **Firemodel** will dispatch when
  * _watcher context_ is available.
  */
-export type IFmEvent<T extends Model = Model> = IFmServerOrLocalEvent<T> &
-  IDispatchEventContext<T>;
+export type IFmWatchEvent<T extends Model = Model> = IFmServerOrLocalEvent<T> &
+  IDispatchEventContext<T> &
+  IWatcherItem<T>;
+
+/**
+ * The extra meta-data that comes from combining
+ * the _watcher context_ and the _event_
+ */
+export interface IDispatchEventContext<T = any> {
+  type: FmEvents;
+  dbPath: string;
+}

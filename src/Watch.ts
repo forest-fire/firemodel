@@ -1,5 +1,5 @@
 import { Model } from "./Model";
-import { IReduxDispatch } from "./VuexWrapper";
+import { IReduxDispatch } from "./state-mgmt";
 import { FireModel } from "./FireModel";
 type RealTimeDB = import("abstracted-firebase").RealTimeDB;
 

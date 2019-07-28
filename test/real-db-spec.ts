@@ -8,7 +8,7 @@ import { Person } from "./testing/Person";
 import * as helpers from "./testing/helpers";
 import { FireModel } from "../src/FireModel";
 import { IDictionary, wait, pathJoin } from "common-types";
-import { IReduxAction } from "../src/VuexWrapper";
+import { IReduxAction } from "../src/state-mgmt/VuexWrapper";
 import { FancyPerson } from "./testing/FancyPerson";
 
 helpers.setupEnv();

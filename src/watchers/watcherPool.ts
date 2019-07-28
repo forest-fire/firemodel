@@ -1,7 +1,6 @@
 import { IDictionary } from "common-types";
 import { IWatcherItem } from "./types";
-import { IReduxDispatch } from "../VuexWrapper";
-import { Model } from "../Model";
+import { IReduxDispatch } from "../state-mgmt";
 
 /** a cache of all the watched  */
 let watcherPool: IDictionary<IWatcherItem<any>> = {};

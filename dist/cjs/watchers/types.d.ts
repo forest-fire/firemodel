@@ -166,4 +166,8 @@ export interface IWatcherItemRecord<T extends Model = Model> extends IWatcherIte
     query: SerializedQuery<T>;
     eventFamily: "value";
 }
+/**
+ * The meta information provided when a watcher is started;
+ * it is also added to events when they have watcher context.
+ */
 export declare type IWatcherItem<T extends Model = Model> = IWatcherItemList<T> | IWatcherItemRecord<T> | IWatcherItemListofRecords<T>;

@@ -4,7 +4,7 @@ import { Model } from "./Model";
 import { createError, IDictionary, Omit, Nullable, fk } from "common-types";
 import { key as fbKey } from "firebase-key";
 import { FireModel } from "./FireModel";
-import { IReduxDispatch } from "./VuexWrapper";
+import { IReduxDispatch } from "./state-mgmt";
 import { buildDeepRelationshipLinks } from "./record/buildDeepRelationshipLinks";
 
 import {

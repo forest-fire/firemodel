@@ -18,7 +18,7 @@ import Company from "./testing/dynamicPaths/Company";
 import { HumanAttribute } from "./testing/dynamicPaths/HumanAttribute";
 import { IDictionary } from "common-types";
 import { FancyPerson } from "./testing/FancyPerson";
-import { IReduxAction } from "../src/VuexWrapper";
+import { IReduxAction } from "../src/state-mgmt/VuexWrapper";
 
 const expect = chai.expect;
 

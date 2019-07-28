@@ -2,7 +2,7 @@ import { RealTimeDB } from "abstracted-firebase";
 import { Model } from "./Model";
 import { Omit, Nullable, fk } from "common-types";
 import { FireModel } from "./FireModel";
-import { IReduxDispatch } from "./VuexWrapper";
+import { IReduxDispatch } from "./state-mgmt";
 import { IFMEventName, IFmCrudOperations, IFmDispatchOptions } from "./state-mgmt/index";
 import { IFkReference, ICompositeKey, IRecordOptions } from "./@types/record-types";
 import { IFmRelationshipOptionsForHasMany } from ".";

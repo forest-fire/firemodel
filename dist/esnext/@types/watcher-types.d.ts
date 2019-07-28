@@ -1,6 +1,6 @@
 import { Model } from "../Model";
 import { IDispatchEventContext } from "../state-mgmt";
-import { IFmLocalEvent } from "../watchers/types";
+import { IFmLocalEvent, IWatcherItem } from "../watchers/types";
 import { IValueBasedWatchEvent, IPathBasedWatchEvent } from "abstracted-firebase";
 export declare type IFmEventType = "value" | "child_added" | "child_moved" | "child_removed" | "child_changed";
 /**
@@ -14,4 +14,8 @@ export declare type IFmServerEvent = IValueBasedWatchEvent | IPathBasedWatchEven
     value?: any;
 };
 export declare type IFmServerOrLocalEvent<T> = IFmServerEvent | IFmLocalEvent<T>;
-export declare type IFmEvent<T extends Model = Model> = IFmServerOrLocalEvent<T> & IDispatchEventContext<T>;
+/**
+ * This represents the payload which **Firemodel** will dispatch when
+ * _watcher context_ is available.
+ */
+export declare type IFmWatchEvent<T extends Model = Model> = IFmServerOrLocalEvent<T> & IDispatchEventContext<T> & IWatcherItem<T>;

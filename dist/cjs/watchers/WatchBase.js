@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const __1 = require("..");
+const index_1 = require("../index");
 const errors_1 = require("../errors");
 const WatchDispatcher_1 = require("./WatchDispatcher");
 const watchInitialization_1 = require("./watchInitialization");
@@ -58,8 +58,8 @@ class WatchBase {
         }
         catch (e) {
             console.log(`Problem starting watcher [${watcherId}]: `, e);
-            (this._dispatcher || __1.FireModel.dispatch)({
-                type: __1.FmEvents.WATCHER_FAILED,
+            (this._dispatcher || index_1.FireModel.dispatch)({
+                type: index_1.FmEvents.WATCHER_FAILED,
                 errorMessage: e.message,
                 errorCode: e.code || e.name || "firemodel/watcher-failed"
             });
@@ -67,10 +67,10 @@ class WatchBase {
         }
         watcherPool_1.addToWatcherPool(watcherItem);
         // dispatch meta
-        (this._dispatcher || __1.FireModel.dispatch)(Object.assign({ type: __1.FmEvents.WATCHER_STARTING }, watcherItem));
+        (this._dispatcher || index_1.FireModel.dispatch)(Object.assign({ type: index_1.FmEvents.WATCHER_STARTING }, watcherItem));
         try {
             await watchInitialization_1.waitForInitialization(watcherItem);
-            (this._dispatcher || __1.FireModel.dispatch)(Object.assign({ type: __1.FmEvents.WATCHER_STARTED }, watcherItem));
+            (this._dispatcher || index_1.FireModel.dispatch)(Object.assign({ type: index_1.FmEvents.WATCHER_STARTED }, watcherItem));
             return watcherItem;
         }
         catch (e) {
@@ -141,7 +141,7 @@ class WatchBase {
     getCoreDispatch() {
         // Use the bespoke dispatcher for this class if it's available;
         // if not then fall back to the default Firemodel dispatch
-        const coreDispatch = this._dispatcher || __1.FireModel.dispatch;
+        const coreDispatch = this._dispatcher || index_1.FireModel.dispatch;
         if (coreDispatch.name === "defaultDispatch") {
             throw new errors_1.FireModelError(`Attempt to start a ${this._watcherSource} watcher on "${this._query.path}" but no dispatcher has been assigned. Make sure to explicitly set the dispatch function or use "FireModel.dispatch = xxx" to setup a default dispatch function.`, `firemodel/invalid-dispatch`);
         }
@@ -149,8 +149,8 @@ class WatchBase {
     }
     get db() {
         if (!this._db) {
-            if (__1.FireModel.defaultDb) {
-                this._db = __1.FireModel.defaultDb;
+            if (index_1.FireModel.defaultDb) {
+                this._db = index_1.FireModel.defaultDb;
             }
         }
         return this._db;

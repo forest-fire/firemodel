@@ -1,4 +1,4 @@
-import { FireModel, FmEvents } from "..";
+import { FireModel, FmEvents } from "../index";
 import { FireModelError } from "../errors";
 import { WatchDispatcher } from "./WatchDispatcher";
 import { waitForInitialization } from "./watchInitialization";

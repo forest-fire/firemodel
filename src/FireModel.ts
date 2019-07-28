@@ -2,7 +2,7 @@ import { Model } from "./Model";
 // prettier-ignore
 type Record<T> = import("./Record").Record<T>;
 import { IDictionary, pathJoin } from "common-types";
-import { IReduxDispatch } from "./VuexWrapper";
+import { IReduxDispatch } from "./state-mgmt";
 import { getModelMeta } from "./ModelMeta";
 import {
   RealTimeDB,
@@ -14,8 +14,7 @@ import {
   IFmModelPropertyMeta,
   IFmModelRelationshipMeta
 } from "./decorators/types";
-import { IFmChangedProperties, IFmEvent } from "./@types";
-import { IFmLocalEvent } from "./watchers/types";
+import { IFmChangedProperties } from "./@types";
 // tslint:disable-next-line:no-var-requires
 const pluralize = require("pluralize");
 const defaultDispatch: IReduxDispatch<any, any> = async context => "";

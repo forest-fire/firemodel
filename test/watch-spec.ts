@@ -1,5 +1,5 @@
 // tslint:disable:no-implicit-dependencies
-import { Record, Mock, IFmEvent, IFmLocalEvent } from "../src";
+import { Record, Mock, IFmWatchEvent, IFmLocalEvent } from "../src";
 import { DB } from "abstracted-client";
 import { DB as Admin, SerializedQuery } from "abstracted-admin";
 import * as chai from "chai";
@@ -9,7 +9,7 @@ import { Watch } from "../src/Watch";
 import { Person } from "./testing/Person";
 import { PersonWithLocalAndPrefix } from "./testing/PersonWithLocalAndPrefix";
 import { setupEnv } from "./testing/helpers";
-import { IReduxAction } from "../src/VuexWrapper";
+import { IReduxAction } from "../src/state-mgmt/VuexWrapper";
 import { FmEvents, IDispatchEventContext } from "../src/state-mgmt";
 import { wait, IDictionary } from "common-types";
 import { WatchList } from "../src/watchers/WatchList";
@@ -214,8 +214,8 @@ describe("Watch.list(XXX).ids()", () => {
 
   it('An event, when encountered, is correctly associated with the "list of records" watcher', async () => {
     FireModel.defaultDb = await DB.connect({ mocking: true });
-    const events: Array<IFmEvent<Person>> = [];
-    const cb = async (event: IFmEvent<Person>) => {
+    const events: Array<IFmWatchEvent<Person>> = [];
+    const cb = async (event: IFmWatchEvent<Person>) => {
       events.push(event);
     };
     const watcher = await Watch.list(Person)
@@ -263,8 +263,8 @@ describe("Watch.list(XXX).ids()", () => {
 
   it("The Watch.list(xyz).ids(...) works when the model has a composite key", async () => {
     FireModel.defaultDb = await DB.connect({ mocking: true });
-    const events: Array<IFmEvent<Person>> = [];
-    const cb = async (event: IFmEvent<Person>) => {
+    const events: Array<IFmWatchEvent<Person>> = [];
+    const cb = async (event: IFmWatchEvent<Person>) => {
       events.push(event);
     };
     const watcher = Watch.list(DeeperPerson);

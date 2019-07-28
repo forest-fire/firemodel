@@ -6,9 +6,9 @@ import {
   IFmWatcherStartOptions,
   IWatcherItem
 } from "./types";
-import { IReduxDispatch } from "../VuexWrapper";
+import { IReduxDispatch } from "../state-mgmt";
 import { RealTimeDB } from "abstracted-firebase";
-import { FireModel, FmEvents } from "..";
+import { FireModel, FmEvents } from "../index";
 import { FireModelError } from "../errors";
 import { WatchDispatcher } from "./WatchDispatcher";
 import { waitForInitialization } from "./watchInitialization";
