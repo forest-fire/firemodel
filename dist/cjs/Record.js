@@ -667,7 +667,9 @@ class Record extends FireModel_1.FireModel {
      * @param ref the FK
      */
     async setRelationship(property, fkId, options = {}) {
-        // TODO: Validate
+        if (!fkId) {
+            throw new errors_1.FireModelError(`Failed to set the relationship ${this.modelName}.${property} because no FK was passed in!`, "firemodel/not-allowed");
+        }
         if (isHasManyRelationship_1.isHasManyRelationship(this, property)) {
             throw new errors_1.NotHasOneRelationship(this, property, "setRelationship");
         }

@@ -37,8 +37,6 @@ export const WatchDispatcher = <T>(
 
   // Handle incoming events ...
   return async (event: IFmServerOrLocalEvent<T>): Promise<IFmWatchEvent<T>> => {
-    hasInitialized[watcherContext.watcherId] = true;
-
     const typeLookup: IDictionary<FmEvents> = {
       child_added: FmEvents.RECORD_ADDED,
       child_removed: FmEvents.RECORD_REMOVED,
@@ -98,6 +96,9 @@ export const WatchDispatcher = <T>(
       errorMessage
     };
 
-    return coreDispatchFn(reduxAction);
+    const results = await coreDispatchFn(reduxAction);
+
+    hasInitialized(watcherContext.watcherId);
+    return results;
   };
 };

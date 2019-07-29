@@ -9,4 +9,6 @@ __export(require("./MissingReciprocalInverse"));
 __export(require("./IncorrectReciprocalInverse"));
 __export(require("./NotHasManyRelationship"));
 __export(require("./NotHasOneRelationship"));
+__export(require("./UnknownRelationshipProblem"));
+__export(require("./MissingInverseProperty"));
 //# sourceMappingURL=index.js.map

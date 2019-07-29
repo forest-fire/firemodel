@@ -63,12 +63,12 @@ export class WatchBase {
             });
             throw e;
         }
-        addToWatcherPool(watcherItem);
-        // dispatch meta
-        (this._dispatcher || FireModel.dispatch)(Object.assign({ type: FmEvents.WATCHER_STARTING }, watcherItem));
         try {
+            addToWatcherPool(watcherItem);
+            // dispatch "starting"; no need to wait for promise
+            (this._dispatcher || FireModel.dispatch)(Object.assign({ type: FmEvents.WATCHER_STARTING }, watcherItem));
             await waitForInitialization(watcherItem);
-            (this._dispatcher || FireModel.dispatch)(Object.assign({ type: FmEvents.WATCHER_STARTED }, watcherItem));
+            await (this._dispatcher || FireModel.dispatch)(Object.assign({ type: FmEvents.WATCHER_STARTED }, watcherItem));
             return watcherItem;
         }
         catch (e) {

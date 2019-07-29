@@ -102,17 +102,16 @@ export class WatchBase<T extends Model> {
       throw e;
     }
 
-    addToWatcherPool(watcherItem);
-
-    // dispatch meta
-    (this._dispatcher || FireModel.dispatch)({
-      type: FmEvents.WATCHER_STARTING,
-      ...watcherItem
-    });
     try {
+      addToWatcherPool(watcherItem);
+      // dispatch "starting"; no need to wait for promise
+      (this._dispatcher || FireModel.dispatch)({
+        type: FmEvents.WATCHER_STARTING,
+        ...watcherItem
+      });
       await waitForInitialization(watcherItem);
 
-      (this._dispatcher || FireModel.dispatch)({
+      await (this._dispatcher || FireModel.dispatch)({
         type: FmEvents.WATCHER_STARTED,
         ...watcherItem
       });

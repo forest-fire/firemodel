@@ -3,11 +3,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const Record_1 = require("../../Record");
 const ModelMeta_1 = require("../../ModelMeta");
 const common_types_1 = require("common-types");
-const MissingReciprocalInverse_1 = require("../../errors/relationships/MissingReciprocalInverse");
-const IncorrectReciprocalInverse_1 = require("../../errors/relationships/IncorrectReciprocalInverse");
+const index_1 = require("../../errors/index");
 const createCompositeKeyString_1 = require("../createCompositeKeyString");
-const UnknownRelationshipProblem_1 = require("../../errors/relationships/UnknownRelationshipProblem");
-const MissingInverseProperty_1 = require("../../errors/relationships/MissingInverseProperty");
 /**
  * Builds all the DB paths needed to update a pairing of a PK:FK. It is intended
  * to be used by the `Record`'s transactional API as a first step of specifying
@@ -58,15 +55,15 @@ function buildRelationshipPaths(rec, property, fkRef, options = {}) {
             const fkMeta = ModelMeta_1.getModelMeta(fkRecord);
             const inverseReln = fkMeta.relationship(inverseProperty);
             if (!inverseReln) {
-                throw new MissingInverseProperty_1.MissingInverseProperty(rec, property);
+                throw new index_1.MissingInverseProperty(rec, property);
             }
             if (!inverseReln.inverseProperty &&
                 inverseReln.directionality === "bi-directional") {
-                throw new MissingReciprocalInverse_1.MissingReciprocalInverse(rec, property);
+                throw new index_1.MissingReciprocalInverse(rec, property);
             }
             if (inverseReln.inverseProperty !== property &&
                 inverseReln.directionality === "bi-directional") {
-                throw new IncorrectReciprocalInverse_1.IncorrectReciprocalInverse(rec, property);
+                throw new index_1.IncorrectReciprocalInverse(rec, property);
             }
             const fkInverseIsHasManyReln = inverseProperty
                 ? fkMeta.relationship(inverseProperty).relType === "hasMany"
@@ -96,7 +93,7 @@ function buildRelationshipPaths(rec, property, fkRef, options = {}) {
             console.log(e);
             throw e;
         }
-        throw new UnknownRelationshipProblem_1.UnknownRelationshipProblem(e, rec, property);
+        throw new index_1.UnknownRelationshipProblem(e, rec, property);
     }
 }
 exports.buildRelationshipPaths = buildRelationshipPaths;

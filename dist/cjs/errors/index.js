@@ -5,6 +5,9 @@ function __export(m) {
 Object.defineProperty(exports, "__esModule", { value: true });
 __export(require("./FireModelError"));
 __export(require("./FireModelProxyError"));
-__export(require("./relationships"));
+__export(require("./relationships/index"));
 __export(require("./mocks/MockError"));
+__export(require("./decorators"));
+__export(require("./relationships"));
+__export(require("./DynamicPropertiesNotReady"));
 //# sourceMappingURL=index.js.map
