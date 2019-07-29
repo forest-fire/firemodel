@@ -6,31 +6,44 @@ import { Model } from "../Model";
  * indicates which watcherId's have returned their initial
  * value.
  */
-export const hasInitialized: IDictionary<boolean> = {};
+const _hasInitialized: IDictionary<boolean> = {};
+export const hasInitialized = (watcherId?: string) => {
+  if (watcherId) {
+    _hasInitialized[watcherId] = true;
+  }
 
+  return _hasInitialized;
+};
+
+/**
+ * Waits for a newly started watcher to get back the first
+ * data from the watcher. This indicates that the frontend
+ * and Firebase DB are now in sync.
+ */
 export async function waitForInitialization<T = Model>(
   watcher: IWatcherEventContext<T>,
   timeout: number = 5000
 ): Promise<void> {
   return new Promise(async (resolve, reject) => {
     setTimeout(() => {
-      reject(
-        new Error(
-          `Timed out waiting for initialization of watcher "${watcher.watcherId}"`
-        )
-      );
+      if (!ready(watcher)) {
+        reject(
+          new Error(
+            `Timed out waiting for initialization of watcher "${watcher.watcherId}"`
+          )
+        );
+      } else {
+        resolve();
+      }
     }, timeout);
     while (!ready(watcher)) {
-      if (ready(watcher)) {
-        resolve();
-      } else {
-        await wait(100);
-      }
+      await wait(50);
     }
+
     resolve();
   });
 }
 
-async function ready<T>(watcher: IWatcherEventContext<T>) {
-  return hasInitialized[watcher.watcherId];
+function ready<T>(watcher: IWatcherEventContext<T>) {
+  return hasInitialized()[watcher.watcherId] ? true : false;
 }

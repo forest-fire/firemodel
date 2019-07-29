@@ -6,12 +6,14 @@ import {
 } from "../..";
 import { Record } from "../../Record";
 import { getModelMeta } from "../../ModelMeta";
-import { pathJoin, IDictionary } from "common-types";
-import { MissingReciprocalInverse } from "../../errors/relationships/MissingReciprocalInverse";
-import { IncorrectReciprocalInverse } from "../../errors/relationships/IncorrectReciprocalInverse";
+import { pathJoin } from "common-types";
+import {
+  MissingReciprocalInverse,
+  IncorrectReciprocalInverse,
+  UnknownRelationshipProblem,
+  MissingInverseProperty
+} from "../../errors/index";
 import { createCompositeKeyRefFromRecord } from "../createCompositeKeyString";
-import { UnknownRelationshipProblem } from "../../errors/relationships/UnknownRelationshipProblem";
-import { MissingInverseProperty } from "../../errors/relationships/MissingInverseProperty";
 
 /**
  * Builds all the DB paths needed to update a pairing of a PK:FK. It is intended

@@ -924,7 +924,13 @@ export class Record<T extends Model> extends FireModel<T> {
     fkId: IFkReference<T>,
     options: IFmRelationshipOptions = {}
   ) {
-    // TODO: Validate
+    if (!fkId) {
+      throw new FireModelError(
+        `Failed to set the relationship ${this.modelName}.${property} because no FK was passed in!`,
+        "firemodel/not-allowed"
+      );
+    }
+
     if (isHasManyRelationship(this, property)) {
       throw new NotHasOneRelationship(this, property, "setRelationship");
     }

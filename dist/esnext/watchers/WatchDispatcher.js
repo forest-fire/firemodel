@@ -22,7 +22,6 @@ watcherContext) => {
     }
     // Handle incoming events ...
     return async (event) => {
-        hasInitialized[watcherContext.watcherId] = true;
         const typeLookup = {
             child_added: FmEvents.RECORD_ADDED,
             child_removed: FmEvents.RECORD_REMOVED,
@@ -64,7 +63,9 @@ watcherContext) => {
             };
         }
         const reduxAction = Object.assign({}, watcherContext, event, eventContext, { errorMessage });
-        return coreDispatchFn(reduxAction);
+        const results = await coreDispatchFn(reduxAction);
+        hasInitialized(watcherContext.watcherId);
+        return results;
     };
 };
 //# sourceMappingURL=WatchDispatcher.js.map
