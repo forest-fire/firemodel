@@ -1,5 +1,12 @@
 // tslint:disable:no-implicit-dependencies
-import { Record, List, Watch, FmEvents, IFmLocalEvent } from "../src";
+import {
+  Record,
+  List,
+  Watch,
+  FmEvents,
+  IFmLocalEvent,
+  IReduxAction
+} from "../src";
 import { DB } from "abstracted-admin";
 import * as chai from "chai";
 const expect = chai.expect;
@@ -8,7 +15,6 @@ import { Person } from "./testing/Person";
 import * as helpers from "./testing/helpers";
 import { FireModel } from "../src/FireModel";
 import { IDictionary, wait, pathJoin } from "common-types";
-import { IReduxAction } from "../src/state-mgmt/VuexWrapper";
 import { FancyPerson } from "./testing/FancyPerson";
 
 helpers.setupEnv();

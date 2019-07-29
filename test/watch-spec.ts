@@ -1,5 +1,11 @@
 // tslint:disable:no-implicit-dependencies
-import { Record, Mock, IFmWatchEvent, IFmLocalEvent } from "../src";
+import {
+  Record,
+  Mock,
+  IFmWatchEvent,
+  IFmLocalEvent,
+  IReduxAction
+} from "../src";
 import { DB } from "abstracted-client";
 import { DB as Admin, SerializedQuery } from "abstracted-admin";
 import * as chai from "chai";
@@ -9,8 +15,7 @@ import { Watch } from "../src/Watch";
 import { Person } from "./testing/Person";
 import { PersonWithLocalAndPrefix } from "./testing/PersonWithLocalAndPrefix";
 import { setupEnv } from "./testing/helpers";
-import { IReduxAction } from "../src/state-mgmt/VuexWrapper";
-import { FmEvents, IEventTimeContext } from "../src/state-mgmt";
+import { FmEvents } from "../src/state-mgmt";
 import { wait, IDictionary } from "common-types";
 import { WatchList } from "../src/watchers/WatchList";
 import { getWatcherPool } from "../src/watchers/watcherPool";

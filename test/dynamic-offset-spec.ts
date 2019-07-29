@@ -1,7 +1,15 @@
 // tslint:disable:no-implicit-dependencies
 import { DB } from "abstracted-admin";
 import * as chai from "chai";
-import { Record, FireModel, Mock, List, Watch, FmEvents } from "../src";
+import {
+  Record,
+  FireModel,
+  Mock,
+  List,
+  Watch,
+  FmEvents,
+  IReduxAction
+} from "../src";
 import DeepPerson, { IDeepName } from "./testing/dynamicPaths/DeepPerson";
 import { DeeperPerson } from "./testing/dynamicPaths/DeeperPerson";
 import { MockedPerson } from "./testing/dynamicPaths/MockedPerson";
@@ -17,8 +25,6 @@ import {
 import Company from "./testing/dynamicPaths/Company";
 import { HumanAttribute } from "./testing/dynamicPaths/HumanAttribute";
 import { IDictionary } from "common-types";
-import { FancyPerson } from "./testing/FancyPerson";
-import { IReduxAction } from "../src/state-mgmt/VuexWrapper";
 
 const expect = chai.expect;
 
