@@ -99,14 +99,29 @@ export interface IFmLocalRecordEvent<T extends Model = Model>
   kind: "record";
   operation: IFmCrudOperations;
   value: T;
-
   /**
    * **changed**
    *
-   * An array of property names who's value has changed
+   * An array of property names who's value has _changed_;
+   * this is only available when the operation is set to
+   * `update`.
    */
   changed?: Array<keyof T>;
+  /**
+   * **added**
+   *
+   * An array of property names who's value has been _added_;
+   * this is only available when the operation is set to
+   * `update`.
+   */
   added?: Array<keyof T>;
+  /**
+   * **removed**
+   *
+   * An array of property names who's value has been _removed_;
+   * this is only available when the operation is set to
+   * `update`.
+   */
   removed?: Array<keyof T>;
   /**
    * **priorValue**

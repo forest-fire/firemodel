@@ -4,6 +4,7 @@ import { Record } from "../Record";
 import { SerializedQuery } from "serialized-query";
 import { getAllPropertiesFromClassStructure } from "../util";
 import { Watch } from "../index";
+import { FireModelError } from "../errors";
 export class WatchList extends WatchBase {
     constructor() {
         super(...arguments);
@@ -63,6 +64,9 @@ export class WatchList extends WatchBase {
      * @param ids the list of FK references (simple or composite)
      */
     ids(...ids) {
+        if (ids.length === 0) {
+            throw new FireModelError(`You attempted to setup a watcher list on a given set of ID's of "${this._modelName}" but the list of ID's was empty!`, "firemodel/not-ready");
+        }
         for (const id of ids) {
             this._underlyingRecordWatchers.push(Watch.record(this._modelConstructor, id));
         }
