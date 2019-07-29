@@ -92,13 +92,12 @@ export const WatchDispatcher = <T>(
     const reduxAction: IFmWatchEvent<T> = {
       ...watcherContext,
       ...event,
-      ...eventContext,
-      errorMessage
+      ...eventContext
     };
 
     const results = await coreDispatchFn(reduxAction);
-
     hasInitialized(watcherContext.watcherId);
+
     return results;
   };
 };

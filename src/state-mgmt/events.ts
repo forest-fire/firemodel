@@ -11,6 +11,10 @@ import {
   IPathBasedWatchEvent
 } from "abstracted-firebase";
 import { ICompositeKey } from "../@types";
+import {
+  IFmLocalRecordEvent,
+  IFmLocalRelationshipEvent
+} from "./IFmLocalEvent";
 
 export type IFmEventType =
   | "value"
@@ -47,6 +51,38 @@ export type IFmServerOrLocalEvent<T> = IFmServerEvent | IFmLocalEvent<T>;
 export type IFmWatchEvent<T extends Model = Model> = IFmServerOrLocalEvent<T> &
   IEventTimeContext<T> &
   IWatcherEventContext<T>;
+
+/**
+ * **IFmWatchEventLocalRecord**
+ *
+ * If you have _locally_ originated event for a `Record` based event then this is
+ * the payload you will get.
+ */
+export type IFmWatchEventLocalRecord<
+  T extends Model = Model
+> = IFmLocalRecordEvent<T> & IEventTimeContext<T> & IWatcherEventContext<T>;
+
+/**
+ * **IFmWatchEventLocalRelationship**
+ *
+ * If you have _locally_ originated event for a _relationship_ based event then this is
+ * the payload you will get. Note, however, it is not that uncommon that relationships are
+ * managed locally _without_ having a watcher on the primary model. In this case you should
+ * instead use `IFmUnwatchedLocalRelationship` instead.
+ *
+ * NOTE: because relationships are a _local-only_ phenomenon, even a non-watched event
+ * has a LOT of meta information and therefore you can often just pair down to the
+ * `IFmLocalRelationshipEvent` and not worry about whether the event was watched or not.
+ */
+export type IFmWatchEventLocalRelationship<
+  T extends Model = Model
+> = IFmLocalRelationshipEvent<T> &
+  IEventTimeContext<T> &
+  IWatcherEventContext<T>;
+
+export type IFmWatchEventLocal<T> =
+  | IFmWatchEventLocalRecord<T>
+  | IFmWatchEventLocalRelationship<T>;
 
 export interface IFmRecordMeta<T extends Model> {
   /**
