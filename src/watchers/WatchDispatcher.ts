@@ -9,7 +9,7 @@ import {
   IReduxDispatch,
   IFmWatchEvent,
   IFmServerEvent,
-  IWatcherItem,
+  IWatcherEventContext,
   IFmLocalEvent
 } from "../state-mgmt";
 import { Record } from "../Record";
@@ -31,7 +31,7 @@ export const WatchDispatcher = <T>(
   coreDispatchFn: IReduxDispatch
 ) => (
   /** context provided by the watcher at the time in which the watcher was setup */
-  watcherContext: IWatcherItem<T>
+  watcherContext: IWatcherEventContext<T>
 ) => {
   if (typeof coreDispatchFn !== "function") {
     throw new FireModelError(

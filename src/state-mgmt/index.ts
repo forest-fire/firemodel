@@ -3,7 +3,8 @@ export * from "./actions";
 export * from "./redux";
 export * from "./VuexWrapper";
 export * from "./events";
-export * from "./watcher-context";
+export * from "./IWatcherEventContext";
+export * from "./IFmLocalEvent";
 
 export type Extractable<T, U> = T extends U ? any : never;
 export type NotString<T> = string extends T ? never : any;

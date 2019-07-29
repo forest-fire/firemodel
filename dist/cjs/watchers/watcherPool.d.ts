@@ -1,10 +1,10 @@
 import { IDictionary } from "common-types";
-import { IReduxDispatch, IWatcherItem } from "../state-mgmt";
+import { IReduxDispatch, IWatcherEventContext } from "../state-mgmt";
 /** a cache of all the watched  */
-declare let watcherPool: IDictionary<IWatcherItem<any>>;
-export declare function getWatcherPool(): IDictionary<IWatcherItem<any>>;
-export declare function addToWatcherPool<T = IWatcherItem<any>>(item: IWatcherItem<T>): void;
-export declare function getFromWatcherPool(code: keyof typeof watcherPool): IWatcherItem<any>;
+declare let watcherPool: IDictionary<IWatcherEventContext<any>>;
+export declare function getWatcherPool(): IDictionary<IWatcherEventContext<any>>;
+export declare function addToWatcherPool<T = IWatcherEventContext<any>>(item: IWatcherEventContext<T>): void;
+export declare function getFromWatcherPool(code: keyof typeof watcherPool): IWatcherEventContext<any>;
 export declare function clearWatcherPool(): void;
 /**
  * Each watcher must have it's own `dispatch()` function which
@@ -13,5 +13,5 @@ export declare function clearWatcherPool(): void;
  * server based events.
  */
 export declare function addDispatchForWatcher(code: keyof typeof watcherPool, dispatch: IReduxDispatch): void;
-export declare function removeFromWatcherPool(code: keyof typeof watcherPool): IDictionary<IWatcherItem<any>>;
+export declare function removeFromWatcherPool(code: keyof typeof watcherPool): IDictionary<IWatcherEventContext<any>>;
 export {};

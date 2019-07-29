@@ -2,7 +2,7 @@ import { Model } from "../Model";
 import { SerializedQuery } from "serialized-query";
 import { FmModelConstructor, ICompositeKey } from "../@types";
 import { IWatchEventClassification, IFmWatcherStartOptions } from "./types";
-import { IReduxDispatch, IWatcherItem } from "../state-mgmt";
+import { IReduxDispatch, IWatcherEventContext } from "../state-mgmt";
 import { RealTimeDB } from "abstracted-firebase";
 import { WatchRecord } from "./WatchRecord";
 /**
@@ -41,7 +41,7 @@ export declare class WatchBase<T extends Model> {
      * executes the watcher (`WatchList` or `WatchRecord`) so that it becomes
      * actively watched
      */
-    start(options?: IFmWatcherStartOptions): Promise<IWatcherItem<T>>;
+    start(options?: IFmWatcherStartOptions): Promise<IWatcherEventContext<T>>;
     /**
      * **dispatch**
      *
@@ -60,7 +60,7 @@ export declare class WatchBase<T extends Model> {
      * **Note:** that while used here as part of the `start()` method
      * it is also used externally by locally triggered events as well
      */
-    buildWatcherItem(name?: string): IWatcherItem<T>;
+    buildWatcherItem(name?: string): IWatcherEventContext<T>;
     protected getCoreDispatch(): IReduxDispatch<import("..").IReduxAction, any>;
     protected readonly db: RealTimeDB;
 }

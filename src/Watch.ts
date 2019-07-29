@@ -1,5 +1,5 @@
 import { Model } from "./Model";
-import { IReduxDispatch, IWatcherItem } from "./state-mgmt";
+import { IReduxDispatch, IWatcherEventContext } from "./state-mgmt";
 import { FireModel } from "./FireModel";
 type RealTimeDB = import("abstracted-firebase").RealTimeDB;
 
@@ -55,7 +55,7 @@ export class Watch<T extends Model = Model> {
    *
    * @param hashCode the unique hashcode given for each watcher
    */
-  public static lookup(hashCode: string): IWatcherItem {
+  public static lookup(hashCode: string): IWatcherEventContext {
     const codes = new Set(Object.keys(getWatcherPool()));
     if (!codes.has(hashCode)) {
       const e = new Error(

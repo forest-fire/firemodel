@@ -2,7 +2,7 @@ import { Model } from "../Model";
 import { SerializedQuery } from "serialized-query";
 import { FmModelConstructor, ICompositeKey } from "../@types";
 import { IWatchEventClassification, IFmWatcherStartOptions } from "./types";
-import { IReduxDispatch, IWatcherItem } from "../state-mgmt";
+import { IReduxDispatch, IWatcherEventContext } from "../state-mgmt";
 import { RealTimeDB } from "abstracted-firebase";
 import { FireModel, FmEvents } from "../index";
 import { FireModelError } from "../errors";
@@ -53,7 +53,7 @@ export class WatchBase<T extends Model> {
    */
   public async start(
     options: IFmWatcherStartOptions = {}
-  ): Promise<IWatcherItem<T>> {
+  ): Promise<IWatcherEventContext<T>> {
     const isListOfRecords = this._watcherSource === "list-of-records";
     const watchIdPrefix = isListOfRecords ? "wlr" : "w";
     const watchHashCode = isListOfRecords
@@ -153,7 +153,7 @@ export class WatchBase<T extends Model> {
    * **Note:** that while used here as part of the `start()` method
    * it is also used externally by locally triggered events as well
    */
-  public buildWatcherItem(name?: string): IWatcherItem<T> {
+  public buildWatcherItem(name?: string): IWatcherEventContext<T> {
     const dispatch = this.getCoreDispatch();
     const isListOfRecords = this._watcherSource === "list-of-records";
     const watchIdPrefix = isListOfRecords ? "wlr" : "w";
@@ -174,7 +174,7 @@ export class WatchBase<T extends Model> {
         ? this._underlyingRecordWatchers.map(i => i._query)
         : this._query;
 
-    const watchContext: IWatcherItem<T> = {
+    const watchContext: IWatcherEventContext<T> = {
       watcherId,
       watcherName,
       eventFamily,

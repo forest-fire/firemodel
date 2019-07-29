@@ -1,5 +1,5 @@
 import { IValueBasedWatchEvent, IPathBasedWatchEvent } from "abstracted-firebase";
-import { IReduxDispatch, IFmWatchEvent, IWatcherItem, IFmLocalEvent } from "../state-mgmt";
+import { IReduxDispatch, IFmWatchEvent, IWatcherEventContext, IFmLocalEvent } from "../state-mgmt";
 /**
  * **watchDispatcher**
  *
@@ -7,6 +7,6 @@ import { IReduxDispatch, IFmWatchEvent, IWatcherItem, IFmLocalEvent } from "../s
  * event information (like the `key` and `dbPath`) to provide a rich
  * data environment for the `dispatch` function to operate with.
  */
-export declare const WatchDispatcher: <T>(coreDispatchFn: IReduxDispatch<import("../state-mgmt").IReduxAction, any>) => (watcherContext: IWatcherItem<T>) => (event: IValueBasedWatchEvent | (IPathBasedWatchEvent & {
+export declare const WatchDispatcher: <T>(coreDispatchFn: IReduxDispatch<import("../state-mgmt").IReduxAction, any>) => (watcherContext: IWatcherEventContext<T>) => (event: IValueBasedWatchEvent | (IPathBasedWatchEvent & {
     value?: any;
 }) | IFmLocalEvent<T>) => Promise<IFmWatchEvent<T>>;

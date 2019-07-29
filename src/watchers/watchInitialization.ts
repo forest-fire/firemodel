@@ -1,5 +1,5 @@
 import { IDictionary, wait } from "common-types";
-import { IWatcherItem } from "../state-mgmt/index";
+import { IWatcherEventContext } from "../state-mgmt/index";
 import { Model } from "../Model";
 
 /**
@@ -9,7 +9,7 @@ import { Model } from "../Model";
 export const hasInitialized: IDictionary<boolean> = {};
 
 export async function waitForInitialization<T = Model>(
-  watcher: IWatcherItem<T>,
+  watcher: IWatcherEventContext<T>,
   timeout: number = 5000
 ): Promise<void> {
   return new Promise(async (resolve, reject) => {
@@ -31,6 +31,6 @@ export async function waitForInitialization<T = Model>(
   });
 }
 
-async function ready<T>(watcher: IWatcherItem<T>) {
+async function ready<T>(watcher: IWatcherEventContext<T>) {
   return hasInitialized[watcher.watcherId];
 }

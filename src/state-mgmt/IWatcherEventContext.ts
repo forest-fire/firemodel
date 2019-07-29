@@ -8,7 +8,7 @@ import {
 } from "..";
 import { epoch } from "common-types";
 
-export interface IWatcherItemBase<T extends Model = Model> {
+export interface IWatcherEventContextBase<T extends Model = Model> {
   watcherId: string;
   /** if defined, pass along the string name off the watcher */
   watcherName?: string;
@@ -77,8 +77,8 @@ export interface IWatcherItemBase<T extends Model = Model> {
  * When watching a "list-of-records" you are really watching
  * a basket/array of underlying record watchers.
  */
-export interface IWatcherItemListofRecords<T extends Model = Model>
-  extends IWatcherItemBase<T> {
+export interface IWatcherEventContextListofRecords<T extends Model = Model>
+  extends IWatcherEventContextBase<T> {
   watcherSource: "list-of-records";
   /**
    * The underlying _record queries_ used to achieve
@@ -88,8 +88,8 @@ export interface IWatcherItemListofRecords<T extends Model = Model>
   eventFamily: "child";
 }
 
-export interface IWatcherItemList<T extends Model = Model>
-  extends IWatcherItemBase<T> {
+export interface IWatcherEventContextList<T extends Model = Model>
+  extends IWatcherEventContextBase<T> {
   watcherSource: "list";
   /**
    * The query setup to watch a `List`
@@ -98,8 +98,8 @@ export interface IWatcherItemList<T extends Model = Model>
   eventFamily: "child";
 }
 
-export interface IWatcherItemRecord<T extends Model = Model>
-  extends IWatcherItemBase<T> {
+export interface IWatcherEventContextRecord<T extends Model = Model>
+  extends IWatcherEventContextBase<T> {
   watcherSource: "record";
   /**
    * The query setup to watch a `Record`
@@ -112,7 +112,7 @@ export interface IWatcherItemRecord<T extends Model = Model>
  * The meta information provided when a watcher is started;
  * it is also added to events when they have watcher context.
  */
-export type IWatcherItem<T extends Model = Model> =
-  | IWatcherItemList<T>
-  | IWatcherItemRecord<T>
-  | IWatcherItemListofRecords<T>;
+export type IWatcherEventContext<T extends Model = Model> =
+  | IWatcherEventContextList<T>
+  | IWatcherEventContextRecord<T>
+  | IWatcherEventContextListofRecords<T>;

@@ -1,4 +1,4 @@
-import { IWatcherItem } from "../state-mgmt";
+import { IWatcherEventContext } from "../state-mgmt";
 /**
  * **findWatchers**
  *
@@ -10,4 +10,4 @@ import { IWatcherItem } from "../state-mgmt";
  */
 export declare function findWatchers(
 /** the database path where change was detected */
-dbPath: string): IWatcherItem<any>[];
+dbPath: string): IWatcherEventContext<any>[];

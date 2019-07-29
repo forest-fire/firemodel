@@ -1,6 +1,6 @@
 import { Watch } from "../Watch";
 import { hashToArray } from "typed-conversions";
-import { IWatcherItem, IWatcherItemList } from "../state-mgmt";
+import { IWatcherEventContext, IWatcherEventContextList } from "../state-mgmt";
 
 /**
  * **findWatchers**
@@ -15,7 +15,7 @@ export function findWatchers(
   /** the database path where change was detected */
   dbPath: string
 ) {
-  const inspectListofRecords = (watcher: IWatcherItem) => {
+  const inspectListofRecords = (watcher: IWatcherEventContext) => {
     const paths = watcher.watcherPaths;
     let found = false;
     paths.forEach(p => {
