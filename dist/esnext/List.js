@@ -4,7 +4,6 @@ import { createError } from "common-types";
 import { FireModel } from "./FireModel";
 import { pathJoin } from "./path";
 import { getModelMeta } from "./ModelMeta";
-import { FmEvents } from "./state-mgmt";
 const DEFAULT_IF_NOT_FOUND = "__DO_NOT_USE__";
 function addTimestamps(obj) {
     const datetime = new Date().getTime();
@@ -96,18 +95,6 @@ export class List extends FireModel {
         const list = List.create(model, options);
         query.setPath(list.dbPath);
         await list.load(query);
-        // TODO: should this have a dispatch?
-        list.dispatch({
-            type: FmEvents.RECORD_LIST,
-            modelName: list.modelName,
-            pluralName: list.pluralName,
-            dbPath: list.dbPath,
-            localPath: list.localPath,
-            modelConstructor: list._modelConstructor,
-            query,
-            hashCode: query.hashCode(),
-            records: list.data
-        });
         return list;
     }
     /**
@@ -216,7 +203,9 @@ export class List extends FireModel {
      */
     get localPath() {
         const meta = this._model.META || getModelMeta(this._model);
-        return pathJoin(meta.localPrefix, this.pluralName);
+        return pathJoin(meta.localPrefix, meta.localModelName !== this.modelName
+            ? meta.localModelName
+            : this.pluralName);
     }
     /**
      * Used with local state management tools, it provides a postfix to the state tree path

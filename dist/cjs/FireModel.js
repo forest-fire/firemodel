@@ -4,7 +4,7 @@ const common_types_1 = require("common-types");
 const ModelMeta_1 = require("./ModelMeta");
 // tslint:disable-next-line:no-var-requires
 const pluralize = require("pluralize");
-const defaultDispatch = (context) => "";
+const defaultDispatch = async (context) => "";
 class FireModel {
     static get defaultDb() {
         return FireModel._defaultDb;

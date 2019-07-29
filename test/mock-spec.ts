@@ -7,7 +7,8 @@ import {
   FireModel,
   Watch,
   Record,
-  FmEvents
+  FmEvents,
+  IReduxAction
 } from "../src";
 import { DB } from "abstracted-admin";
 import * as chai from "chai";
@@ -16,7 +17,6 @@ import { Mock as FireMock } from "firemock";
 import { FancyPerson } from "./testing/FancyPerson";
 import { Car } from "./testing/Car";
 import { Company } from "./testing/Company";
-import { IReduxAction } from "../src/VuexWrapper";
 import { IDictionary, wait } from "common-types";
 import * as helpers from "./testing/helpers";
 const expect = chai.expect;
@@ -138,7 +138,7 @@ describe("Mocking:", () => {
 
   it("Adding a record fires local events as expected", async () => {
     const events: IDictionary[] = [];
-    FireModel.dispatch = (e: IReduxAction) => events.push(e);
+    FireModel.dispatch = async (e: IReduxAction) => events.push(e);
     await Record.add(FancyPerson, {
       name: "Bob Barker"
     });
@@ -151,7 +151,7 @@ describe("Mocking:", () => {
 
   it("Mocking data does not fire fire local events (RECORD_ADD_LOCALLY, RECORD_ADD_CONFIRMATION) to dispatch", async () => {
     const events: IDictionary[] = [];
-    FireModel.dispatch = (e: IReduxAction) => events.push(e);
+    FireModel.dispatch = async (e: IReduxAction) => events.push(e);
     await Mock(FancyPerson).generate(10);
     expect(events).to.have.lengthOf(0);
   });
@@ -159,7 +159,7 @@ describe("Mocking:", () => {
   it("Adding a record with {silent: true} raises an error in real db", async () => {
     FireModel.defaultDb = realDb;
     const events: IDictionary[] = [];
-    FireModel.dispatch = (e: IReduxAction) => events.push(e);
+    FireModel.dispatch = async (e: IReduxAction) => events.push(e);
 
     try {
       await Record.add(
@@ -177,7 +177,7 @@ describe("Mocking:", () => {
   it("Adding a record with a watcher fires both watcher event and LOCAL events [ real db ]", async () => {
     FireModel.defaultDb = realDb;
     const events: IDictionary[] = [];
-    FireModel.dispatch = (e: IReduxAction) => events.push(e);
+    FireModel.dispatch = async (e: IReduxAction) => events.push(e);
     const w = await Watch.list(FancyPerson)
       .all()
       .start();
@@ -209,7 +209,7 @@ describe("Mocking:", () => {
 
   it("Mocking data does NOT fire watcher events but adding a record DOES [ mock db ]", async () => {
     const events: IDictionary[] = [];
-    FireModel.dispatch = (e: IReduxAction) => {
+    FireModel.dispatch = async (e: IReduxAction) => {
       events.push(e);
     };
     const w = await Watch.list(FancyPerson)

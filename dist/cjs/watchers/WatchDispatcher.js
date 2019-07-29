@@ -7,16 +7,24 @@ const errors_1 = require("../errors");
 /**
  * **watchDispatcher**
  *
- * Wraps Firebase event detail (meager) with as much context as is possible
+ * Wraps both start-time _watcher context_ and combines that with
+ * event information (like the `key` and `dbPath`) to provide a rich
+ * data environment for the `dispatch` function to operate with.
  */
-exports.WatchDispatcher = (context) => (
-/** a generic redux dispatch function; called by database on event */
-clientHandler) => {
-    if (typeof clientHandler !== "function") {
+exports.WatchDispatcher = (
+/**
+ * a base/generic redux dispatch function; typically provided
+ * by the frontend state management framework
+ */
+coreDispatchFn) => (
+/** context provided by the watcher at the time in which the watcher was setup */
+watcherContext) => {
+    if (typeof coreDispatchFn !== "function") {
         throw new errors_1.FireModelError(`A watcher is being setup but the dispatch function is not a valid function!`, "firemodel/not-allowed");
     }
-    return (event) => {
-        watchInitialization_1.hasInitialized[context.watcherId] = true;
+    // Handle incoming events ...
+    return async (event) => {
+        watchInitialization_1.hasInitialized[watcherContext.watcherId] = true;
         const typeLookup = {
             child_added: state_mgmt_1.FmEvents.RECORD_ADDED,
             child_removed: state_mgmt_1.FmEvents.RECORD_REMOVED,
@@ -24,20 +32,41 @@ clientHandler) => {
             child_moved: state_mgmt_1.FmEvents.RECORD_MOVED,
             value: state_mgmt_1.FmEvents.RECORD_CHANGED
         };
-        const recId = typeof event.value === "object"
-            ? Object.assign({ id: event.key }, event.value) : { id: event.key };
-        const rec = Record_1.Record.createWith(context.modelConstructor, context.compositeKey);
-        const contextualizedEvent = Object.assign({
-            type: event.eventType === "value"
-                ? event.value === null || event.paths === null
-                    ? state_mgmt_1.FmEvents.RECORD_REMOVED
-                    : state_mgmt_1.FmEvents.RECORD_CHANGED
-                : typeLookup[event.eventType]
-        }, context, event);
-        return clientHandler(contextualizedEvent);
+        let eventContext;
+        let errorMessage;
+        if (event.kind === "relationship") {
+            eventContext = {
+                type: event.type,
+                dbPath: "not-relevant, use toLocal and fromLocal"
+            };
+        }
+        else {
+            // record events (both server and local)
+            const recordProps = typeof event.value === "object"
+                ? Object.assign({ id: event.key }, event.value) : { id: event.key };
+            const rec = Record_1.Record.createWith(watcherContext.modelConstructor, recordProps);
+            let type;
+            switch (event.kind) {
+                case "record":
+                    type = event.type;
+                    break;
+                case "server-event":
+                    type =
+                        event.value === null
+                            ? state_mgmt_1.FmEvents.RECORD_REMOVED
+                            : typeLookup[event.eventType];
+                    break;
+                default:
+                    type = state_mgmt_1.FmEvents.UNEXPECTED_ERROR;
+                    errorMessage = `The "kind" of event was not recognized [ ${event.kind} ]`;
+            }
+            eventContext = {
+                type,
+                dbPath: rec.dbPath
+            };
+        }
+        const reduxAction = Object.assign({}, watcherContext, event, eventContext, { errorMessage });
+        return coreDispatchFn(reduxAction);
     };
 };
-function isValueBasedEvent(evt, context) {
-    return evt.eventType === "value";
-}
 //# sourceMappingURL=WatchDispatcher.js.map

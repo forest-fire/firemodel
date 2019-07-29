@@ -23,7 +23,9 @@ export class Watch {
     static set dispatch(d) {
         FireModel.dispatch = d;
     }
-    /** returns a full list of all watchers */
+    /**
+     * returns a full list of all watchers
+     */
     static get inventory() {
         return getWatcherPool();
     }
@@ -79,7 +81,7 @@ export class Watch {
         }
         else {
             const registry = getWatcherPool()[hashCode];
-            db.unWatch(registry.eventType === "child"
+            db.unWatch(registry.eventFamily === "child"
                 ? "value"
                 : ["child_added", "child_changed", "child_moved", "child_removed"], registry.dispatch);
             removeFromWatcherPool(hashCode);

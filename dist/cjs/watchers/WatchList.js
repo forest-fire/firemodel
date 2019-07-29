@@ -5,7 +5,7 @@ const List_1 = require("../List");
 const Record_1 = require("../Record");
 const serialized_query_1 = require("serialized-query");
 const util_1 = require("../util");
-const __1 = require("..");
+const index_1 = require("../index");
 class WatchList extends WatchBase_1.WatchBase {
     constructor() {
         super(...arguments);
@@ -66,7 +66,7 @@ class WatchList extends WatchBase_1.WatchBase {
      */
     ids(...ids) {
         for (const id of ids) {
-            this._underlyingRecordWatchers.push(__1.Watch.record(this._modelConstructor, id));
+            this._underlyingRecordWatchers.push(index_1.Watch.record(this._modelConstructor, id));
         }
         this._watcherSource = "list-of-records";
         this._eventType = "value";

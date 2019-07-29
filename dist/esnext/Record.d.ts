@@ -2,7 +2,7 @@ import { RealTimeDB } from "abstracted-firebase";
 import { Model } from "./Model";
 import { Omit, Nullable, fk } from "common-types";
 import { FireModel } from "./FireModel";
-import { IReduxDispatch } from "./VuexWrapper";
+import { IReduxDispatch } from "./state-mgmt";
 import { IFMEventName, IFmCrudOperations, IFmDispatchOptions } from "./state-mgmt/index";
 import { IFkReference, ICompositeKey, IRecordOptions } from "./@types/record-types";
 import { IFmRelationshipOptionsForHasMany } from ".";
@@ -78,7 +78,7 @@ export declare class Record<T extends Model> extends FireModel<T> {
      * a string value which is used in relationships to fully qualify
      * a composite string (aka, a model which has a dynamic dbOffset)
      */
-    readonly compositeKeyRef: any;
+    readonly compositeKeyRef: string;
     /**
      * The Record's primary key; this is the `id` property only. Not
      * the composite key.

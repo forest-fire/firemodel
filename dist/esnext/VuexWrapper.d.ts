@@ -1,19 +1,11 @@
-import { IDictionary } from "common-types";
+import { IFmLocalEvent } from "./watchers/types";
+import { IReduxAction } from "./state-mgmt";
 /**
  * The Vuex equivalent of a Redux dispatch call
  */
-export declare type IVuexDispatch = (type: string, payload: IDictionary) => void;
-/** the normal call signature of a redux dispatch call */
-export declare type IReduxDispatch<T = IReduxAction> = (payload: T) => void;
-/**
- * The structure of a Redux action message (aka, a dictionary with
- * at least the `type` attribute)
- */
-export interface IReduxAction extends IDictionary {
-    type: string;
-}
+export declare type IVuexDispatch<I = IFmLocalEvent<any>, O = any> = (type: string, payload: Omit<I, "type">) => Promise<O>;
 /**
  * wraps a Vuex function's to Mutation.commit() function so it's
  * signature looks like a Redux call to dispatch
  */
-export declare function VeuxWrapper(vuexDispatch: IVuexDispatch): (reduxAction: IReduxAction) => void;
+export declare function VeuxWrapper<O = any>(vuexDispatch: IVuexDispatch<IReduxAction, O>): (reduxAction: IReduxAction) => Promise<O>;

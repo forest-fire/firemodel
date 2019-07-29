@@ -1,9 +1,8 @@
 import { Model } from "./Model";
-import { IReduxDispatch } from "./VuexWrapper";
+import { IReduxDispatch, IWatcherEventContext } from "./state-mgmt";
 declare type RealTimeDB = import("abstracted-firebase").RealTimeDB;
 import { IModelOptions } from "./@types/general";
 import { IPrimaryKey } from "./@types/record-types";
-import { IWatcherItem } from "./watchers/types";
 import { WatchList } from "./watchers/WatchList";
 import { WatchRecord } from "./watchers/WatchRecord";
 /**
@@ -22,9 +21,11 @@ export declare class Watch<T extends Model = Model> {
      * classes such as `FireModel`, `Record`, and `List`
      */
     static dispatch: IReduxDispatch;
-    /** returns a full list of all watchers */
-    static readonly inventory: import("common-types").IDictionary<IWatcherItem>;
-    static toJSON(): import("common-types").IDictionary<IWatcherItem>;
+    /**
+     * returns a full list of all watchers
+     */
+    static readonly inventory: import("common-types").IDictionary<IWatcherEventContext<any>>;
+    static toJSON(): import("common-types").IDictionary<IWatcherEventContext<any>>;
     /**
      * lookup
      *
@@ -33,7 +34,7 @@ export declare class Watch<T extends Model = Model> {
      *
      * @param hashCode the unique hashcode given for each watcher
      */
-    static lookup(hashCode: string): IWatcherItem;
+    static lookup(hashCode: string): IWatcherEventContext;
     static readonly watchCount: number;
     static reset(): void;
     /**

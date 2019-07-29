@@ -1,6 +1,6 @@
 import { Record } from "../..";
 import { capitalize } from "../../util";
-export function sendRelnDispatchEvent(type, transactionId, operation, rec, property, paths, err) {
+export function sendRelnDispatchEvent(type, event) {
     const fkModel = Record.create(rec.META.relationship(property).fkConstructor());
     let payload = {
         type,

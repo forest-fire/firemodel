@@ -5,11 +5,10 @@ import { epochWithMilliseconds, IDictionary, createError } from "common-types";
 import { FireModel } from "./FireModel";
 // tslint:disable-next-line:no-implicit-dependencies
 import { RealTimeDB } from "abstracted-firebase";
-import { IReduxDispatch } from "./VuexWrapper";
+import { IReduxDispatch } from "./state-mgmt";
 import { pathJoin } from "./path";
 import { getModelMeta } from "./ModelMeta";
-import { FmEvents, IFMRecordListEvent } from "./state-mgmt";
-import { IModelOptions, IListOptions } from "./@types/general";
+import { IListOptions } from "./@types/general";
 
 const DEFAULT_IF_NOT_FOUND = "__DO_NOT_USE__";
 
@@ -107,22 +106,9 @@ export class List<T extends Model> extends FireModel<T> {
     options: IListOptions<T> = {}
   ): Promise<List<T>> {
     const list = List.create(model, options);
-
     query.setPath(list.dbPath);
-
     await list.load(query);
-    // TODO: should this have a dispatch?
-    list.dispatch({
-      type: FmEvents.RECORD_LIST,
-      modelName: list.modelName,
-      pluralName: list.pluralName,
-      dbPath: list.dbPath,
-      localPath: list.localPath,
-      modelConstructor: list._modelConstructor,
-      query,
-      hashCode: query.hashCode(),
-      records: list.data
-    });
+
     return list;
   }
 
@@ -301,7 +287,12 @@ export class List<T extends Model> extends FireModel<T> {
    */
   public get localPath() {
     const meta = this._model.META || getModelMeta(this._model);
-    return pathJoin(meta.localPrefix, this.pluralName);
+    return pathJoin(
+      meta.localPrefix,
+      meta.localModelName !== this.modelName
+        ? meta.localModelName
+        : this.pluralName
+    );
   }
 
   /**

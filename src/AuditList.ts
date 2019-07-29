@@ -17,7 +17,7 @@ export class AuditList<T extends Model> extends AuditBase<T> {
     offset: number = 0
   ): Promise<IAuditLogItem[]> {
     this._query = this._query.limitToFirst(howMany).startAt(offset);
-    const log = await this.db.getList(this._query);
+    const log = await this.db.getList<IAuditLogItem>(this._query);
     return log || [];
   }
 
@@ -26,7 +26,7 @@ export class AuditList<T extends Model> extends AuditBase<T> {
     offset: number = 0
   ): Promise<IAuditLogItem[]> {
     this._query = this._query.limitToLast(howMany).startAt(offset);
-    const log = await this.db.getList(this._query);
+    const log = await this.db.getList<IAuditLogItem>(this._query);
     return log || [];
   }
 
@@ -34,7 +34,7 @@ export class AuditList<T extends Model> extends AuditBase<T> {
     when: epochWithMilliseconds | string
   ): Promise<IAuditLogItem[]> {
     this._query = this._query.orderByChild("createdAt").startAt(when);
-    const log = await this.db.getList(this._query);
+    const log = await this.db.getList<IAuditLogItem>(this._query);
     return log || [];
   }
 
@@ -42,7 +42,7 @@ export class AuditList<T extends Model> extends AuditBase<T> {
     when: epochWithMilliseconds | string
   ): Promise<IAuditLogItem[]> {
     this._query = this._query.orderByChild("createdAt").endAt(when);
-    const log = await this.db.getList(this._query);
+    const log = await this.db.getList<IAuditLogItem>(this._query);
     return log || [];
   }
 
@@ -54,7 +54,7 @@ export class AuditList<T extends Model> extends AuditBase<T> {
       .orderByChild("createdAt")
       .startAt(from)
       .endAt(to);
-    const log = await this.db.getList(this._query);
+    const log = await this.db.getList<IAuditLogItem>(this._query);
     return log || [];
   }
 }

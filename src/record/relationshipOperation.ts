@@ -1,34 +1,31 @@
-import {
-  IFmRelationshipOperation,
-  IFkReference,
-  IFmRelationshipOptions
-} from "../@types";
+import { IFmRelationshipOperation, IFmRelationshipOptions } from "../@types";
 import { Record } from "../Record";
 import { Model } from "../Model";
 import {
   FmEvents,
   IFmPathValuePair,
-  IFmRelationshipOptionsForHasMany
+  IFmRelationshipOptionsForHasMany,
+  IFkReference
 } from "..";
 import { IDictionary } from "common-types";
 import { getModelMeta } from "../ModelMeta";
 import { UnknownRelationshipProblem } from "../errors/relationships/UnknownRelationshipProblem";
-import { discoverRootPath } from "./reduceHashToRelativePaths";
-import { FireModelError } from "../errors";
-import { IMultiPathSet } from "abstracted-firebase";
-import { extractFksFromPaths } from "./extractFksFromPaths";
 import { locallyUpdateFkOnRecord } from "./locallyUpdateFkOnRecord";
+import { IFmLocalRelationshipEvent } from "../state-mgmt";
+import { createCompositeRef } from "./createCompositeKeyString";
 import { capitalize } from "../util";
-import { sendRelnDispatchEvent } from "./relationships/sendRelnDispatchEvent";
 
 /**
  * **relationshipOperation**
  *
  * updates the current Record while also executing the appropriate two-phased commit
- * with the `dispatch()` function; looking to associate with watchers where ever possible
+ * with the `dispatch()` function; looking to associate with watchers wherever possible
  */
-export async function relationshipOperation<T extends Model>(
-  rec: Record<T>,
+export async function relationshipOperation<
+  F extends Model,
+  T extends Model = Model
+>(
+  rec: Record<F>,
   /**
    * **operation**
    *
@@ -40,7 +37,11 @@ export async function relationshipOperation<T extends Model>(
    *
    * The property on this model which changing its relationship status in some way
    */
-  property: keyof T,
+  property: keyof F,
+  /**
+   * The array of _foreign keys_ (of the "from" model) which will be operated on
+   */
+  fkRefs: Array<IFkReference<T>>,
   /**
    * **paths**
    *
@@ -50,6 +51,10 @@ export async function relationshipOperation<T extends Model>(
   paths: IFmPathValuePair[],
   options: IFmRelationshipOptions | IFmRelationshipOptionsForHasMany = {}
 ) {
+  // make sure all FK's are strings
+  const fks = fkRefs.map(fk => {
+    return typeof fk === "object" ? createCompositeRef(fk) : fk;
+  });
   const dispatchEvents = {
     set: [
       FmEvents.RELATIONSHIP_SET_LOCALLY,
@@ -80,9 +85,9 @@ export async function relationshipOperation<T extends Model>(
 
   try {
     const [localEvent, confirmEvent, rollbackEvent] = dispatchEvents[operation];
-    const fkRecord = Record.create(
-      rec.META.relationship(property).fkConstructor()
-    );
+    const fkConstructor = rec.META.relationship(property).fkConstructor;
+    // TODO: fix the typing here to make sure fkConstructor knows it's type
+    const fkRecord: Record<T> = new Record<T>(fkConstructor() as any);
     const fkMeta = getModelMeta(fkRecord.data);
     const transactionId: string =
       "t-reln-" +
@@ -94,34 +99,34 @@ export async function relationshipOperation<T extends Model>(
         .toString(36)
         .substr(2, 5);
 
-    try {
-      await localRelnOp(
-        rec,
-        operation,
-        property,
-        paths,
-        localEvent,
-        transactionId
-      );
-    } catch (e) {
-      await relnRollback(
-        rec,
-        operation,
-        property,
-        paths,
-        rollbackEvent,
-        transactionId,
-        e
-      );
-    }
-    await relnConfirmation(
-      rec,
+    const event: Omit<IFmLocalRelationshipEvent<F, T>, "type"> = {
+      key: rec.compositeKeyRef,
       operation,
       property,
+      kind: "relationship",
+      eventType: "local",
+      transactionId,
+      fks,
       paths,
-      confirmEvent,
-      transactionId
-    );
+      from: capitalize(rec.modelName),
+      to: capitalize(fkRecord.modelName),
+      fromLocal: rec.localPath,
+      toLocal: fkRecord.localPath,
+      fromConstructor: rec.modelConstructor,
+      toConstructor: fkRecord.modelConstructor
+    };
+
+    const inverseProperty = rec.META.relationship(property).inverseProperty;
+    if (inverseProperty) {
+      event.inverseProperty = inverseProperty as keyof T;
+    }
+
+    try {
+      await localRelnOp(rec, event, localEvent);
+    } catch (e) {
+      await relnRollback(rec, event, rollbackEvent);
+    }
+    await relnConfirmation(rec, event, confirmEvent);
   } catch (e) {
     if (e.firemodel) {
       throw e;
@@ -131,32 +136,21 @@ export async function relationshipOperation<T extends Model>(
   }
 }
 
-export async function localRelnOp<T extends Model>(
-  rec: Record<T>,
-  op: IFmRelationshipOperation,
-  prop: keyof T,
-  paths: IFmPathValuePair[],
-  event: FmEvents,
-  transactionId: string
+export async function localRelnOp<F extends Model, T extends Model>(
+  rec: Record<F>,
+  event: Omit<IFmLocalRelationshipEvent<F, T>, "type">,
+  type: FmEvents
 ) {
-  // locally modify Record's values
-  const ids = extractFksFromPaths(rec, prop, paths);
-
-  ids.map(id => {
-    locallyUpdateFkOnRecord(rec, op, prop, id);
-  });
-  // TODO: investigate why multiPathSet wasn't working
-  // build MPS
-  // const dbPaths = discoverRootPath(paths);
-  // const mps = rec.db.multiPathSet(dbPaths.root || "/");
-  // dbPaths.paths.map(p => mps.add({ path: p.path, value: p.value }));
-  const fkRecord = Record.create(rec.META.relationship(prop).fkConstructor());
-  // execute MPS on DB
   try {
-    sendRelnDispatchEvent(event, transactionId, op, rec, prop, paths);
-    // await mps.execute();
+    // locally modify Record's values
+    // const ids = extractFksFromPaths(rec, event.property, event.paths);
+    event.fks.map(fk => {
+      locallyUpdateFkOnRecord(rec, fk, { ...event, type });
+    });
+    // local optimistic dispatch
+    rec.dispatch({ ...event, type });
     await rec.db.ref("/").update(
-      paths.reduce((acc: IDictionary, curr) => {
+      event.paths.reduce((acc: IDictionary, curr) => {
         acc[curr.path] = curr.value;
         return acc;
       }, {})
@@ -167,25 +161,24 @@ export async function localRelnOp<T extends Model>(
   }
 }
 
-export async function relnConfirmation<T extends Model>(
-  rec: Record<T>,
-  op: IFmRelationshipOperation,
-  prop: keyof T,
-  paths: IFmPathValuePair[],
-  event: FmEvents,
-  transactionId: string
+export async function relnConfirmation<F extends Model, T extends Model>(
+  rec: Record<F>,
+  event: Omit<IFmLocalRelationshipEvent<F, T>, "type">,
+  type: FmEvents
 ) {
-  sendRelnDispatchEvent(event, transactionId, op, rec, prop, paths);
+  rec.dispatch({ ...event, type });
 }
 
-export async function relnRollback<T extends Model>(
-  rec: Record<T>,
-  op: IFmRelationshipOperation,
-  prop: keyof T,
-  paths: IFmPathValuePair[],
-  event: FmEvents,
-  transactionId: string,
-  err: FireModelError
+export async function relnRollback<F extends Model, T extends Model>(
+  rec: Record<F>,
+  event: Omit<IFmLocalRelationshipEvent<F, T>, "type">,
+  type: FmEvents
 ) {
-  sendRelnDispatchEvent(event, transactionId, op, rec, prop, paths, err);
+  //
+  /**
+   * no writes will have actually been done to DB but
+   * front end framework will need to know as it probably
+   * adjusted _optimistically_
+   */
+  rec.dispatch({ ...event, type });
 }

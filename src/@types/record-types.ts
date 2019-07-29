@@ -10,6 +10,10 @@ export type IIdWithDynamicPrefix = IDictionary<number | string> & {
 export type ICompositeKeyGeneric = IDictionary<string | number | boolean>;
 
 export type ICompositeKey<T = ICompositeKeyGeneric> = IFmHasId & Partial<T>;
+/**
+ * A Foreign Key (FK) reference where both object and string notation of simple
+ * or composite keys is valid.
+ */
 export type IFkReference<T = ICompositeKeyGeneric> = fk | ICompositeKey<T>;
 export type IPrimaryKey<T> = pk | ICompositeKey<T>;
 

@@ -1,15 +1,15 @@
 import { Model } from "../Model";
 import { SerializedQuery } from "serialized-query";
 import { FmModelConstructor, ICompositeKey } from "../@types";
-import { IWatchEventClassification, IFmWatcherStartOptions, IWatcherItem } from "./types";
-import { IReduxDispatch } from "../VuexWrapper";
+import { IWatchEventClassification, IFmWatcherStartOptions } from "./types";
+import { IReduxDispatch, IWatcherEventContext } from "../state-mgmt";
 import { RealTimeDB } from "abstracted-firebase";
 import { WatchRecord } from "./WatchRecord";
 /**
  * The base class which both `WatchList` and `WatchRecord` derive.
  */
 export declare class WatchBase<T extends Model> {
-    protected _query: SerializedQuery;
+    protected _query: SerializedQuery<T>;
     protected _modelConstructor: FmModelConstructor<T>;
     protected _eventType: IWatchEventClassification;
     protected _dispatcher: IReduxDispatch;
@@ -29,6 +29,11 @@ export declare class WatchBase<T extends Model> {
     protected _watcherSource: "record" | "list"
     /** a "list of records" is an array of record-watchers which maps to an array in local state */
      | "list-of-records";
+    /**
+     * An optional name that can be set by the initiator of the watcher; if not
+     * set then it will be the same as the `watcherId`
+     */
+    protected _watcherName: string;
     protected _classProperties: string[];
     /**
      * **start**
@@ -36,7 +41,7 @@ export declare class WatchBase<T extends Model> {
      * executes the watcher (`WatchList` or `WatchRecord`) so that it becomes
      * actively watched
      */
-    start(options?: IFmWatcherStartOptions): Promise<IWatcherItem>;
+    start(options?: IFmWatcherStartOptions): Promise<IWatcherEventContext<T>>;
     /**
      * **dispatch**
      *
@@ -46,5 +51,16 @@ export declare class WatchBase<T extends Model> {
      */
     dispatch(d: IReduxDispatch): this;
     toString(): string;
+    /**
+     * Allows you to use the properties of the watcher to build a
+     * `watcherContext` dictionary; this is intended to be used as
+     * part of the initialization of the `dispatch` function for
+     * local state management.
+     *
+     * **Note:** that while used here as part of the `start()` method
+     * it is also used externally by locally triggered events as well
+     */
+    buildWatcherItem(name?: string): IWatcherEventContext<T>;
+    protected getCoreDispatch(): IReduxDispatch<import("..").IReduxAction, any>;
     protected readonly db: RealTimeDB;
 }

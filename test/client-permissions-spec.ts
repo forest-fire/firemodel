@@ -23,7 +23,7 @@ describe("Validating client permissions with an anonymous user", () => {
 
   it("Writing to an area without permissions fails and rolls local changes back", async () => {
     const events: IDictionary = [];
-    const dispatch = (payload: IDictionary) => {
+    const dispatch = async (payload: IDictionary) => {
       events.push(payload);
     };
     FireModel.dispatch = dispatch;

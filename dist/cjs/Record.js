@@ -15,14 +15,12 @@ const firebase_key_1 = require("firebase-key");
 const FireModel_1 = require("./FireModel");
 const buildDeepRelationshipLinks_1 = require("./record/buildDeepRelationshipLinks");
 const index_1 = require("./state-mgmt/index");
-const createWatchEvent_1 = require("./watchers/createWatchEvent");
 const path_1 = require("./path");
 const ModelMeta_1 = require("./ModelMeta");
 const Audit_1 = require("./Audit");
 const util_1 = require("./util");
 const _1 = require(".");
 const findWatchers_1 = require("./watchers/findWatchers");
-const enhanceWithWatcherData_1 = require("./watchers/enhanceWithWatcherData");
 const isHasManyRelationship_1 = require("./verifications/isHasManyRelationship");
 const errors_1 = require("./errors");
 const buildRelationshipPaths_1 = require("./record/relationships/buildRelationshipPaths");
@@ -31,6 +29,7 @@ const createCompositeKeyString_1 = require("./record/createCompositeKeyString");
 const createCompositeKeyFromFkString_1 = require("./record/createCompositeKeyFromFkString");
 const DatabaseCrudFailure_1 = require("./errors/record/DatabaseCrudFailure");
 const fast_copy_1 = __importDefault(require("fast-copy"));
+const WatchDispatcher_1 = require("./watchers/WatchDispatcher");
 class Record extends FireModel_1.FireModel {
     constructor(model, options = {}) {
         super();
@@ -88,6 +87,8 @@ class Record extends FireModel_1.FireModel {
      */
     get dbPath() {
         if (this.data.id ? false : true) {
+            // tslint:disable-next-line: no-debugger
+            debugger;
             throw common_types_1.createError("record/not-ready", `you can not ask for the dbPath before setting an "id" property [ ${this.modelName} ]`);
         }
         return [
@@ -132,7 +133,7 @@ class Record extends FireModel_1.FireModel {
      * a composite string (aka, a model which has a dynamic dbOffset)
      */
     get compositeKeyRef() {
-        return createCompositeKeyString_1.createCompositeKeyString(this);
+        return createCompositeKeyString_1.createCompositeKeyRefFromRecord(this);
     }
     /**
      * The Record's primary key; this is the `id` property only. Not
@@ -594,7 +595,7 @@ class Record extends FireModel_1.FireModel {
                 ...paths
             ];
         });
-        await relationshipOperation_1.relationshipOperation(this, "add", property, paths, options);
+        await relationshipOperation_1.relationshipOperation(this, "add", property, fkRefs, paths, options);
     }
     /**
      * removeFromRelationship
@@ -620,7 +621,7 @@ class Record extends FireModel_1.FireModel {
                 ...paths
             ];
         });
-        await relationshipOperation_1.relationshipOperation(this, "remove", property, paths, options);
+        await relationshipOperation_1.relationshipOperation(this, "remove", property, fkRefs, paths, options);
     }
     /**
      * **clearRelationship**
@@ -651,7 +652,7 @@ class Record extends FireModel_1.FireModel {
                 ...paths
             ];
         });
-        await relationshipOperation_1.relationshipOperation(this, "clear", property, paths, options);
+        await relationshipOperation_1.relationshipOperation(this, "clear", property, fkRefs, paths, options);
     }
     /**
      * **setRelationship**
@@ -667,7 +668,7 @@ class Record extends FireModel_1.FireModel {
             throw new errors_1.NotHasOneRelationship(this, property, "setRelationship");
         }
         const paths = buildRelationshipPaths_1.buildRelationshipPaths(this, property, fkId);
-        await relationshipOperation_1.relationshipOperation(this, "set", property, paths, options);
+        await relationshipOperation_1.relationshipOperation(this, "set", property, [fkId], paths, options);
     }
     /**
      * get a property value from the record
@@ -795,10 +796,12 @@ class Record extends FireModel_1.FireModel {
         const watchers = findWatchers_1.findWatchers(this.dbPath);
         const event = {
             transactionId,
-            crudAction,
+            kind: "record",
+            operation: crudAction,
+            eventType: "local",
+            key: this.id,
             value: util_1.withoutMetaOrPrivate(this.data),
-            priorValue,
-            dbPath: this.dbPath
+            priorValue
         };
         if (crudAction === "update") {
             event.priorValue = priorValue;
@@ -807,18 +810,18 @@ class Record extends FireModel_1.FireModel {
             event.removed = removed;
         }
         if (watchers.length === 0) {
-            event.watcherSource = "unknown";
             if (!options.silent) {
                 // Note: if used on frontend, the mutations must be careful to
                 // set this to the right path considering there is no watcher
-                await this.dispatch(createWatchEvent_1.createWatchEvent(actionTypeStart, this, event));
+                await this.dispatch(Object.assign({ type: actionTypeStart }, event, { watcherSource: "unknown", value: util_1.withoutMetaOrPrivate(this.data), dbPath: this.dbPath }));
             }
         }
         else {
             // For each watcher watching this DB path ...
+            const dispatch = WatchDispatcher_1.WatchDispatcher(this.dispatch);
             for (const watcher of watchers) {
                 if (!options.silent) {
-                    await this.dispatch(createWatchEvent_1.createWatchEvent(actionTypeStart, this, enhanceWithWatcherData_1.enhanceEventWithWatcherData(this, watcher, event)));
+                    await dispatch(watcher)(Object.assign({ type: actionTypeStart }, event));
                 }
             }
         }
@@ -847,19 +850,14 @@ class Record extends FireModel_1.FireModel {
             // send confirm event
             if (!options.silent && !options.silentAcceptance) {
                 if (watchers.length === 0) {
-                    await this.dispatch(createWatchEvent_1.createWatchEvent(actionTypeEnd, this, {
-                        transactionId,
-                        crudAction,
-                        watcherSource: "unknown",
-                        value: util_1.withoutMetaOrPrivate(this.data),
-                        dbPath: this.dbPath
-                    }));
+                    await this.dispatch(Object.assign({ type: actionTypeEnd }, event, { transactionId,
+                        crudAction, watcherSource: "unknown", value: util_1.withoutMetaOrPrivate(this.data), dbPath: this.dbPath }));
                 }
                 else {
+                    const dispatch = WatchDispatcher_1.WatchDispatcher(this.dispatch);
                     for (const watcher of watchers) {
                         if (!options.silent) {
-                            await this.dispatch(createWatchEvent_1.createWatchEvent(actionTypeEnd, this, Object.assign({}, enhanceWithWatcherData_1.enhanceEventWithWatcherData(this, watcher, event), { transactionId,
-                                crudAction })));
+                            await dispatch(watcher)(Object.assign({ type: actionTypeEnd }, event));
                         }
                     }
                 }
@@ -870,13 +868,8 @@ class Record extends FireModel_1.FireModel {
         }
         catch (e) {
             // send failure event
-            await this.dispatch(createWatchEvent_1.createWatchEvent(actionTypeFailure, this, {
-                transactionId,
-                crudAction,
-                // priorValue is the "rollback value"
-                value: priorValue,
-                dbPath: this.dbPath
-            }));
+            await this.dispatch(Object.assign({ type: actionTypeFailure }, event, { transactionId,
+                crudAction, watcherSource: "unknown", value: util_1.withoutMetaOrPrivate(this.data), dbPath: this.dbPath }));
             throw new DatabaseCrudFailure_1.RecordCrudFailure(this, crudAction, transactionId, e);
         }
     }

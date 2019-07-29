@@ -4,14 +4,14 @@ const Record_1 = require("../Record");
 const __1 = require("..");
 const ModelMeta_1 = require("../ModelMeta");
 const UnknownRelationshipProblem_1 = require("../errors/relationships/UnknownRelationshipProblem");
-const extractFksFromPaths_1 = require("./extractFksFromPaths");
 const locallyUpdateFkOnRecord_1 = require("./locallyUpdateFkOnRecord");
-const sendRelnDispatchEvent_1 = require("./relationships/sendRelnDispatchEvent");
+const createCompositeKeyString_1 = require("./createCompositeKeyString");
+const util_1 = require("../util");
 /**
  * **relationshipOperation**
  *
  * updates the current Record while also executing the appropriate two-phased commit
- * with the `dispatch()` function; looking to associate with watchers where ever possible
+ * with the `dispatch()` function; looking to associate with watchers wherever possible
  */
 async function relationshipOperation(rec, 
 /**
@@ -27,12 +27,20 @@ operation,
  */
 property, 
 /**
+ * The array of _foreign keys_ (of the "from" model) which will be operated on
+ */
+fkRefs, 
+/**
  * **paths**
  *
  * a set of name value pairs where the `name` is the DB path that needs updating
  * and the value is the value to set.
  */
 paths, options = {}) {
+    // make sure all FK's are strings
+    const fks = fkRefs.map(fk => {
+        return typeof fk === "object" ? createCompositeKeyString_1.createCompositeRef(fk) : fk;
+    });
     const dispatchEvents = {
         set: [
             __1.FmEvents.RELATIONSHIP_SET_LOCALLY,
@@ -62,7 +70,9 @@ paths, options = {}) {
     };
     try {
         const [localEvent, confirmEvent, rollbackEvent] = dispatchEvents[operation];
-        const fkRecord = Record_1.Record.create(rec.META.relationship(property).fkConstructor());
+        const fkConstructor = rec.META.relationship(property).fkConstructor;
+        // TODO: fix the typing here to make sure fkConstructor knows it's type
+        const fkRecord = new Record_1.Record(fkConstructor());
         const fkMeta = ModelMeta_1.getModelMeta(fkRecord.data);
         const transactionId = "t-reln-" +
             Math.random()
@@ -72,13 +82,33 @@ paths, options = {}) {
             Math.random()
                 .toString(36)
                 .substr(2, 5);
+        const event = {
+            key: rec.compositeKeyRef,
+            operation,
+            property,
+            kind: "relationship",
+            eventType: "local",
+            transactionId,
+            fks,
+            paths,
+            from: util_1.capitalize(rec.modelName),
+            to: util_1.capitalize(fkRecord.modelName),
+            fromLocal: rec.localPath,
+            toLocal: fkRecord.localPath,
+            fromConstructor: rec.modelConstructor,
+            toConstructor: fkRecord.modelConstructor
+        };
+        const inverseProperty = rec.META.relationship(property).inverseProperty;
+        if (inverseProperty) {
+            event.inverseProperty = inverseProperty;
+        }
         try {
-            await localRelnOp(rec, operation, property, paths, localEvent, transactionId);
+            await localRelnOp(rec, event, localEvent);
         }
         catch (e) {
-            await relnRollback(rec, operation, property, paths, rollbackEvent, transactionId, e);
+            await relnRollback(rec, event, rollbackEvent);
         }
-        await relnConfirmation(rec, operation, property, paths, confirmEvent, transactionId);
+        await relnConfirmation(rec, event, confirmEvent);
     }
     catch (e) {
         if (e.firemodel) {
@@ -90,23 +120,16 @@ paths, options = {}) {
     }
 }
 exports.relationshipOperation = relationshipOperation;
-async function localRelnOp(rec, op, prop, paths, event, transactionId) {
-    // locally modify Record's values
-    const ids = extractFksFromPaths_1.extractFksFromPaths(rec, prop, paths);
-    ids.map(id => {
-        locallyUpdateFkOnRecord_1.locallyUpdateFkOnRecord(rec, op, prop, id);
-    });
-    // TODO: investigate why multiPathSet wasn't working
-    // build MPS
-    // const dbPaths = discoverRootPath(paths);
-    // const mps = rec.db.multiPathSet(dbPaths.root || "/");
-    // dbPaths.paths.map(p => mps.add({ path: p.path, value: p.value }));
-    const fkRecord = Record_1.Record.create(rec.META.relationship(prop).fkConstructor());
-    // execute MPS on DB
+async function localRelnOp(rec, event, type) {
     try {
-        sendRelnDispatchEvent_1.sendRelnDispatchEvent(event, transactionId, op, rec, prop, paths);
-        // await mps.execute();
-        await rec.db.ref("/").update(paths.reduce((acc, curr) => {
+        // locally modify Record's values
+        // const ids = extractFksFromPaths(rec, event.property, event.paths);
+        event.fks.map(fk => {
+            locallyUpdateFkOnRecord_1.locallyUpdateFkOnRecord(rec, fk, Object.assign({}, event, { type }));
+        });
+        // local optimistic dispatch
+        rec.dispatch(Object.assign({}, event, { type }));
+        await rec.db.ref("/").update(event.paths.reduce((acc, curr) => {
             acc[curr.path] = curr.value;
             return acc;
         }, {}));
@@ -117,12 +140,18 @@ async function localRelnOp(rec, op, prop, paths, event, transactionId) {
     }
 }
 exports.localRelnOp = localRelnOp;
-async function relnConfirmation(rec, op, prop, paths, event, transactionId) {
-    sendRelnDispatchEvent_1.sendRelnDispatchEvent(event, transactionId, op, rec, prop, paths);
+async function relnConfirmation(rec, event, type) {
+    rec.dispatch(Object.assign({}, event, { type }));
 }
 exports.relnConfirmation = relnConfirmation;
-async function relnRollback(rec, op, prop, paths, event, transactionId, err) {
-    sendRelnDispatchEvent_1.sendRelnDispatchEvent(event, transactionId, op, rec, prop, paths, err);
+async function relnRollback(rec, event, type) {
+    //
+    /**
+     * no writes will have actually been done to DB but
+     * front end framework will need to know as it probably
+     * adjusted _optimistically_
+     */
+    rec.dispatch(Object.assign({}, event, { type }));
 }
 exports.relnRollback = relnRollback;
 //# sourceMappingURL=relationshipOperation.js.map

@@ -3,7 +3,7 @@ import { List } from "../List";
 import { Record } from "../Record";
 import { SerializedQuery } from "serialized-query";
 import { getAllPropertiesFromClassStructure } from "../util";
-import { Watch } from "..";
+import { Watch } from "../index";
 export class WatchList extends WatchBase {
     constructor() {
         super(...arguments);

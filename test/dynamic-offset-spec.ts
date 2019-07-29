@@ -1,7 +1,15 @@
 // tslint:disable:no-implicit-dependencies
 import { DB } from "abstracted-admin";
 import * as chai from "chai";
-import { Record, FireModel, Mock, List, Watch, FmEvents } from "../src";
+import {
+  Record,
+  FireModel,
+  Mock,
+  List,
+  Watch,
+  FmEvents,
+  IReduxAction
+} from "../src";
 import DeepPerson, { IDeepName } from "./testing/dynamicPaths/DeepPerson";
 import { DeeperPerson } from "./testing/dynamicPaths/DeeperPerson";
 import { MockedPerson } from "./testing/dynamicPaths/MockedPerson";
@@ -17,8 +25,6 @@ import {
 import Company from "./testing/dynamicPaths/Company";
 import { HumanAttribute } from "./testing/dynamicPaths/HumanAttribute";
 import { IDictionary } from "common-types";
-import { FancyPerson } from "./testing/FancyPerson";
-import { IReduxAction } from "../src/VuexWrapper";
 
 const expect = chai.expect;
 
@@ -409,7 +415,7 @@ describe("WATCHers work with dynamic dbOffsets", () => {
 
   it("Watching a RECORD with a dbOffset works", async () => {
     const events: IReduxAction[] = [];
-    const dispatch = (evt: IReduxAction) => {
+    const dispatch = async (evt: IReduxAction) => {
       events.push(evt);
     };
     FireModel.dispatch = dispatch;
@@ -425,8 +431,10 @@ describe("WATCHers work with dynamic dbOffsets", () => {
 
     expect(watcher).to.haveOwnProperty("watcherId");
     expect(watcher.watcherSource).to.equal("record");
-    expect(watcher.eventType).to.equal("value");
-    expect(watcher.dbPath).to.equal("/group/CA/testing/deepPeople/12345");
+    expect(watcher.eventFamily).to.equal("value");
+    expect(watcher.watcherPaths[0]).to.equal(
+      "/group/CA/testing/deepPeople/12345"
+    );
     const person = await Record.add(DeepPerson, {
       id: "12345",
       group: "CA",
@@ -441,7 +449,7 @@ describe("WATCHers work with dynamic dbOffsets", () => {
 
   it("Watching a LIST with a dbOffset works", async () => {
     const events: IReduxAction[] = [];
-    const dispatch = (evt: IReduxAction) => {
+    const dispatch = async (evt: IReduxAction) => {
       events.push(evt);
     };
     FireModel.dispatch = dispatch;

@@ -2,7 +2,7 @@ import { Model } from "./Model";
 // prettier-ignore
 type Record<T> = import("./Record").Record<T>;
 import { IDictionary, pathJoin } from "common-types";
-import { IReduxDispatch } from "./VuexWrapper";
+import { IReduxDispatch } from "./state-mgmt";
 import { getModelMeta } from "./ModelMeta";
 import {
   RealTimeDB,
@@ -14,10 +14,10 @@ import {
   IFmModelPropertyMeta,
   IFmModelRelationshipMeta
 } from "./decorators/types";
-import { ILocalStateManagement, IFmChangedProperties } from "./@types";
+import { IFmChangedProperties } from "./@types";
 // tslint:disable-next-line:no-var-requires
 const pluralize = require("pluralize");
-const defaultDispatch = (context: IDictionary) => "";
+const defaultDispatch: IReduxDispatch<any, any> = async context => "";
 
 export class FireModel<T extends Model> {
   public static get defaultDb() {
@@ -133,9 +133,7 @@ export class FireModel<T extends Model> {
     }
     if (!this._db) {
       const e = new Error(
-        `Can't get DB as it has not been set yet for this instance and no default database exists [ ${
-          this.modelName
-        } ]!`
+        `Can't get DB as it has not been set yet for this instance and no default database exists [ ${this.modelName} ]!`
       );
       e.name = "FireModel::NoDatabase";
       throw e;

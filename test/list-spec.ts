@@ -1,5 +1,5 @@
 // tslint:disable:no-implicit-dependencies
-import { Record, List, IFmRecordEvent } from "../src/index";
+import { Record, List, IFmWatchEvent } from "../src/index";
 import { DB, SerializedQuery } from "abstracted-admin";
 import * as chai from "chai";
 import * as helpers from "./testing/helpers";
@@ -350,8 +350,8 @@ describe("List class: ", () => {
 
   it("using remove() able to change local state, db state, and state mgmt", async () => {
     await Mock(Person, db).generate(10);
-    const events: Array<IFmRecordEvent<Person>> = [];
-    Record.dispatch = (evt: IFmRecordEvent<Person>) => events.push(evt);
+    const events: Array<IFmWatchEvent<Person>> = [];
+    Record.dispatch = async (evt: IFmWatchEvent<Person>) => events.push(evt);
     const peeps = await List.all(Person);
     const id = peeps.data[1].id;
     const removed = await peeps.removeById(id);
@@ -360,7 +360,6 @@ describe("List class: ", () => {
 
     expect(eventTypes).to.contain(FmEvents.RECORD_REMOVED_CONFIRMATION);
     expect(eventTypes).to.contain(FmEvents.RECORD_REMOVED_LOCALLY);
-    expect(eventTypes).to.contain(FmEvents.RECORD_LIST);
 
     const peeps2 = await List.all(Person);
     expect(peeps2).to.have.length(9);
@@ -370,8 +369,8 @@ describe("List class: ", () => {
 
   it("using add() changes local state, db state, and state mgmt", async () => {
     await Mock(Person, db).generate(10);
-    const events: Array<IFmRecordEvent<Person>> = [];
-    Record.dispatch = (evt: IFmRecordEvent<Person>) => events.push(evt);
+    const events: Array<IFmWatchEvent<Person>> = [];
+    Record.dispatch = async (evt: IFmWatchEvent<Person>) => events.push(evt);
     const peeps = await List.all(Person);
     expect(peeps).to.have.lengthOf(10);
     const newRec = await peeps.add({

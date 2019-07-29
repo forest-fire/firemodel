@@ -3,9 +3,9 @@ import {
   Record,
   List,
   Watch,
-  Mock,
   FmEvents,
-  IFmContextualizedWatchEvent
+  IFmLocalEvent,
+  IReduxAction
 } from "../src";
 import { DB } from "abstracted-admin";
 import * as chai from "chai";
@@ -15,7 +15,6 @@ import { Person } from "./testing/Person";
 import * as helpers from "./testing/helpers";
 import { FireModel } from "../src/FireModel";
 import { IDictionary, wait, pathJoin } from "common-types";
-import { IReduxAction } from "../src/VuexWrapper";
 import { FancyPerson } from "./testing/FancyPerson";
 
 helpers.setupEnv();
@@ -52,7 +51,7 @@ describe("Tests using REAL db =>’", () => {
 
   it("Adding a record to the database creates the appropriate number of dispatch events", async () => {
     const events: IDictionary[] = [];
-    FireModel.dispatch = (e: IReduxAction) => {
+    FireModel.dispatch = async (e: IReduxAction) => {
       events.push(e);
     };
     const w = await Watch.list(FancyPerson)
@@ -82,7 +81,7 @@ describe("Tests using REAL db =>’", () => {
     const w = await Watch.list(FancyPerson)
       .all()
       .start({ name: "my-update-watcher" });
-    FireModel.dispatch = (e: IReduxAction) => events.push(e);
+    FireModel.dispatch = async (e: IReduxAction) => events.push(e);
     await Record.update(FancyPerson, bob.id, { name: "Bob Marley" });
     await wait(50);
     const eventTypes: string[] = Array.from(new Set(events.map(e => e.type)));
@@ -93,11 +92,12 @@ describe("Tests using REAL db =>’", () => {
   });
 
   it("Detects changes at various nested levels of the watch/listener", async () => {
-    let events: IDictionary[] = [];
+    let events: Array<IFmLocalEvent<FancyPerson>> = [];
     const jack = await Record.add(FancyPerson, {
       name: "Jack Johnson"
     });
-    FireModel.dispatch = (e: IReduxAction) => events.push(e);
+    FireModel.dispatch = async (e: IFmLocalEvent<FancyPerson>) =>
+      events.push(e);
     const w = await Watch.list(FancyPerson)
       .all()
       .start({ name: "path-depth-test" });
@@ -107,10 +107,11 @@ describe("Tests using REAL db =>’", () => {
     const eventTypes: string[] = Array.from(new Set(events.map(e => e.type)));
     expect(eventTypes).to.include(FmEvents.WATCHER_STARTING);
     expect(eventTypes).to.include(FmEvents.WATCHER_STARTED);
-    expect(eventTypes).to.include(FmEvents.RECORD_ADDED);
-    const added = events
-      .filter(e => e.type === FmEvents.RECORD_ADDED)
-      .pop() as IFmContextualizedWatchEvent;
+    expect(
+      eventTypes,
+      `RECORD_ADDED should have been included [${eventTypes}]`
+    ).to.include(FmEvents.RECORD_ADDED);
+    const added = events.filter(e => e.type === FmEvents.RECORD_ADDED).pop();
     expect(added.key).to.equal(jack.id);
     events = [];
     // child path updated directly
@@ -134,7 +135,7 @@ describe("Tests using REAL db =>’", () => {
 
   it("value listener returns correct key and value", async () => {
     const events: IDictionary[] = [];
-    FireModel.dispatch = (e: IReduxAction) => events.push(e);
+    FireModel.dispatch = async (e: IReduxAction) => events.push(e);
     const w = await Watch.record(FancyPerson, "abcd").start({
       name: "value-listener"
     });

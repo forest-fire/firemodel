@@ -1,5 +1,5 @@
 // tslint:disable:no-implicit-dependencies
-import { Record, IFmRecordEvent, IFmChangedProperties } from "../src";
+import { Record, IFmWatchEvent, IFmChangedProperties } from "../src";
 import * as chai from "chai";
 import { Person } from "./testing/Person";
 import { PersonWithLocal } from "./testing/PersonWithLocal";
@@ -8,7 +8,7 @@ import { IMultiPathUpdates, FireModel } from "../src/FireModel";
 import { FmEvents } from "../src/state-mgmt";
 import { DB } from "abstracted-admin";
 import { wait } from "./testing/helpers";
-import { IVuexDispatch, VeuxWrapper } from "../src/VuexWrapper";
+import { IVuexDispatch, VeuxWrapper } from "../src/state-mgmt/VuexWrapper";
 import { compareHashes, withoutMetaOrPrivate } from "../src/util";
 const expect = chai.expect;
 
@@ -75,12 +75,12 @@ describe("Dispatch →", () => {
   });
 
   it("waiting for set() fires the appropriate Redux event; and inProgress is set", async () => {
-    const events: Array<IFmRecordEvent<Person>> = [];
+    const events: Array<IFmWatchEvent<Person>> = [];
     const person = await Record.add(Person, {
       name: "Jane",
       age: 18
     });
-    Record.dispatch = (e: IFmRecordEvent<Person>) => events.push(e);
+    Record.dispatch = async (e: IFmWatchEvent<Person>) => events.push(e);
 
     await person.set("name", "Carol");
     expect(person.get("name")).to.equal("Carol"); // local change took place
@@ -102,9 +102,9 @@ describe("Dispatch →", () => {
   });
 
   it("VuexWrapper converts calling structure to what Vuex expects", async () => {
-    const events: Array<IFmRecordEvent<Person>> = [];
+    const events: Array<IFmWatchEvent<Person>> = [];
     const types = new Set<string>();
-    const vueDispatch: IVuexDispatch = (type, payload: any) => {
+    const vueDispatch: IVuexDispatch = async (type, payload: any) => {
       types.add(type);
       events.push({ ...payload, ...{ type } });
     };
@@ -124,9 +124,9 @@ describe("Dispatch →", () => {
   });
 
   it("By default the localPath is the singular modelName", async () => {
-    const events: Array<IFmRecordEvent<Person>> = [];
+    const events: Array<IFmWatchEvent<Person>> = [];
     const types = new Set<string>();
-    const vueDispatch: IVuexDispatch = (type, payload: any) => {
+    const vueDispatch: IVuexDispatch = async (type, payload: any) => {
       types.add(type);
       events.push({ ...payload, ...{ type } });
     };
@@ -143,11 +143,14 @@ describe("Dispatch →", () => {
   });
 
   it("When @model decorator and setting localModelName we can override the localPath", async () => {
-    const events: Array<IFmRecordEvent<Person>> = [];
+    const events: Array<IFmWatchEvent<Person>> = [];
     const types = new Set<string>();
-    const vueDispatch: IVuexDispatch = (type, payload: any) => {
+    const vueDispatch: IVuexDispatch<IFmWatchEvent<Person>> = async (
+      type,
+      payload
+    ) => {
       types.add(type);
-      events.push({ ...payload, ...{ type } });
+      events.push({ ...payload, ...{ type } } as any);
     };
     const person = await Record.add(PersonWithLocal, {
       name: "Jane",
@@ -159,14 +162,17 @@ describe("Dispatch →", () => {
     });
 
     events.forEach(event =>
-      expect(event.localPath).to.equal(person.META.localModelName)
+      expect(
+        event.localPath,
+        `The localPath [ ${event.localPath} ] should equal the model's localModelName [ ${person.META.localModelName}`
+      )
     );
   });
 
   it("The when dispatching events without a listener the source is 'unknown'", async () => {
-    const events: Array<IFmRecordEvent<Person>> = [];
+    const events: Array<IFmWatchEvent<Person>> = [];
     const types = new Set<string>();
-    const vueDispatch: IVuexDispatch = (type, payload: any) => {
+    const vueDispatch: IVuexDispatch = async (type, payload: any) => {
       types.add(type);
       events.push({ ...payload, ...{ type } });
     };
@@ -178,6 +184,7 @@ describe("Dispatch →", () => {
     await person.update({
       age: 12
     });
+    console.log(events);
 
     events.forEach(event => expect(event.watcherSource).to.equal("unknown"));
   });

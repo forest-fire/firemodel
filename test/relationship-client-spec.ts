@@ -1,5 +1,5 @@
 // tslint:disable:no-implicit-dependencies
-import { Record, IFmRecordEvent } from "../src";
+import { Record, IFmWatchEvent, IFmLocalRelationshipEvent } from "../src";
 import { DB } from "abstracted-client";
 import * as chai from "chai";
 const expect = chai.expect;
@@ -24,8 +24,8 @@ const addFatherAndChildren = async () => {
     name: "Pops",
     age: 46
   });
-  const events: IFmRecordEvent[] = [];
-  Record.dispatch = (evt: IFmRecordEvent) => events.push(evt);
+  const events: IFmWatchEvent[] = [];
+  Record.dispatch = async (evt: IFmWatchEvent) => events.push(evt);
   await father.addToRelationship("children", [bob.id, chrissy.id]);
 
   return {
@@ -61,8 +61,9 @@ describe("Relationship > ", () => {
     });
     expect(person.id).to.exist.and.to.be.a("string");
     const lastUpdated = person.data.lastUpdated;
-    const events: IFmRecordEvent[] = [];
-    Record.dispatch = (evt: IFmRecordEvent) => events.push(evt);
+    const events: IFmLocalRelationshipEvent[] = [];
+    Record.dispatch = async (evt: IFmLocalRelationshipEvent) =>
+      events.push(evt);
 
     await person.addToRelationship("cars", "car12345");
 
@@ -99,8 +100,9 @@ describe("Relationship > ", () => {
       name: "Pops",
       age: 46
     });
-    const events: IFmRecordEvent[] = [];
-    Record.dispatch = (evt: IFmRecordEvent) => events.push(evt);
+    const events: IFmLocalRelationshipEvent[] = [];
+    Record.dispatch = async (evt: IFmLocalRelationshipEvent) =>
+      events.push(evt);
     await bob.addToRelationship("parents", father.id);
     // local person record is updated
     expect(bob.data.parents[father.id]).to.equal(true);

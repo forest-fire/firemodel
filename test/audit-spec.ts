@@ -47,7 +47,12 @@ describe("Auditing ->’", () => {
         .to.haveOwnProperty("action")
         .and.to.equal("updated");
 
-      expect(log[0].changes).to.have.lengthOf(2);
+      expect(
+        log[0].changes,
+        `Expected log length of be 2 but got ${
+          log[0].changes.length
+        }: ${log[0].changes.join(", ")}`
+      ).to.have.lengthOf(2);
       const changedProps = new Set(log[0].changes.map(i => i.property));
       expect(changedProps.has("lastUpdated")).to.equal(true);
       expect(changedProps.has("age")).to.equal(true);

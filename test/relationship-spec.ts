@@ -1,5 +1,5 @@
 // tslint:disable:no-implicit-dependencies
-import { Record, IFmRecordEvent } from "../src";
+import { Record, IFmWatchEvent } from "../src";
 import { DB } from "abstracted-admin";
 import * as chai from "chai";
 const expect = chai.expect;
@@ -166,8 +166,8 @@ describe("Relationship > ", () => {
     });
     expect(person.id).to.exist.and.to.be.a("string");
     const lastUpdated = person.data.lastUpdated;
-    const events: IFmRecordEvent[] = [];
-    Record.dispatch = (evt: IFmRecordEvent) => events.push(evt);
+    const events: IFmWatchEvent[] = [];
+    Record.dispatch = async (evt: IFmWatchEvent) => events.push(evt);
     await person.addToRelationship("cars", "12345");
 
     const eventTypes = Array.from(new Set(events.map(e => e.type)));

@@ -1,41 +1,45 @@
-import { IReduxDispatch } from "../VuexWrapper";
-import { IDictionary, createError } from "common-types";
-import {
-  IFirebaseWatchEvent,
-  IFirebaseWatchContext,
-  IValueBasedWatchEvent,
-  IPathBasedWatchEvent
-} from "abstracted-firebase";
+import { IDictionary } from "common-types";
 import {
   FmEvents,
-  IFmDispatchWatchContext,
-  IFmContextualizedWatchEvent
+  IEventTimeContext,
+  IReduxDispatch,
+  IFmWatchEvent,
+  IWatcherEventContext,
+  IFmServerOrLocalEvent
 } from "../state-mgmt";
 import { Record } from "../Record";
 import { hasInitialized } from "./watchInitialization";
-import { FireModelError, FireModelProxyError } from "../errors";
-import { capitalize } from "../util";
+import { FireModelError } from "../errors";
 
 /**
  * **watchDispatcher**
  *
- * Wraps Firebase event detail (meager) with as much context as is possible
+ * Wraps both start-time _watcher context_ and combines that with
+ * event information (like the `key` and `dbPath`) to provide a rich
+ * data environment for the `dispatch` function to operate with.
  */
-export const WatchDispatcher = <T>(context: IFmDispatchWatchContext<T>) => (
-  /** a generic redux dispatch function; called by database on event */
-  clientHandler: IReduxDispatch<IFmContextualizedWatchEvent<T>>
+export const WatchDispatcher = <T>(
+  /**
+   * a base/generic redux dispatch function; typically provided
+   * by the frontend state management framework
+   */
+  coreDispatchFn: IReduxDispatch
+) => (
+  /** context provided by the watcher at the time in which the watcher was setup */
+  watcherContext: IWatcherEventContext<T>
 ) => {
-  if (typeof clientHandler !== "function") {
+  if (typeof coreDispatchFn !== "function") {
     throw new FireModelError(
       `A watcher is being setup but the dispatch function is not a valid function!`,
       "firemodel/not-allowed"
     );
   }
 
-  return (event: IValueBasedWatchEvent & IPathBasedWatchEvent) => {
-    hasInitialized[context.watcherId] = true;
+  // Handle incoming events ...
+  return async (event: IFmServerOrLocalEvent<T>): Promise<IFmWatchEvent<T>> => {
+    hasInitialized[watcherContext.watcherId] = true;
 
-    const typeLookup: IDictionary = {
+    const typeLookup: IDictionary<FmEvents> = {
       child_added: FmEvents.RECORD_ADDED,
       child_removed: FmEvents.RECORD_REMOVED,
       child_changed: FmEvents.RECORD_CHANGED,
@@ -43,36 +47,57 @@ export const WatchDispatcher = <T>(context: IFmDispatchWatchContext<T>) => (
       value: FmEvents.RECORD_CHANGED
     };
 
-    const recId =
-      typeof event.value === "object"
-        ? { id: event.key, ...event.value }
-        : { id: event.key };
+    let eventContext: IEventTimeContext<T>;
+    let errorMessage: string;
 
-    const rec = Record.createWith(
-      context.modelConstructor,
-      context.compositeKey
-    );
+    if (event.kind === "relationship") {
+      eventContext = {
+        type: event.type,
+        dbPath: "not-relevant, use toLocal and fromLocal"
+      };
+    } else {
+      // record events (both server and local)
+      const recordProps =
+        typeof event.value === "object"
+          ? { id: event.key, ...event.value }
+          : { id: event.key };
 
-    const contextualizedEvent: IFmContextualizedWatchEvent<T> = {
-      ...{
-        type:
-          event.eventType === "value"
-            ? event.value === null || event.paths === null
+      const rec = Record.createWith(
+        watcherContext.modelConstructor,
+        recordProps
+      );
+
+      let type: FmEvents;
+      switch (event.kind) {
+        case "record":
+          type = event.type;
+          break;
+        case "server-event":
+          type =
+            event.value === null
               ? FmEvents.RECORD_REMOVED
-              : FmEvents.RECORD_CHANGED
-            : typeLookup[event.eventType as keyof typeof typeLookup]
-      },
-      ...context,
-      ...event
+              : typeLookup[event.eventType];
+          break;
+        default:
+          type = FmEvents.UNEXPECTED_ERROR;
+          errorMessage = `The "kind" of event was not recognized [ ${
+            (event as any).kind
+          } ]`;
+      }
+
+      eventContext = {
+        type,
+        dbPath: rec.dbPath
+      };
+    }
+
+    const reduxAction: IFmWatchEvent<T> = {
+      ...watcherContext,
+      ...event,
+      ...eventContext,
+      errorMessage
     };
 
-    return clientHandler(contextualizedEvent);
+    return coreDispatchFn(reduxAction);
   };
 };
-
-function isValueBasedEvent(
-  evt: IFirebaseWatchEvent,
-  context: IFirebaseWatchContext
-): evt is IValueBasedWatchEvent {
-  return evt.eventType === "value";
-}

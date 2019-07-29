@@ -1,11 +1,10 @@
 import { Model } from "./Model";
-import { IReduxDispatch } from "./VuexWrapper";
+import { IReduxDispatch, IWatcherEventContext } from "./state-mgmt";
 import { FireModel } from "./FireModel";
 type RealTimeDB = import("abstracted-firebase").RealTimeDB;
 
 import { IModelOptions } from "./@types/general";
 import { IPrimaryKey } from "./@types/record-types";
-import { IWatcherItem } from "./watchers/types";
 import { FireModelError } from "./errors";
 import {
   getWatcherPool,
@@ -37,7 +36,9 @@ export class Watch<T extends Model = Model> {
     FireModel.dispatch = d;
   }
 
-  /** returns a full list of all watchers */
+  /**
+   * returns a full list of all watchers
+   */
   public static get inventory() {
     return getWatcherPool();
   }
@@ -54,7 +55,7 @@ export class Watch<T extends Model = Model> {
    *
    * @param hashCode the unique hashcode given for each watcher
    */
-  public static lookup(hashCode: string): IWatcherItem {
+  public static lookup(hashCode: string): IWatcherEventContext {
     const codes = new Set(Object.keys(getWatcherPool()));
     if (!codes.has(hashCode)) {
       const e = new Error(
@@ -107,7 +108,7 @@ export class Watch<T extends Model = Model> {
     } else {
       const registry = getWatcherPool()[hashCode];
       db.unWatch(
-        registry.eventType === "child"
+        registry.eventFamily === "child"
           ? "value"
           : ["child_added", "child_changed", "child_moved", "child_removed"],
         registry.dispatch

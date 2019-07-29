@@ -124,7 +124,7 @@ export declare class WatchList<T extends Model> extends WatchBase<T> {
      *
      * @param query
      */
-    fromQuery(inputQuery: SerializedQuery): WatchList<T>;
+    fromQuery(inputQuery: SerializedQuery<T>): WatchList<T>;
     /**
      * **all**
      *

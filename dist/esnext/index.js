@@ -6,11 +6,9 @@ export { Mock } from "./Mock";
 export { FireModel } from "./FireModel";
 export { Audit } from "./Audit";
 export { Watch } from "./Watch";
-export { VeuxWrapper } from "./VuexWrapper";
 export * from "./state-mgmt/index";
 export * from "./@types/index";
 export { pathJoin } from "./path";
 export { key as fbKey } from "firebase-key";
-export * from "./state-mgmt/index";
 export * from "./record/createCompositeKey";
 //# sourceMappingURL=index.js.map

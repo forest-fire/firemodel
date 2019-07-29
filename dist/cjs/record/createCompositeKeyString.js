@@ -5,14 +5,22 @@ const __1 = require("..");
  * Creates a string based composite key if the passed in record
  * has dynamic path segments; if not it will just return the "id"
  */
-function createCompositeKeyString(rec) {
+function createCompositeKeyRefFromRecord(rec) {
     const cKey = __1.createCompositeKey(rec);
-    return rec.hasDynamicPath
+    return rec.hasDynamicPath ? createCompositeRef(cKey) : rec.id;
+}
+exports.createCompositeKeyRefFromRecord = createCompositeKeyRefFromRecord;
+/**
+ * Given a hash/dictionary (with an `id` prop), will generate a "composite
+ * reference" in string form.
+ */
+function createCompositeRef(cKey) {
+    return Object.keys(cKey).length > 1
         ? cKey.id +
             Object.keys(cKey)
                 .filter(k => k !== "id")
                 .map(k => `::${k}:${cKey[k]}`)
-        : rec.id;
+        : cKey.id;
 }
-exports.createCompositeKeyString = createCompositeKeyString;
+exports.createCompositeRef = createCompositeRef;
 //# sourceMappingURL=createCompositeKeyString.js.map

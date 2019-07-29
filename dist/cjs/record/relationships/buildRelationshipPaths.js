@@ -35,7 +35,7 @@ function buildRelationshipPaths(rec, property, fkRef, options = {}) {
          * Normalize to a composite key format
          */
         const fkCompositeKey = typeof fkRef === "object" ? fkRef : fkRecord.compositeKey;
-        const fkId = createCompositeKeyString_1.createCompositeKeyString(fkRecord);
+        const fkId = createCompositeKeyString_1.createCompositeKeyRefFromRecord(fkRecord);
         /**
          * boolean flag indicating whether current model has a **hasMany** relationship
          * with the FK.

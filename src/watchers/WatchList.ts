@@ -6,9 +6,7 @@ import { Record } from "../Record";
 import { SerializedQuery, IComparisonOperator } from "serialized-query";
 import { getAllPropertiesFromClassStructure } from "../util";
 import { epochWithMilliseconds } from "common-types";
-import { WatchRecord } from "./WatchRecord";
-import { IWatcherItem } from "./types";
-import { Watch } from "..";
+import { Watch } from "../index";
 
 export class WatchList<T extends Model> extends WatchBase<T> {
   public static list<T extends Model>(
@@ -254,7 +252,7 @@ export class WatchList<T extends Model> extends WatchBase<T> {
    *
    * @param query
    */
-  public fromQuery(inputQuery: SerializedQuery): WatchList<T> {
+  public fromQuery(inputQuery: SerializedQuery<T>): WatchList<T> {
     this._query = inputQuery;
 
     return this;
@@ -313,6 +311,7 @@ export class WatchList<T extends Model> extends WatchBase<T> {
         ...this._options,
         offsets: this._offsets
       });
+
       this._query = new SerializedQuery<T>(lst.dbPath);
       this._modelName = lst.modelName;
       this._pluralName = lst.pluralName;
