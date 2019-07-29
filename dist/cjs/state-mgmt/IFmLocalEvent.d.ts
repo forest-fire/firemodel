@@ -2,15 +2,16 @@ import { FmEvents, IFmCrudOperations } from "./index";
 import { EventType } from "@firebase/database-types";
 import { IMultiPathUpdates } from "../FireModel";
 import { Model } from "../Model";
-import { IFmRelationshipOperation } from "../@types";
+import { IFmRelationshipOperation, IFmPathValuePair } from "../@types";
+import { fk, pk } from "common-types";
 /**
  * All local events should provide the following meta
  */
 export interface IFmLocalEventBase<T> {
     /** a FireModel event must state a type */
     type: FmEvents;
-    /** same as `value.id` but added to provide consistency to Firebase events */
-    key: string;
+    /** the key of the record; if composite key then will take composite-reference format */
+    key: pk;
     /**
      * A Unique ID for the given event payload
      */
@@ -27,12 +28,31 @@ export interface IFmLocalEventBase<T> {
     errorMessage?: string;
 }
 /**
+ * **IFmLocalRelationshipEvent**
+ *
  * The explicit shape of a IFmLocalEvent which convey's a **relationship**
  * change.
+ *
+ * Like Record events, there is the concept of a two-phased commit
+ * where the first phase is an _optimistic_ expression of what "sucess"
+ * would look like and the second phase is a _confirmation_ or _rollback_ event.
+ *
+ * **Note:** the concept of a "relationship" is purely a local/Firemodel convention.
+ * The server events that a relationship change results in `RECORD_CHANGED` events
+ * on both effected records.
  */
-export interface IFmLocalRelationshipEvent<T extends Model = Model> extends IFmLocalEventBase<T> {
+export interface IFmLocalRelationshipEvent<F extends Model = Model, T extends Model = Model> extends IFmLocalEventBase<F> {
     kind: "relationship";
     operation: IFmRelationshipOperation;
+    /** the property on the `from` model which has a FK ref to `to` model */
+    property: keyof F;
+    /**
+     * The foreign key that the `from` model will be operating with on property `property`.
+     * If the FK has a dynamic path then the FK will be represented as a composite ref.
+     */
+    fks: fk[];
+    /** the property on the `to` model which points back to the `from` model */
+    inverseProperty?: keyof T;
     /**
      * the model name of the `from` part of a relationship
      */
@@ -45,18 +65,19 @@ export interface IFmLocalRelationshipEvent<T extends Model = Model> extends IFmL
     fromLocal: string;
     /** the `localPath` of the _"to"_ part of the relationship */
     toLocal: string;
-    value: undefined;
+    /** a constructor for the model of the _"from"_ record */
+    fromConstructor: new () => F;
+    /** a constructor for the model of the _"to"_ record */
+    toConstructor: new () => T;
+    value?: undefined;
     /**
      * **paths**
      *
-     * Optionally including the full set of paths that are being updated;
-     * this is included because _multi-path-sets_ are used to set not only
-     * a given record but also it's FK relationships when a relationship is
-     * changed. In the localized event this points to paths which will resolve
-     * to two server based changes (one to the primary model, one to the FK
-     * model) while maintaining the overall set operation as an atomic transaction
+     * The database paths which are effected by this relationship event.
+     * The paths can impact one or two `Record`'s (based on whether the
+     * foreign record has an "inverse" property)
      */
-    paths: IMultiPathUpdates[];
+    paths: IFmPathValuePair[];
 }
 /**
  * Core event properties of a `Record` based change in **Firemodel**

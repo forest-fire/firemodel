@@ -1,6 +1,6 @@
 import { Model } from "../Model";
 import {
-  IDispatchEventContext,
+  IEventTimeContext,
   FmEvents,
   IFmCrudOperations,
   IFmLocalEvent
@@ -27,23 +27,31 @@ export type IFmEventType =
  */
 export type IFmServerEvent =
   | IValueBasedWatchEvent
-  | IPathBasedWatchEvent & { value?: any };
+  | IPathBasedWatchEvent & { value?: undefined };
 
+/**
+ * **IFmServerOrLocalEvent**
+ *
+ * Allows either a server event (aka, Firebase originated) or a locally
+ * sourced event
+ */
 export type IFmServerOrLocalEvent<T> = IFmServerEvent | IFmLocalEvent<T>;
 
 /**
+ * **IFmWatchEvent**
+ *
  * This represents the payload which **Firemodel** will dispatch when
  * _watcher context_ is available.
  */
 export type IFmWatchEvent<T extends Model = Model> = IFmServerOrLocalEvent<T> &
-  IDispatchEventContext<T> &
+  IEventTimeContext<T> &
   IWatcherEventContext<T>;
 
 /**
  * The extra meta-data that comes from combining
  * the _watcher context_ and the _event_
  */
-export interface IDispatchEventContext<T = any> {
+export interface IEventTimeContext<T = any> {
   type: FmEvents;
   dbPath: string;
 }

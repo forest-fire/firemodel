@@ -133,7 +133,7 @@ class Record extends FireModel_1.FireModel {
      * a composite string (aka, a model which has a dynamic dbOffset)
      */
     get compositeKeyRef() {
-        return createCompositeKeyString_1.createCompositeKeyString(this);
+        return createCompositeKeyString_1.createCompositeKeyRefFromRecord(this);
     }
     /**
      * The Record's primary key; this is the `id` property only. Not
@@ -595,7 +595,7 @@ class Record extends FireModel_1.FireModel {
                 ...paths
             ];
         });
-        await relationshipOperation_1.relationshipOperation(this, "add", property, paths, options);
+        await relationshipOperation_1.relationshipOperation(this, "add", property, fkRefs, paths, options);
     }
     /**
      * removeFromRelationship
@@ -621,7 +621,7 @@ class Record extends FireModel_1.FireModel {
                 ...paths
             ];
         });
-        await relationshipOperation_1.relationshipOperation(this, "remove", property, paths, options);
+        await relationshipOperation_1.relationshipOperation(this, "remove", property, fkRefs, paths, options);
     }
     /**
      * **clearRelationship**
@@ -652,7 +652,7 @@ class Record extends FireModel_1.FireModel {
                 ...paths
             ];
         });
-        await relationshipOperation_1.relationshipOperation(this, "clear", property, paths, options);
+        await relationshipOperation_1.relationshipOperation(this, "clear", property, fkRefs, paths, options);
     }
     /**
      * **setRelationship**
@@ -668,7 +668,7 @@ class Record extends FireModel_1.FireModel {
             throw new errors_1.NotHasOneRelationship(this, property, "setRelationship");
         }
         const paths = buildRelationshipPaths_1.buildRelationshipPaths(this, property, fkId);
-        await relationshipOperation_1.relationshipOperation(this, "set", property, paths, options);
+        await relationshipOperation_1.relationshipOperation(this, "set", property, [fkId], paths, options);
     }
     /**
      * get a property value from the record
@@ -813,8 +813,7 @@ class Record extends FireModel_1.FireModel {
             if (!options.silent) {
                 // Note: if used on frontend, the mutations must be careful to
                 // set this to the right path considering there is no watcher
-                await this.dispatch(Object.assign({ type: actionTypeStart }, event, { transactionId,
-                    crudAction, watcherSource: "unknown", value: util_1.withoutMetaOrPrivate(this.data), dbPath: this.dbPath }));
+                await this.dispatch(Object.assign({ type: actionTypeStart }, event, { watcherSource: "unknown", value: util_1.withoutMetaOrPrivate(this.data), dbPath: this.dbPath }));
             }
         }
         else {

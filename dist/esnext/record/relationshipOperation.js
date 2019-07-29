@@ -2,9 +2,9 @@ import { Record } from "../Record";
 import { FmEvents } from "..";
 import { getModelMeta } from "../ModelMeta";
 import { UnknownRelationshipProblem } from "../errors/relationships/UnknownRelationshipProblem";
-import { extractFksFromPaths } from "./extractFksFromPaths";
 import { locallyUpdateFkOnRecord } from "./locallyUpdateFkOnRecord";
-import { sendRelnDispatchEvent } from "./relationships/sendRelnDispatchEvent";
+import { createCompositeRef } from "./createCompositeKeyString";
+import { capitalize } from "../util";
 /**
  * **relationshipOperation**
  *
@@ -25,12 +25,20 @@ operation,
  */
 property, 
 /**
+ * The array of _foreign keys_ (of the "from" model) which will be operated on
+ */
+fkRefs, 
+/**
  * **paths**
  *
  * a set of name value pairs where the `name` is the DB path that needs updating
  * and the value is the value to set.
  */
 paths, options = {}) {
+    // make sure all FK's are strings
+    const fks = fkRefs.map(fk => {
+        return typeof fk === "object" ? createCompositeRef(fk) : fk;
+    });
     const dispatchEvents = {
         set: [
             FmEvents.RELATIONSHIP_SET_LOCALLY,
@@ -60,7 +68,9 @@ paths, options = {}) {
     };
     try {
         const [localEvent, confirmEvent, rollbackEvent] = dispatchEvents[operation];
-        const fkRecord = Record.create(rec.META.relationship(property).fkConstructor());
+        const fkConstructor = rec.META.relationship(property).fkConstructor;
+        // TODO: fix the typing here to make sure fkConstructor knows it's type
+        const fkRecord = new Record(fkConstructor());
         const fkMeta = getModelMeta(fkRecord.data);
         const transactionId = "t-reln-" +
             Math.random()
@@ -70,13 +80,33 @@ paths, options = {}) {
             Math.random()
                 .toString(36)
                 .substr(2, 5);
+        const event = {
+            key: rec.compositeKeyRef,
+            operation,
+            property,
+            kind: "relationship",
+            eventType: "local",
+            transactionId,
+            fks,
+            paths,
+            from: capitalize(rec.modelName),
+            to: capitalize(fkRecord.modelName),
+            fromLocal: rec.localPath,
+            toLocal: fkRecord.localPath,
+            fromConstructor: rec.modelConstructor,
+            toConstructor: fkRecord.modelConstructor
+        };
+        const inverseProperty = rec.META.relationship(property).inverseProperty;
+        if (inverseProperty) {
+            event.inverseProperty = inverseProperty;
+        }
         try {
-            await localRelnOp(rec, operation, property, paths, localEvent, transactionId);
+            await localRelnOp(rec, event, localEvent);
         }
         catch (e) {
-            await relnRollback(rec, operation, property, paths, rollbackEvent, transactionId, e);
+            await relnRollback(rec, event, rollbackEvent);
         }
-        await relnConfirmation(rec, operation, property, paths, confirmEvent, transactionId);
+        await relnConfirmation(rec, event, confirmEvent);
     }
     catch (e) {
         if (e.firemodel) {
@@ -87,23 +117,16 @@ paths, options = {}) {
         }
     }
 }
-export async function localRelnOp(rec, op, prop, paths, event, transactionId) {
-    // locally modify Record's values
-    const ids = extractFksFromPaths(rec, prop, paths);
-    ids.map(id => {
-        locallyUpdateFkOnRecord(rec, op, prop, id);
-    });
-    // TODO: investigate why multiPathSet wasn't working
-    // build MPS
-    // const dbPaths = discoverRootPath(paths);
-    // const mps = rec.db.multiPathSet(dbPaths.root || "/");
-    // dbPaths.paths.map(p => mps.add({ path: p.path, value: p.value }));
-    const fkRecord = Record.create(rec.META.relationship(prop).fkConstructor());
-    // execute MPS on DB
+export async function localRelnOp(rec, event, type) {
     try {
-        sendRelnDispatchEvent(event, transactionId, op, rec, prop, paths);
-        // await mps.execute();
-        await rec.db.ref("/").update(paths.reduce((acc, curr) => {
+        // locally modify Record's values
+        // const ids = extractFksFromPaths(rec, event.property, event.paths);
+        event.fks.map(fk => {
+            locallyUpdateFkOnRecord(rec, fk, Object.assign({}, event, { type }));
+        });
+        // local optimistic dispatch
+        rec.dispatch(Object.assign({}, event, { type }));
+        await rec.db.ref("/").update(event.paths.reduce((acc, curr) => {
             acc[curr.path] = curr.value;
             return acc;
         }, {}));
@@ -113,10 +136,16 @@ export async function localRelnOp(rec, op, prop, paths, event, transactionId) {
         throw e;
     }
 }
-export async function relnConfirmation(rec, op, prop, paths, event, transactionId) {
-    sendRelnDispatchEvent(event, transactionId, op, rec, prop, paths);
+export async function relnConfirmation(rec, event, type) {
+    rec.dispatch(Object.assign({}, event, { type }));
 }
-export async function relnRollback(rec, op, prop, paths, event, transactionId, err) {
-    sendRelnDispatchEvent(event, transactionId, op, rec, prop, paths, err);
+export async function relnRollback(rec, event, type) {
+    //
+    /**
+     * no writes will have actually been done to DB but
+     * front end framework will need to know as it probably
+     * adjusted _optimistically_
+     */
+    rec.dispatch(Object.assign({}, event, { type }));
 }
 //# sourceMappingURL=relationshipOperation.js.map

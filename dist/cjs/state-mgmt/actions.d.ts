@@ -65,5 +65,6 @@ export declare enum FmEvents {
     /** A relationship was "added" but it already existed; this is typically non-action oriented */
     RELATIONSHIP_DUPLICATE_ADD = "@firemodel/RELATIONSHIP_DUPLICATE_ADD",
     APP_CONNECTED = "@firemodel/APP_CONNECTED",
-    APP_DISCONNECTED = "@firemodel/APP_DISCONNECTED"
+    APP_DISCONNECTED = "@firemodel/APP_DISCONNECTED",
+    UNEXPECTED_ERROR = "@firemodel/UNEXPECTED_ERROR"
 }

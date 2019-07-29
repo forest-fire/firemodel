@@ -10,7 +10,7 @@ import { Person } from "./testing/Person";
 import { PersonWithLocalAndPrefix } from "./testing/PersonWithLocalAndPrefix";
 import { setupEnv } from "./testing/helpers";
 import { IReduxAction } from "../src/state-mgmt/VuexWrapper";
-import { FmEvents, IDispatchEventContext } from "../src/state-mgmt";
+import { FmEvents, IEventTimeContext } from "../src/state-mgmt";
 import { wait, IDictionary } from "common-types";
 import { WatchList } from "../src/watchers/WatchList";
 import { getWatcherPool } from "../src/watchers/watcherPool";

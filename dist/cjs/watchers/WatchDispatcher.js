@@ -32,27 +32,40 @@ watcherContext) => {
             child_moved: state_mgmt_1.FmEvents.RECORD_MOVED,
             value: state_mgmt_1.FmEvents.RECORD_CHANGED
         };
-        const recordProps = typeof event.value === "object"
-            ? Object.assign({ id: event.key }, event.value) : { id: event.key };
-        const rec = Record_1.Record.createWith(watcherContext.modelConstructor, recordProps);
-        const eventContext = {
-            type: watcherContext.eventFamily === "value"
-                ? event.value === null ||
-                    event.paths === null
-                    ? state_mgmt_1.FmEvents.RECORD_REMOVED
-                    : state_mgmt_1.FmEvents.RECORD_CHANGED
-                : typeLookup[event.eventType],
-            dbPath: rec.dbPath
-        };
-        /**
-         * _local events_ will be explicit about the **Action**
-         * they are trying to set; in comparison the server events
-         * will be determined at run time (using watcher context)
-         */
-        if (event.type) {
-            eventContext.type = event.type;
+        let eventContext;
+        let errorMessage;
+        if (event.kind === "relationship") {
+            eventContext = {
+                type: event.type,
+                dbPath: "not-relevant, use toLocal and fromLocal"
+            };
         }
-        const reduxAction = Object.assign({}, watcherContext, eventContext, event);
+        else {
+            // record events (both server and local)
+            const recordProps = typeof event.value === "object"
+                ? Object.assign({ id: event.key }, event.value) : { id: event.key };
+            const rec = Record_1.Record.createWith(watcherContext.modelConstructor, recordProps);
+            let type;
+            switch (event.kind) {
+                case "record":
+                    type = event.type;
+                    break;
+                case "server-event":
+                    type =
+                        event.value === null
+                            ? state_mgmt_1.FmEvents.RECORD_REMOVED
+                            : typeLookup[event.eventType];
+                    break;
+                default:
+                    type = state_mgmt_1.FmEvents.UNEXPECTED_ERROR;
+                    errorMessage = `The "kind" of event was not recognized [ ${event.kind} ]`;
+            }
+            eventContext = {
+                type,
+                dbPath: rec.dbPath
+            };
+        }
+        const reduxAction = Object.assign({}, watcherContext, event, eventContext, { errorMessage });
         return coreDispatchFn(reduxAction);
     };
 };

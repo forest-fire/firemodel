@@ -1881,10 +1881,10 @@ abstracted-client@^0.27.8:
     serialized-query "^0.8.1"
     typed-conversions "^0.10.1"
 
-abstracted-firebase@^0.27.13, abstracted-firebase@^0.27.14:
-  version "0.27.14"
-  resolved "https://registry.yarnpkg.com/abstracted-firebase/-/abstracted-firebase-0.27.14.tgz#c42b47cbc59f20abfe6a18093394e84c004f4f7d"
-  integrity sha512-0TIuzynl3xxSH8X4YQWOplNzS1qBzcqhUQmFEaPaPl4Ao7kNuU1KNpgrYQQZuDbN1xvzfn7Y2DPgmUg9iFQU+Q==
+abstracted-firebase@^0.27.13, abstracted-firebase@^0.27.15:
+  version "0.27.15"
+  resolved "https://registry.yarnpkg.com/abstracted-firebase/-/abstracted-firebase-0.27.15.tgz#592083e6bda1863c545e0ae0ff3674f62af30433"
+  integrity sha512-VXLQblnQzExeTQBWXw8gE1peEHnrzmQPLRX3WO2+zn0wHitmYeqrVnaPZLsyWRGY0pbMTBENWkJLVVTV0FuQHQ==
   dependencies:
     "@firebase/auth-types" "^0.7.2"
     "@firebase/database-types" "^0.4.2"
@@ -4221,9 +4221,9 @@ ee-first@1.1.1:
   integrity sha1-WQxhFWsK4vTwJVcyoViyZrxWsh0=
 
 electron-to-chromium@^1.3.191:
-  version "1.3.202"
-  resolved "https://registry.yarnpkg.com/electron-to-chromium/-/electron-to-chromium-1.3.202.tgz#5412680d56347601ec7dc291d51bddd14b8fbd45"
-  integrity sha512-oJHvNNYM3Y9mJfiujbFQxRa0v7mzrc6Pv76fq6A4Dd6MxbfiVGhmgXtIeMBloTF8crmlJ1rXQW95VS4Zp/9ZSg==
+  version "1.3.203"
+  resolved "https://registry.yarnpkg.com/electron-to-chromium/-/electron-to-chromium-1.3.203.tgz#76de1b76eaaf7208e587a26b8e45407535a00abd"
+  integrity sha512-Z1FjJKEBhYrCNmnususVk8khiBabVI/bSJB/295V4ghVt4MFmtbP+mXgRZLQZinEBI469U6FtiGgpXnlLs6qiQ==
 
 elliptic@^6.0.0:
   version "6.5.0"

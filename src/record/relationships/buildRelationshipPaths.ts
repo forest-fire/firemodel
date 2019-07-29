@@ -9,7 +9,7 @@ import { getModelMeta } from "../../ModelMeta";
 import { pathJoin, IDictionary } from "common-types";
 import { MissingReciprocalInverse } from "../../errors/relationships/MissingReciprocalInverse";
 import { IncorrectReciprocalInverse } from "../../errors/relationships/IncorrectReciprocalInverse";
-import { createCompositeKeyString } from "../createCompositeKeyString";
+import { createCompositeKeyRefFromRecord } from "../createCompositeKeyString";
 import { UnknownRelationshipProblem } from "../../errors/relationships/UnknownRelationshipProblem";
 import { MissingInverseProperty } from "../../errors/relationships/MissingInverseProperty";
 
@@ -48,7 +48,7 @@ export function buildRelationshipPaths<T>(
     const fkCompositeKey: ICompositeKey =
       typeof fkRef === "object" ? fkRef : fkRecord.compositeKey;
 
-    const fkId: string = createCompositeKeyString(fkRecord);
+    const fkId: string = createCompositeKeyRefFromRecord(fkRecord);
 
     /**
      * boolean flag indicating whether current model has a **hasMany** relationship

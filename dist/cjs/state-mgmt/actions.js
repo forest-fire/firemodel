@@ -69,5 +69,6 @@ var FmEvents;
     FmEvents["RELATIONSHIP_DUPLICATE_ADD"] = "@firemodel/RELATIONSHIP_DUPLICATE_ADD";
     FmEvents["APP_CONNECTED"] = "@firemodel/APP_CONNECTED";
     FmEvents["APP_DISCONNECTED"] = "@firemodel/APP_DISCONNECTED";
+    FmEvents["UNEXPECTED_ERROR"] = "@firemodel/UNEXPECTED_ERROR";
 })(FmEvents = exports.FmEvents || (exports.FmEvents = {}));
 //# sourceMappingURL=actions.js.map

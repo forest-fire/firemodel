@@ -1,5 +1,5 @@
 import { Model } from "../Model";
-import { IDispatchEventContext, FmEvents, IFmLocalEvent } from "./index";
+import { IEventTimeContext, FmEvents, IFmLocalEvent } from "./index";
 import { IWatcherEventContext } from "../state-mgmt";
 import { IValueBasedWatchEvent, IPathBasedWatchEvent } from "abstracted-firebase";
 export declare type IFmEventType = "value" | "child_added" | "child_moved" | "child_removed" | "child_changed";
@@ -11,19 +11,27 @@ export declare type IFmEventType = "value" | "child_added" | "child_moved" | "ch
  * it's useful to have it listed as "optional"
  */
 export declare type IFmServerEvent = IValueBasedWatchEvent | IPathBasedWatchEvent & {
-    value?: any;
+    value?: undefined;
 };
+/**
+ * **IFmServerOrLocalEvent**
+ *
+ * Allows either a server event (aka, Firebase originated) or a locally
+ * sourced event
+ */
 export declare type IFmServerOrLocalEvent<T> = IFmServerEvent | IFmLocalEvent<T>;
 /**
+ * **IFmWatchEvent**
+ *
  * This represents the payload which **Firemodel** will dispatch when
  * _watcher context_ is available.
  */
-export declare type IFmWatchEvent<T extends Model = Model> = IFmServerOrLocalEvent<T> & IDispatchEventContext<T> & IWatcherEventContext<T>;
+export declare type IFmWatchEvent<T extends Model = Model> = IFmServerOrLocalEvent<T> & IEventTimeContext<T> & IWatcherEventContext<T>;
 /**
  * The extra meta-data that comes from combining
  * the _watcher context_ and the _event_
  */
-export interface IDispatchEventContext<T = any> {
+export interface IEventTimeContext<T = any> {
     type: FmEvents;
     dbPath: string;
 }

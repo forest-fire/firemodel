@@ -43,7 +43,7 @@ import {
 } from "./errors";
 import { buildRelationshipPaths } from "./record/relationships/buildRelationshipPaths";
 import { relationshipOperation } from "./record/relationshipOperation";
-import { createCompositeKeyString } from "./record/createCompositeKeyString";
+import { createCompositeKeyRefFromRecord } from "./record/createCompositeKeyString";
 import { IFmPathValuePair, IFmRelationshipOptions } from "./@types";
 import { createCompositeKeyFromFkString } from "./record/createCompositeKeyFromFkString";
 import { RecordCrudFailure } from "./errors/record/DatabaseCrudFailure";
@@ -179,7 +179,7 @@ export class Record<T extends Model> extends FireModel<T> {
    * a composite string (aka, a model which has a dynamic dbOffset)
    */
   public get compositeKeyRef() {
-    return createCompositeKeyString<T>(this);
+    return createCompositeKeyRefFromRecord<T>(this);
   }
 
   /**
@@ -810,7 +810,7 @@ export class Record<T extends Model> extends FireModel<T> {
       ];
     });
 
-    await relationshipOperation(this, "add", property, paths, options);
+    await relationshipOperation(this, "add", property, fkRefs, paths, options);
   }
 
   /**
@@ -848,7 +848,14 @@ export class Record<T extends Model> extends FireModel<T> {
       ];
     });
 
-    await relationshipOperation(this, "remove", property, paths, options);
+    await relationshipOperation(
+      this,
+      "remove",
+      property,
+      fkRefs,
+      paths,
+      options
+    );
   }
 
   /**
@@ -887,7 +894,14 @@ export class Record<T extends Model> extends FireModel<T> {
       ];
     });
 
-    await relationshipOperation(this, "clear", property, paths, options);
+    await relationshipOperation(
+      this,
+      "clear",
+      property,
+      fkRefs,
+      paths,
+      options
+    );
   }
 
   /**
@@ -908,7 +922,7 @@ export class Record<T extends Model> extends FireModel<T> {
       throw new NotHasOneRelationship(this, property, "setRelationship");
     }
     const paths = buildRelationshipPaths(this, property, fkId);
-    await relationshipOperation(this, "set", property, paths, options);
+    await relationshipOperation(this, "set", property, [fkId], paths, options);
   }
 
   /**
@@ -1097,8 +1111,6 @@ export class Record<T extends Model> extends FireModel<T> {
         await this.dispatch({
           type: actionTypeStart,
           ...event,
-          transactionId,
-          crudAction,
           watcherSource: "unknown",
           value: withoutMetaOrPrivate(this.data),
           dbPath: this.dbPath

@@ -1,16 +1,11 @@
 import { IDictionary } from "common-types";
 import {
-  IValueBasedWatchEvent,
-  IPathBasedWatchEvent
-} from "abstracted-firebase";
-import {
   FmEvents,
-  IDispatchEventContext,
+  IEventTimeContext,
   IReduxDispatch,
   IFmWatchEvent,
-  IFmServerEvent,
   IWatcherEventContext,
-  IFmLocalEvent
+  IFmServerOrLocalEvent
 } from "../state-mgmt";
 import { Record } from "../Record";
 import { hasInitialized } from "./watchInitialization";
@@ -41,12 +36,10 @@ export const WatchDispatcher = <T>(
   }
 
   // Handle incoming events ...
-  return async (
-    event: IFmServerEvent | IFmLocalEvent<T>
-  ): Promise<IFmWatchEvent<T>> => {
+  return async (event: IFmServerOrLocalEvent<T>): Promise<IFmWatchEvent<T>> => {
     hasInitialized[watcherContext.watcherId] = true;
 
-    const typeLookup: IDictionary = {
+    const typeLookup: IDictionary<FmEvents> = {
       child_added: FmEvents.RECORD_ADDED,
       child_removed: FmEvents.RECORD_REMOVED,
       child_changed: FmEvents.RECORD_CHANGED,
@@ -54,40 +47,55 @@ export const WatchDispatcher = <T>(
       value: FmEvents.RECORD_CHANGED
     };
 
-    const recordProps =
-      typeof event.value === "object"
-        ? { id: event.key, ...event.value }
-        : { id: event.key };
+    let eventContext: IEventTimeContext<T>;
+    let errorMessage: string;
 
-    const rec = Record.createWith(watcherContext.modelConstructor, recordProps);
+    if (event.kind === "relationship") {
+      eventContext = {
+        type: event.type,
+        dbPath: "not-relevant, use toLocal and fromLocal"
+      };
+    } else {
+      // record events (both server and local)
+      const recordProps =
+        typeof event.value === "object"
+          ? { id: event.key, ...event.value }
+          : { id: event.key };
 
-    const eventContext: IDispatchEventContext<T> = {
-      type:
-        watcherContext.eventFamily === "value"
-          ? (event as IValueBasedWatchEvent).value === null ||
-            (event as IPathBasedWatchEvent).paths === null
-            ? FmEvents.RECORD_REMOVED
-            : FmEvents.RECORD_CHANGED
-          : (typeLookup[
-              event.eventType as keyof typeof typeLookup
-            ] as FmEvents),
+      const rec = Record.createWith(
+        watcherContext.modelConstructor,
+        recordProps
+      );
 
-      dbPath: rec.dbPath
-    };
+      let type: FmEvents;
+      switch (event.kind) {
+        case "record":
+          type = event.type;
+          break;
+        case "server-event":
+          type =
+            event.value === null
+              ? FmEvents.RECORD_REMOVED
+              : typeLookup[event.eventType];
+          break;
+        default:
+          type = FmEvents.UNEXPECTED_ERROR;
+          errorMessage = `The "kind" of event was not recognized [ ${
+            (event as any).kind
+          } ]`;
+      }
 
-    /**
-     * _local events_ will be explicit about the **Action**
-     * they are trying to set; in comparison the server events
-     * will be determined at run time (using watcher context)
-     */
-    if ((event as IFmLocalEvent<T>).type) {
-      eventContext.type = (event as IFmLocalEvent<T>).type;
+      eventContext = {
+        type,
+        dbPath: rec.dbPath
+      };
     }
 
     const reduxAction: IFmWatchEvent<T> = {
       ...watcherContext,
+      ...event,
       ...eventContext,
-      ...event
+      errorMessage
     };
 
     return coreDispatchFn(reduxAction);

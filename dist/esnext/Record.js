@@ -20,7 +20,7 @@ import { isHasManyRelationship } from "./verifications/isHasManyRelationship";
 import { NotHasManyRelationship, NotHasOneRelationship, FireModelError, FireModelProxyError } from "./errors";
 import { buildRelationshipPaths } from "./record/relationships/buildRelationshipPaths";
 import { relationshipOperation } from "./record/relationshipOperation";
-import { createCompositeKeyString } from "./record/createCompositeKeyString";
+import { createCompositeKeyRefFromRecord } from "./record/createCompositeKeyString";
 import { createCompositeKeyFromFkString } from "./record/createCompositeKeyFromFkString";
 import { RecordCrudFailure } from "./errors/record/DatabaseCrudFailure";
 import copy from "fast-copy";
@@ -128,7 +128,7 @@ export class Record extends FireModel {
      * a composite string (aka, a model which has a dynamic dbOffset)
      */
     get compositeKeyRef() {
-        return createCompositeKeyString(this);
+        return createCompositeKeyRefFromRecord(this);
     }
     /**
      * The Record's primary key; this is the `id` property only. Not
@@ -590,7 +590,7 @@ export class Record extends FireModel {
                 ...paths
             ];
         });
-        await relationshipOperation(this, "add", property, paths, options);
+        await relationshipOperation(this, "add", property, fkRefs, paths, options);
     }
     /**
      * removeFromRelationship
@@ -616,7 +616,7 @@ export class Record extends FireModel {
                 ...paths
             ];
         });
-        await relationshipOperation(this, "remove", property, paths, options);
+        await relationshipOperation(this, "remove", property, fkRefs, paths, options);
     }
     /**
      * **clearRelationship**
@@ -647,7 +647,7 @@ export class Record extends FireModel {
                 ...paths
             ];
         });
-        await relationshipOperation(this, "clear", property, paths, options);
+        await relationshipOperation(this, "clear", property, fkRefs, paths, options);
     }
     /**
      * **setRelationship**
@@ -663,7 +663,7 @@ export class Record extends FireModel {
             throw new NotHasOneRelationship(this, property, "setRelationship");
         }
         const paths = buildRelationshipPaths(this, property, fkId);
-        await relationshipOperation(this, "set", property, paths, options);
+        await relationshipOperation(this, "set", property, [fkId], paths, options);
     }
     /**
      * get a property value from the record
@@ -808,8 +808,7 @@ export class Record extends FireModel {
             if (!options.silent) {
                 // Note: if used on frontend, the mutations must be careful to
                 // set this to the right path considering there is no watcher
-                await this.dispatch(Object.assign({ type: actionTypeStart }, event, { transactionId,
-                    crudAction, watcherSource: "unknown", value: withoutMetaOrPrivate(this.data), dbPath: this.dbPath }));
+                await this.dispatch(Object.assign({ type: actionTypeStart }, event, { watcherSource: "unknown", value: withoutMetaOrPrivate(this.data), dbPath: this.dbPath }));
             }
         }
         else {
