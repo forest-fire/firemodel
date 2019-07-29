@@ -13,7 +13,6 @@ export interface IFmWatcherStartOptions {
 }
 
 export type IWatchEventClassification = "child" | "value";
-export type IQuerySetter = (q: SerializedQuery) => void;
 
 export type IWatchListQueries =
   | "all"

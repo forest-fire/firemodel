@@ -19,8 +19,6 @@ export declare type IFmServerOrLocalEvent<T> = IFmServerEvent | IFmLocalEvent<T>
  * _watcher context_ is available.
  */
 export declare type IFmWatchEvent<T extends Model = Model> = IFmServerOrLocalEvent<T> & IDispatchEventContext<T> & IWatcherEventContext<T>;
-export interface IFmUnwatchedEvent<T> extends IFmLocalEvent<T> {
-}
 /**
  * The extra meta-data that comes from combining
  * the _watcher context_ and the _event_

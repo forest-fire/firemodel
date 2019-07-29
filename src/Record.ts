@@ -1,10 +1,15 @@
 // tslint:disable-next-line:no-implicit-dependencies
-import { RealTimeDB, IMultiPathSet } from "abstracted-firebase";
+import { RealTimeDB } from "abstracted-firebase";
 import { Model } from "./Model";
 import { createError, IDictionary, Omit, Nullable, fk } from "common-types";
 import { key as fbKey } from "firebase-key";
 import { FireModel } from "./FireModel";
-import { IReduxDispatch, IFmLocalEvent, IWatcherEventContext } from "./state-mgmt";
+import {
+  IReduxDispatch,
+  IFmLocalEvent,
+  IFmLocalRecordEvent,
+  IWatcherEventContext
+} from "./state-mgmt";
 import { buildDeepRelationshipLinks } from "./record/buildDeepRelationshipLinks";
 
 import {
@@ -1065,10 +1070,13 @@ export class Record<T extends Model> extends FireModel<T> {
       withoutMetaOrPrivate<T>(priorValue)
     );
 
-    const watchers: Array<IWatcherEventContext<T>> = findWatchers(this.dbPath) as any;
-    const event: Omit<IFmLocalEvent<T>, "type"> = {
+    const watchers: Array<IWatcherEventContext<T>> = findWatchers(
+      this.dbPath
+    ) as any;
+    const event: Omit<IFmLocalRecordEvent<T>, "type"> = {
       transactionId,
-      crudAction,
+      kind: "record",
+      operation: crudAction,
       eventType: "local",
       key: this.id,
       value: withoutMetaOrPrivate<T>(this.data),

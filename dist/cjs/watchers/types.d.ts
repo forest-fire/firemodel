@@ -1,4 +1,3 @@
-import { SerializedQuery } from "serialized-query";
 export interface IFmWatcherStartOptions {
     /**
      * optionally provide a callback to be called when
@@ -11,6 +10,5 @@ export interface IFmWatcherStartOptions {
     name?: string;
 }
 export declare type IWatchEventClassification = "child" | "value";
-export declare type IQuerySetter = (q: SerializedQuery) => void;
 export declare type IWatchListQueries = "all" | "first" | "last" | "since" | "dormantSince" | "where" | "fromQuery" | "after" | "before" | "recent" | "inactive";
 export declare type IWatcherSource = "list" | "record" | "list-of-records" | "unknown";

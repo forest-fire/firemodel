@@ -1,5 +1,5 @@
 import { IValueBasedWatchEvent, IPathBasedWatchEvent } from "abstracted-firebase";
-import { IReduxDispatch, IFmWatchEvent, IWatcherEventContext, IFmLocalEvent } from "../state-mgmt";
+import { IReduxDispatch, IFmWatchEvent, IWatcherEventContext } from "../state-mgmt";
 /**
  * **watchDispatcher**
  *
@@ -9,4 +9,4 @@ import { IReduxDispatch, IFmWatchEvent, IWatcherEventContext, IFmLocalEvent } fr
  */
 export declare const WatchDispatcher: <T>(coreDispatchFn: IReduxDispatch<import("../state-mgmt").IReduxAction, any>) => (watcherContext: IWatcherEventContext<T>) => (event: IValueBasedWatchEvent | (IPathBasedWatchEvent & {
     value?: any;
-}) | IFmLocalEvent<T>) => Promise<IFmWatchEvent<T>>;
+}) | import("../state-mgmt").IFmLocalRecordEvent<T> | import("../state-mgmt").IFmLocalRelationshipEvent<T>) => Promise<IFmWatchEvent<T>>;
