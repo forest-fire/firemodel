@@ -66,4 +66,14 @@ export interface IRecordOptions {
    * would focus on the more complicated example.
    */
   setDeepRelationships?: boolean;
+
+  /**
+   * By default, whether the `localPath` meta property is determined
+   * by whether you have a **Record** or **List** watcher but this will
+   * not always work.
+   *
+   * In order to accomodate this you can state explicitly whether the
+   * local path should be pluralized.
+   */
+  pluralizeLocalPath?: boolean;
 }

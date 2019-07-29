@@ -50,6 +50,7 @@ import { RecordCrudFailure } from "./errors/record/DatabaseCrudFailure";
 import { IFmModelMeta } from "./decorators";
 import copy from "fast-copy";
 import { WatchDispatcher } from "./watchers/WatchDispatcher";
+import { UnwatchedLocalEvent } from "./state-mgmt/UnwatchedLocalEvent";
 
 /**
  * a Model that doesn't require the ID tag (or the META tag which not a true
@@ -124,8 +125,6 @@ export class Record<T extends Model> extends FireModel<T> {
    */
   public get dbPath() {
     if (this.data.id ? false : true) {
-      // tslint:disable-next-line: no-debugger
-      debugger;
       throw createError(
         "record/not-ready",
         `you can not ask for the dbPath before setting an "id" property [ ${this.modelName} ]`
@@ -219,11 +218,18 @@ export class Record<T extends Model> extends FireModel<T> {
    * leading ":" character.
    */
   public get localPath() {
-    let path = this.localPrefix;
+    let prefix = this.localPrefix;
     this.localDynamicComponents.forEach(prop => {
-      path = path.replace(`:${prop}`, this.get(prop as any));
+      prefix = prefix.replace(`:${prop}`, this.get(prop as any));
     });
-    return pathJoin(path, this.META.localModelName);
+    return pathJoin(
+      prefix,
+      this.META.localModelName !== this.modelName
+        ? this.META.localModelName
+        : this.options.pluralizeLocalPath
+        ? this.pluralName
+        : this.modelName
+    );
   }
 
   /**
@@ -324,8 +330,9 @@ export class Record<T extends Model> extends FireModel<T> {
     let r: Record<T>;
     try {
       r = Record.createWith(model, payload as Partial<T>, options);
+
       if (!payload.id) {
-        (payload as T).id = r.db.isMockDb
+        payload.id = r.db.isMockDb
           ? fbKey()
           : await r.db.getPushKey(r.dbOffset);
       }
@@ -479,7 +486,7 @@ export class Record<T extends Model> extends FireModel<T> {
   private _writeOperations: IWriteOperation[] = [];
   private _data?: Partial<T> = {};
 
-  constructor(model: new () => T, options: IRecordOptions = {}) {
+  constructor(model: new () => T, protected options: IRecordOptions = {}) {
     super();
     this._modelConstructor = model;
     this._model = new model();
@@ -1108,13 +1115,13 @@ export class Record<T extends Model> extends FireModel<T> {
       if (!options.silent) {
         // Note: if used on frontend, the mutations must be careful to
         // set this to the right path considering there is no watcher
-        await this.dispatch({
-          type: actionTypeStart,
-          ...event,
-          watcherSource: "unknown",
-          value: withoutMetaOrPrivate(this.data),
-          dbPath: this.dbPath
-        });
+        await this.dispatch(
+          UnwatchedLocalEvent(this, {
+            type: actionTypeStart,
+            ...event,
+            value: withoutMetaOrPrivate(this.data)
+          })
+        );
       }
     } else {
       // For each watcher watching this DB path ...
@@ -1155,15 +1162,14 @@ export class Record<T extends Model> extends FireModel<T> {
       // send confirm event
       if (!options.silent && !options.silentAcceptance) {
         if (watchers.length === 0) {
-          await this.dispatch({
-            type: actionTypeEnd,
-            ...event,
-            transactionId,
-            crudAction,
-            watcherSource: "unknown",
-            value: withoutMetaOrPrivate(this.data),
-            dbPath: this.dbPath
-          });
+          await this.dispatch(
+            UnwatchedLocalEvent(this, {
+              type: actionTypeEnd,
+              ...event,
+              transactionId,
+              value: withoutMetaOrPrivate(this.data)
+            })
+          );
         } else {
           const dispatch = WatchDispatcher<T>(this.dispatch);
           for (const watcher of watchers) {
@@ -1178,15 +1184,14 @@ export class Record<T extends Model> extends FireModel<T> {
       }
     } catch (e) {
       // send failure event
-      await this.dispatch({
-        type: actionTypeFailure,
-        ...event,
-        transactionId,
-        crudAction,
-        watcherSource: "unknown",
-        value: withoutMetaOrPrivate(this.data),
-        dbPath: this.dbPath
-      });
+      await this.dispatch(
+        UnwatchedLocalEvent(this, {
+          type: actionTypeFailure,
+          ...event,
+          transactionId,
+          value: withoutMetaOrPrivate(this.data)
+        })
+      );
 
       throw new RecordCrudFailure(this, crudAction, transactionId, e);
     }

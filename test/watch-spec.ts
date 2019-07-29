@@ -8,8 +8,8 @@ import {
 } from "../src";
 import { DB } from "abstracted-client";
 import { DB as Admin, SerializedQuery } from "abstracted-admin";
-import * as chai from "chai";
-const expect = chai.expect;
+import { expect } from "chai";
+
 import { FireModel } from "../src/FireModel";
 import { Watch } from "../src/Watch";
 import { Person } from "./testing/Person";

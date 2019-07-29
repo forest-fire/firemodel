@@ -1,8 +1,9 @@
 import { SerializedQuery } from "serialized-query";
 import { Model } from "../Model";
-import { IWatchEventClassification, IReduxDispatch, IWatcherSource, ICompositeKey } from "..";
+import { IWatchEventClassification, IReduxDispatch, IWatcherSource } from "..";
 import { epoch } from "common-types";
-export interface IWatcherEventContextBase<T extends Model = Model> {
+import { IFmRecordMeta } from "./events";
+export interface IWatcherEventContextBase<T extends Model = Model> extends IFmRecordMeta<T> {
     watcherId: string;
     /** if defined, pass along the string name off the watcher */
     watcherName?: string;
@@ -11,30 +12,6 @@ export interface IWatcherEventContextBase<T extends Model = Model> {
      * or a **list of records**.
      */
     watcherSource: IWatcherSource;
-    /**
-     * The properties on the underlying _model_ which are needed
-     * to compose the `CompositeKey` (excluding the `id` property)
-     */
-    dynamicPathProperties: string[];
-    /**
-     * If the underlying _model_ has a dynamic path then this key
-     * will be an object containing `id` as well as all dynamic
-     * path properties.
-     *
-     * If the _model_ does **not** have a dynamic path then this
-     * will just be a string value for the key (same as `id`)
-     */
-    compositeKey: ICompositeKey<T>;
-    /**
-     * A constructor to build a model of the underlying model type
-     */
-    modelConstructor: new () => T;
-    /** the _singular_ name of the Model */
-    modelName: string;
-    /** the _plural_ name of the Model */
-    pluralName: string;
-    /** the _local_ name of the Model */
-    localModelName: string;
     /**
      * Indicates the **Firebase** event type/family; either `value` or `child`
      */
@@ -54,17 +31,6 @@ export interface IWatcherEventContextBase<T extends Model = Model> {
      * the watcher is a `list` or `record` watcher.
      */
     watcherPaths: string[];
-    /**
-     * the _local path_ in the frontend's state management
-     * state tree to store this watcher's results.
-     */
-    localPath: string;
-    /**
-     * The _postfix_ string which resides off the root of the
-     * local state management's state module. By default this
-     * is `all` but can be modified on a per-model basis.
-     */
-    localPostfix: string;
 }
 /**
  * When watching a "list-of-records" you are really watching

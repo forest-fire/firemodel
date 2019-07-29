@@ -6,6 +6,7 @@ const Record_1 = require("../Record");
 const serialized_query_1 = require("serialized-query");
 const util_1 = require("../util");
 const index_1 = require("../index");
+const errors_1 = require("../errors");
 class WatchList extends WatchBase_1.WatchBase {
     constructor() {
         super(...arguments);
@@ -65,6 +66,9 @@ class WatchList extends WatchBase_1.WatchBase {
      * @param ids the list of FK references (simple or composite)
      */
     ids(...ids) {
+        if (ids.length === 0) {
+            throw new errors_1.FireModelError(`You attempted to setup a watcher list on a given set of ID's of "${this._modelName}" but the list of ID's was empty!`, "firemodel/not-ready");
+        }
         for (const id of ids) {
             this._underlyingRecordWatchers.push(index_1.Watch.record(this._modelConstructor, id));
         }

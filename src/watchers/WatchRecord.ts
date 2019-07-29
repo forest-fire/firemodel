@@ -6,7 +6,7 @@ import { Record } from "..";
 import { SerializedQuery } from "serialized-query";
 
 export class WatchRecord<T extends Model> extends WatchBase<T> {
-  public static record<T>(
+  public static record<T extends Model>(
     modelConstructor: new () => T,
     pk: IPrimaryKey<T>,
     options: IModelOptions = {}
@@ -27,7 +27,7 @@ export class WatchRecord<T extends Model> extends WatchBase<T> {
     o._watcherSource = "record";
 
     const r = Record.createWith<T>(modelConstructor, pk);
-    o._query = new SerializedQuery<any>(`${r.dbPath}`);
+    o._query = new SerializedQuery<T>(`${r.dbPath}`);
     o._modelConstructor = modelConstructor;
     o._modelName = r.modelName;
     o._localModelName = r.META.localModelName;

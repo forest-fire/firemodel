@@ -27,6 +27,7 @@ export interface IWriteOperation {
     callback: (type: string, value: any) => void;
 }
 export declare class Record<T extends Model> extends FireModel<T> {
+    protected options: IRecordOptions;
     static defaultDb: RealTimeDB;
     static dispatch: IReduxDispatch;
     /**

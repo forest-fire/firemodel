@@ -7,6 +7,7 @@ import { SerializedQuery, IComparisonOperator } from "serialized-query";
 import { getAllPropertiesFromClassStructure } from "../util";
 import { epochWithMilliseconds } from "common-types";
 import { Watch } from "../index";
+import { FireModelError } from "../errors";
 
 export class WatchList<T extends Model> extends WatchBase<T> {
   public static list<T extends Model>(
@@ -78,6 +79,12 @@ export class WatchList<T extends Model> extends WatchBase<T> {
    * @param ids the list of FK references (simple or composite)
    */
   public ids(...ids: Array<IPrimaryKey<T>>) {
+    if (ids.length === 0) {
+      throw new FireModelError(
+        `You attempted to setup a watcher list on a given set of ID's of "${this._modelName}" but the list of ID's was empty!`,
+        "firemodel/not-ready"
+      );
+    }
     for (const id of ids) {
       this._underlyingRecordWatchers.push(
         Watch.record<T>(this._modelConstructor, id)
