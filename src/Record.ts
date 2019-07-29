@@ -1102,6 +1102,7 @@ export class Record<T extends Model> extends FireModel<T> {
     ) as any;
     const event: Omit<IFmLocalRecordEvent<T>, "type"> = {
       transactionId,
+      modelConstructor: this.modelConstructor,
       kind: "record",
       operation: crudAction,
       eventType: "local",

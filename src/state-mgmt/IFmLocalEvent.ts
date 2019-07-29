@@ -98,6 +98,7 @@ export interface IFmLocalRecordEvent<T extends Model = Model>
   extends IFmLocalEventBase<T> {
   kind: "record";
   operation: IFmCrudOperations;
+  modelConstructor: new () => T;
   value: T;
   /**
    * **changed**

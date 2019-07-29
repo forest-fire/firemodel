@@ -802,6 +802,7 @@ class Record extends FireModel_1.FireModel {
         const watchers = findWatchers_1.findWatchers(this.dbPath);
         const event = {
             transactionId,
+            modelConstructor: this.modelConstructor,
             kind: "record",
             operation: crudAction,
             eventType: "local",
