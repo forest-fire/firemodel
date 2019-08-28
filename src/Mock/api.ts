@@ -25,7 +25,7 @@ export default function API<T>(db: RealTimeDB, modelConstructor: new () => T) {
      */
     async generate(
       count: number,
-      exceptions: IDictionary = {}
+      exceptions: Partial<T> = {}
     ): Promise<Array<IMockResponse<T>>> {
       if (!mockPrepared) {
         await FireMock.prepare();

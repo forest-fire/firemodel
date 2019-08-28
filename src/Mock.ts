@@ -16,6 +16,12 @@ function defaultCardinality<T>(r: Record<T>) {
   );
 }
 
+/**
+ * Provides a _Model_ aware means of mocking your data.
+ *
+ * @param modelConstructor The Model being mocked
+ * @param db optionally state the DB connection; will use **Firemodel**'s default DB otherwise
+ */
 export function Mock<T extends Model>(
   modelConstructor: new () => T,
   db?: RealTimeDB

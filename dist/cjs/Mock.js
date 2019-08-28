@@ -12,6 +12,12 @@ function defaultCardinality(r) {
         prev = Object.assign({}, prev, { [curr.property]: true });
     }, {});
 }
+/**
+ * Provides a _Model_ aware means of mocking your data.
+ *
+ * @param modelConstructor The Model being mocked
+ * @param db optionally state the DB connection; will use **Firemodel**'s default DB otherwise
+ */
 function Mock(modelConstructor, db) {
     if (!db) {
         if (FireModel_1.FireModel.defaultDb) {
