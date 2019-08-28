@@ -291,16 +291,9 @@ export class Record<T extends Model> extends FireModel<T> {
     }
 
     if (values) {
-      // silently set all values
-      console.log(values);
-
-      // Object.keys(values).forEach(key =>
-      //   rec.set(key as keyof T, values[key as keyof typeof values], true)
-      // );
       const defaultValues = rec.META.properties.filter(
         i => i.defaultValue !== undefined
       );
-      console.log(defaultValues);
 
       // also include "default values"
       defaultValues.forEach((i: IFmModelPropertyMeta<T>) => {
@@ -736,7 +729,28 @@ export class Record<T extends Model> extends FireModel<T> {
     refs: IFkReference<T> | Array<IFkReference<T>>,
     options: IFmRelationshipOptions = {}
   ) {
-    const relType = this.META.relationship(property).relType;
+    const meta = getModelMeta(this);
+    if (!meta.relationship(property)) {
+      throw new FireModelError(
+        `Attempt to associate the property "${property}" can not be done on model ${capitalize(
+          this.modelName
+        )} because the property is not defined!`,
+        `firemodel/not-allowed`
+      );
+    }
+    if (!meta.relationship(property).relType) {
+      throw new FireModelError(
+        `For some reason the property "${property}" on the model ${capitalize(
+          this.modelName
+        )} doesn't have cardinality assigned to the "relType" (aka, hasMany, hasOne).\n\nThe META for relationships on the model are: ${JSON.stringify(
+          meta.relationships,
+          null,
+          2
+        )}`,
+        `firemodel/unknown`
+      );
+    }
+    const relType = meta.relationship(property).relType;
     if (relType === "hasMany") {
       await this.addToRelationship(property, refs, options);
     } else {
