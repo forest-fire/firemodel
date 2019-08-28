@@ -214,13 +214,7 @@ class Record extends FireModel_1.FireModel {
             throw common_types_1.createError(`firemodel/record::local`, "You used the static Record.local() method but passed nothing into the 'values' property! If you just want to skip this error then you can set the options to { ignoreEmptyValues: true } or just use the Record.create() method.");
         }
         if (values) {
-            // silently set all values
-            console.log(values);
-            // Object.keys(values).forEach(key =>
-            //   rec.set(key as keyof T, values[key as keyof typeof values], true)
-            // );
             const defaultValues = rec.META.properties.filter(i => i.defaultValue !== undefined);
-            console.log(defaultValues);
             // also include "default values"
             defaultValues.forEach((i) => {
                 if (rec.get(i.property) === undefined) {
@@ -538,7 +532,14 @@ class Record extends FireModel_1.FireModel {
      * regardless if the cardinality
      */
     async associate(property, refs, options = {}) {
-        const relType = this.META.relationship(property).relType;
+        const meta = ModelMeta_1.getModelMeta(this);
+        if (!meta.relationship(property)) {
+            throw new errors_1.FireModelError(`Attempt to associate the property "${property}" can not be done on model ${util_1.capitalize(this.modelName)} because the property is not defined!`, `firemodel/not-allowed`);
+        }
+        if (!meta.relationship(property).relType) {
+            throw new errors_1.FireModelError(`For some reason the property "${property}" on the model ${util_1.capitalize(this.modelName)} doesn't have cardinality assigned to the "relType" (aka, hasMany, hasOne).\n\nThe META for relationships on the model are: ${JSON.stringify(meta.relationships, null, 2)}`, `firemodel/unknown`);
+        }
+        const relType = meta.relationship(property).relType;
         if (relType === "hasMany") {
             await this.addToRelationship(property, refs, options);
         }
