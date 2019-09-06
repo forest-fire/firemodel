@@ -24,7 +24,7 @@ function belongsTo(fnToModelConstructor, inverse) {
         if (inverseProperty) {
             payload.inverseProperty = inverseProperty;
         }
-        return reflector_1.propertyReflector(Object.assign({}, payload, { type: "String" }), relationship_store_1.relationshipsByModel);
+        return reflector_1.propertyReflector(Object.assign(Object.assign({}, payload), { type: "String" }), relationship_store_1.relationshipsByModel);
     }
     catch (e) {
         throw new DecoratorProblem_1.DecoratorProblem("hasOne", e, { inverse });

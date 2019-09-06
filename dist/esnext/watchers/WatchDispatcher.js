@@ -62,7 +62,7 @@ watcherContext) => {
                 dbPath: rec.dbPath
             };
         }
-        const reduxAction = Object.assign({}, watcherContext, event, eventContext);
+        const reduxAction = Object.assign(Object.assign(Object.assign({}, watcherContext), event), eventContext);
         const results = await coreDispatchFn(reduxAction);
         hasInitialized(watcherContext.watcherId);
         return results;

@@ -16,7 +16,7 @@ export function locallyUpdateFkOnRecord(rec, fkId, event) {
         case "add":
             rec._data[event.property] =
                 relnType === "hasMany"
-                    ? Object.assign({}, rec.data[event.property], { [fkId]: true }) : fkId;
+                    ? Object.assign(Object.assign({}, rec.data[event.property]), { [fkId]: true }) : fkId;
             return;
         case "remove":
             if (relnType === "hasMany") {

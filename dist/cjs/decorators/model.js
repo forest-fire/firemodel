@@ -22,19 +22,19 @@ function model(options = {}) {
                 console.log(`You set the audit property to "${options.audit}" which is invalid. Valid properties are true, false, and "server". The audit property will be set to false for now.`);
                 options.audit = false;
             }
-            const meta = Object.assign({}, options, { isProperty: property_store_1.isProperty(modelOfObject) }, { property: property_store_1.getModelProperty(modelOfObject) }, { properties: property_store_1.getProperties(modelOfObject) }, { isRelationship: relationship_store_1.isRelationship(modelOfObject) }, { relationship: relationship_store_1.getModelRelationship(modelOfObject) }, { relationships: relationship_store_1.getRelationships(modelOfObject) }, { dbIndexes: indexing_1.getDbIndexes(modelOfObject) }, { pushKeys: decorator_1.getPushKeys(modelOfObject) }, { dbOffset: options.dbOffset ? options.dbOffset : "" }, { audit: options.audit ? options.audit : false }, { plural: options.plural }, {
+            const meta = Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign({}, options), { isProperty: property_store_1.isProperty(modelOfObject) }), { property: property_store_1.getModelProperty(modelOfObject) }), { properties: property_store_1.getProperties(modelOfObject) }), { isRelationship: relationship_store_1.isRelationship(modelOfObject) }), { relationship: relationship_store_1.getModelRelationship(modelOfObject) }), { relationships: relationship_store_1.getRelationships(modelOfObject) }), { dbIndexes: indexing_1.getDbIndexes(modelOfObject) }), { pushKeys: decorator_1.getPushKeys(modelOfObject) }), { dbOffset: options.dbOffset ? options.dbOffset : "" }), { audit: options.audit ? options.audit : false }), { plural: options.plural }), {
                 allProperties: [
                     ...property_store_1.getProperties(modelOfObject).map(p => p.property),
                     ...relationship_store_1.getRelationships(modelOfObject).map(p => p.property)
                 ]
-            }, {
+            }), {
                 localPostfix: options.localPostfix === undefined ? "all" : options.localPostfix
-            }, {
+            }), {
                 localModelName: options.localModelName === undefined
                     ? modelOfObject.constructor.name.slice(0, 1).toLowerCase() +
                         modelOfObject.constructor.name.slice(1)
                     : options.localModelName
-            }, { isDirty });
+            }), { isDirty });
             ModelMeta_1.addModelMeta(target.constructor.name.toLowerCase(), meta);
             Object.defineProperty(target.prototype, "META", {
                 get() {
