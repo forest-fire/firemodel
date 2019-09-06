@@ -31,8 +31,7 @@ import {
 import {
   IFmModelPropertyMeta,
   IFmRelationshipOptionsForHasMany,
-  createCompositeKey,
-  DeepRequired
+  createCompositeKey
 } from ".";
 import { findWatchers } from "./watchers/findWatchers";
 import { isHasManyRelationship } from "./verifications/isHasManyRelationship";
