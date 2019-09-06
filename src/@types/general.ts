@@ -7,6 +7,24 @@ export interface IModelOptions {
   db?: import("abstracted-firebase").RealTimeDB;
 }
 
+export type Required<T> = T extends object
+  ? { [P in keyof T]-?: NonNullable<T[P]> }
+  : T;
+
+export type DeepRequired<
+  T,
+  U extends object | undefined = undefined
+> = T extends object
+  ? {
+      [P in keyof T]-?: NonNullable<T[P]> extends NonNullable<
+        // tslint:disable-next-line: ban-types
+        U | Function
+      >
+        ? NonNullable<T[P]>
+        : DeepRequired<NonNullable<T[P]>, U>;
+    }
+  : T;
+
 /**
  * **List Options**
  *

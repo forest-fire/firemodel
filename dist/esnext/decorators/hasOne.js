@@ -22,7 +22,7 @@ export function belongsTo(fnToModelConstructor, inverse) {
         if (inverseProperty) {
             payload.inverseProperty = inverseProperty;
         }
-        return propertyReflector(Object.assign({}, payload, { type: "String" }), relationshipsByModel);
+        return propertyReflector(Object.assign(Object.assign({}, payload), { type: "String" }), relationshipsByModel);
     }
     catch (e) {
         throw new DecoratorProblem("hasOne", e, { inverse });

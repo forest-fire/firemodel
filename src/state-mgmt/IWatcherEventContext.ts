@@ -1,11 +1,6 @@
 import { SerializedQuery } from "serialized-query";
 import { Model } from "../Model";
-import {
-  IWatchEventClassification,
-  IReduxDispatch,
-  IWatcherSource,
-  ICompositeKey
-} from "..";
+import { IWatchEventClassification, IReduxDispatch, IWatcherSource } from "..";
 import { epoch } from "common-types";
 import { IFmRecordMeta } from "./events";
 

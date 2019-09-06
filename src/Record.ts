@@ -31,7 +31,8 @@ import {
 import {
   IFmModelPropertyMeta,
   IFmRelationshipOptionsForHasMany,
-  createCompositeKey
+  createCompositeKey,
+  DeepRequired
 } from ".";
 import { findWatchers } from "./watchers/findWatchers";
 import { isHasManyRelationship } from "./verifications/isHasManyRelationship";
@@ -579,9 +580,9 @@ export class Record<T extends Model> extends FireModel<T> {
    * Pushes new values onto properties on the record
    * which have been stated to be a "pushKey"
    */
-  public async pushKey<K extends keyof T>(
+  public async pushKey<K extends keyof T, Object>(
     property: K,
-    value: T[K][keyof T[K]]
+    value: T[K][keyof T[K]] | any
   ): Promise<fk> {
     if (this.META.pushKeys.indexOf(property as any) === -1) {
       throw createError(

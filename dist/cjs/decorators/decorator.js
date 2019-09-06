@@ -24,12 +24,12 @@ exports.propertyDecorator = (nameValuePairs = {},
 property) => (target, key) => {
     const reflect = Reflect.getMetadata("design:type", target, key) || {};
     if (nameValuePairs.isProperty) {
-        const meta = Object.assign({}, Reflect.getMetadata(key, target), { type: reflect.name }, nameValuePairs);
+        const meta = Object.assign(Object.assign(Object.assign({}, Reflect.getMetadata(key, target)), { type: reflect.name }), nameValuePairs);
         Reflect.defineMetadata(key, meta, target);
         property_store_1.addPropertyToModelMeta(target.constructor.name, property, meta);
     }
     if (nameValuePairs.isRelationship) {
-        const meta = Object.assign({}, Reflect.getMetadata(key, target), { type: reflect.name }, nameValuePairs);
+        const meta = Object.assign(Object.assign(Object.assign({}, Reflect.getMetadata(key, target)), { type: reflect.name }), nameValuePairs);
         Reflect.defineMetadata(key, meta, target);
         relationship_store_1.addRelationshipToModelMeta(target.constructor.name, property, meta);
     }

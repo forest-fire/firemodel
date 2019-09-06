@@ -2,16 +2,6 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 let chalk;
 class VerboseError extends Error {
-    /**
-     * If you want to use a library like stack-trace(node) or stacktrace-js(client) add in the "get"
-     * function that they provide
-     */
-    static setStackParser(fn) {
-        VerboseError.stackParser = fn;
-    }
-    static stackParser(err) {
-        return undefined;
-    }
     constructor(err, ...args) {
         super(...args);
         this.code = err.code;
@@ -55,6 +45,16 @@ class VerboseError extends Error {
                 .filter(line => line.indexOf("VerboseError") === -1)
                 .join("\n");
         }
+    }
+    /**
+     * If you want to use a library like stack-trace(node) or stacktrace-js(client) add in the "get"
+     * function that they provide
+     */
+    static setStackParser(fn) {
+        VerboseError.stackParser = fn;
+    }
+    static stackParser(err) {
+        return undefined;
     }
     toString() {
         return this.message + this.stack;

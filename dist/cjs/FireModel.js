@@ -154,12 +154,12 @@ class FireModel {
             agg[common_types_1.pathJoin(this.dbPath, curr)] = rec.get(curr);
             return agg;
         }, {});
-        return Object.assign({}, added, removed, updated);
+        return Object.assign(Object.assign(Object.assign({}, added), removed), updated);
     }
 }
+exports.FireModel = FireModel;
 FireModel.auditLogs = "/auditing";
 FireModel._dispatchActive = false;
 /** the dispatch function used to interact with frontend frameworks */
 FireModel._dispatch = defaultDispatch;
-exports.FireModel = FireModel;
 //# sourceMappingURL=FireModel.js.map

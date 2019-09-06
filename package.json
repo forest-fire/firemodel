@@ -1,6 +1,6 @@
 {
   "name": "firemodel",
-  "version": "0.30.7",
+  "version": "0.30.8",
   "description": "Modeling, Access, and Mocking for Firebase Projects",
   "license": "MIT",
   "repository": "https://github.com/forest-fire/firemodel",
@@ -81,7 +81,7 @@
     "ts-node": "^8.3.0",
     "tslint": "^5.18.0",
     "tslint-config-prettier": "^1.18.0",
-    "typescript": "^3.5.3",
+    "typescript": "^3.6.2",
     "vue-property-decorator": "^8.1.1",
     "vuepress": "^1.0.3",
     "vuepress-plugin-autometa": "^0.1.10"

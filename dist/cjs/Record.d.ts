@@ -214,7 +214,7 @@ export declare class Record<T extends Model> extends FireModel<T> {
      * Pushes new values onto properties on the record
      * which have been stated to be a "pushKey"
      */
-    pushKey<K extends keyof T>(property: K, value: T[K][keyof T[K]]): Promise<fk>;
+    pushKey<K extends keyof T, Object>(property: K, value: T[K][keyof T[K]] | any): Promise<fk>;
     /**
      * **update**
      *
