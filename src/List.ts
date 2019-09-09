@@ -9,6 +9,8 @@ import { IReduxDispatch } from "./state-mgmt";
 import { pathJoin } from "./path";
 import { getModelMeta } from "./ModelMeta";
 import { IListOptions } from "./@types/general";
+import { FireModelError } from "./errors";
+import { capitalize } from "./util";
 
 const DEFAULT_IF_NOT_FOUND = "__DO_NOT_USE__";
 
@@ -281,7 +283,7 @@ export class List<T extends Model> extends FireModel<T> {
 
   /**
    * Gives the path in the client state tree to the beginning
-   * where this LIST will reside
+   * where this LIST will reside.
    *
    * Includes `localPrefix` and `pluralName`, but does not include `localPostfix`
    */
@@ -511,8 +513,8 @@ export class List<T extends Model> extends FireModel<T> {
       return dbOffset;
     }
 
-    Object.keys(this._offsets).forEach(prop => {
-      const value = this._offsets[(prop as unknown) as keyof T];
+    Object.keys(this._offsets || {}).forEach((prop: string) => {
+      const value = this._offsets[prop as keyof T];
 
       if (!["string", "number"].includes(typeof value)) {
         throw createError(
@@ -524,6 +526,16 @@ export class List<T extends Model> extends FireModel<T> {
       }
       dbOffset = dbOffset.replace(`:${prop}`, String(value));
     });
+
+    if (dbOffset.includes(":")) {
+      throw new FireModelError(
+        `Attempt to get the dbPath of a List where the underlying model [ ${capitalize(
+          this.modelName
+        )} ] has dynamic path segments which were NOT supplied! The offsets provided were "${JSON.stringify(
+          Object.keys(this._offsets)
+        )}" but this leaves the following uncompleted dbOffset: ${dbOffset}`
+      );
+    }
 
     return dbOffset;
   }
