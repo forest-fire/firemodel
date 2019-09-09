@@ -6,6 +6,8 @@ const common_types_1 = require("common-types");
 const FireModel_1 = require("./FireModel");
 const path_1 = require("./path");
 const ModelMeta_1 = require("./ModelMeta");
+const errors_1 = require("./errors");
+const util_1 = require("./util");
 const DEFAULT_IF_NOT_FOUND = "__DO_NOT_USE__";
 function addTimestamps(obj) {
     const datetime = new Date().getTime();
@@ -199,7 +201,7 @@ class List extends FireModel_1.FireModel {
     }
     /**
      * Gives the path in the client state tree to the beginning
-     * where this LIST will reside
+     * where this LIST will reside.
      *
      * Includes `localPrefix` and `pluralName`, but does not include `localPostfix`
      */
@@ -385,13 +387,16 @@ class List extends FireModel_1.FireModel {
         if (dbOffset.indexOf(":") === -1) {
             return dbOffset;
         }
-        Object.keys(this._offsets).forEach(prop => {
+        Object.keys(this._offsets || {}).forEach((prop) => {
             const value = this._offsets[prop];
             if (!["string", "number"].includes(typeof value)) {
                 throw common_types_1.createError("record/not-allowed", `The dynamic dbOffest is using the property "${prop}" on ${this.modelName} as a part of the route path but that property must be either a string or a number and instead was a ${typeof prop}`);
             }
             dbOffset = dbOffset.replace(`:${prop}`, String(value));
         });
+        if (dbOffset.includes(":")) {
+            throw new errors_1.FireModelError(`Attempt to get the dbPath of a List where the underlying model [ ${util_1.capitalize(this.modelName)} ] has dynamic path segments which were NOT supplied! The offsets provided were "${JSON.stringify(Object.keys(this._offsets))}" but this leaves the following uncompleted dbOffset: ${dbOffset}`);
+        }
         return dbOffset;
     }
 }

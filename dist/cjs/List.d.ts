@@ -77,7 +77,7 @@ export declare class List<T extends Model> extends FireModel<T> {
     readonly dbPath: string;
     /**
      * Gives the path in the client state tree to the beginning
-     * where this LIST will reside
+     * where this LIST will reside.
      *
      * Includes `localPrefix` and `pluralName`, but does not include `localPostfix`
      */

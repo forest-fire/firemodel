@@ -5,12 +5,6 @@ export interface IModelOptions {
     logger?: ILogger;
     db?: import("abstracted-firebase").RealTimeDB;
 }
-export declare type Required<T> = T extends object ? {
-    [P in keyof T]-?: NonNullable<T[P]>;
-} : T;
-export declare type DeepRequired<T, U extends object | undefined = undefined> = T extends object ? {
-    [P in keyof T]-?: NonNullable<T[P]> extends NonNullable<U | Function> ? NonNullable<T[P]> : DeepRequired<NonNullable<T[P]>, U>;
-} : T;
 /**
  * **List Options**
  *
