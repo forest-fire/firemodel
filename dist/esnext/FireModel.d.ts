@@ -78,6 +78,7 @@ export declare class FireModel<T extends Model> {
         connect: (options: Partial<IFirebaseAdminConfig> & IFirebaseConfig) => T;
     }, options: Partial<IFirebaseAdminConfig> & IFirebaseConfig): Promise<T>;
     static register<T extends Model = Model>(model: new () => T): void;
+    static registeredModules(): string[];
     static lookupModel(name: string): new () => any;
     static isBeingWatched(path: string): boolean;
     private static _defaultDb;

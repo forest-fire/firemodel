@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const common_types_1 = require("common-types");
 const ModelMeta_1 = require("./ModelMeta");
-const util_1 = require("@firebase/util");
+const errors_1 = require("./errors");
 // tslint:disable-next-line:no-var-requires
 const pluralize = require("pluralize");
 const defaultDispatch = async (context) => "";
@@ -140,10 +140,13 @@ class FireModel {
         const modelName = model.constructor.name;
         registeredModules[modelName] = model;
     }
+    static registeredModules() {
+        return Object.keys(registeredModules);
+    }
     static lookupModel(name) {
         const model = registeredModules[name];
         if (!name) {
-            throw new util_1.FirebaseError("firemodel/not-allowed", `The model ${name} was NOT registered!`);
+            throw new errors_1.FireModelError(`The model ${name} was NOT registered!`, "firemodel/not-allowed");
         }
         return model;
     }

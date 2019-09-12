@@ -1,6 +1,6 @@
 import { pathJoin } from "common-types";
 import { getModelMeta } from "./ModelMeta";
-import { FirebaseError } from "@firebase/util";
+import { FireModelError } from "./errors";
 // tslint:disable-next-line:no-var-requires
 const pluralize = require("pluralize");
 const defaultDispatch = async (context) => "";
@@ -138,10 +138,13 @@ export class FireModel {
         const modelName = model.constructor.name;
         registeredModules[modelName] = model;
     }
+    static registeredModules() {
+        return Object.keys(registeredModules);
+    }
     static lookupModel(name) {
         const model = registeredModules[name];
         if (!name) {
-            throw new FirebaseError("firemodel/not-allowed", `The model ${name} was NOT registered!`);
+            throw new FireModelError(`The model ${name} was NOT registered!`, "firemodel/not-allowed");
         }
         return model;
     }
