@@ -27,7 +27,6 @@ export function hasMany(
         `firemodel/not-allowed`
       );
     }
-    }
     fnToModelConstructor = () => model;
   }
   try {
