@@ -8,11 +8,16 @@ import {
   IFmRelationshipDirectionality
 } from "./types";
 import { DecoratorProblem } from "../errors/decorators/DecoratorProblem";
+import { FireModel } from "../index";
 
 export function belongsTo<T = Model>(
-  fnToModelConstructor: IFmFunctionToConstructor,
+  fnToModelConstructor: IFmFunctionToConstructor | string,
   inverse?: string | [string, IFmRelationshipDirectionality]
 ) {
+  if (typeof fnToModelConstructor === "string") {
+    const model = FireModel.lookupModel(fnToModelConstructor);
+    fnToModelConstructor = () => model;
+  }
   try {
     let inverseProperty: string | null;
     let directionality: IFmRelationshipDirectionality;

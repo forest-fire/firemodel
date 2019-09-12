@@ -1,7 +1,12 @@
 import { propertyReflector } from "./reflector";
 import { relationshipsByModel } from "./model-meta/relationship-store";
 import { DecoratorProblem } from "../errors/decorators/DecoratorProblem";
+import { FireModel } from "../FireModel";
 export function hasMany(fnToModelConstructor, inverse) {
+    if (typeof fnToModelConstructor === "string") {
+        const model = FireModel.lookupModel(fnToModelConstructor);
+        fnToModelConstructor = () => model;
+    }
     try {
         let inverseProperty;
         let directionality;
