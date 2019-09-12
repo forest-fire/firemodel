@@ -35,6 +35,18 @@ export class Record extends FireModel {
         this._existsOnDB = false;
         this._writeOperations = [];
         this._data = {};
+        if (!model.constructor) {
+            console.log(`The "model" property passed into the Record constructor is NOT a Model constructor! It is of type "${typeof model}": `, model);
+            if (typeof model === "string") {
+                model = FireModel.lookupModel(model);
+                if (!model) {
+                    throw new FireModelError(`Attempted to lookup the model in the registry but it was not found!`);
+                }
+            }
+            else {
+                throw new FireModelError(`Can not instantiate a Record without a valid Model constructor`);
+            }
+        }
         this._modelConstructor = model;
         this._model = new model();
         this._data = new model();
