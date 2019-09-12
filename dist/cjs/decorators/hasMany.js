@@ -3,7 +3,12 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const reflector_1 = require("./reflector");
 const relationship_store_1 = require("./model-meta/relationship-store");
 const DecoratorProblem_1 = require("../errors/decorators/DecoratorProblem");
+const FireModel_1 = require("../FireModel");
 function hasMany(fnToModelConstructor, inverse) {
+    if (typeof fnToModelConstructor === "string") {
+        const model = FireModel_1.FireModel.lookupModel(fnToModelConstructor);
+        fnToModelConstructor = () => model;
+    }
     try {
         let inverseProperty;
         let directionality;
