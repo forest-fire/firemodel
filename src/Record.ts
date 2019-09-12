@@ -492,6 +492,13 @@ export class Record<T extends Model> extends FireModel<T> {
 
   constructor(model: new () => T, protected options: IRecordOptions = {}) {
     super();
+    if (!model) {
+      throw new FireModelError(
+        `You are trying to instantiate a Record but the "model constructor" passed in is empty!`,
+        `firemodel/not-allowed`
+      );
+    }
+
     if (!model.constructor) {
       console.log(
         `The "model" property passed into the Record constructor is NOT a Model constructor! It is of type "${typeof model}": `,

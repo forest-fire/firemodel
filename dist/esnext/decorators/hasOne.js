@@ -2,9 +2,13 @@ import { propertyReflector } from "./reflector";
 import { relationshipsByModel } from "./model-meta/relationship-store";
 import { DecoratorProblem } from "../errors/decorators/DecoratorProblem";
 import { FireModel } from "../index";
+import { FireModelError } from "../errors/FireModelError";
 export function belongsTo(fnToModelConstructor, inverse) {
     if (typeof fnToModelConstructor === "string") {
         const model = FireModel.lookupModel(fnToModelConstructor);
+        if (!model) {
+            throw new FireModelError(`attempt to lookup "${fnToModelConstructor}" as pre-registered Model failed! ${inverse ? `[ inverse prop was "${inverse}"]` : ""}`, `firemodel/not-allowed`);
+        }
         fnToModelConstructor = () => model;
     }
     try {

@@ -35,6 +35,9 @@ export class Record extends FireModel {
         this._existsOnDB = false;
         this._writeOperations = [];
         this._data = {};
+        if (!model) {
+            throw new FireModelError(`You are trying to instantiate a Record but the "model constructor" passed in is empty!`, `firemodel/not-allowed`);
+        }
         if (!model.constructor) {
             console.log(`The "model" property passed into the Record constructor is NOT a Model constructor! It is of type "${typeof model}": `, model);
             if (typeof model === "string") {
