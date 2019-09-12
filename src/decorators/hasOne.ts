@@ -9,7 +9,10 @@ import {
 } from "./types";
 import { DecoratorProblem } from "../errors/decorators/DecoratorProblem";
 import { FireModelError } from "../errors/FireModelError";
-import { modelLookup } from "../record/relationships/modelRegistration";
+import {
+  modelLookup,
+  listRegisteredModels
+} from "../record/relationships/modelRegistration";
 
 export function belongsTo<T = Model>(
   fnToModelConstructor: IFmFunctionToConstructor | string,
@@ -17,16 +20,16 @@ export function belongsTo<T = Model>(
 ) {
   if (typeof fnToModelConstructor === "string") {
     const model = modelLookup(fnToModelConstructor);
-    // if (!model) {
-    //   throw new FireModelError(
-    //     `attempt to lookup "${fnToModelConstructor}" as pre-registered Model failed! ${
-    //       inverse ? `[ inverse prop was "${inverse}"]` : ""
-    //     }. The registered models found were: ${FireModel.registeredModules().join(
-    //       ", "
-    //     )}`,
-    //     `firemodel/not-allowed`
-    //   );
-    // }
+    if (!model) {
+      throw new FireModelError(
+        `attempt to lookup "${fnToModelConstructor}" as pre-registered Model failed! ${
+          inverse ? `[ inverse prop was "${inverse}"]` : ""
+        }. The registered models found were: ${listRegisteredModels().join(
+          ", "
+        )}`,
+        `firemodel/not-allowed`
+      );
+    }
     fnToModelConstructor = () => model;
   }
   try {

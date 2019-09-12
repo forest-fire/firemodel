@@ -3,20 +3,14 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const reflector_1 = require("./reflector");
 const relationship_store_1 = require("./model-meta/relationship-store");
 const DecoratorProblem_1 = require("../errors/decorators/DecoratorProblem");
+const FireModelError_1 = require("../errors/FireModelError");
 const modelRegistration_1 = require("../record/relationships/modelRegistration");
 function belongsTo(fnToModelConstructor, inverse) {
     if (typeof fnToModelConstructor === "string") {
         const model = modelRegistration_1.modelLookup(fnToModelConstructor);
-        // if (!model) {
-        //   throw new FireModelError(
-        //     `attempt to lookup "${fnToModelConstructor}" as pre-registered Model failed! ${
-        //       inverse ? `[ inverse prop was "${inverse}"]` : ""
-        //     }. The registered models found were: ${FireModel.registeredModules().join(
-        //       ", "
-        //     )}`,
-        //     `firemodel/not-allowed`
-        //   );
-        // }
+        if (!model) {
+            throw new FireModelError_1.FireModelError(`attempt to lookup "${fnToModelConstructor}" as pre-registered Model failed! ${inverse ? `[ inverse prop was "${inverse}"]` : ""}. The registered models found were: ${modelRegistration_1.listRegisteredModels().join(", ")}`, `firemodel/not-allowed`);
+        }
         fnToModelConstructor = () => model;
     }
     try {

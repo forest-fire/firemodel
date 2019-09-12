@@ -1,20 +1,14 @@
 import { propertyReflector } from "./reflector";
 import { relationshipsByModel } from "./model-meta/relationship-store";
 import { DecoratorProblem } from "../errors/decorators/DecoratorProblem";
-import { modelLookup } from "../record/relationships/modelRegistration";
+import { FireModelError } from "../errors";
+import { modelLookup, listRegisteredModels } from "../record/relationships/modelRegistration";
 export function hasMany(fnToModelConstructor, inverse) {
     if (typeof fnToModelConstructor === "string") {
         const model = modelLookup(fnToModelConstructor);
-        // if (!model) {
-        //   throw new FireModelError(
-        //     `attempt to lookup "${fnToModelConstructor}" as pre-registered Model failed! ${
-        //       inverse ? `[ inverse prop was "${inverse}"]` : ""
-        //     }. The registered models found were: ${FireModel.registeredModules().join(
-        //       ", "
-        //     )}`,
-        //     `firemodel/not-allowed`
-        //   );
-        // }
+        if (!model) {
+            throw new FireModelError(`attempt to lookup "${fnToModelConstructor}" as pre-registered Model failed! ${inverse ? `[ inverse prop was "${inverse}"]` : ""}. The registered models found were: ${listRegisteredModels().join(", ")}`, `firemodel/not-allowed`);
+        }
         fnToModelConstructor = () => model;
     }
     try {
