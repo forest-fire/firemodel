@@ -1,6 +1,7 @@
 export * from "./decorators/index";
 export { Model } from "./Model";
 export * from "./Record";
+export * from "./record/relationships/modelRegistration";
 export { List } from "./List";
 export { Mock } from "./Mock";
 export { FireModel } from "./FireModel";

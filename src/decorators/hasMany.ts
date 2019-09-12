@@ -10,6 +10,7 @@ import {
 import { DecoratorProblem } from "../errors/decorators/DecoratorProblem";
 import { FireModel } from "../FireModel";
 import { FireModelError } from "../errors";
+import { modelLookup } from "../record/relationships/modelRegistration";
 
 export type IFmHasMany<T = true> = IDictionary<T>;
 
@@ -18,17 +19,17 @@ export function hasMany(
   inverse?: string | [string, IFmRelationshipDirectionality]
 ) {
   if (typeof fnToModelConstructor === "string") {
-    const model = FireModel.lookupModel(fnToModelConstructor);
-    if (!model) {
-      throw new FireModelError(
-        `attempt to lookup "${fnToModelConstructor}" as pre-registered Model failed! ${
-          inverse ? `[ inverse prop was "${inverse}"]` : ""
-        }. The registered models found were: ${FireModel.registeredModules().join(
-          ", "
-        )}`,
-        `firemodel/not-allowed`
-      );
-    }
+    const model = modelLookup(fnToModelConstructor);
+    // if (!model) {
+    //   throw new FireModelError(
+    //     `attempt to lookup "${fnToModelConstructor}" as pre-registered Model failed! ${
+    //       inverse ? `[ inverse prop was "${inverse}"]` : ""
+    //     }. The registered models found were: ${FireModel.registeredModules().join(
+    //       ", "
+    //     )}`,
+    //     `firemodel/not-allowed`
+    //   );
+    // }
     fnToModelConstructor = () => model;
   }
   try {

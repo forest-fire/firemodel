@@ -1,6 +1,6 @@
 import { pathJoin } from "common-types";
 import { getModelMeta } from "./ModelMeta";
-import { FireModelError } from "./errors";
+import { modelRegister, listRegisteredModels, modelLookup } from "./record/relationships/modelRegistration";
 // tslint:disable-next-line:no-var-requires
 const pluralize = require("pluralize");
 const defaultDispatch = async (context) => "";
@@ -135,18 +135,13 @@ export class FireModel {
         return db;
     }
     static register(model) {
-        const modelName = model.constructor.name;
-        registeredModules[modelName] = model;
+        modelRegister(model);
     }
-    static registeredModules() {
-        return Object.keys(registeredModules);
+    static listRegisteredModels() {
+        return listRegisteredModels();
     }
     static lookupModel(name) {
-        const model = registeredModules[name];
-        if (!name) {
-            throw new FireModelError(`The model ${name} was NOT registered!`, "firemodel/not-allowed");
-        }
-        return model;
+        return modelLookup(name);
     }
     //#region STATIC INTERFACE
     static isBeingWatched(path) {

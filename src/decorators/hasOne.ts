@@ -8,25 +8,25 @@ import {
   IFmRelationshipDirectionality
 } from "./types";
 import { DecoratorProblem } from "../errors/decorators/DecoratorProblem";
-import { FireModel } from "../index";
 import { FireModelError } from "../errors/FireModelError";
+import { modelLookup } from "../record/relationships/modelRegistration";
 
 export function belongsTo<T = Model>(
   fnToModelConstructor: IFmFunctionToConstructor | string,
   inverse?: string | [string, IFmRelationshipDirectionality]
 ) {
   if (typeof fnToModelConstructor === "string") {
-    const model = FireModel.lookupModel(fnToModelConstructor);
-    if (!model) {
-      throw new FireModelError(
-        `attempt to lookup "${fnToModelConstructor}" as pre-registered Model failed! ${
-          inverse ? `[ inverse prop was "${inverse}"]` : ""
-        }. The registered models found were: ${FireModel.registeredModules().join(
-          ", "
-        )}`,
-        `firemodel/not-allowed`
-      );
-    }
+    const model = modelLookup(fnToModelConstructor);
+    // if (!model) {
+    //   throw new FireModelError(
+    //     `attempt to lookup "${fnToModelConstructor}" as pre-registered Model failed! ${
+    //       inverse ? `[ inverse prop was "${inverse}"]` : ""
+    //     }. The registered models found were: ${FireModel.registeredModules().join(
+    //       ", "
+    //     )}`,
+    //     `firemodel/not-allowed`
+    //   );
+    // }
     fnToModelConstructor = () => model;
   }
   try {

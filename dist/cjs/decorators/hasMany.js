@@ -3,14 +3,20 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const reflector_1 = require("./reflector");
 const relationship_store_1 = require("./model-meta/relationship-store");
 const DecoratorProblem_1 = require("../errors/decorators/DecoratorProblem");
-const FireModel_1 = require("../FireModel");
-const errors_1 = require("../errors");
+const modelRegistration_1 = require("../record/relationships/modelRegistration");
 function hasMany(fnToModelConstructor, inverse) {
     if (typeof fnToModelConstructor === "string") {
-        const model = FireModel_1.FireModel.lookupModel(fnToModelConstructor);
-        if (!model) {
-            throw new errors_1.FireModelError(`attempt to lookup "${fnToModelConstructor}" as pre-registered Model failed! ${inverse ? `[ inverse prop was "${inverse}"]` : ""}. The registered models found were: ${FireModel_1.FireModel.registeredModules().join(", ")}`, `firemodel/not-allowed`);
-        }
+        const model = modelRegistration_1.modelLookup(fnToModelConstructor);
+        // if (!model) {
+        //   throw new FireModelError(
+        //     `attempt to lookup "${fnToModelConstructor}" as pre-registered Model failed! ${
+        //       inverse ? `[ inverse prop was "${inverse}"]` : ""
+        //     }. The registered models found were: ${FireModel.registeredModules().join(
+        //       ", "
+        //     )}`,
+        //     `firemodel/not-allowed`
+        //   );
+        // }
         fnToModelConstructor = () => model;
     }
     try {

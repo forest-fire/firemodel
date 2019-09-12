@@ -16,6 +16,11 @@ import {
 } from "./decorators/types";
 import { IFmChangedProperties } from "./@types";
 import { FireModelError } from "./errors";
+import {
+  modelRegister,
+  listRegisteredModels,
+  modelLookup
+} from "./record/relationships/modelRegistration";
 
 // tslint:disable-next-line:no-var-requires
 const pluralize = require("pluralize");
@@ -182,24 +187,15 @@ const db = await FireModel.connect(DB, options);
   }
 
   public static register<T extends Model = Model>(model: new () => T) {
-    const modelName = model.constructor.name;
-    registeredModules[modelName] = model;
+    modelRegister(model);
   }
 
-  public static registeredModules() {
-    return Object.keys(registeredModules);
+  public static listRegisteredModels() {
+    return listRegisteredModels();
   }
 
   public static lookupModel(name: string) {
-    const model = registeredModules[name];
-    if (!name) {
-      throw new FireModelError(
-        `The model ${name} was NOT registered!`,
-        "firemodel/not-allowed"
-      );
-    }
-
-    return model;
+    return modelLookup(name);
   }
 
   //#region STATIC INTERFACE
