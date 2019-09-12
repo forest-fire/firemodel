@@ -4,9 +4,13 @@ const reflector_1 = require("./reflector");
 const relationship_store_1 = require("./model-meta/relationship-store");
 const DecoratorProblem_1 = require("../errors/decorators/DecoratorProblem");
 const FireModel_1 = require("../FireModel");
+const errors_1 = require("../errors");
 function hasMany(fnToModelConstructor, inverse) {
     if (typeof fnToModelConstructor === "string") {
         const model = FireModel_1.FireModel.lookupModel(fnToModelConstructor);
+        if (!model) {
+            throw new errors_1.FireModelError(`attempt to lookup "${fnToModelConstructor}" as pre-registered Model failed!`, `firemodel/not-allowed`);
+        }
         fnToModelConstructor = () => model;
     }
     try {
