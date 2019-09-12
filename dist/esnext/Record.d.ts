@@ -132,7 +132,7 @@ export declare class Record<T extends Model> extends FireModel<T> {
      * @param payload the data for the new record; this optionally can include the "id" but if left off the new record will use a firebase pushkey
      * @param options
      */
-    static add<T extends Model>(model: new () => T, payload: ModelOptionalId<T>, options?: IRecordOptions): Promise<Record<T>>;
+    static add<T extends Model>(model: (new () => T) | string, payload: ModelOptionalId<T>, options?: IRecordOptions): Promise<Record<T>>;
     /**
      * **update**
      *

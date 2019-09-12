@@ -15,9 +15,12 @@ import {
   IFmModelRelationshipMeta
 } from "./decorators/types";
 import { IFmChangedProperties } from "./@types";
+import { FirebaseError } from "@firebase/util";
 // tslint:disable-next-line:no-var-requires
 const pluralize = require("pluralize");
 const defaultDispatch: IReduxDispatch<any, any> = async context => "";
+
+const registeredModules: IDictionary<new () => any> = {};
 
 export class FireModel<T extends Model> {
   public static get defaultDb() {
@@ -175,6 +178,23 @@ const db = await FireModel.connect(DB, options);
     const db = await RTDB.connect(options);
     FireModel.defaultDb = db;
     return db;
+  }
+
+  public static register<T extends Model = Model>(model: new () => T) {
+    const modelName = model.constructor.name;
+    registeredModules[modelName] = model;
+  }
+
+  public static lookupModel(name: string) {
+    const model = registeredModules[name];
+    if (!name) {
+      throw new FirebaseError(
+        "firemodel/not-allowed",
+        `The model ${name} was NOT registered!`
+      );
+    }
+
+    return model;
   }
 
   //#region STATIC INTERFACE

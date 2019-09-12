@@ -230,6 +230,9 @@ export class Record extends FireModel {
      */
     static async add(model, payload, options = {}) {
         let r;
+        if (typeof model === "string") {
+            model = FireModel.lookupModel(model);
+        }
         try {
             if (!model) {
                 throw new FireModelError(`The model passed into the Record.add() static initializer was not defined! This is often the result of a circular dependency. Note that the "payload" sent into Record.add() was:\n\n${JSON.stringify(payload, null, 2)}`);
