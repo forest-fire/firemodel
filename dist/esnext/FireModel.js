@@ -1,8 +1,10 @@
 import { pathJoin } from "common-types";
 import { getModelMeta } from "./ModelMeta";
+import { FirebaseError } from "@firebase/util";
 // tslint:disable-next-line:no-var-requires
 const pluralize = require("pluralize");
 const defaultDispatch = async (context) => "";
+const registeredModules = {};
 export class FireModel {
     static get defaultDb() {
         return FireModel._defaultDb;
@@ -131,6 +133,17 @@ export class FireModel {
         const db = await RTDB.connect(options);
         FireModel.defaultDb = db;
         return db;
+    }
+    static register(model) {
+        const modelName = model.constructor.name;
+        registeredModules[modelName] = model;
+    }
+    static lookupModel(name) {
+        const model = registeredModules[name];
+        if (!name) {
+            throw new FirebaseError("firemodel/not-allowed", `The model ${name} was NOT registered!`);
+        }
+        return model;
     }
     //#region STATIC INTERFACE
     static isBeingWatched(path) {

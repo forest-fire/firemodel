@@ -315,11 +315,14 @@ export class Record<T extends Model> extends FireModel<T> {
    * @param options
    */
   public static async add<T extends Model>(
-    model: new () => T,
+    model: (new () => T) | string,
     payload: ModelOptionalId<T>,
     options: IRecordOptions = {}
   ) {
     let r: Record<T>;
+    if (typeof model === "string") {
+      model = FireModel.lookupModel(model);
+    }
     try {
       if (!model) {
         throw new FireModelError(
