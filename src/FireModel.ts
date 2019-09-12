@@ -15,7 +15,8 @@ import {
   IFmModelRelationshipMeta
 } from "./decorators/types";
 import { IFmChangedProperties } from "./@types";
-import { FirebaseError } from "@firebase/util";
+import { FireModelError } from "./errors";
+
 // tslint:disable-next-line:no-var-requires
 const pluralize = require("pluralize");
 const defaultDispatch: IReduxDispatch<any, any> = async context => "";
@@ -185,12 +186,16 @@ const db = await FireModel.connect(DB, options);
     registeredModules[modelName] = model;
   }
 
+  public static registeredModules() {
+    return Object.keys(registeredModules);
+  }
+
   public static lookupModel(name: string) {
     const model = registeredModules[name];
     if (!name) {
-      throw new FirebaseError(
-        "firemodel/not-allowed",
-        `The model ${name} was NOT registered!`
+      throw new FireModelError(
+        `The model ${name} was NOT registered!`,
+        "firemodel/not-allowed"
       );
     }
 

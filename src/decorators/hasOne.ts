@@ -21,7 +21,9 @@ export function belongsTo<T = Model>(
       throw new FireModelError(
         `attempt to lookup "${fnToModelConstructor}" as pre-registered Model failed! ${
           inverse ? `[ inverse prop was "${inverse}"]` : ""
-        }`,
+        }. The registered models found were: ${FireModel.registeredModules().join(
+          ", "
+        )}`,
         `firemodel/not-allowed`
       );
     }

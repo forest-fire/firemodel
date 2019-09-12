@@ -9,7 +9,7 @@ function hasMany(fnToModelConstructor, inverse) {
     if (typeof fnToModelConstructor === "string") {
         const model = FireModel_1.FireModel.lookupModel(fnToModelConstructor);
         if (!model) {
-            throw new errors_1.FireModelError(`attempt to lookup "${fnToModelConstructor}" as pre-registered Model failed! ${inverse ? `[ inverse prop was "${inverse}"]` : ""}`, `firemodel/not-allowed`);
+            throw new errors_1.FireModelError(`attempt to lookup "${fnToModelConstructor}" as pre-registered Model failed! ${inverse ? `[ inverse prop was "${inverse}"]` : ""}. The registered models found were: ${FireModel_1.FireModel.registeredModules().join(", ")}`, `firemodel/not-allowed`);
         }
         fnToModelConstructor = () => model;
     }
