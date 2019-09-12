@@ -231,6 +231,9 @@ export class Record extends FireModel {
     static async add(model, payload, options = {}) {
         let r;
         try {
+            if (!model) {
+                throw new FireModelError(`The model passed into the Record.add() static initializer was not defined! This is often the result of a circular dependency. Note that the "payload" sent into Record.add() was:\n\n${JSON.stringify(payload, null, 2)}`);
+            }
             r = Record.createWith(model, payload, options);
             if (!payload.id) {
                 payload.id = r.db.isMockDb
@@ -254,7 +257,7 @@ export class Record extends FireModel {
             if (e.name.includes("firemodel")) {
                 throw e;
             }
-            throw new FireModelProxyError(e, "Failed to add new record");
+            throw new FireModelProxyError(e, "Failed to add new record ");
         }
         return r;
     }

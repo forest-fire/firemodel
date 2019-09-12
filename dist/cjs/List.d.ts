@@ -4,7 +4,7 @@ import { SerializedQuery, IComparisonOperator } from "serialized-query";
 import { epochWithMilliseconds, IDictionary } from "common-types";
 import { FireModel } from "./FireModel";
 import { RealTimeDB } from "abstracted-firebase";
-import { IReduxDispatch } from "./state-mgmt";
+import { IReduxDispatch } from "./state-mgmt/index";
 import { IListOptions } from "./@types/general";
 export declare class List<T extends Model> extends FireModel<T> {
     /**

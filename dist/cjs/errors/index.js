@@ -7,7 +7,7 @@ __export(require("./FireModelError"));
 __export(require("./FireModelProxyError"));
 __export(require("./relationships/index"));
 __export(require("./mocks/MockError"));
-__export(require("./decorators"));
-__export(require("./relationships"));
+__export(require("./decorators/index"));
+__export(require("./relationships/index"));
 __export(require("./DynamicPropertiesNotReady"));
 //# sourceMappingURL=index.js.map

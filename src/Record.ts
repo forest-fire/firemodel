@@ -6,7 +6,6 @@ import { key as fbKey } from "firebase-key";
 import { FireModel } from "./FireModel";
 import {
   IReduxDispatch,
-  IFmLocalEvent,
   IFmLocalRecordEvent,
   IWatcherEventContext
 } from "./state-mgmt";
@@ -322,6 +321,15 @@ export class Record<T extends Model> extends FireModel<T> {
   ) {
     let r: Record<T>;
     try {
+      if (!model) {
+        throw new FireModelError(
+          `The model passed into the Record.add() static initializer was not defined! This is often the result of a circular dependency. Note that the "payload" sent into Record.add() was:\n\n${JSON.stringify(
+            payload,
+            null,
+            2
+          )}`
+        );
+      }
       r = Record.createWith(model, payload as Partial<T>, options);
 
       if (!payload.id) {
@@ -356,7 +364,7 @@ export class Record<T extends Model> extends FireModel<T> {
         throw e;
       }
 
-      throw new FireModelProxyError(e, "Failed to add new record");
+      throw new FireModelProxyError(e, "Failed to add new record ");
     }
 
     return r;

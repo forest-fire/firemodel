@@ -5,7 +5,7 @@ import { epochWithMilliseconds, IDictionary, createError } from "common-types";
 import { FireModel } from "./FireModel";
 // tslint:disable-next-line:no-implicit-dependencies
 import { RealTimeDB } from "abstracted-firebase";
-import { IReduxDispatch } from "./state-mgmt";
+import { IReduxDispatch } from "./state-mgmt/index";
 import { pathJoin } from "./path";
 import { getModelMeta } from "./ModelMeta";
 import { IListOptions } from "./@types/general";
