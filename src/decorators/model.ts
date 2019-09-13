@@ -27,7 +27,6 @@ export function model(options: Partial<IFmModelMeta> = {}) {
     // Function to add META to the model
     function addMetaProperty() {
       const modelOfObject = new target();
-      modelRegister(target);
 
       if (options.audit === undefined) {
         options.audit = false;
@@ -95,6 +94,12 @@ export function model(options: Partial<IFmModelMeta> = {}) {
         configurable: false,
         enumerable: false
       });
+      if (target) {
+        modelRegister(target);
+      } else {
+        console.log("target missing");
+      }
+
       return target;
     }
 
@@ -102,6 +107,7 @@ export function model(options: Partial<IFmModelMeta> = {}) {
     addMetaProperty.prototype = target.prototype;
 
     // return new constructor (will override original)
+
     return addMetaProperty();
   };
 }

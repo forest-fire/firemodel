@@ -5,14 +5,12 @@ import { getDbIndexes } from "./indexing";
 import { getModelProperty, getProperties, isProperty } from "./model-meta/property-store";
 import { getModelRelationship, isRelationship, getRelationships } from "./model-meta/relationship-store";
 import { modelRegister } from "../record/relationships/modelRegistration";
-/* tslint:disable:only-arrow-functions */
 export function model(options = {}) {
     let isDirty = false;
     return function decorateModel(target) {
         // Function to add META to the model
         function addMetaProperty() {
             const modelOfObject = new target();
-            modelRegister(target);
             if (options.audit === undefined) {
                 options.audit = false;
             }
@@ -51,6 +49,12 @@ export function model(options = {}) {
                 configurable: false,
                 enumerable: false
             });
+            if (target) {
+                modelRegister(target);
+            }
+            else {
+                console.log("target missing");
+            }
             return target;
         }
         // copy prototype so intanceof operator still works

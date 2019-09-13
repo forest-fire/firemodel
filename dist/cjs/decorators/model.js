@@ -7,14 +7,12 @@ const indexing_1 = require("./indexing");
 const property_store_1 = require("./model-meta/property-store");
 const relationship_store_1 = require("./model-meta/relationship-store");
 const modelRegistration_1 = require("../record/relationships/modelRegistration");
-/* tslint:disable:only-arrow-functions */
 function model(options = {}) {
     let isDirty = false;
     return function decorateModel(target) {
         // Function to add META to the model
         function addMetaProperty() {
             const modelOfObject = new target();
-            modelRegistration_1.modelRegister(target);
             if (options.audit === undefined) {
                 options.audit = false;
             }
@@ -53,6 +51,12 @@ function model(options = {}) {
                 configurable: false,
                 enumerable: false
             });
+            if (target) {
+                modelRegistration_1.modelRegister(target);
+            }
+            else {
+                console.log("target missing");
+            }
             return target;
         }
         // copy prototype so intanceof operator still works
