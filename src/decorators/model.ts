@@ -95,6 +95,9 @@ export function model(options: Partial<IFmModelMeta> = {}) {
         enumerable: false
       });
       if (target) {
+        console.log("target model is:", target);
+        console.log("class name: ", new target().constructor.name);
+
         modelRegister(target);
       } else {
         console.log("target missing");

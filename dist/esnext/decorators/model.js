@@ -50,6 +50,8 @@ export function model(options = {}) {
                 enumerable: false
             });
             if (target) {
+                console.log("target model is:", target);
+                console.log("class name: ", new target().constructor.name);
                 modelRegister(target);
             }
             else {

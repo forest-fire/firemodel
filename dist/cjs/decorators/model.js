@@ -52,6 +52,8 @@ function model(options = {}) {
                 enumerable: false
             });
             if (target) {
+                console.log("target model is:", target);
+                console.log("class name: ", new target().constructor.name);
                 modelRegistration_1.modelRegister(target);
             }
             else {
