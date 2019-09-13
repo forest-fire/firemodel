@@ -8,15 +8,19 @@ const registeredModels = {};
  *
  * @param model a class constructor derived from `Model`
  */
-function modelRegister(model) {
-    if (!model) {
-        throw new index_1.FireModelError(`An attempt was made to register a Model subclass but the passed in constructor was undefined!`, "firemodel/not-allowed");
-    }
-    if (typeof model !== "function" || !model.constructor) {
-        throw new index_1.FireModelError(`An attempt was made to register a Model subclass but the passed in constructor was the wrong type [ ${typeof model} ]!\nmodel passed was: ${model}`, "firemodel/not-allowed");
-    }
-    const modelName = new model().constructor.name;
-    registeredModels[modelName] = model;
+function modelRegister(...models) {
+    models.forEach(model => {
+        if (!model) {
+            throw new index_1.FireModelError(`An attempt was made to register a Model subclass but the passed in constructor was undefined!${models.length > 0
+                ? ` [ ${models.length} models being registed during this call ]`
+                : ""}`, "firemodel/not-allowed");
+        }
+        if (typeof model !== "function" || !model.constructor) {
+            throw new index_1.FireModelError(`An attempt was made to register a Model subclass but the passed in constructor was the wrong type [ ${typeof model} ]!\nmodel passed was: ${model}`, "firemodel/not-allowed");
+        }
+        const modelName = new model().constructor.name;
+        registeredModels[modelName] = model;
+    });
 }
 exports.modelRegister = modelRegister;
 function listRegisteredModels() {
