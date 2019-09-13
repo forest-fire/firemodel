@@ -4,6 +4,7 @@ import { addModelMeta } from "../ModelMeta";
 import { getDbIndexes } from "./indexing";
 import { getModelProperty, getProperties, isProperty } from "./model-meta/property-store";
 import { getModelRelationship, isRelationship, getRelationships } from "./model-meta/relationship-store";
+import { modelRegister } from "../record/relationships/modelRegistration";
 /* tslint:disable:only-arrow-functions */
 export function model(options = {}) {
     let isDirty = false;
@@ -11,6 +12,7 @@ export function model(options = {}) {
         // Function to add META to the model
         function addMetaProperty() {
             const modelOfObject = new target();
+            modelRegister(target);
             if (options.audit === undefined) {
                 options.audit = false;
             }

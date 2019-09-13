@@ -1,5 +1,5 @@
 import "reflect-metadata";
-import { IDictionary, ClassDecorator } from "common-types";
+import { IDictionary } from "common-types";
 import { getPushKeys } from "./decorator";
 import { addModelMeta } from "../ModelMeta";
 import { getDbIndexes } from "./indexing";
@@ -16,7 +16,7 @@ import {
 import { IFmModelMeta } from "./types";
 import { Model } from "../Model";
 import { FmModelConstructor } from "../@types/general";
-/* tslint:disable:only-arrow-functions */
+import { modelRegister } from "../record/relationships/modelRegistration";
 
 export function model(options: Partial<IFmModelMeta> = {}) {
   let isDirty: boolean = false;
@@ -27,6 +27,7 @@ export function model(options: Partial<IFmModelMeta> = {}) {
     // Function to add META to the model
     function addMetaProperty() {
       const modelOfObject = new target();
+      modelRegister(target);
 
       if (options.audit === undefined) {
         options.audit = false;
@@ -39,9 +40,7 @@ export function model(options: Partial<IFmModelMeta> = {}) {
         )
       ) {
         console.log(
-          `You set the audit property to "${
-            options.audit
-          }" which is invalid. Valid properties are true, false, and "server". The audit property will be set to false for now.`
+          `You set the audit property to "${options.audit}" which is invalid. Valid properties are true, false, and "server". The audit property will be set to false for now.`
         );
         options.audit = false;
       }

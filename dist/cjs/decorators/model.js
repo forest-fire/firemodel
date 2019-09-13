@@ -6,6 +6,7 @@ const ModelMeta_1 = require("../ModelMeta");
 const indexing_1 = require("./indexing");
 const property_store_1 = require("./model-meta/property-store");
 const relationship_store_1 = require("./model-meta/relationship-store");
+const modelRegistration_1 = require("../record/relationships/modelRegistration");
 /* tslint:disable:only-arrow-functions */
 function model(options = {}) {
     let isDirty = false;
@@ -13,6 +14,7 @@ function model(options = {}) {
         // Function to add META to the model
         function addMetaProperty() {
             const modelOfObject = new target();
+            modelRegistration_1.modelRegister(target);
             if (options.audit === undefined) {
                 options.audit = false;
             }
