@@ -7,7 +7,7 @@ import { Model } from "../../Model";
  */
 export declare function modelRegister<T extends Model = Model>(model: new () => T): void;
 export declare function listRegisteredModels(): string[];
-export declare function modelLookup(name: string): new () => any;
+export declare function modelRegistryLookup(name: string): new () => any;
 export declare type IModelConstructor<T extends Model = any> = new () => IModelSubclass<T>;
 /**
  * a _function_ which when executed returns the constructor

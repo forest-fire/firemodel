@@ -23,14 +23,14 @@ function listRegisteredModels() {
     return Object.keys(registeredModels);
 }
 exports.listRegisteredModels = listRegisteredModels;
-function modelLookup(name) {
+function modelRegistryLookup(name) {
     const model = registeredModels[name];
     if (!name) {
-        throw new index_1.FireModelError(`The model ${name} was NOT registered!`, "firemodel/not-allowed");
+        throw new index_1.FireModelError(`Look failed because the model ${name} was not registered!`, "firemodel/not-allowed");
     }
     return model;
 }
-exports.modelLookup = modelLookup;
+exports.modelRegistryLookup = modelRegistryLookup;
 /**
  * When you are building relationships to other `Model`'s it is often
  * benefitial to just pass in the name of the `Model` rather than it's
@@ -39,7 +39,7 @@ exports.modelLookup = modelLookup;
  * on one another.
  */
 exports.modelNameLookup = (name) => () => {
-    return modelLookup(name);
+    return modelRegistryLookup(name);
 };
 /**
  * When you are defining a _relationship_ between `Model`'s it sometimes
@@ -57,6 +57,8 @@ exports.modelConstructorLookup = (constructor) => () => {
 function isConstructable(fn) {
     try {
         const f = new fn();
+        console.log("isConstructable");
+        console.log("class name:", fn.constructor.name);
         return true;
     }
     catch (e) {

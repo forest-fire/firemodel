@@ -10,7 +10,7 @@ import {
 import { DecoratorProblem } from "../errors/decorators/DecoratorProblem";
 import { FireModelError } from "../errors/FireModelError";
 import {
-  modelLookup,
+  modelRegistryLookup,
   listRegisteredModels,
   modelNameLookup,
   modelConstructorLookup,

@@ -19,10 +19,10 @@ export function modelRegister(model) {
 export function listRegisteredModels() {
     return Object.keys(registeredModels);
 }
-export function modelLookup(name) {
+export function modelRegistryLookup(name) {
     const model = registeredModels[name];
     if (!name) {
-        throw new FireModelError(`The model ${name} was NOT registered!`, "firemodel/not-allowed");
+        throw new FireModelError(`Look failed because the model ${name} was not registered!`, "firemodel/not-allowed");
     }
     return model;
 }
@@ -34,7 +34,7 @@ export function modelLookup(name) {
  * on one another.
  */
 export const modelNameLookup = (name) => () => {
-    return modelLookup(name);
+    return modelRegistryLookup(name);
 };
 /**
  * When you are defining a _relationship_ between `Model`'s it sometimes
@@ -52,6 +52,8 @@ export const modelConstructorLookup = (constructor) => () => {
 export function isConstructable(fn) {
     try {
         const f = new fn();
+        console.log("isConstructable");
+        console.log("class name:", fn.constructor.name);
         return true;
     }
     catch (e) {

@@ -32,11 +32,11 @@ export function listRegisteredModels() {
   return Object.keys(registeredModels);
 }
 
-export function modelLookup(name: string) {
+export function modelRegistryLookup(name: string) {
   const model = registeredModels[name];
   if (!name) {
     throw new FireModelError(
-      `The model ${name} was NOT registered!`,
+      `Look failed because the model ${name} was not registered!`,
       "firemodel/not-allowed"
     );
   }
@@ -66,7 +66,7 @@ export type IModelSubclass<T extends Model> = T;
  * on one another.
  */
 export const modelNameLookup = (name: string) => (): IModelConstructor => {
-  return modelLookup(name);
+  return modelRegistryLookup(name);
 };
 
 /**
@@ -88,6 +88,9 @@ export const modelConstructorLookup = <T extends Model>(
 export function isConstructable(fn: Function | (new () => any)) {
   try {
     const f = new (fn as (new () => any))();
+    console.log("isConstructable");
+    console.log("class name:", fn.constructor.name);
+
     return true;
   } catch (e) {
     return false;

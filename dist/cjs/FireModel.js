@@ -143,7 +143,7 @@ class FireModel {
         return modelRegistration_1.listRegisteredModels();
     }
     static lookupModel(name) {
-        return modelRegistration_1.modelLookup(name);
+        return modelRegistration_1.modelRegistryLookup(name);
     }
     //#region STATIC INTERFACE
     static isBeingWatched(path) {

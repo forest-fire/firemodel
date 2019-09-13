@@ -1,6 +1,6 @@
 import { pathJoin } from "common-types";
 import { getModelMeta } from "./ModelMeta";
-import { modelRegister, listRegisteredModels, modelLookup } from "./record/relationships/modelRegistration";
+import { modelRegister, listRegisteredModels, modelRegistryLookup } from "./record/relationships/modelRegistration";
 // tslint:disable-next-line:no-var-requires
 const pluralize = require("pluralize");
 const defaultDispatch = async (context) => "";
@@ -141,7 +141,7 @@ export class FireModel {
         return listRegisteredModels();
     }
     static lookupModel(name) {
-        return modelLookup(name);
+        return modelRegistryLookup(name);
     }
     //#region STATIC INTERFACE
     static isBeingWatched(path) {

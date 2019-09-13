@@ -19,7 +19,7 @@ import { FireModelError } from "./errors";
 import {
   modelRegister,
   listRegisteredModels,
-  modelLookup
+  modelRegistryLookup
 } from "./record/relationships/modelRegistration";
 
 // tslint:disable-next-line:no-var-requires
@@ -195,7 +195,7 @@ const db = await FireModel.connect(DB, options);
   }
 
   public static lookupModel(name: string) {
-    return modelLookup(name);
+    return modelRegistryLookup(name);
   }
 
   //#region STATIC INTERFACE
