@@ -13,7 +13,6 @@ export function hasMany(
  */
 fkClass, inverse) {
     try {
-        console.log("hasMany", fkClass);
         const fkConstructor = typeof fkClass === "string"
             ? modelNameLookup(fkClass)
             : modelConstructorLookup(fkClass);

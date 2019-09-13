@@ -13,7 +13,6 @@ export function belongsTo(
  */
 fkClass, inverse) {
     try {
-        console.log("hasOne", fkClass);
         const fkConstructor = typeof fkClass === "string"
             ? modelNameLookup(fkClass)
             : modelConstructorLookup(fkClass);

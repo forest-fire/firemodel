@@ -15,7 +15,6 @@ function hasMany(
  */
 fkClass, inverse) {
     try {
-        console.log("hasMany", fkClass);
         const fkConstructor = typeof fkClass === "string"
             ? modelRegistration_1.modelNameLookup(fkClass)
             : modelRegistration_1.modelConstructorLookup(fkClass);
