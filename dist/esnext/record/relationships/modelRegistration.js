@@ -26,4 +26,36 @@ export function modelLookup(name) {
     }
     return model;
 }
+/**
+ * When you are building relationships to other `Model`'s it is often
+ * benefitial to just pass in the name of the `Model` rather than it's
+ * constructor as this avoids the dreaded "circular dependency" problem
+ * that occur when you try to pass in class constructors which depend
+ * on one another.
+ */
+export const modelNameLookup = (name) => () => {
+    return modelLookup(name);
+};
+/**
+ * When you are defining a _relationship_ between `Model`'s it sometimes
+ * useful to just pass in the constructor to the other `Model`. This is in
+ * contrast to just passing a string name of the model.
+ *
+ * The advantage here is that the external model does not need to be
+ * "registered" separately whereas with a string name it would have to be.
+ */
+export const modelConstructorLookup = (constructor) => () => {
+    // TODO: remove the "any"
+    return isConstructable(constructor) ? constructor : constructor();
+};
+// tslint:disable-next-line: ban-types
+export function isConstructable(fn) {
+    try {
+        const f = new fn();
+        return true;
+    }
+    catch (e) {
+        return false;
+    }
+}
 //# sourceMappingURL=modelRegistration.js.map

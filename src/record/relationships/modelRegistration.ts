@@ -43,3 +43,53 @@ export function modelLookup(name: string) {
 
   return model;
 }
+
+export type IModelConstructor<T extends Model = any> = new () => IModelSubclass<
+  T
+>;
+
+/**
+ * a _function_ which when executed returns the constructor
+ * to a `Model` subclass
+ */
+export type IFnToModelConstructor<
+  T extends Model = Model
+> = () => IModelConstructor<T>;
+
+export type IModelSubclass<T extends Model> = T;
+
+/**
+ * When you are building relationships to other `Model`'s it is often
+ * benefitial to just pass in the name of the `Model` rather than it's
+ * constructor as this avoids the dreaded "circular dependency" problem
+ * that occur when you try to pass in class constructors which depend
+ * on one another.
+ */
+export const modelNameLookup = (name: string) => (): IModelConstructor => {
+  return modelLookup(name);
+};
+
+/**
+ * When you are defining a _relationship_ between `Model`'s it sometimes
+ * useful to just pass in the constructor to the other `Model`. This is in
+ * contrast to just passing a string name of the model.
+ *
+ * The advantage here is that the external model does not need to be
+ * "registered" separately whereas with a string name it would have to be.
+ */
+export const modelConstructorLookup = <T extends Model>(
+  constructor: IModelConstructor<T> | IFnToModelConstructor<T>
+) => (): IModelConstructor => {
+  // TODO: remove the "any"
+  return isConstructable(constructor) ? constructor : (constructor as any)();
+};
+
+// tslint:disable-next-line: ban-types
+export function isConstructable(fn: Function | (new () => any)) {
+  try {
+    const f = new (fn as (new () => any))();
+    return true;
+  } catch (e) {
+    return false;
+  }
+}

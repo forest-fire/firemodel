@@ -11,28 +11,31 @@ import { DecoratorProblem } from "../errors/decorators/DecoratorProblem";
 import { FireModelError } from "../errors/FireModelError";
 import {
   modelLookup,
-  listRegisteredModels
+  listRegisteredModels,
+  modelNameLookup,
+  modelConstructorLookup,
+  IFnToModelConstructor,
+  IModelConstructor
 } from "../record/relationships/modelRegistration";
 
-export function belongsTo<T = Model>(
-  fnToModelConstructor: IFmFunctionToConstructor | string,
+export function belongsTo(
+  /**
+   * either a _string_ representing the Model's class name
+   * or a _constructor_ for the Model class.
+   *
+   * In order to support prior implementations we include the
+   * possibility that a user of this API will pass in a _function_
+   * to a _constructor_. This approach is now deprecated.
+   */
+  fkClass: IFnToModelConstructor | IModelConstructor | string,
   inverse?: string | [string, IFmRelationshipDirectionality]
 ) {
-  if (typeof fnToModelConstructor === "string") {
-    const model = modelLookup(fnToModelConstructor);
-    if (!model) {
-      throw new FireModelError(
-        `attempt to lookup "${fnToModelConstructor}" as pre-registered Model failed! ${
-          inverse ? `[ inverse prop was "${inverse}"]` : ""
-        }. The registered models found were: ${listRegisteredModels().join(
-          ", "
-        )}`,
-        `firemodel/not-allowed`
-      );
-    }
-    fnToModelConstructor = () => model;
-  }
   try {
+    const fkConstructor: IFnToModelConstructor =
+      typeof fkClass === "string"
+        ? modelNameLookup(fkClass)
+        : modelConstructorLookup(fkClass);
+
     let inverseProperty: string | null;
     let directionality: IFmRelationshipDirectionality;
     if (Array.isArray(inverse)) {
@@ -46,7 +49,7 @@ export function belongsTo<T = Model>(
       isProperty: false,
       relType: "hasOne",
       directionality,
-      fkConstructor: fnToModelConstructor
+      fkConstructor
     };
     if (inverseProperty) {
       payload.inverseProperty = inverseProperty;
