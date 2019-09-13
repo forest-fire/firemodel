@@ -15,7 +15,7 @@ function modelRegister(model) {
     if (typeof model !== "function" || !model.constructor) {
         throw new index_1.FireModelError(`An attempt was made to register a Model subclass but the passed in constructor was the wrong type [ ${typeof model} ]!\nmodel passed was: ${model}`, "firemodel/not-allowed");
     }
-    const modelName = model.constructor.name;
+    const modelName = new model().constructor.name;
     registeredModels[modelName] = model;
 }
 exports.modelRegister = modelRegister;

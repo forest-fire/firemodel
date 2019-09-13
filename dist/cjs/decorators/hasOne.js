@@ -15,6 +15,7 @@ function belongsTo(
  */
 fkClass, inverse) {
     try {
+        console.log("hasOne", fkClass);
         const fkConstructor = typeof fkClass === "string"
             ? modelRegistration_1.modelNameLookup(fkClass)
             : modelRegistration_1.modelConstructorLookup(fkClass);

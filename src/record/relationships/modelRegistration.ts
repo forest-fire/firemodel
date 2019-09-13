@@ -24,7 +24,7 @@ export function modelRegister<T extends Model = Model>(model: new () => T) {
     );
   }
 
-  const modelName = model.constructor.name;
+  const modelName = new model().constructor.name;
   registeredModels[modelName] = model;
 }
 
