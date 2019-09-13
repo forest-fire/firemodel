@@ -58,14 +58,14 @@ function isConstructable(fn) {
     try {
         const f = new fn();
         console.log("isConstructable");
-        console.log("class name:", fn.constructor.name);
+        console.log("class name:", f.constructor.name);
         return true;
     }
     catch (e) {
         console.log("is not constructable");
         try {
             const c = fn();
-            console.log(`class name is: ${c.constructor.name}`);
+            console.log(`class name is: ${new c().constructor.name}`);
         }
         catch (e) {
             //
