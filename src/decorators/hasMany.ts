@@ -28,8 +28,6 @@ export function hasMany(
   inverse?: string | [string, IFmRelationshipDirectionality]
 ) {
   try {
-    console.log("hasMany", fkClass);
-
     const fkConstructor: IFnToModelConstructor =
       typeof fkClass === "string"
         ? modelNameLookup(fkClass)

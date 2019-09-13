@@ -31,8 +31,6 @@ export function belongsTo(
   inverse?: string | [string, IFmRelationshipDirectionality]
 ) {
   try {
-    console.log("hasOne", fkClass);
-
     const fkConstructor: IFnToModelConstructor =
       typeof fkClass === "string"
         ? modelNameLookup(fkClass)
