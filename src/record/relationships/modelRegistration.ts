@@ -85,14 +85,22 @@ export const modelConstructorLookup = <T extends Model>(
 };
 
 // tslint:disable-next-line: ban-types
-export function isConstructable(fn: Function | (new () => any)) {
+export function isConstructable(fn: IModelConstructor | IFnToModelConstructor) {
   try {
-    const f = new (fn as (new () => any))();
+    const f = new (fn as IModelConstructor)();
     console.log("isConstructable");
     console.log("class name:", fn.constructor.name);
 
     return true;
   } catch (e) {
+    console.log("is not constructable");
+    try {
+      const c = (fn as IFnToModelConstructor)();
+      console.log(`class name is: ${c.constructor.name}`);
+    } catch (e) {
+      //
+    }
+
     return false;
   }
 }

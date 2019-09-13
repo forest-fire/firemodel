@@ -32,4 +32,4 @@ export declare const modelNameLookup: (name: string) => () => IModelConstructor<
  * "registered" separately whereas with a string name it would have to be.
  */
 export declare const modelConstructorLookup: <T extends Model>(constructor: IModelConstructor<T> | IFnToModelConstructor<T>) => () => IModelConstructor<any>;
-export declare function isConstructable(fn: Function | (new () => any)): boolean;
+export declare function isConstructable(fn: IModelConstructor | IFnToModelConstructor): boolean;

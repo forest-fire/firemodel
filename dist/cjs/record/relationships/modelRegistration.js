@@ -62,6 +62,14 @@ function isConstructable(fn) {
         return true;
     }
     catch (e) {
+        console.log("is not constructable");
+        try {
+            const c = fn();
+            console.log(`class name is: ${c.constructor.name}`);
+        }
+        catch (e) {
+            //
+        }
         return false;
     }
 }
