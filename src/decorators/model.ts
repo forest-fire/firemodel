@@ -94,13 +94,10 @@ export function model(options: Partial<IFmModelMeta> = {}) {
         configurable: false,
         enumerable: false
       });
-      if (target) {
-        console.log("target model is:", target);
-        console.log("class name: ", new target().constructor.name);
 
+      if (target) {
+        // register the constructor so name based lookups will succeed
         modelRegister(target);
-      } else {
-        console.log("target missing");
       }
 
       return target;

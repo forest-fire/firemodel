@@ -50,12 +50,8 @@ export function model(options = {}) {
                 enumerable: false
             });
             if (target) {
-                console.log("target model is:", target);
-                console.log("class name: ", new target().constructor.name);
+                // register the constructor so name based lookups will succeed
                 modelRegister(target);
-            }
-            else {
-                console.log("target missing");
             }
             return target;
         }
