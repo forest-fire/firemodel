@@ -4,7 +4,7 @@ import { addModelMeta } from "../ModelMeta";
 import { getDbIndexes } from "./indexing";
 import { getModelProperty, getProperties, isProperty } from "./model-meta/property-store";
 import { getModelRelationship, isRelationship, getRelationships } from "./model-meta/relationship-store";
-/* tslint:disable:only-arrow-functions */
+import { modelRegister } from "../record/relationships/modelRegistration";
 export function model(options = {}) {
     let isDirty = false;
     return function decorateModel(target) {
@@ -49,6 +49,10 @@ export function model(options = {}) {
                 configurable: false,
                 enumerable: false
             });
+            if (target) {
+                // register the constructor so name based lookups will succeed
+                modelRegister(target);
+            }
             return target;
         }
         // copy prototype so intanceof operator still works

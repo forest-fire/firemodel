@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const common_types_1 = require("common-types");
 const ModelMeta_1 = require("./ModelMeta");
-const errors_1 = require("./errors");
+const modelRegistration_1 = require("./record/relationships/modelRegistration");
 // tslint:disable-next-line:no-var-requires
 const pluralize = require("pluralize");
 const defaultDispatch = async (context) => "";
@@ -137,18 +137,13 @@ class FireModel {
         return db;
     }
     static register(model) {
-        const modelName = model.constructor.name;
-        registeredModules[modelName] = model;
+        modelRegistration_1.modelRegister(model);
     }
-    static registeredModules() {
-        return Object.keys(registeredModules);
+    static listRegisteredModels() {
+        return modelRegistration_1.listRegisteredModels();
     }
     static lookupModel(name) {
-        const model = registeredModules[name];
-        if (!name) {
-            throw new errors_1.FireModelError(`The model ${name} was NOT registered!`, "firemodel/not-allowed");
-        }
-        return model;
+        return modelRegistration_1.modelRegistryLookup(name);
     }
     //#region STATIC INTERFACE
     static isBeingWatched(path) {
