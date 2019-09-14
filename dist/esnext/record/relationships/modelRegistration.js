@@ -1,4 +1,4 @@
-import { FireModelError } from "../../errors/index";
+import { FireModelError } from "../../errors/FireModelError";
 const registeredModels = {};
 /**
  * Registered a model's constructor so that it can be used by name. This

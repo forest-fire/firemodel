@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const index_1 = require("../../errors/index");
+const FireModelError_1 = require("../../errors/FireModelError");
 const registeredModels = {};
 /**
  * Registered a model's constructor so that it can be used by name. This
@@ -11,12 +11,12 @@ const registeredModels = {};
 function modelRegister(...models) {
     models.forEach(model => {
         if (!model) {
-            throw new index_1.FireModelError(`An attempt was made to register a Model subclass but the passed in constructor was undefined!${models.length > 0
+            throw new FireModelError_1.FireModelError(`An attempt was made to register a Model subclass but the passed in constructor was undefined!${models.length > 0
                 ? ` [ ${models.length} models being registed during this call ]`
                 : ""}`, "firemodel/not-allowed");
         }
         if (typeof model !== "function" || !model.constructor) {
-            throw new index_1.FireModelError(`An attempt was made to register a Model subclass but the passed in constructor was the wrong type [ ${typeof model} ]!\nmodel passed was: ${model}`, "firemodel/not-allowed");
+            throw new FireModelError_1.FireModelError(`An attempt was made to register a Model subclass but the passed in constructor was the wrong type [ ${typeof model} ]!\nmodel passed was: ${model}`, "firemodel/not-allowed");
         }
         const modelName = new model().constructor.name;
         registeredModels[modelName] = model;
@@ -30,7 +30,7 @@ exports.listRegisteredModels = listRegisteredModels;
 function modelRegistryLookup(name) {
     const model = registeredModels[name];
     if (!name) {
-        throw new index_1.FireModelError(`Look failed because the model ${name} was not registered!`, "firemodel/not-allowed");
+        throw new FireModelError_1.FireModelError(`Look failed because the model ${name} was not registered!`, "firemodel/not-allowed");
     }
     return model;
 }

@@ -1,6 +1,6 @@
 import { IDictionary } from "common-types";
-import { FireModelError } from "../../errors/index";
 import { Model } from "../../Model";
+import { FireModelError } from "../../errors/FireModelError";
 
 const registeredModels: IDictionary<new () => any> = {};
 

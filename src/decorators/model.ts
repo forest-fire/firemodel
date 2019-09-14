@@ -107,7 +107,6 @@ export function model(options: Partial<IFmModelMeta> = {}) {
     addMetaProperty.prototype = target.prototype;
 
     // return new constructor (will override original)
-
     return addMetaProperty();
   };
 }
