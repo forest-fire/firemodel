@@ -6,7 +6,7 @@ const ModelMeta_1 = require("../ModelMeta");
 const indexing_1 = require("./indexing");
 const property_store_1 = require("./model-meta/property-store");
 const relationship_store_1 = require("./model-meta/relationship-store");
-/* tslint:disable:only-arrow-functions */
+const modelRegistration_1 = require("../record/relationships/modelRegistration");
 function model(options = {}) {
     let isDirty = false;
     return function decorateModel(target) {
@@ -51,6 +51,10 @@ function model(options = {}) {
                 configurable: false,
                 enumerable: false
             });
+            if (target) {
+                // register the constructor so name based lookups will succeed
+                modelRegistration_1.modelRegister(target);
+            }
             return target;
         }
         // copy prototype so intanceof operator still works

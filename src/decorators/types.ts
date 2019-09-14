@@ -1,5 +1,6 @@
 import NamedFakes from "../Mock/NamedFakes";
 import { Model } from "../Model";
+import { IFnToModelConstructor } from "../record/relationships/modelRegistration";
 
 export type FmRelationshipType = "hasMany" | "hasOne";
 /**
@@ -82,7 +83,7 @@ export interface IFmModelRelationshipMeta<T extends Model = Model>
   /** indicates whether the relationship is one-way or bi-directional */
   directionality: IFmRelationshipDirectionality;
   /** The constructor for a model of the FK reference that this relationship maintains */
-  fkConstructor: () => new () => T;
+  fkConstructor: IFnToModelConstructor<T>;
   /** the singular name of the relationship's model */
   fkModelName?: string;
   /** the plural name of the relationship's model */
