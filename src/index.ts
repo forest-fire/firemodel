@@ -11,6 +11,7 @@ export * from "./watchers/types";
 export * from "./state-mgmt/index";
 export * from "./@types/index";
 export { pathJoin } from "./path";
+export * from "./Mock/types";
 
 export { fk, pk } from "common-types";
 export { key as fbKey } from "firebase-key";

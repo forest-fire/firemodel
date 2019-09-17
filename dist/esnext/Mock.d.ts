@@ -7,7 +7,7 @@ import { RealTimeDB } from "abstracted-firebase";
  * @param db optionally state the DB connection; will use **Firemodel**'s default DB otherwise
  */
 export declare function Mock<T extends Model>(modelConstructor: new () => T, db?: RealTimeDB): {
-    generate(count: number, exceptions?: Partial<T>): Promise<import("./Mock/types").IMockResponse<T>[]>;
+    generate(count: number, exceptions?: Partial<T>): Promise<import(".").IMockResponse<T>[]>;
     createRelationshipLinks(cardinality?: import("common-types").IDictionary<number | true | [number, number]>): any;
     dynamicPathBehavior(options: string): any;
     overridesPassThrough(): any;
