@@ -231,6 +231,22 @@ export class List<T extends Model> extends FireModel<T> {
     return list;
   }
 
+  /**
+   * **List.find()**
+   *
+   * Runs a `List.where()` search and returns the first result as a _model_
+   * of type `T`. If no results were found it returns `undefined`.
+   */
+  public static async find<T extends Model, K extends keyof T>(
+    model: new () => T,
+    property: K,
+    value: T[K] | [IComparisonOperator, T[K]],
+    options: IListOptions<T> = {}
+  ) {
+    const results = await List.where(model, property, value, options);
+    return results.length > 0 ? results.data[0] : undefined;
+  }
+
   public static async where<T extends Model, K extends keyof T>(
     model: new () => T,
     property: K,

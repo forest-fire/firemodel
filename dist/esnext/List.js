@@ -177,6 +177,16 @@ export class List extends FireModel {
         const list = await List.fromQuery(model, query, options);
         return list;
     }
+    /**
+     * **List.find()**
+     *
+     * Runs a `List.where()` search and returns the first result as a _model_
+     * of type `T`. If no results were found it returns `undefined`.
+     */
+    static async find(model, property, value, options = {}) {
+        const results = await List.where(model, property, value, options);
+        return results.length > 0 ? results.data[0] : undefined;
+    }
     static async where(model, property, value, options = {}) {
         let operation = "=";
         let val = value;

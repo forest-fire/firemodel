@@ -69,6 +69,13 @@ export declare class List<T extends Model> extends FireModel<T> {
     static since<T extends Model>(model: new () => T, since: epochWithMilliseconds, options?: IListOptions<T>): Promise<List<T>>;
     static inactive<T extends Model>(model: new () => T, howMany: number, options?: IListOptions<T>): Promise<List<T>>;
     static last<T extends Model>(model: new () => T, howMany: number, options?: IListOptions<T>): Promise<List<T>>;
+    /**
+     * **List.find()**
+     *
+     * Runs a `List.where()` search and returns the first result as a _model_
+     * of type `T`. If no results were found it returns `undefined`.
+     */
+    static find<T extends Model, K extends keyof T>(model: new () => T, property: K, value: T[K] | [IComparisonOperator, T[K]], options?: IListOptions<T>): Promise<T>;
     static where<T extends Model, K extends keyof T>(model: new () => T, property: K, value: T[K] | [IComparisonOperator, T[K]], options?: IListOptions<T>): Promise<List<T>>;
     protected _offsets: Partial<T>;
     private _data;
