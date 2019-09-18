@@ -165,6 +165,13 @@ class List extends FireModel_1.FireModel {
         const list = await List.fromQuery(model, query, options);
         return list;
     }
+    /**
+     * **List.inactive()**
+     *
+     * provides a way to sort out the "x" _least active_ records where
+     * "least active" means that their `lastUpdated` property has gone
+     * without any update for the longest.
+     */
     static async inactive(model, howMany, options = {}) {
         const query = new serialized_query_1.SerializedQuery()
             .orderByChild("lastUpdated")
@@ -172,6 +179,12 @@ class List extends FireModel_1.FireModel {
         const list = await List.fromQuery(model, query, options);
         return list;
     }
+    /**
+     * **List.last()**
+     *
+     * Lists the _last "x"_ items of a given model where "last" refers to the datetime
+     * that the record was **created**.
+     */
     static async last(model, howMany, options = {}) {
         const query = new serialized_query_1.SerializedQuery()
             .orderByChild("createdAt")
@@ -189,6 +202,18 @@ class List extends FireModel_1.FireModel {
         const results = await List.where(model, property, value, options);
         return results.length > 0 ? results.data[0] : undefined;
     }
+    /**
+     * **List.where()**
+     *
+     * A static inializer which give you a list of all records of a given model
+     * which meet a given logical condition. This condition is executed on the
+     * **Firebase** side and a `List` -- even if no results met the criteria --
+     * is returned.
+     *
+     * **Note:** the default comparison operator is **equals** but you can
+     * override this default by adding a _tuple_ to the `value` where the first
+     * array item is the operator, the second the value you are comparing against.
+     */
     static async where(model, property, value, options = {}) {
         let operation = "=";
         let val = value;
