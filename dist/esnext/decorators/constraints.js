@@ -14,9 +14,6 @@ export function desc(value) {
 export function min(value) {
     return propertyReflector({ min: value }, propertiesByModel);
 }
-export function mock(value, ...rest) {
-    return propertyReflector({ mockType: value, mockParameters: rest }, propertiesByModel);
-}
 export function max(value) {
     return propertyReflector({ max: value }, propertiesByModel);
 }

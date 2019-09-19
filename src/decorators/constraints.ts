@@ -37,13 +37,6 @@ export function min(value: number) {
   );
 }
 
-export function mock(value: FmMockType, ...rest: any[]) {
-  return propertyReflector<IFmModelPropertyMeta>(
-    { mockType: value, mockParameters: rest },
-    propertiesByModel
-  );
-}
-
 export function max(value: number) {
   return propertyReflector<IFmModelPropertyMeta>(
     { max: value },

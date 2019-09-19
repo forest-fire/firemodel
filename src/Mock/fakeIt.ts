@@ -57,6 +57,7 @@ export default function fakeIt<T = any>(
 
   switch (type) {
     case "id":
+    case "fbKey":
       return fbKey();
     case "String":
       return helper.faker.lorem.words(5);

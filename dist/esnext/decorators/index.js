@@ -5,4 +5,5 @@ export * from "./constraints";
 export * from "./model";
 export * from "./defaultValue";
 export * from "./OneWay";
+export * from "./mock";
 //# sourceMappingURL=index.js.map

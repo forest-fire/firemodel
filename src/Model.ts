@@ -4,7 +4,8 @@ export type NonProperties<T> = {
 }[keyof T];
 export type Properties<T> = Pick<T, NonProperties<T>>;
 import { epochWithMilliseconds } from "common-types";
-import { property, mock } from "./decorators/constraints";
+import { property } from "./decorators/constraints";
+import { mock } from "./decorators/mock";
 import { model } from "./decorators/model";
 import { index, uniqueIndex } from "./decorators/indexing";
 import { IFmModelMeta } from "./decorators/types";
