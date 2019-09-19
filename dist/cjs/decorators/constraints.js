@@ -20,10 +20,6 @@ function min(value) {
     return reflector_1.propertyReflector({ min: value }, property_store_1.propertiesByModel);
 }
 exports.min = min;
-function mock(value, ...rest) {
-    return reflector_1.propertyReflector({ mockType: value, mockParameters: rest }, property_store_1.propertiesByModel);
-}
-exports.mock = mock;
 function max(value) {
     return reflector_1.propertyReflector({ max: value }, property_store_1.propertiesByModel);
 }

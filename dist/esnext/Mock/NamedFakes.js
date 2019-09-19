@@ -1,5 +1,8 @@
 const NamedFakes = {
+    /** produces an "id" that looks/behaves like a Firebase key */
     id: true,
+    /** produces an "id" that looks/behaves like a Firebase key */
+    fbKey: true,
     String: true,
     number: true,
     /** alias for "number" */
@@ -60,6 +63,7 @@ const NamedFakes = {
     paragraphs: true,
     slug: true,
     url: true,
+    /** produces a unique id */
     uuid: true,
     random: true,
     sequence: true,

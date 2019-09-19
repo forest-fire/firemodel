@@ -1,5 +1,5 @@
 import { model, Model, property, hasOne, fk, hasMany, index } from "../../src";
-import { mock } from "../../src/decorators/constraints";
+import { mock } from "../../src/decorators";
 import { Company } from "./Company";
 import { Person } from "./Person";
 import { FancyPerson } from "./FancyPerson";

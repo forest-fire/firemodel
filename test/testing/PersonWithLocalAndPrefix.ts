@@ -13,7 +13,7 @@ import {
 } from "../../src";
 import { Company } from "./Company";
 import { IDictionary } from "common-types";
-import { pushKey, mock } from "../../src/decorators/constraints";
+import { pushKey, mock } from "../../src/decorators";
 import { Concert } from "./Concert";
 import { Pay } from "./Pay";
 
