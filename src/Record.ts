@@ -762,7 +762,8 @@ export class Record<T extends Model> extends FireModel<T> {
    */
   public async associate(
     property: Extract<keyof T, string>,
-    refs: IFkReference<T> | Array<IFkReference<T>>,
+    // TODO: ideally stronger typing
+    refs: IFkReference<any> | Array<IFkReference<any>>,
     options: IFmRelationshipOptions = {}
   ) {
     const meta = getModelMeta(this);
@@ -814,7 +815,8 @@ export class Record<T extends Model> extends FireModel<T> {
    */
   public async disassociate(
     property: Extract<keyof T, string>,
-    refs: IFkReference<T> | Array<IFkReference<T>>,
+    // TODO: ideally stronger typing below
+    refs: IFkReference<any> | Array<IFkReference<any>>,
     options: IFmRelationshipOptions = {}
   ) {
     const relType = this.META.relationship(property).relType;
@@ -840,7 +842,7 @@ export class Record<T extends Model> extends FireModel<T> {
    */
   public async addToRelationship(
     property: keyof T,
-    fkRefs: IFkReference<T> | Array<IFkReference<T>>,
+    fkRefs: IFkReference<any> | Array<IFkReference<any>>,
     options: IFmRelationshipOptionsForHasMany = {}
   ) {
     const altHasManyValue = options.altHasManyValue || true;
@@ -880,7 +882,7 @@ export class Record<T extends Model> extends FireModel<T> {
    */
   public async removeFromRelationship(
     property: Extract<keyof T, string>,
-    fkRefs: IFkReference<T> | Array<IFkReference<T>>,
+    fkRefs: IFkReference<any> | Array<IFkReference<any>>,
     options: IFmRelationshipOptionsForHasMany = {}
   ) {
     if (!isHasManyRelationship(this, property)) {
@@ -971,7 +973,7 @@ export class Record<T extends Model> extends FireModel<T> {
    */
   public async setRelationship(
     property: Extract<keyof T, string>,
-    fkId: IFkReference<T>,
+    fkId: IFkReference<any>,
     options: IFmRelationshipOptions = {}
   ) {
     if (!fkId) {

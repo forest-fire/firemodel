@@ -547,7 +547,9 @@ export class Record extends FireModel {
      * Associates the current model with another entity
      * regardless if the cardinality
      */
-    async associate(property, refs, options = {}) {
+    async associate(property, 
+    // TODO: ideally stronger typing
+    refs, options = {}) {
         const meta = getModelMeta(this);
         if (!meta.relationship(property)) {
             throw new FireModelError(`Attempt to associate the property "${property}" can not be done on model ${capitalize(this.modelName)} because the property is not defined!`, `firemodel/not-allowed`);
@@ -577,7 +579,9 @@ export class Record extends FireModel {
      * Removes an association between the current model and another entity
      * (regardless of the cardinality in the relationship)
      */
-    async disassociate(property, refs, options = {}) {
+    async disassociate(property, 
+    // TODO: ideally stronger typing below
+    refs, options = {}) {
         const relType = this.META.relationship(property).relType;
         if (relType === "hasMany") {
             await this.removeFromRelationship(property, refs, options);
