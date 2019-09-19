@@ -35,7 +35,7 @@ export default function API(db, modelConstructor) {
                 // for now we are stating that these two mock-types can
                 // be used to dig us out of this deficit; we should
                 // consider openning this up
-                // TODO: consider openning up other mockTypes to fill in the compositeKey
+                // TODO: consider opening up other mockTypes to fill in the compositeKey
                 const validMocks = ["sequence", "random", "distribution"];
                 notCovered.forEach(key => {
                     const prop = record.META.property(key) || {};
