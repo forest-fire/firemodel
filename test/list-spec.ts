@@ -9,8 +9,10 @@ import { Person } from "./testing/Person";
 import { FireModel } from "../src/FireModel";
 import { Mock } from "../src/Mock";
 import { FmEvents } from "../src/state-mgmt";
+import { Car } from "./testing/Car";
+import Company from "./testing/dynamicPaths/Company";
 
-describe("List class: ", () => {
+describe.only("List class: ", () => {
   let db: DB;
   beforeEach(async () => {
     db = new DB({ mocking: true });
@@ -33,6 +35,14 @@ describe("List class: ", () => {
     expect(list.modelName).to.equal("person");
     expect(list.pluralName).to.equal("people");
     expect(list.dbPath).to.equal(`${list.META.dbOffset}/people`);
+  });
+
+  it("Static dbPath() provides appropriate database path for Models", async () => {
+    const car = List.dbPath(Car);
+    expect(car).to.equal("car-offset/cars");
+
+    const dynamic = List.dbPath(Company, { group: "123" });
+    expect(dynamic).to.equal("123/testing/companies");
   });
 
   it("List can SET a dictionary of records", async () => {

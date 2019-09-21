@@ -227,6 +227,17 @@ class List extends FireModel_1.FireModel {
         const list = await List.fromQuery(model, query, options);
         return list;
     }
+    /**
+     * If you want to just get the `dbPath` of a Model you can call
+     * this static method and the path will be returned.
+     *
+     * **Note:** the optional second parameter lets you pass in any
+     * dynamic path segments if that is needed for the given model.
+     */
+    static dbPath(model, offsets) {
+        const obj = offsets ? List.create(model, { offsets }) : List.create(model);
+        return obj.dbPath;
+    }
     get length() {
         return this._data.length;
     }
@@ -430,7 +441,7 @@ class List extends FireModel_1.FireModel {
             dbOffset = dbOffset.replace(`:${prop}`, String(value));
         });
         if (dbOffset.includes(":")) {
-            throw new errors_1.FireModelError(`Attempt to get the dbPath of a List where the underlying model [ ${util_1.capitalize(this.modelName)} ] has dynamic path segments which were NOT supplied! The offsets provided were "${JSON.stringify(Object.keys(this._offsets))}" but this leaves the following uncompleted dbOffset: ${dbOffset}`);
+            throw new errors_1.FireModelError(`Attempt to get the dbPath of a List where the underlying model [ ${util_1.capitalize(this.modelName)} ] has dynamic path segments which were NOT supplied! The offsets provided were "${JSON.stringify(Object.keys(this._offsets || {}))}" but this leaves the following uncompleted dbOffset: ${dbOffset}`);
         }
         return dbOffset;
     }
