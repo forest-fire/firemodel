@@ -292,6 +292,22 @@ export class List<T extends Model> extends FireModel<T> {
     return list;
   }
 
+  /**
+   * If you want to just get the `dbPath` of a Model you can call
+   * this static method and the path will be returned.
+   *
+   * **Note:** the optional second parameter lets you pass in any
+   * dynamic path segments if that is needed for the given model.
+   */
+  public static dbPath<T extends Model, K extends keyof T>(
+    model: new () => T,
+    offsets?: Partial<T>
+  ) {
+    const obj = offsets ? List.create(model, { offsets }) : List.create(model);
+
+    return obj.dbPath;
+  }
+
   protected _offsets: Partial<T>;
 
   //#endregion
@@ -319,6 +335,7 @@ export class List<T extends Model> extends FireModel<T> {
 
   public get dbPath() {
     const dbOffset = getModelMeta(this._model).dbOffset;
+
     return [this._injectDynamicDbOffsets(dbOffset), this.pluralName].join("/");
   }
 
@@ -573,7 +590,7 @@ export class List<T extends Model> extends FireModel<T> {
         `Attempt to get the dbPath of a List where the underlying model [ ${capitalize(
           this.modelName
         )} ] has dynamic path segments which were NOT supplied! The offsets provided were "${JSON.stringify(
-          Object.keys(this._offsets)
+          Object.keys(this._offsets || {})
         )}" but this leaves the following uncompleted dbOffset: ${dbOffset}`
       );
     }

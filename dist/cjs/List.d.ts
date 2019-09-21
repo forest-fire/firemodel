@@ -102,6 +102,14 @@ export declare class List<T extends Model> extends FireModel<T> {
      * array item is the operator, the second the value you are comparing against.
      */
     static where<T extends Model, K extends keyof T>(model: new () => T, property: K, value: T[K] | [IComparisonOperator, T[K]], options?: IListOptions<T>): Promise<List<T>>;
+    /**
+     * If you want to just get the `dbPath` of a Model you can call
+     * this static method and the path will be returned.
+     *
+     * **Note:** the optional second parameter lets you pass in any
+     * dynamic path segments if that is needed for the given model.
+     */
+    static dbPath<T extends Model, K extends keyof T>(model: new () => T, offsets?: Partial<T>): string;
     protected _offsets: Partial<T>;
     private _data;
     constructor(model: new () => T, options?: IListOptions<T>);
