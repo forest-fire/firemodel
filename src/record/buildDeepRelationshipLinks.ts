@@ -23,7 +23,8 @@ async function processHasMany<T extends Model>(
 ) {
   const meta = getModelMeta(rec).property(property);
   const fks: IDictionary = rec.get(property);
-  for await (const key of Object.keys(fks)) {
+  const promises = [];
+  for (const key of Object.keys(fks)) {
     const fk = fks[key as keyof typeof fks] as true | IDictionary;
     if (fk !== true) {
       const fkRecord = await Record.add(meta.fkConstructor(), fk, {
