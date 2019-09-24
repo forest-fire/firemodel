@@ -1,6 +1,6 @@
 {
   "name": "firemodel",
-  "version": "0.31.13",
+  "version": "0.31.14",
   "description": "Modeling, Access, and Mocking for Firebase Projects",
   "license": "MIT",
   "repository": "https://github.com/forest-fire/firemodel",
@@ -31,13 +31,13 @@
   },
   "dependencies": {
     "abstracted-firebase": "^0.30.3",
-    "common-types": "^1.12.1",
+    "common-types": "^1.12.4",
     "date-fns": "^1.30.1",
     "fast-copy": "2.0.3",
     "fast-deep-equal": "^2.0.1",
     "firebase-key": "^2.0.2",
     "get-value": "^3.0.1",
-    "pluralize": "^7.0.0",
+    "pluralize": "^8.0.0",
     "reflect-metadata": "^0.1.13",
     "serialized-query": "^0.8.1",
     "set-value": "^3.0.0",
@@ -45,7 +45,7 @@
     "wait-in-parallel": "^1.2.6"
   },
   "peerDependencies": {
-    "firemock": "^0.30.0"
+    "firemock": "^0.30.1"
   },
   "devDependencies": {
     "@types/chai": "^4.1.4",
@@ -60,10 +60,10 @@
     "@types/rimraf": "^2.0.2",
     "@types/set-value": "^2.0.0",
     "@types/stack-trace": "^0.0.28",
-    "@vuepress/plugin-back-to-top": "^1.0.3",
-    "@vuepress/plugin-last-updated": "^1.0.3",
-    "@vuepress/plugin-medium-zoom": "^1.0.3",
-    "@vuepress/plugin-pwa": "^1.0.3",
+    "@vuepress/plugin-back-to-top": "^1.1.0",
+    "@vuepress/plugin-last-updated": "^1.1.0",
+    "@vuepress/plugin-medium-zoom": "^1.1.0",
+    "@vuepress/plugin-pwa": "^1.1.0",
     "abstracted-admin": "^0.30.3",
     "abstracted-client": "^0.30.3",
     "async-shelljs": "^0.1.2",
@@ -71,7 +71,7 @@
     "chalk": "^2.4.2",
     "do-devops": "^0.1.0",
     "faker": "^4.1.0",
-    "firemock": "^0.30.0",
+    "firemock": "^0.30.1",
     "js-yaml": "^3.13.1",
     "mermaid": "^8.2.3",
     "mocha": "^6.2.0",
@@ -79,14 +79,14 @@
     "rimraf": "^2.6.3",
     "test-console": "^1.1.0",
     "ts-node": "^8.3.0",
-    "tslint": "^5.18.0",
+    "tslint": "^5.20.0",
     "tslint-config-prettier": "^1.18.0",
     "typescript": "^3.6.2",
-    "vue-property-decorator": "^8.1.1",
-    "vuepress": "^1.0.3",
+    "vue-property-decorator": "^8.2.2",
+    "vuepress": "^1.1.0",
     "vuepress-plugin-autometa": "^0.1.10"
   },
   "engines": {
-    "node": ">=8.13.0"
+    "node": ">=8.10.0"
   }
 }
