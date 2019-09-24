@@ -585,22 +585,24 @@ export class Record<T extends Model> extends FireModel<T> {
       .filter(r => r.relType === "hasMany")
       .map(r => r.property) as Array<keyof T>;
 
+    const promises = [];
     /**
      * Sets hasMany to default `{}` if nothing was set.
      * Also, if the option `deepRelationships` is set to `true`,
      * it will look for relationships hashes instead of the typical
      * `fk: true` pairing.
      */
-    for await (const oneToManyProp of hasManyRels) {
+    for (const oneToManyProp of hasManyRels) {
       if (!this._data[oneToManyProp]) {
         (this._data as any)[oneToManyProp] = {};
       }
       if (options.setDeepRelationships) {
         if (this._data[oneToManyProp]) {
-          await buildDeepRelationshipLinks(this, oneToManyProp);
+          promises.push(buildDeepRelationshipLinks(this, oneToManyProp));
         }
       }
     }
+    await Promise.all(promises);
 
     const now = new Date().getTime();
     if (!this._data.lastUpdated) {
