@@ -69,7 +69,7 @@ The lifecycle events are quite "meta" in that they will not have much of a direc
 
 ### Enumerating Events
 
-If you are using Typescript you can import the `FMEvents` enumeration for easy access to each event type:
+If you are using TypeScript you can import the `FMEvents` enumeration for easy access to each event type:
 
 ```typescript
 import { FMEvents } from 'firemodel';

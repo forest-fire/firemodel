@@ -3,20 +3,20 @@
 ## Overview
 Schemas are used to define our data structures/types. That is their sole purpose and therefore they have no understanding of the underlying database storage (aka, Firebase) nor do they know about the local state management techniques (aka, redux, ember-data, mobx, etc.). 
 
-For compile-time, creating a schema would be a bit redundant because in fact Typescript's promise as a "_super-set of Javascript_" **is** a type system that in essence is the function of our "schema". The problem is that at run-time, the definitions we've put in place are lost and we're back to dealing with "anything goes" data structures. Now sure, we could implement some sort of run-time definition in addition to our Typescript definitions but in an attempt keep things DRY we will employ two experimental features of JS/TS:
+For compile-time, creating a schema would be a bit redundant because in fact TypeScript's promise as a "_super-set of Javascript_" **is** a type system that in essence is the function of our "schema". The problem is that at run-time, the definitions we've put in place are lost and we're back to dealing with "anything goes" data structures. Now sure, we could implement some sort of run-time definition in addition to our TypeScript definitions but in an attempt keep things DRY we will employ two experimental features of JS/TS:
 
 - [`Decorators`](https://github.com/tc39/proposal-decorators)
     Decorators in JS/TS are represented by the '@' symbol followed by a function. These functions can be applied to properties and classes. As hopefully you'll agree, they provide very rich meta-programming capabilities in a succinct and elegant fashion. For those of you coming from other languages, you may very well be familiar with the concept and so this will be pretty straight forward.
     
     Decorators are currently at stage 2 in the TC39 proposal workflow but they are already being used in GlimmerJS, VueJS, and Angular so it seem very likely they will make it through the process.
 - [`Reflection`](http://www.ecma-international.org/ecma-262/6.0/#sec-reflection)
-    Reflection is a "partner in crime" to Decorators and allows us to capture the Typescript typing information for later use at run-time. This is great as it allows us to use the highly expressive Typescript semantics and have that information available to us at compile and run time.
+    Reflection is a "partner in crime" to Decorators and allows us to capture the TypeScript typing information for later use at run-time. This is great as it allows us to use the highly expressive TypeScript semantics and have that information available to us at compile and run time.
 
     Reflection is less far along than Decorators in terms of proposal stage but it is already supported in many browsers ([caniuse](http://kangax.github.io/compat-table/es6/#test-Reflect)) and there are polyfills that make this a safe choice to use now. 
 
 ### Configuration
 
-In order to use these features in Typescript you will need to change two variables in the `tsconfig.json` file:
+In order to use these features in TypeScript you will need to change two variables in the `tsconfig.json` file:
 
 ```ts
 {
@@ -88,7 +88,7 @@ export class Person extends Model {
 }
 ```
 
-With this definition at compile-time Typescript will ensure that each **Person** schema will have a string-based name associated with it. If we would like to have access to this type information at run-time we would use the reflection API like this:
+With this definition at compile-time TypeScript will ensure that each **Person** schema will have a string-based name associated with it. If we would like to have access to this type information at run-time we would use the reflection API like this:
 
 ```ts
 const person = new Person();
