@@ -1,6 +1,6 @@
 # Relationships
 
-Up to know our model's have just consisted of "properties" but not relationships to other models. If you like you can just and a foreign-key reference into your model as a property:
+Up to now our model's have just consisted of "properties" but not relationships to other models. If you like you can just insert a foreign-key reference into your model as a property:
 
 ```typescript
 @model()
@@ -16,7 +16,7 @@ As you can see here we've added the `employer` field and given it a type of "fk"
 
 ## Relationship Definitions
 
-While the manual way of doing things is straight forward you'll be missing out on some of the functionality provided by **Firemodel** through it's support for two types of relationships:
+While the manual way of doing things is straightforward you'll be missing out on some of the functionality provided by **Firemodel** through it's support for two types of relationships:
 
 1. `hasOne` - a 1:M relationship
 2. `hasMany` - a M:1 or M:M relationship
@@ -37,7 +37,7 @@ export class Person extends Model {
 
 Let's decompose what this example is illustrating:
 
-1. `@hasOne()` and `@hasmany()` establish their repective types of relationships while also associating the foreign model that is being linked to (even though that "foreign" model could be a self reference; as it is for `parents` and `children`)
+1. `@hasOne()` and `@hasmany()` establish their respective types of relationships while also associating the foreign model that is being linked to (even though that "foreign" model could be a self reference; as it is for `parents` and `children`)
 2. Both relationship types can take an _optional_ second parameter which states the "inverse" (aka, the property name on the other end of the foreign key)
 
 > **Note:** if you prefer you can use the `belongsTo` or `ownedBy` syntax instead of `hasOne`.
