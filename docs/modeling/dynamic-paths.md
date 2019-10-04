@@ -46,7 +46,7 @@ In some cases this limitation is not easily addressed with _dynamic paths_ but a
 }
 ```
 
-You now can easily setup rules in the database that give each user access to their tasks as well the parent "list node" while at the same denying users the ability to see other users tasks. That has some nice benefits but the downside is that you no longer have single list of tasks but rather many lists of tasks. This might be awkward when you have an admin function or reporting function that wants to iterate over all user's tasks. Not that this isn't possible but there is more work involved.
+You now can easily setup rules in the database that give each user access to their tasks as well as the parent "list node" while at the same denying users the ability to see other users' tasks. That has some nice benefits but the downside is that you no longer have single list of tasks but rather many lists of tasks. This might be awkward when you have an admin function or reporting function that wants to iterate over all user's tasks. Not that this isn't possible but there is more work involved.
 
 ## Addressing Query Limitations
 
@@ -62,9 +62,9 @@ Typically in modern SPA's you want to bring a data type in large part into the c
 
 So in all the cases above you'll be fine working within Firebase's limitation but there are cases where you may consider moving outside it. Let's assume, for instance, that:
 
-- you have a bunch of data entities are are all geographically constrainted to a particular area
+- you have a bunch of data entities that are all geographically constrainted to a particular area
   - Some of our data entities -- let's say `Product` and `Order` -- are geographically constrained to a given state
-  - Both `Product` and `Order` have the potential to grow to a large number of record
+  - Both `Product` and `Order` have the potential to grow to a large number of records
   - These data entities both have `state` as a property hanging off their definitions
 - at the same time, our data model has other data entities which are global in their geographic scope. Let's say `UserProfile` is an example
 

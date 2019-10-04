@@ -22,7 +22,7 @@ await Record.add(Company, { id: "abc-corp", name: "ABC Corp" });
 However sometimes you may find yourself already working with a `List` in which case it may be better to do the following:
 
 ```typescript
-const people = List.recent(People, 25);
+const people = await List.recent(People, 25);
 /** do some stuff */
 const newPerson: Record<Person> = await people.add({
   name: "Howdy Doody",
@@ -73,7 +73,7 @@ await ref('people/1234').update({ favoriteColor: "blue" });
 That same idea is carried forward to **Firemodel**. So, for instance, if were to execute:
 
 ```typescript
-const person = Record.get(Person, '1234');
+const person = await Record.get(Person, '1234');
 person.update({ favoriteColor: 'blue' });
 ```
 

@@ -8,11 +8,12 @@ sidebarDepth: 3
 Our first example was pretty basic and in our second one we're only going to add a bit but they are important changes to understand:
 
 ```typescript
-@model(
+@model({
   dbOffset: 'authenticated',
   localPrefix: 'in.the.tree',
   plural: 'peeps',
-  audit: true)
+  audit: true
+})
 export class Person extends Model {
   @property public name: string;
   @property public age: number;
@@ -24,7 +25,7 @@ Maybe not surprisingly the "model constaints" are meta properties about your mod
 
 ## Database Offseting
 
- The `dbOffset` property tells **Firemodel** that all Person records should saved to the database off of the "authenticated" data path. This string can contain both static paths and _dynamic_ paths. The dynamic paths are denoted by prefixing the offset with a colon. Here are two examples:
+ The `dbOffset` property tells **Firemodel** that all Person records should be saved to the database off of the "authenticated" data path. This string can contain both static paths and _dynamic_ paths. The dynamic paths are denoted by prefixing the offset with a colon. Here are two examples:
 
 ```typescript
 // static prefix
@@ -40,7 +41,7 @@ and as a _dynamic path_ example:
 export class Anything extends Model {}
 ```
 
-in the dynamic prefix example, it is assumed that the model has a property named `foo` and that the records will be stored in the database according to the value of the `foo` property. For more details on why you might want to use dynamic paths refer to the section [**Modeling → Dynamic Paths**](./dynamic-paths), if you just want to know how to run queries or setup watchers on model's with dynamic paths then check out: [**Using → Dynamic Paths**](../using/dynamic-paths)
+in the dynamic prefix example, it is assumed that the model has a property named `foo` and that the records will be stored in the database according to the value of the `foo` property. For more details on why you might want to use dynamic paths refer to the section [**Modeling → Dynamic Paths**](./dynamic-paths), if you just want to know how to run queries or setup watchers on models with dynamic paths then check out: [**Using → Dynamic Paths**](../using/dynamic-paths)
 
 ## Frontend State Management
 
@@ -57,7 +58,7 @@ when watched in a client app like this:
 await Watch.record(Person, "1234").start();
 ```
 
-The resulting dispatches (e.g., RECORD_ADDED, RECORD_CHANGED, etc.) will have a `localPath` property of: `/foo/bar`. This may be suprising at first but it makes sense when you consider that in a majority of cases you are watching on a record (versus a list) when you only want a single record of that type.
+The resulting dispatches (e.g., RECORD_ADDED, RECORD_CHANGED, etc.) will have a `localPath` property of: `/foo/bar`. This may be surprising at first but it makes sense when you consider that in a majority of cases you are watching on a record (versus a list) when you only want a single record of that type.
 
 Bear in mind that there could be some edge cases where this isn't the case and for these you should use a dynamic notation on one of the properties of the model (typically the "id"). By example if the `localPrefix` had been `foo/bar/:id` then it would have resolved the `dbPath` to `foo/bar/1234`.
 
@@ -102,4 +103,4 @@ Watch.list(Product).where("region", previousRegion").start();
 ## Other Model Constraints
 
 1. `plural` - by default **Firemodel** will pluralize your model name using standard rules. It should get it right most of the time but if you want to override this you can here. The reason the plural name is brought up is that the plural name is used in the storage path for both Firebase and your frontend state management.
-2. `audit` - in cases where the given model hold very sensitive data you may want to opt-in to having all changes _audited_. For more on this see the [Auditing subsection](../using/auditing.html) in the Using section.
+2. `audit` - in cases where the given model holds very sensitive data you may want to opt-in to having all changes _audited_. For more on this see the [Auditing subsection](../using/auditing.html) in the Using section.

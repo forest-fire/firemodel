@@ -19,7 +19,7 @@ export class Person extends Model {
 
 Now we turn our attention to providing meta-information to the individual properties. There are two aspects to focus on:
 
-1. **Properties** - each property is defined as a `public` member of the class, given a type (via TypeScript grammer), and denoted as a property with the `@property` decorator.
+1. **Properties** - each property is defined as a `public` member of the class, given a type (via TypeScript grammar), and denoted as a property with the `@property` decorator.
 2. **Constraints** - all other decorators attached to the property are there to associate additional meta-information about the property for your run-time environment to respond to.
 
 ## Categories
@@ -39,11 +39,11 @@ This cateogory is meta-information which **Firemodel** not only stores but also 
      }
      ```
 
-- The `@pushKey` decorator tells **firemodel** that the given property is a dictionary/hash which conforms to Firebase's normal "array representation" (aka, a *dictionary* who's keys are Firebase generated keys derived from the Firebase `push` function). This is very useful when you have multiple clients who might be pushing content to the same "firebase array" because using the Firebase `push` operation ensures that any and all updates are serialized and that the new keys have a natural sort order based on time that they were received (many people don't know that embedded into the Firebase key is a precise datetime stamp which measures down to the milisecond)
+- The `@pushKey` decorator tells **firemodel** that the given property is a dictionary/hash which conforms to Firebase's normal "array representation" (aka, a *dictionary* whose keys are Firebase generated keys derived from the Firebase `push` function). This is very useful when you have multiple clients who might be pushing content to the same "firebase array" because using the Firebase `push` operation ensures that any and all updates are serialized and that the new keys have a natural sort order based on time that they were received (many people don't know that embedded into the Firebase key is a precise datetime stamp which measures down to the milisecond)
 
 ### **Built-in Meta**
 
-These constraints are built in to **Firemodel** "out of the box" and therefore immediately available to your code as in _import_ but they are not enforced by FireModel. The enforcement is left to you in your implementation.
+These constraints are built into **Firemodel** "out of the box" and therefore immediately available to your code as in _import_ but they are not enforced by FireModel. The enforcement is left to you in your implementation.
 
 Examples are `min`, `max`, `length`, and `desc`. For instance, to get the minimum age in our `Person` example above:
 
