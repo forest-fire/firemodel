@@ -17,9 +17,10 @@ export default function mockProperties<T extends Model>(
 
     const recProps: Partial<T> = {};
     // set properties on the record with mocks
+    const mh = await (await import("firemock")).getMockHelper(db);
     for (const prop of props) {
       const p = prop.property as keyof T;
-      recProps[p] = await mockValue<T>(db, prop);
+      recProps[p] = await mockValue<T>(db, prop, mh);
     }
 
     // use mocked values but allow exceptions to override
