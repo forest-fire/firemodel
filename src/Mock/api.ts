@@ -4,7 +4,6 @@ import addRelationships from "./addRelationships";
 import { Record } from "../Record";
 import { RealTimeDB } from "abstracted-firebase";
 import { IMockConfig, IMockResponse } from "./types";
-import { Mock as FireMock } from "firemock";
 import { FireModelError } from "../errors";
 
 let mockPrepared = false;
@@ -28,6 +27,7 @@ export default function API<T>(db: RealTimeDB, modelConstructor: new () => T) {
       exceptions: Partial<T> = {}
     ): Promise<Array<IMockResponse<T>>> {
       if (!mockPrepared) {
+        const FireMock = (await import("firemock")).Mock;
         await FireMock.prepare();
         mockPrepared = true;
       }

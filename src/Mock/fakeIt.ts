@@ -1,4 +1,3 @@
-import { MockHelper } from "firemock";
 import NamedFakes from "./NamedFakes";
 import { fbKey } from "../index";
 import { IDictionary } from "common-types";
@@ -36,7 +35,7 @@ function getDistribution<T = any>(...distribution: Array<[number, T]>) {
 }
 
 export default function fakeIt<T = any>(
-  helper: MockHelper,
+  helper: import("firemock").MockHelper,
   type: keyof typeof NamedFakes,
   ...rest: any[]
 ) {

@@ -8,9 +8,10 @@ export default function mockProperties(db, config = { relationshipBehavior: "ign
         const props = meta.properties;
         const recProps = {};
         // set properties on the record with mocks
+        const mh = await (await import("firemock")).getMockHelper(db);
         for (const prop of props) {
             const p = prop.property;
-            recProps[p] = await mockValue(db, prop);
+            recProps[p] = await mockValue(db, prop, mh);
         }
         // use mocked values but allow exceptions to override
         const finalized = Object.assign(Object.assign({}, recProps), exceptions);
