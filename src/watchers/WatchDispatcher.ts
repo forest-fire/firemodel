@@ -54,6 +54,20 @@ export const WatchDispatcher = <T>(
         dbPath: "not-relevant, use toLocal and fromLocal"
       };
     } else {
+      // in the case of a watcher list-of records; when the database has no
+      // records yet there is no way to fulfill the dynamic path segments without
+      // reaching into the watcher context
+      if (watcherContext.watcherPaths) {
+        const fullPath = watcherContext.watcherPaths.find(i =>
+          i.includes(event.key)
+        );
+        const compositeKey = Record.getCompositeKeyFromPath(
+          watcherContext.modelConstructor,
+          fullPath
+        );
+        event.value = { ...(event.value || {}), ...compositeKey };
+      }
+
       // record events (both server and local)
       const recordProps =
         typeof event.value === "object"
@@ -96,6 +110,7 @@ export const WatchDispatcher = <T>(
     };
 
     const results = await coreDispatchFn(reduxAction);
+    // The mock server and client are now in sync
     hasInitialized(watcherContext.watcherId);
 
     return results;

@@ -806,9 +806,9 @@
     xdg-basedir "^4.0.0"
 
 "@grpc/grpc-js@^0.6.4":
-  version "0.6.5"
-  resolved "https://registry.yarnpkg.com/@grpc/grpc-js/-/grpc-js-0.6.5.tgz#18e91dea1511f3a818faef98a4f9d36e614ac2aa"
-  integrity sha512-3L68Y1NO+MpfKli/tpAt5DXvy0EY8wTZsFbgimlwO+m7Mep2WHGSs1q5Wrkj0w1lJj0hKnJjsl24kxqSVmP+Wg==
+  version "0.6.6"
+  resolved "https://registry.yarnpkg.com/@grpc/grpc-js/-/grpc-js-0.6.6.tgz#30684ddbca75593c6a004a58a2fe8cc06c2c9d6a"
+  integrity sha512-Q+TGfJoXWARgAnga5kWBWhc7tMI3LNHMzGlzsT0i/kn64jQwndkdbYXkyQKr17zPNoouFaG4yAwaKtv3JZ6PEA==
   dependencies:
     semver "^6.2.0"
 
@@ -994,9 +994,9 @@
   integrity sha512-Il2DtDVRGDcqjDtE+rF8iqg1CArehSK84HZJCT7AMITlyXRBpuPhqGLDQMowraqqu1coEaimg4ZOqggt6L6L+A==
 
 "@types/lodash@^4.14.123":
-  version "4.14.141"
-  resolved "https://registry.yarnpkg.com/@types/lodash/-/lodash-4.14.141.tgz#d81f4d0c562abe28713406b571ffb27692a82ae6"
-  integrity sha512-v5NYIi9qEbFEUpCyikmnOYe4YlP8BMUdTcNCAquAKzu+FA7rZ1onj9x80mbnDdOW/K5bFf3Tv5kJplP33+gAbQ==
+  version "4.14.142"
+  resolved "https://registry.yarnpkg.com/@types/lodash/-/lodash-4.14.142.tgz#52d5daff878e36e72e299bb9c5871fd6aee55829"
+  integrity sha512-ZhNS7c4D4WQ49Dr1FftQj7SwngRswOnPfxktmqSy5BettRCuum2q784jRwNTYfxH00r8+fEgRz6Da8j5DHNd1Q==
 
 "@types/long@^4.0.0":
   version "4.0.0"
@@ -1481,10 +1481,11 @@ abort-controller@^3.0.0:
     event-target-shim "^5.0.0"
 
 abstracted-admin@^0.32.1:
-  version "0.32.1"
-  resolved "https://registry.yarnpkg.com/abstracted-admin/-/abstracted-admin-0.32.1.tgz#c3b67fe9aa62b9304a4198dfb9b4ba31ebd1f855"
-  integrity sha512-rwe0POxhQXkBIwm1JEkWoCV2pwHAbgXbDZnfCcR56+D5Dc8fd9AVDpUKdaG+UpLo367F+/bBEBhlGn+KRzBbag==
+  version "0.32.2"
+  resolved "https://registry.yarnpkg.com/abstracted-admin/-/abstracted-admin-0.32.2.tgz#b5c1b1f4d8e06e833365c145ac764e21f8f1e71d"
+  integrity sha512-074jA4n3WCeeMdvA3xVAfx/DbefqRD6A6equzMzn1WnGXAPtPijkafTYPvEzBxnEeY1tjyRvSlsNodZbtTrQig==
   dependencies:
+    "@firebase/app" "^0.4.18"
     "@firebase/auth-types" "^0.8.0"
     "@firebase/database-types" "^0.4.4"
     abstracted-firebase "^0.32.0"
@@ -1838,9 +1839,9 @@ autoprefixer@^9.5.1:
     postcss-value-parser "^4.0.2"
 
 aws-sdk@^2.512.0:
-  version "2.543.0"
-  resolved "https://registry.yarnpkg.com/aws-sdk/-/aws-sdk-2.543.0.tgz#08b69a6fab9b3ab08e329888d06a8c4ee583f26d"
-  integrity sha512-ABHsA4W7LLYnTBCgtbTt0NF7+66nMCtdcJuAn30+RGzF0bOw3lCguqzootFrMlIOXklddQFJ9kKTXd+p/+uCVQ==
+  version "2.544.0"
+  resolved "https://registry.yarnpkg.com/aws-sdk/-/aws-sdk-2.544.0.tgz#d99eeada8237ee67699ce6644f8070eeb84996e7"
+  integrity sha512-wwiBJgAUGKXY/xoCSrUXVZnNtefoH3YcPwGxQrQXOIDnLMQ32yh/SWc52qmwdxA7WJzpTcIj8y+5keH3P1LYaw==
   dependencies:
     buffer "4.9.1"
     events "1.1.1"
@@ -3380,9 +3381,9 @@ deepmerge@^1.5.2:
   integrity sha512-95k0GDqvBjZavkuvzx/YqVLv/6YYa17fz6ILMSf7neqQITCPbnfEnQvEgMPNjH4kgobe7+WIL0yJEHku+H3qtQ==
 
 deepmerge@^4.0.0:
-  version "4.0.0"
-  resolved "https://registry.yarnpkg.com/deepmerge/-/deepmerge-4.0.0.tgz#3e3110ca29205f120d7cb064960a39c3d2087c09"
-  integrity sha512-YZ1rOP5+kHor4hMAH+HRQnBQHg+wvS1un1hAOuIcxcBy0hzcUf6Jg2a1w65kpoOUnurOfZbERwjI1TfZxNjcww==
+  version "4.1.0"
+  resolved "https://registry.yarnpkg.com/deepmerge/-/deepmerge-4.1.0.tgz#f4647b378c0a9d32965470e477c01ae55451b19a"
+  integrity sha512-tJlmKE535XRVBrzMRMqlm4V2S/l3yO/qr9Ad0MUqgR5jh9epGrALs8Q6+pROMa6ntDieAlnmYM/cDFCtNjp4+Q==
 
 default-gateway@^4.2.0:
   version "4.2.0"
@@ -3693,9 +3694,9 @@ ee-first@1.1.1:
   integrity sha1-WQxhFWsK4vTwJVcyoViyZrxWsh0=
 
 electron-to-chromium@^1.3.247:
-  version "1.3.276"
-  resolved "https://registry.yarnpkg.com/electron-to-chromium/-/electron-to-chromium-1.3.276.tgz#1cca47c31b6e852ce43ab62ae4f31608db8b95d4"
-  integrity sha512-J7bVRAW2fHJVOGZqxSvmMcbBAWPiueHsKwSq+TjaNq1wQ71Za0uBExC1ECuMmAAQioDA2//auhI/glFINnUGPw==
+  version "1.3.277"
+  resolved "https://registry.yarnpkg.com/electron-to-chromium/-/electron-to-chromium-1.3.277.tgz#38b7b297f9b3f67ea900a965c1b11a555de526ec"
+  integrity sha512-Czmsrgng89DOgJlIknnw9bn5431QdtnUwGp5YYiPwU1DbZQUxCLF+rc1ZC09VNAdalOPcvH6AE8BaA0H5HjI/w==
 
 elliptic@^6.0.0:
   version "6.5.1"
@@ -4213,10 +4214,10 @@ firebase-key@^2.0.2:
   resolved "https://registry.yarnpkg.com/firebase-key/-/firebase-key-2.0.2.tgz#44ffdc460faeb774ef95e04a43027042974cfe5c"
   integrity sha512-gH0u6apANQsqHUqcf+Yd49VaUQyKNCLxofwYx0gqUGcymeLs5HWg/3tXroGheYYH8+ynxbrnP/Z4F/FEqNy9Ow==
 
-firemock@^0.32.2:
-  version "0.32.2"
-  resolved "https://registry.yarnpkg.com/firemock/-/firemock-0.32.2.tgz#dba024c89eb7cf83d117f385170439bd2089421c"
-  integrity sha512-wqhW8a83EOT1irG9rsb4hXb1rWqmJ+Itv0jFZSTqslpz3ISA9ggVsg3tyUCHLn+iw41bxuk5N/cVWsUg4pQgrw==
+firemock@^0.32.6:
+  version "0.32.8"
+  resolved "https://registry.yarnpkg.com/firemock/-/firemock-0.32.8.tgz#11c0355a277ec54f66e82ff1c5a9f61faf51e073"
+  integrity sha512-ffp7rQiEyZORppYKPVobXM+kTbA/bc0+91iF8O9vqGt/1XncSt2j4yBvOzLP9BgNljGo6LkB7TGNv2Bxkv4acQ==
   dependencies:
     "@firebase/app-types" "^0.4.4"
     "@firebase/auth-types" "^0.8.0"
@@ -4390,9 +4391,9 @@ gaxios@^2.0.0, gaxios@^2.0.1:
     node-fetch "^2.3.0"
 
 gcp-metadata@^3.0.0:
-  version "3.0.0"
-  resolved "https://registry.yarnpkg.com/gcp-metadata/-/gcp-metadata-3.0.0.tgz#6e43f899728d0e1bb7831631cf3f86cc9e4de3aa"
-  integrity sha512-WP5/TZWri9TrD41jNr8ukY9dKYLL+8jwQVwbtUbmprjWuyybdnJNkbXbwqD2sdbXIVXD1WCqzfj7QftSLB6K8Q==
+  version "3.1.0"
+  resolved "https://registry.yarnpkg.com/gcp-metadata/-/gcp-metadata-3.1.0.tgz#cd08a5d5688efa4d73d1f61c1b2a7e25db2c94fa"
+  integrity sha512-TRvWwkzWLf9bn5+wgbyrnhRuIg3kqtyk+SzrbmUgLUfZOOD2+NBVXsjtkK/UfHEBl9KDZ5Q0NT+WhLSMSycFMw==
   dependencies:
     gaxios "^2.0.1"
     json-bigint "^0.3.0"

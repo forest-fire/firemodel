@@ -1,7 +1,14 @@
 // tslint:disable-next-line:no-implicit-dependencies
 import { RealTimeDB } from "abstracted-firebase";
 import { Model } from "./Model";
-import { createError, IDictionary, Omit, Nullable, fk } from "common-types";
+import {
+  createError,
+  IDictionary,
+  Omit,
+  Nullable,
+  fk,
+  dotNotation
+} from "common-types";
 import { key as fbKey } from "firebase-key";
 import { FireModel } from "./FireModel";
 import {
@@ -97,6 +104,58 @@ export class Record<T extends Model> extends FireModel<T> {
     model: new () => T
   ) {
     return Record.create(model).dynamicPathComponents;
+  }
+
+  /**
+   * Given a database _path_ and a `Model`, pull out the composite key from
+   * the path. This works for Models that do and _do not_ have dynamic segments
+   * and in both cases the `id` property will be returned as part of the composite
+   * so long as the path does indeed have the `id` at the end of the path.
+   */
+  public static getCompositeKeyFromPath<T extends Model>(
+    model: new () => T,
+    path: string
+  ) {
+    if (!path) {
+      return {};
+    }
+
+    const r = Record.create(model);
+    const pathParts = dotNotation(path).split(".");
+    const compositeKey: IDictionary = {};
+    const segments = dotNotation(r.dbOffset).split(".");
+    if (
+      segments.length > pathParts.length ||
+      pathParts.length - 2 > segments.length
+    ) {
+      throw new FireModelError(
+        `Attempt to get the composite key from a path failed due to the diparity of segments in the path [ ${pathParts.length} ] versus the dynamic path [ ${segments.length} ]`,
+        "firemodel/not-allowed"
+      );
+    }
+
+    segments.forEach((segment, idx) => {
+      if (segment.slice(0, 1) === ":") {
+        const name = segment.slice(1);
+        const value = pathParts[idx];
+        compositeKey[name] = value;
+      } else {
+        if (segment !== pathParts[idx]) {
+          throw new FireModelError(
+            `The attempt to build a composite key for the model ${capitalize(
+              r.modelName
+            )} failed because the static parts of the path did not match up. Specifically where the "dbOffset" states the segment "${segment}" the path passed in had "${
+              pathParts[idx]
+            }" instead.`
+          );
+        }
+      }
+      if (pathParts.length - 1 === segments.length) {
+        compositeKey.id = pathParts.slice(-1);
+      }
+    });
+
+    return compositeKey;
   }
 
   public get data() {
@@ -204,8 +263,9 @@ export class Record<T extends Model> extends FireModel<T> {
   }
 
   /**
-   * returns the record's database offset without including the ID of the record;
-   * among other things this can be useful prior to establishing an ID for a record
+   * Returns the record's database _offset_ without the ID or any dynamic properties
+   * yet interjected. The _dynamic properties_ however, will be show with a `:` prefix
+   * to indicate where the the values will go.
    */
   public get dbOffset() {
     return getModelMeta(this).dbOffset;

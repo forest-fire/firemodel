@@ -190,6 +190,7 @@ describe("Mocking:", () => {
 
     const eventTypes: Set<string> = new Set();
     events.forEach(e => eventTypes.add(e.type));
+    console.log(eventTypes);
 
     expect(Array.from(eventTypes)).to.include(FmEvents.RECORD_ADDED);
     expect(Array.from(eventTypes)).to.include(
