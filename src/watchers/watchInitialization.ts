@@ -7,6 +7,7 @@ import { Model } from "../Model";
  * value.
  */
 const _hasInitialized: IDictionary<boolean> = {};
+
 export const hasInitialized = (watcherId?: string) => {
   if (watcherId) {
     _hasInitialized[watcherId] = true;
@@ -22,26 +23,22 @@ export const hasInitialized = (watcherId?: string) => {
  */
 export async function waitForInitialization<T = Model>(
   watcher: IWatcherEventContext<T>,
-  timeout: number = 5000
+  timeout: number = 1500
 ): Promise<void> {
-  return new Promise(async (resolve, reject) => {
-    setTimeout(() => {
-      if (!ready(watcher)) {
-        reject(
-          new Error(
-            `Timed out waiting for initialization of watcher "${watcher.watcherId}"`
-          )
-        );
-      } else {
-        resolve();
-      }
-    }, timeout);
-    while (!ready(watcher)) {
-      await wait(50);
-    }
+  setTimeout(() => {
+    if (!ready(watcher)) {
+      console.log(hasInitialized());
+      console.log(watcher);
 
-    resolve();
-  });
+      throw new Error(
+        `Timed out waiting for initialization of watcher "${watcher.watcherId}"`
+      );
+    }
+  }, timeout);
+
+  while (!ready(watcher)) {
+    await wait(50);
+  }
 }
 
 function ready<T>(watcher: IWatcherEventContext<T>) {

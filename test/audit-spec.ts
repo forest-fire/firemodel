@@ -47,6 +47,8 @@ describe("Auditing ->’", () => {
         .to.haveOwnProperty("action")
         .and.to.equal("updated");
 
+      console.log(log[0]);
+
       expect(
         log[0].changes,
         `Expected log length of be 2 but got ${

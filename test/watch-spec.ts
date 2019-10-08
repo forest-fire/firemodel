@@ -248,7 +248,10 @@ describe("Watch.list(XXX).ids()", () => {
       e => e.type === FmEvents.RECORD_CHANGED
     );
     const recordIdsChanged = recordsChanged.map(i => i.key);
-    expect(recordsChanged).lengthOf(2);
+
+    // two events when the watcher is turned on;
+    // two more when change takes place on a watched path
+    expect(recordsChanged).lengthOf(4);
 
     recordsChanged.forEach(i => {
       expect(i.watcherSource).to.equal("list-of-records");
@@ -267,7 +270,9 @@ describe("Watch.list(XXX).ids()", () => {
   });
 
   it("The Watch.list(xyz).ids(...) works when the model has a composite key", async () => {
-    FireModel.defaultDb = await DB.connect({ mocking: true });
+    FireModel.defaultDb = await DB.connect({
+      mocking: true
+    });
     const events: Array<IFmWatchEvent<Person>> = [];
     const cb = async (event: IFmWatchEvent<Person>) => {
       events.push(event);

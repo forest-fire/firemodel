@@ -12,7 +12,7 @@ import { FmEvents } from "../src/state-mgmt";
 import { Car } from "./testing/Car";
 import Company from "./testing/dynamicPaths/Company";
 
-describe.only("List class: ", () => {
+describe("List class: ", () => {
   let db: DB;
   beforeEach(async () => {
     db = new DB({ mocking: true });

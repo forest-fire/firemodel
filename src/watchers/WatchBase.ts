@@ -64,6 +64,7 @@ export class WatchBase<T extends Model> {
     const watcherName = options.name || this._watcherName || `${watcherId}`;
 
     const watcherItem = this.buildWatcherItem(watcherName);
+
     // The dispatcher will now have all the context it needs to publish events
     // in a consistent fashion; this dispatch function will be used both by
     // both locally originated events AND server based events.
@@ -109,6 +110,7 @@ export class WatchBase<T extends Model> {
         type: FmEvents.WATCHER_STARTING,
         ...watcherItem
       });
+
       await waitForInitialization(watcherItem);
 
       await (this._dispatcher || FireModel.dispatch)({
