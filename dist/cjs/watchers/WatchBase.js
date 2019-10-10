@@ -26,9 +26,15 @@ class WatchBase {
     async start(options = {}) {
         const isListOfRecords = this._watcherSource === "list-of-records";
         const watchIdPrefix = isListOfRecords ? "wlr" : "w";
-        const watchHashCode = isListOfRecords
-            ? String(this._underlyingRecordWatchers[0]._query.hashCode())
-            : String(this._query.hashCode());
+        let watchHashCode;
+        try {
+            watchHashCode = isListOfRecords
+                ? String(this._underlyingRecordWatchers[0]._query.hashCode())
+                : String(this._query.hashCode());
+        }
+        catch (e) {
+            throw new errors_1.FireModelProxyError(e, `An error occured trying to start a watcher. The source was "${this._watcherSource}" and had a query of: ${this._query}\n\nThe underlying error was: ${e.message}`, "watcher/not-allowed");
+        }
         const watcherId = watchIdPrefix + "-" + watchHashCode;
         this._watcherName = options.name || `${watcherId}`;
         const watcherName = options.name || this._watcherName || `${watcherId}`;
