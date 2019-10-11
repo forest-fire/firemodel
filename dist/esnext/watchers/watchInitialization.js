@@ -17,7 +17,7 @@ export const hasInitialized = (watcherId) => {
  */
 export async function waitForInitialization(watcher, timeout = 3000) {
     setTimeout(() => {
-        console.log("hasInitialized (at pt of timeout):", hasInitialized());
+        console.log("hasInitialized (at point of timeout):", hasInitialized(), watcher.watcherId);
         if (!ready(watcher)) {
             throw new Error(`Timed out waiting for initialization of watcher "${watcher.watcherId}"`);
         }

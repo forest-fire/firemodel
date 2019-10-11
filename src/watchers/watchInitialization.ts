@@ -26,7 +26,11 @@ export async function waitForInitialization<T = Model>(
   timeout: number = 3000
 ): Promise<void> {
   setTimeout(() => {
-    console.log("hasInitialized (at pt of timeout):", hasInitialized());
+    console.log(
+      "hasInitialized (at point of timeout):",
+      hasInitialized(),
+      watcher.watcherId
+    );
 
     if (!ready(watcher)) {
       throw new Error(
