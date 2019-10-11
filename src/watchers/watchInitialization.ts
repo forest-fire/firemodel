@@ -23,13 +23,12 @@ export const hasInitialized = (watcherId?: string) => {
  */
 export async function waitForInitialization<T = Model>(
   watcher: IWatcherEventContext<T>,
-  timeout: number = 1500
+  timeout: number = 3000
 ): Promise<void> {
   setTimeout(() => {
-    if (!ready(watcher)) {
-      console.log(hasInitialized());
-      console.log(watcher);
+    console.log("hasInitialized (at pt of timeout):", hasInitialized());
 
+    if (!ready(watcher)) {
       throw new Error(
         `Timed out waiting for initialization of watcher "${watcher.watcherId}"`
       );

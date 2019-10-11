@@ -17,11 +17,10 @@ exports.hasInitialized = (watcherId) => {
  * data from the watcher. This indicates that the frontend
  * and Firebase DB are now in sync.
  */
-async function waitForInitialization(watcher, timeout = 1500) {
+async function waitForInitialization(watcher, timeout = 3000) {
     setTimeout(() => {
+        console.log("hasInitialized (at pt of timeout):", exports.hasInitialized());
         if (!ready(watcher)) {
-            console.log(exports.hasInitialized());
-            console.log(watcher);
             throw new Error(`Timed out waiting for initialization of watcher "${watcher.watcherId}"`);
         }
     }, timeout);
