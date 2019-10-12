@@ -74,6 +74,7 @@ export class WatchBase {
             // dispatch "starting"; no need to wait for promise
             (this._dispatcher || FireModel.dispatch)(Object.assign({ type: FmEvents.WATCHER_STARTING }, watcherItem));
             await waitForInitialization(watcherItem);
+            // console.log("watcher initialized", watcherItem);
             await (this._dispatcher || FireModel.dispatch)(Object.assign({ type: FmEvents.WATCHER_STARTED }, watcherItem));
             return watcherItem;
         }

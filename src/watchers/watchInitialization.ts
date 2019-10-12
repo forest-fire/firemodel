@@ -6,11 +6,14 @@ import { Model } from "../Model";
  * indicates which watcherId's have returned their initial
  * value.
  */
-const _hasInitialized: IDictionary<boolean> = {};
+const _hasInitialized: IDictionary<boolean | "timed-out"> = {};
 
-export const hasInitialized = (watcherId?: string) => {
+export const hasInitialized = (
+  watcherId?: string,
+  value: true | "timed-out" = true
+) => {
   if (watcherId) {
-    _hasInitialized[watcherId] = true;
+    _hasInitialized[watcherId] = value;
   }
 
   return _hasInitialized;
@@ -23,16 +26,19 @@ export const hasInitialized = (watcherId?: string) => {
  */
 export async function waitForInitialization<T = Model>(
   watcher: IWatcherEventContext<T>,
-  timeout: number = 3000
+  timeout: number = 750
 ): Promise<void> {
   setTimeout(() => {
-    console.log("hasInitialized (at pt of timeout):", hasInitialized());
-
     if (!ready(watcher)) {
-      throw new Error(
-        `Timed out waiting for initialization of watcher "${watcher.watcherId}"`
+      console.info(
+        `A watcher [ ${
+          watcher.watcherId
+        } ] has not returned an event in the timeout window  [ ${timeout}ms ]. This might represent an issue but can also happen when a watcher starts listening to a path [ ${watcher.watcherPaths.join(
+          ", "
+        )} ] which has no data yet.`
       );
     }
+    hasInitialized(watcher.watcherId, "timed-out");
   }, timeout);
 
   while (!ready(watcher)) {
