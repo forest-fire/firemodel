@@ -4,9 +4,9 @@ import { wait } from "common-types";
  * value.
  */
 const _hasInitialized = {};
-export const hasInitialized = (watcherId) => {
+export const hasInitialized = (watcherId, value = true) => {
     if (watcherId) {
-        _hasInitialized[watcherId] = true;
+        _hasInitialized[watcherId] = value;
     }
     return _hasInitialized;
 };
@@ -15,12 +15,12 @@ export const hasInitialized = (watcherId) => {
  * data from the watcher. This indicates that the frontend
  * and Firebase DB are now in sync.
  */
-export async function waitForInitialization(watcher, timeout = 3000) {
+export async function waitForInitialization(watcher, timeout = 750) {
     setTimeout(() => {
-        console.log("hasInitialized (at point of timeout):", hasInitialized(), watcher.watcherId);
         if (!ready(watcher)) {
-            throw new Error(`Timed out waiting for initialization of watcher "${watcher.watcherId}"`);
+            console.info(`A watcher [ ${watcher.watcherId} ] has not returned an event in the timeout window  [ ${timeout}ms ]. This might represent an issue but can also happen when a watcher starts listening to a path [ ${watcher.watcherPaths.join(", ")} ] which has no data yet.`);
         }
+        hasInitialized(watcher.watcherId, "timed-out");
     }, timeout);
     while (!ready(watcher)) {
         await wait(50);
