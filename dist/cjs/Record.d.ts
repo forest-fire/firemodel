@@ -1,6 +1,6 @@
 import { RealTimeDB } from "abstracted-firebase";
 import { Model } from "./Model";
-import { IDictionary, Omit, Nullable, fk } from "common-types";
+import { IDictionary, Omit, Nullable, fk, pk } from "common-types";
 import { FireModel } from "./FireModel";
 import { IReduxDispatch } from "./state-mgmt";
 import { IFMEventName, IFmCrudOperations, IFmDispatchOptions } from "./state-mgmt/index";
@@ -41,6 +41,87 @@ export declare class Record<T extends Model> extends FireModel<T> {
      * the **Model** who's properties are being interogated
      */
     model: new () => T): string[];
+    /**
+     * create
+     *
+     * creates a new -- and empty -- Record object; often used in
+     * conjunction with the Record's initialize() method
+     */
+    static create<T extends Model>(model: new () => T, options?: IRecordOptions): Record<T>;
+    /**
+     * Creates an empty record and then inserts all values
+     * provided along with default values provided in META.
+     */
+    static local<T extends Model>(model: new () => T, values: Partial<T>, options?: IRecordOptions & {
+        ignoreEmptyValues?: boolean;
+    }): Record<T>;
+    /**
+     * add
+     *
+     * Adds a new record to the database
+     *
+     * @param schema the schema of the record
+     * @param payload the data for the new record; this optionally can include the "id" but if left off the new record will use a firebase pushkey
+     * @param options
+     */
+    static add<T extends Model>(model: (new () => T) | string, payload: ModelOptionalId<T>, options?: IRecordOptions): Promise<Record<T>>;
+    /**
+     * **update**
+     *
+     * update an existing record in the database with a dictionary of prop/value pairs
+     *
+     * @param model the _model_ type being updated
+     * @param id the `id` for the model being updated
+     * @param updates properties to update; this is a non-destructive operation so properties not expressed will remain unchanged. Also, because values are _nullable_ you can set a property to `null` to REMOVE it from the database.
+     * @param options
+     */
+    static update<T extends Model>(model: new () => T, id: string | ICompositeKey<T>, updates: Nullable<Partial<T>>, options?: IRecordOptions): Promise<Record<T>>;
+    /**
+     * **createWith**
+     *
+     * A static initializer that creates a Record of a given class
+     * and then initializes the state with either a Model payload
+     * or a CompositeKeyString (aka, '[id]::[prop]:[value]').
+     *
+     * You should be careful in using this initializer; the expected
+     * _intents_ include:
+     *
+     * 1. to initialize an in-memory record of something which is already
+     * in the DB
+     * 2. to get all the "composite key" attributes into the record so
+     * all META queries are possible
+     *
+     * If you want to add this record to the database then use `add()`
+     * initializer instead.
+     *
+     * @prop model a constructor for the underlying model
+     * @payload either a string representing an `id` or Composite Key or alternatively
+     * a hash/dictionary of attributes that are to be set as a starting point
+     */
+    static createWith<T extends Model>(model: new () => T, payload: Partial<T> | string, options?: IRecordOptions): Record<T>;
+    /**
+     * get (static initializer)
+     *
+     * Allows the retrieval of records based on the record's id (and dynamic path prefixes
+     * in cases where that applies)
+     *
+     * @param model the model definition you are retrieving
+     * @param id either just an "id" string or in the case of models with dynamic path prefixes you can pass in an object with the id and all dynamic prefixes
+     * @param options
+     */
+    static get<T extends Model>(model: new () => T, id: string | ICompositeKey<T>, options?: IRecordOptions): Promise<Record<T>>;
+    static remove<T extends Model>(model: new () => T, id: IFkReference<T>, 
+    /** if there is a known current state of this model you can avoid a DB call to get it */
+    currentState?: Record<T>): Promise<Record<T>>;
+    /**
+     * Associates a new FK to a relationship on the given `Model`; returning
+     * the primary model as a return value
+     */
+    static associate<T extends Model>(model: new () => T, id: pk, property: Extract<keyof T, string>, refs: IFkReference<any> | Array<IFkReference<any>>): Promise<Record<T>>;
+    private _existsOnDB;
+    private _writeOperations;
+    private _data?;
+    constructor(model: new () => T, options?: IRecordOptions);
     /**
      * Given a database _path_ and a `Model`, pull out the composite key from
      * the path. This works for Models that do and _do not_ have dynamic segments
@@ -117,82 +198,6 @@ export declare class Record<T extends Model> extends FireModel<T> {
     readonly existsOnDB: boolean;
     /** indicates whether this record is already being watched locally */
     readonly isBeingWatched: boolean;
-    /**
-     * create
-     *
-     * creates a new -- and empty -- Record object; often used in
-     * conjunction with the Record's initialize() method
-     */
-    static create<T extends Model>(model: new () => T, options?: IRecordOptions): Record<T>;
-    /**
-     * Creates an empty record and then inserts all values
-     * provided along with default values provided in META.
-     */
-    static local<T extends Model>(model: new () => T, values: Partial<T>, options?: IRecordOptions & {
-        ignoreEmptyValues?: boolean;
-    }): Record<T>;
-    /**
-     * add
-     *
-     * Adds a new record to the database
-     *
-     * @param schema the schema of the record
-     * @param payload the data for the new record; this optionally can include the "id" but if left off the new record will use a firebase pushkey
-     * @param options
-     */
-    static add<T extends Model>(model: (new () => T) | string, payload: ModelOptionalId<T>, options?: IRecordOptions): Promise<Record<T>>;
-    /**
-     * **update**
-     *
-     * update an existing record in the database with a dictionary of prop/value pairs
-     *
-     * @param model the _model_ type being updated
-     * @param id the `id` for the model being updated
-     * @param updates properties to update; this is a non-destructive operation so properties not expressed will remain unchanged. Also, because values are _nullable_ you can set a property to `null` to REMOVE it from the database.
-     * @param options
-     */
-    static update<T extends Model>(model: new () => T, id: string | ICompositeKey<T>, updates: Nullable<Partial<T>>, options?: IRecordOptions): Promise<Record<T>>;
-    /**
-     * **createWith**
-     *
-     * A static initializer that creates a Record of a given class
-     * and then initializes the state with either a Model payload
-     * or a CompositeKeyString (aka, '[id]::[prop]:[value]').
-     *
-     * You should be careful in using this initializer; the expected
-     * _intents_ include:
-     *
-     * 1. to initialize an in-memory record of something which is already
-     * in the DB
-     * 2. to get all the "composite key" attributes into the record so
-     * all META queries are possible
-     *
-     * If you want to add this record to the database then use `add()`
-     * initializer instead.
-     *
-     * @prop model a constructor for the underlying model
-     * @payload either a string representing an `id` or Composite Key or alternatively
-     * a hash/dictionary of attributes that are to be set as a starting point
-     */
-    static createWith<T extends Model>(model: new () => T, payload: Partial<T> | string, options?: IRecordOptions): Record<T>;
-    /**
-     * get (static initializer)
-     *
-     * Allows the retrieval of records based on the record's id (and dynamic path prefixes
-     * in cases where that applies)
-     *
-     * @param model the model definition you are retrieving
-     * @param id either just an "id" string or in the case of models with dynamic path prefixes you can pass in an object with the id and all dynamic prefixes
-     * @param options
-     */
-    static get<T extends Model>(model: new () => T, id: string | ICompositeKey<T>, options?: IRecordOptions): Promise<Record<T>>;
-    static remove<T extends Model>(model: new () => T, id: IFkReference<T>, 
-    /** if there is a known current state of this model you can avoid a DB call to get it */
-    currentState?: Record<T>): Promise<Record<T>>;
-    private _existsOnDB;
-    private _writeOperations;
-    private _data?;
-    constructor(model: new () => T, options?: IRecordOptions);
     readonly modelConstructor: new () => T;
     /**
      * Goes out to the database and reloads this record
@@ -210,14 +215,6 @@ export declare class Record<T extends Model> extends FireModel<T> {
      */
     addAnother(payload: T, options?: IRecordOptions): Promise<Record<T>>;
     isSameModelAs(model: new () => any): boolean;
-    /**
-     * Allows an empty Record to be initialized to a known state.
-     * This is not intended to allow for mass property manipulation other
-     * than at time of initialization
-     *
-     * @param data the initial state you want to start with
-     */
-    _initialize(data: Partial<T>, options?: IRecordOptions): Promise<void>;
     /**
      * Pushes new values onto properties on the record
      * which have been stated to be a "pushKey"
@@ -325,6 +322,14 @@ export declare class Record<T extends Model> extends FireModel<T> {
         localPath: any;
         data: string;
     };
+    /**
+     * Allows an empty Record to be initialized to a known state.
+     * This is not intended to allow for mass property manipulation other
+     * than at time of initialization
+     *
+     * @param data the initial state you want to start with
+     */
+    _initialize(data: Partial<T>, options?: IRecordOptions): Promise<void>;
     /**
      * **_writeAudit**
      *

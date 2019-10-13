@@ -1,3 +1,4 @@
+//#region IMPORTS
 // tslint:disable-next-line:no-implicit-dependencies
 import { RealTimeDB } from "abstracted-firebase";
 import { Model } from "./Model";
@@ -7,6 +8,7 @@ import {
   Omit,
   Nullable,
   fk,
+  pk,
   dotNotation
 } from "common-types";
 import { key as fbKey } from "firebase-key";
@@ -58,6 +60,8 @@ import copy from "fast-copy";
 import { WatchDispatcher } from "./watchers/WatchDispatcher";
 import { UnwatchedLocalEvent } from "./state-mgmt/UnwatchedLocalEvent";
 
+//#endregion IMPORTS
+
 /**
  * a Model that doesn't require the ID tag (or the META tag which not a true
  * property of the model)
@@ -106,208 +110,6 @@ export class Record<T extends Model> extends FireModel<T> {
     return Record.create(model).dynamicPathComponents;
   }
 
-  /**
-   * Given a database _path_ and a `Model`, pull out the composite key from
-   * the path. This works for Models that do and _do not_ have dynamic segments
-   * and in both cases the `id` property will be returned as part of the composite
-   * so long as the path does indeed have the `id` at the end of the path.
-   */
-  public static getCompositeKeyFromPath<T extends Model>(
-    model: new () => T,
-    path: string
-  ) {
-    if (!path) {
-      return {};
-    }
-
-    const r = Record.create(model);
-    const pathParts = dotNotation(path).split(".");
-    const compositeKey: IDictionary = {};
-    const segments = dotNotation(r.dbOffset).split(".");
-    if (
-      segments.length > pathParts.length ||
-      pathParts.length - 2 > segments.length
-    ) {
-      throw new FireModelError(
-        `Attempt to get the composite key from a path failed due to the diparity of segments in the path [ ${pathParts.length} ] versus the dynamic path [ ${segments.length} ]`,
-        "firemodel/not-allowed"
-      );
-    }
-
-    segments.forEach((segment, idx) => {
-      if (segment.slice(0, 1) === ":") {
-        const name = segment.slice(1);
-        const value = pathParts[idx];
-        compositeKey[name] = value;
-      } else {
-        if (segment !== pathParts[idx]) {
-          throw new FireModelError(
-            `The attempt to build a composite key for the model ${capitalize(
-              r.modelName
-            )} failed because the static parts of the path did not match up. Specifically where the "dbOffset" states the segment "${segment}" the path passed in had "${
-              pathParts[idx]
-            }" instead.`
-          );
-        }
-      }
-      if (pathParts.length - 1 === segments.length) {
-        compositeKey.id = pathParts.slice(-1);
-      }
-    });
-
-    return compositeKey;
-  }
-
-  public get data() {
-    return this._data as Readonly<T>;
-  }
-
-  public get isDirty() {
-    return this.META.isDirty ? true : false;
-  }
-
-  /**
-   * deprecated
-   */
-  public set isDirty(value: boolean) {
-    if (!this._data.META) {
-      this._data.META = { isDirty: value };
-    }
-    this._data.META.isDirty = value;
-  }
-
-  /**
-   * returns the fully qualified name in the database to this record;
-   * this of course includes the record id so if that's not set yet calling
-   * this getter will result in an error
-   */
-  public get dbPath() {
-    if (this.data.id ? false : true) {
-      throw createError(
-        "record/not-ready",
-        `you can not ask for the dbPath before setting an "id" property [ ${this.modelName} ]`
-      );
-    }
-
-    return [
-      this._injectDynamicPathProperties(this.dbOffset),
-      this.pluralName,
-      this.data.id
-    ].join("/");
-  }
-
-  /**
-   * provides a boolean flag which indicates whether the underlying
-   * model has a "dynamic path" which ultimately comes from a dynamic
-   * component in the "dbOffset" property defined in the model decorator
-   */
-  public get hasDynamicPath() {
-    return this.META.dbOffset.includes(":");
-  }
-
-  /**
-   * **dynamicPathComponents**
-   *
-   * An array of "dynamic properties" that are derived fom the "dbOffset" to
-   * produce the "dbPath"
-   */
-  public get dynamicPathComponents() {
-    return this._findDynamicComponents(this.META.dbOffset);
-  }
-
-  /**
-   * the list of dynamic properties in the "localPrefix"
-   * which must be resolved to achieve the "localPath"
-   */
-  public get localDynamicComponents() {
-    return this._findDynamicComponents(this.META.localPrefix);
-  }
-
-  /**
-   * A hash of values -- including at least "id" -- which represent
-   * the composite key of a model.
-   */
-  public get compositeKey(): ICompositeKey<T> {
-    return createCompositeKey<T>(this);
-  }
-
-  /**
-   * a string value which is used in relationships to fully qualify
-   * a composite string (aka, a model which has a dynamic dbOffset)
-   */
-  public get compositeKeyRef() {
-    return createCompositeKeyRefFromRecord<T>(this);
-  }
-
-  /**
-   * The Record's primary key; this is the `id` property only. Not
-   * the composite key.
-   */
-  public get id(): string {
-    return this.data.id;
-  }
-
-  /**
-   * Allows setting the Record's `id` if it hasn't been set before.
-   * Resetting the `id` is not allowed.
-   */
-  public set id(val: string) {
-    if (this.data.id) {
-      throw new FireModelError(
-        `You may not re-set the ID of a record [ ${this.modelName}.id ${this.data.id} => ${val} ].`,
-        "firemodel/not-allowed"
-      );
-    }
-
-    this._data.id = val;
-  }
-
-  /**
-   * Returns the record's database _offset_ without the ID or any dynamic properties
-   * yet interjected. The _dynamic properties_ however, will be show with a `:` prefix
-   * to indicate where the the values will go.
-   */
-  public get dbOffset() {
-    return getModelMeta(this).dbOffset;
-  }
-
-  /**
-   * returns the record's location in the frontend state management framework;
-   * this can include dynamic properties characterized in the path string by
-   * leading ":" character.
-   */
-  public get localPath() {
-    let prefix = this.localPrefix;
-    this.localDynamicComponents.forEach(prop => {
-      prefix = prefix.replace(`:${prop}`, this.get(prop as any));
-    });
-    return pathJoin(
-      prefix,
-      this.META.localModelName !== this.modelName
-        ? this.META.localModelName
-        : this.options.pluralizeLocalPath
-        ? this.pluralName
-        : this.modelName
-    );
-  }
-
-  /**
-   * The path in the local state tree that brings you to
-   * the record; this is differnt when retrieved from a
-   * Record versus a List.
-   */
-  public get localPrefix() {
-    return getModelMeta(this).localPrefix;
-  }
-
-  public get existsOnDB() {
-    return this.data && this.data.id ? true : false;
-  }
-
-  /** indicates whether this record is already being watched locally */
-  public get isBeingWatched() {
-    return FireModel.isBeingWatched(this.dbPath);
-  }
   /**
    * create
    *
@@ -543,6 +345,24 @@ export class Record<T extends Model> extends FireModel<T> {
     return record;
   }
 
+  //#region STATIC: Relationships
+  /**
+   * Associates a new FK to a relationship on the given `Model`; returning
+   * the primary model as a return value
+   */
+  public static async associate<T extends Model>(
+    model: new () => T,
+    id: pk,
+    property: Extract<keyof T, string>,
+    refs: IFkReference<any> | Array<IFkReference<any>>
+  ) {
+    const obj = await Record.get(model, id);
+    await obj.associate(property, refs);
+    return obj;
+  }
+
+  //#endregion STATIC: Relationships
+
   //#endregion
 
   //#region INSTANCE DEFINITION
@@ -581,6 +401,208 @@ export class Record<T extends Model> extends FireModel<T> {
     this._model = new model();
     this._data = new model();
   }
+  /**
+   * Given a database _path_ and a `Model`, pull out the composite key from
+   * the path. This works for Models that do and _do not_ have dynamic segments
+   * and in both cases the `id` property will be returned as part of the composite
+   * so long as the path does indeed have the `id` at the end of the path.
+   */
+  public static getCompositeKeyFromPath<T extends Model>(
+    model: new () => T,
+    path: string
+  ) {
+    if (!path) {
+      return {};
+    }
+
+    const r = Record.create(model);
+    const pathParts = dotNotation(path).split(".");
+    const compositeKey: IDictionary = {};
+    const segments = dotNotation(r.dbOffset).split(".");
+    if (
+      segments.length > pathParts.length ||
+      pathParts.length - 2 > segments.length
+    ) {
+      throw new FireModelError(
+        `Attempt to get the composite key from a path failed due to the diparity of segments in the path [ ${pathParts.length} ] versus the dynamic path [ ${segments.length} ]`,
+        "firemodel/not-allowed"
+      );
+    }
+
+    segments.forEach((segment, idx) => {
+      if (segment.slice(0, 1) === ":") {
+        const name = segment.slice(1);
+        const value = pathParts[idx];
+        compositeKey[name] = value;
+      } else {
+        if (segment !== pathParts[idx]) {
+          throw new FireModelError(
+            `The attempt to build a composite key for the model ${capitalize(
+              r.modelName
+            )} failed because the static parts of the path did not match up. Specifically where the "dbOffset" states the segment "${segment}" the path passed in had "${
+              pathParts[idx]
+            }" instead.`
+          );
+        }
+      }
+      if (pathParts.length - 1 === segments.length) {
+        compositeKey.id = pathParts.slice(-1);
+      }
+    });
+
+    return compositeKey;
+  }
+
+  public get data() {
+    return this._data as Readonly<T>;
+  }
+
+  public get isDirty() {
+    return this.META.isDirty ? true : false;
+  }
+
+  /**
+   * deprecated
+   */
+  public set isDirty(value: boolean) {
+    if (!this._data.META) {
+      this._data.META = { isDirty: value };
+    }
+    this._data.META.isDirty = value;
+  }
+
+  /**
+   * returns the fully qualified name in the database to this record;
+   * this of course includes the record id so if that's not set yet calling
+   * this getter will result in an error
+   */
+  public get dbPath() {
+    if (this.data.id ? false : true) {
+      throw createError(
+        "record/not-ready",
+        `you can not ask for the dbPath before setting an "id" property [ ${this.modelName} ]`
+      );
+    }
+
+    return [
+      this._injectDynamicPathProperties(this.dbOffset),
+      this.pluralName,
+      this.data.id
+    ].join("/");
+  }
+
+  /**
+   * provides a boolean flag which indicates whether the underlying
+   * model has a "dynamic path" which ultimately comes from a dynamic
+   * component in the "dbOffset" property defined in the model decorator
+   */
+  public get hasDynamicPath() {
+    return this.META.dbOffset.includes(":");
+  }
+
+  /**
+   * **dynamicPathComponents**
+   *
+   * An array of "dynamic properties" that are derived fom the "dbOffset" to
+   * produce the "dbPath"
+   */
+  public get dynamicPathComponents() {
+    return this._findDynamicComponents(this.META.dbOffset);
+  }
+
+  /**
+   * the list of dynamic properties in the "localPrefix"
+   * which must be resolved to achieve the "localPath"
+   */
+  public get localDynamicComponents() {
+    return this._findDynamicComponents(this.META.localPrefix);
+  }
+
+  /**
+   * A hash of values -- including at least "id" -- which represent
+   * the composite key of a model.
+   */
+  public get compositeKey(): ICompositeKey<T> {
+    return createCompositeKey<T>(this);
+  }
+
+  /**
+   * a string value which is used in relationships to fully qualify
+   * a composite string (aka, a model which has a dynamic dbOffset)
+   */
+  public get compositeKeyRef() {
+    return createCompositeKeyRefFromRecord<T>(this);
+  }
+
+  /**
+   * The Record's primary key; this is the `id` property only. Not
+   * the composite key.
+   */
+  public get id(): string {
+    return this.data.id;
+  }
+
+  /**
+   * Allows setting the Record's `id` if it hasn't been set before.
+   * Resetting the `id` is not allowed.
+   */
+  public set id(val: string) {
+    if (this.data.id) {
+      throw new FireModelError(
+        `You may not re-set the ID of a record [ ${this.modelName}.id ${this.data.id} => ${val} ].`,
+        "firemodel/not-allowed"
+      );
+    }
+
+    this._data.id = val;
+  }
+
+  /**
+   * Returns the record's database _offset_ without the ID or any dynamic properties
+   * yet interjected. The _dynamic properties_ however, will be show with a `:` prefix
+   * to indicate where the the values will go.
+   */
+  public get dbOffset() {
+    return getModelMeta(this).dbOffset;
+  }
+
+  /**
+   * returns the record's location in the frontend state management framework;
+   * this can include dynamic properties characterized in the path string by
+   * leading ":" character.
+   */
+  public get localPath() {
+    let prefix = this.localPrefix;
+    this.localDynamicComponents.forEach(prop => {
+      prefix = prefix.replace(`:${prop}`, this.get(prop as any));
+    });
+    return pathJoin(
+      prefix,
+      this.META.localModelName !== this.modelName
+        ? this.META.localModelName
+        : this.options.pluralizeLocalPath
+        ? this.pluralName
+        : this.modelName
+    );
+  }
+
+  /**
+   * The path in the local state tree that brings you to
+   * the record; this is differnt when retrieved from a
+   * Record versus a List.
+   */
+  public get localPrefix() {
+    return getModelMeta(this).localPrefix;
+  }
+
+  public get existsOnDB() {
+    return this.data && this.data.id ? true : false;
+  }
+
+  /** indicates whether this record is already being watched locally */
+  public get isBeingWatched() {
+    return FireModel.isBeingWatched(this.dbPath);
+  }
 
   public get modelConstructor() {
     return this._modelConstructor;
@@ -618,59 +640,6 @@ export class Record<T extends Model> extends FireModel<T> {
 
   public isSameModelAs(model: new () => any) {
     return this._modelConstructor === model;
-  }
-
-  /**
-   * Allows an empty Record to be initialized to a known state.
-   * This is not intended to allow for mass property manipulation other
-   * than at time of initialization
-   *
-   * @param data the initial state you want to start with
-   */
-  public async _initialize(
-    data: Partial<T>,
-    options: IRecordOptions = {}
-  ): Promise<void> {
-    if (data) {
-      Object.keys(data).map(key => {
-        this._data[key as keyof T] = data[key as keyof T];
-      });
-    }
-
-    const relationships = getModelMeta(this).relationships;
-    const hasOneRels: Array<keyof T> = (relationships || [])
-      .filter(r => r.relType === "hasOne")
-      .map(r => r.property) as Array<keyof T>;
-    const hasManyRels: Array<keyof T> = (relationships || [])
-      .filter(r => r.relType === "hasMany")
-      .map(r => r.property) as Array<keyof T>;
-
-    const promises = [];
-    /**
-     * Sets hasMany to default `{}` if nothing was set.
-     * Also, if the option `deepRelationships` is set to `true`,
-     * it will look for relationships hashes instead of the typical
-     * `fk: true` pairing.
-     */
-    for (const oneToManyProp of hasManyRels) {
-      if (!this._data[oneToManyProp]) {
-        (this._data as any)[oneToManyProp] = {};
-      }
-      if (options.setDeepRelationships) {
-        if (this._data[oneToManyProp]) {
-          promises.push(buildDeepRelationshipLinks(this, oneToManyProp));
-        }
-      }
-    }
-    await Promise.all(promises);
-
-    const now = new Date().getTime();
-    if (!this._data.lastUpdated) {
-      this._data.lastUpdated = now;
-    }
-    if (!this._data.createdAt) {
-      this._data.createdAt = now;
-    }
   }
 
   /**
@@ -1052,6 +1021,8 @@ export class Record<T extends Model> extends FireModel<T> {
     await relationshipOperation(this, "set", property, [fkId], paths, options);
   }
 
+  //#endregion INSTANCE DEFINITION
+
   /**
    * get a property value from the record
    *
@@ -1075,6 +1046,61 @@ export class Record<T extends Model> extends FireModel<T> {
       localPath: this.localPath,
       data: this.data.toString()
     };
+  }
+  //#endregion
+
+  //#region PRIVATE METHODS
+  /**
+   * Allows an empty Record to be initialized to a known state.
+   * This is not intended to allow for mass property manipulation other
+   * than at time of initialization
+   *
+   * @param data the initial state you want to start with
+   */
+  public async _initialize(
+    data: Partial<T>,
+    options: IRecordOptions = {}
+  ): Promise<void> {
+    if (data) {
+      Object.keys(data).map(key => {
+        this._data[key as keyof T] = data[key as keyof T];
+      });
+    }
+
+    const relationships = getModelMeta(this).relationships;
+    const hasOneRels: Array<keyof T> = (relationships || [])
+      .filter(r => r.relType === "hasOne")
+      .map(r => r.property) as Array<keyof T>;
+    const hasManyRels: Array<keyof T> = (relationships || [])
+      .filter(r => r.relType === "hasMany")
+      .map(r => r.property) as Array<keyof T>;
+
+    const promises = [];
+    /**
+     * Sets hasMany to default `{}` if nothing was set.
+     * Also, if the option `deepRelationships` is set to `true`,
+     * it will look for relationships hashes instead of the typical
+     * `fk: true` pairing.
+     */
+    for (const oneToManyProp of hasManyRels) {
+      if (!this._data[oneToManyProp]) {
+        (this._data as any)[oneToManyProp] = {};
+      }
+      if (options.setDeepRelationships) {
+        if (this._data[oneToManyProp]) {
+          promises.push(buildDeepRelationshipLinks(this, oneToManyProp));
+        }
+      }
+    }
+    await Promise.all(promises);
+
+    const now = new Date().getTime();
+    if (!this._data.lastUpdated) {
+      this._data.lastUpdated = now;
+    }
+    if (!this._data.createdAt) {
+      this._data.createdAt = now;
+    }
   }
 
   /**
@@ -1422,5 +1448,5 @@ export class Record<T extends Model> extends FireModel<T> {
     return this;
   }
 
-  //#endregion
+  //#endregion PRIVATE METHODS
 }
