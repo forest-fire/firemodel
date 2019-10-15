@@ -90,6 +90,9 @@ export const WatchDispatcher = <T>(
               ? FmEvents.RECORD_REMOVED
               : typeLookup[event.eventType];
           break;
+        case "watcher":
+          type = event.type;
+          break;
         default:
           type = FmEvents.UNEXPECTED_ERROR;
           errorMessage = `The "kind" of event was not recognized [ ${

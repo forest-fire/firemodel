@@ -4,6 +4,7 @@ import { IWatcherEventContext } from "../state-mgmt";
 import { IValueBasedWatchEvent, IPathBasedWatchEvent } from "abstracted-firebase";
 import { ICompositeKey } from "../@types";
 import { IFmLocalRecordEvent, IFmLocalRelationshipEvent } from "./IFmLocalEvent";
+import { IDictionary } from "firemock";
 export declare type IFmEventType = "value" | "child_added" | "child_moved" | "child_removed" | "child_changed";
 /**
  * An event coming from Firebase; the event property
@@ -28,6 +29,7 @@ export interface IFmWatcherEvent<T extends Model = Model> {
     key: string;
     modelConstructor: new () => T;
     value: any;
+    offsets: IDictionary;
 }
 /**
  * **IFmWatchEvent**

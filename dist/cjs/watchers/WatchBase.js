@@ -7,6 +7,7 @@ const watchInitialization_1 = require("./watchInitialization");
 const common_types_1 = require("common-types");
 const watcherPool_1 = require("./watcherPool");
 const List_1 = require("../List");
+const typed_conversions_1 = require("typed-conversions");
 /**
  * The base class which both `WatchList` and `WatchRecord` derive.
  */
@@ -61,13 +62,14 @@ class WatchBase {
             }
             else {
                 if (options.largePayload) {
-                    const payload = await List_1.List.fromQuery(this._modelConstructor, this._query);
+                    const payload = await List_1.List.fromQuery(this._modelConstructor, this._query, { offsets: this._options.offsets || {} });
                     await dispatch({
                         type: index_1.FmEvents.WATCHER_SYNC,
                         kind: "watcher",
                         modelConstructor: this._modelConstructor,
                         key: this._query.path.split("/").pop(),
-                        value: payload
+                        value: typed_conversions_1.arrayToHash(payload.data),
+                        offsets: this._options.offsets || {}
                     });
                 }
                 this.db.watch(this._query, ["child_added", "child_changed", "child_moved", "child_removed"], dispatch);
