@@ -1,6 +1,6 @@
 {
   "name": "firemodel",
-  "version": "0.32.7",
+  "version": "0.33.0",
   "description": "Modeling, Access, and Mocking for Firebase Projects",
   "license": "MIT",
   "repository": "https://github.com/forest-fire/firemodel",
@@ -30,7 +30,7 @@
     "docs:build": "vuepress build docs"
   },
   "dependencies": {
-    "abstracted-firebase": "^0.32.5",
+    "abstracted-firebase": "^0.33.0",
     "common-types": "^1.12.9",
     "date-fns": "^1.30.1",
     "fast-copy": "2.0.3",
@@ -39,13 +39,13 @@
     "get-value": "^3.0.1",
     "pluralize": "^8.0.0",
     "reflect-metadata": "^0.1.13",
-    "serialized-query": "^0.8.1",
+    "serialized-query": "^0.9.1",
     "set-value": "^3.0.0",
     "typed-conversions": "^0.10.1",
     "wait-in-parallel": "^1.2.6"
   },
   "peerDependencies": {
-    "firemock": "^0.32.11"
+    "firemock": "^0.33.1"
   },
   "devDependencies": {
     "@types/chai": "^4.1.4",
@@ -59,18 +59,18 @@
     "@types/rimraf": "^2.0.2",
     "@types/set-value": "^2.0.0",
     "@types/stack-trace": "^0.0.28",
-    "@vuepress/plugin-back-to-top": "^1.1.0",
-    "@vuepress/plugin-last-updated": "^1.1.0",
-    "@vuepress/plugin-medium-zoom": "^1.1.0",
-    "@vuepress/plugin-pwa": "^1.1.0",
-    "abstracted-admin": "^0.32.2",
-    "abstracted-client": "^0.32.3",
+    "@vuepress/plugin-back-to-top": "^1.2.0",
+    "@vuepress/plugin-last-updated": "^1.2.0",
+    "@vuepress/plugin-medium-zoom": "^1.2.0",
+    "@vuepress/plugin-pwa": "^1.2.0",
+    "abstracted-admin": "^0.33.0",
+    "abstracted-client": "^0.33.0",
     "async-shelljs": "^0.1.2",
     "chai": "^4.2.0",
     "chalk": "^2.4.2",
     "do-devops": "^0.2.3",
     "faker": "^4.1.0",
-    "firemock": "^0.32.11",
+    "firemock": "^0.33.1",
     "js-yaml": "^3.13.1",
     "mermaid": "^8.2.3",
     "mocha": "^6.2.1",
@@ -80,9 +80,9 @@
     "ts-node": "^8.4.1",
     "tslint": "^5.20.0",
     "tslint-config-prettier": "^1.18.0",
-    "typescript": "^3.6.3",
+    "typescript": "^3.6.4",
     "vue-property-decorator": "^8.2.2",
-    "vuepress": "^1.1.0",
+    "vuepress": "^1.2.0",
     "vuepress-plugin-autometa": "^0.1.10"
   },
   "engines": {
