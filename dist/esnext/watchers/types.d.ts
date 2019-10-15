@@ -8,6 +8,12 @@ export interface IFmWatcherStartOptions {
     once?: (evt: any) => void;
     /** optionally give the watcher a name to make lookup easier when stopping */
     name?: string;
+    /**
+     * Allows stating that the payload is large; doing this will ensure that a
+     * `@firemodel/WATCHER_SYNC` event is sent for list-based watchers which includes
+     * all the records in a single event.
+     */
+    largePayload?: true;
 }
 export declare type IWatchEventClassification = "child" | "value";
 export declare type IWatchListQueries = "all" | "first" | "last" | "since" | "dormantSince" | "where" | "fromQuery" | "after" | "before" | "recent" | "inactive";

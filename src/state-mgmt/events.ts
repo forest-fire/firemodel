@@ -15,6 +15,7 @@ import {
   IFmLocalRecordEvent,
   IFmLocalRelationshipEvent
 } from "./IFmLocalEvent";
+import { ISerializedQueryIdentity, SerializedQuery } from "serialized-query";
 
 export type IFmEventType =
   | "value"
@@ -40,7 +41,18 @@ export type IFmServerEvent =
  * Allows either a server event (aka, Firebase originated) or a locally
  * sourced event
  */
-export type IFmServerOrLocalEvent<T> = IFmServerEvent | IFmLocalEvent<T>;
+export type IFmServerOrLocalEvent<T> =
+  | IFmServerEvent
+  | IFmLocalEvent<T>
+  | IFmWatcherEvent<T>;
+
+export interface IFmWatcherEvent<T extends Model = Model> {
+  type: FmEvents;
+  kind: "watcher";
+  key: string;
+  modelConstructor: new () => T;
+  value: any;
+}
 
 /**
  * **IFmWatchEvent**

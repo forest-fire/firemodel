@@ -21,7 +21,14 @@ export declare type IFmServerEvent = IValueBasedWatchEvent | IPathBasedWatchEven
  * Allows either a server event (aka, Firebase originated) or a locally
  * sourced event
  */
-export declare type IFmServerOrLocalEvent<T> = IFmServerEvent | IFmLocalEvent<T>;
+export declare type IFmServerOrLocalEvent<T> = IFmServerEvent | IFmLocalEvent<T> | IFmWatcherEvent<T>;
+export interface IFmWatcherEvent<T extends Model = Model> {
+    type: FmEvents;
+    kind: "watcher";
+    key: string;
+    modelConstructor: new () => T;
+    value: any;
+}
 /**
  * **IFmWatchEvent**
  *

@@ -39,6 +39,11 @@ export var FmEvents;
     FmEvents["WATCHER_STARTING"] = "@firemodel/WATCHER_STARTING";
     /** Watcher has established connection with Firebase */
     FmEvents["WATCHER_STARTED"] = "@firemodel/WATCHER_STARTED";
+    /**
+     * The watcher started with "largePayload" will send a sync event with the
+     * whole payload so data synchronization can happen in one mutation
+     */
+    FmEvents["WATCHER_SYNC"] = "@firemodel/WATCHER_SYNC";
     /** Watcher failed to start */
     FmEvents["WATCHER_FAILED"] = "@firemodel/WATCHER_FAILED";
     /** Watcher has disconnected an event stream from Firebase */

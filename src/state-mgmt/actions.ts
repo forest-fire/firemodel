@@ -39,6 +39,11 @@ export enum FmEvents {
   WATCHER_STARTING = "@firemodel/WATCHER_STARTING",
   /** Watcher has established connection with Firebase */
   WATCHER_STARTED = "@firemodel/WATCHER_STARTED",
+  /**
+   * The watcher started with "largePayload" will send a sync event with the
+   * whole payload so data synchronization can happen in one mutation
+   */
+  WATCHER_SYNC = "@firemodel/WATCHER_SYNC",
   /** Watcher failed to start */
   WATCHER_FAILED = "@firemodel/WATCHER_FAILED",
   /** Watcher has disconnected an event stream from Firebase */

@@ -6,6 +6,7 @@ const WatchDispatcher_1 = require("./WatchDispatcher");
 const watchInitialization_1 = require("./watchInitialization");
 const common_types_1 = require("common-types");
 const watcherPool_1 = require("./watcherPool");
+const List_1 = require("../List");
 /**
  * The base class which both `WatchList` and `WatchRecord` derive.
  */
@@ -59,6 +60,16 @@ class WatchBase {
                 }
             }
             else {
+                if (options.largePayload) {
+                    const payload = await List_1.List.fromQuery(this._modelConstructor, this._query);
+                    await dispatch({
+                        type: index_1.FmEvents.WATCHER_SYNC,
+                        kind: "watcher",
+                        modelConstructor: this._modelConstructor,
+                        key: this._query.path.split("/").pop(),
+                        value: payload
+                    });
+                }
                 this.db.watch(this._query, ["child_added", "child_changed", "child_moved", "child_removed"], dispatch);
             }
         }
