@@ -5,6 +5,7 @@ import { waitForInitialization } from "./watchInitialization";
 import { createError } from "common-types";
 import { addToWatcherPool } from "./watcherPool";
 import { List } from "../List";
+import { arrayToHash } from "typed-conversions";
 /**
  * The base class which both `WatchList` and `WatchRecord` derive.
  */
@@ -59,13 +60,14 @@ export class WatchBase {
             }
             else {
                 if (options.largePayload) {
-                    const payload = await List.fromQuery(this._modelConstructor, this._query);
+                    const payload = await List.fromQuery(this._modelConstructor, this._query, { offsets: this._options.offsets || {} });
                     await dispatch({
                         type: FmEvents.WATCHER_SYNC,
                         kind: "watcher",
                         modelConstructor: this._modelConstructor,
                         key: this._query.path.split("/").pop(),
-                        value: payload
+                        value: arrayToHash(payload.data),
+                        offsets: this._options.offsets || {}
                     });
                 }
                 this.db.watch(this._query, ["child_added", "child_changed", "child_moved", "child_removed"], dispatch);

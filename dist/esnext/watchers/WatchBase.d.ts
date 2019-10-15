@@ -4,6 +4,8 @@ import { FmModelConstructor, ICompositeKey } from "../@types";
 import { IWatchEventClassification, IFmWatcherStartOptions } from "./types";
 import { IReduxDispatch, IWatcherEventContext } from "../state-mgmt";
 import { RealTimeDB } from "abstracted-firebase";
+import { IListOptions } from "../index";
+import { IDictionary } from "common-types";
 import { WatchRecord } from "./WatchRecord";
 /**
  * The base class which both `WatchList` and `WatchRecord` derive.
@@ -21,6 +23,7 @@ export declare class WatchBase<T extends Model> {
     protected _localPostfix: string;
     protected _dynamicProperties: string[];
     protected _compositeKey: ICompositeKey<T>;
+    protected _options: IListOptions<T> | IDictionary;
     /**
      * this is only to accomodate the list watcher using `ids` which is an aggregate of
      * `record` watchers.

@@ -16,6 +16,7 @@ import {
   IFmLocalRelationshipEvent
 } from "./IFmLocalEvent";
 import { ISerializedQueryIdentity, SerializedQuery } from "serialized-query";
+import { IDictionary } from "firemock";
 
 export type IFmEventType =
   | "value"
@@ -52,6 +53,7 @@ export interface IFmWatcherEvent<T extends Model = Model> {
   key: string;
   modelConstructor: new () => T;
   value: any;
+  offsets: IDictionary;
 }
 
 /**

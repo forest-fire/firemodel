@@ -1,6 +1,6 @@
 import { Model } from "../Model";
 import { SerializedQuery, ISerializedQueryIdentity } from "serialized-query";
-import { FmModelConstructor, ICompositeKey } from "../@types";
+import { FmModelConstructor, ICompositeKey, IRecordOptions } from "../@types";
 import { IWatchEventClassification, IFmWatcherStartOptions } from "./types";
 import {
   IReduxDispatch,
@@ -8,14 +8,15 @@ import {
   IFmServerEvent
 } from "../state-mgmt";
 import { RealTimeDB } from "abstracted-firebase";
-import { FireModel, FmEvents } from "../index";
+import { FireModel, FmEvents, IListOptions } from "../index";
 import { FireModelError, FireModelProxyError } from "../errors";
 import { WatchDispatcher } from "./WatchDispatcher";
 import { waitForInitialization } from "./watchInitialization";
-import { createError } from "common-types";
+import { createError, IDictionary } from "common-types";
 import { addToWatcherPool } from "./watcherPool";
 import { WatchRecord } from "./WatchRecord";
 import { List } from "../List";
+import { arrayToHash } from "typed-conversions";
 
 /**
  * The base class which both `WatchList` and `WatchRecord` derive.
@@ -33,6 +34,7 @@ export class WatchBase<T extends Model> {
   protected _localPostfix: string;
   protected _dynamicProperties: string[];
   protected _compositeKey: ICompositeKey<T>;
+  protected _options: IListOptions<T> | IDictionary;
   /**
    * this is only to accomodate the list watcher using `ids` which is an aggregate of
    * `record` watchers.
@@ -105,14 +107,17 @@ export class WatchBase<T extends Model> {
         if (options.largePayload) {
           const payload = await List.fromQuery(
             this._modelConstructor,
-            this._query
+            this._query,
+            { offsets: this._options.offsets || {} }
           );
+
           await dispatch({
             type: FmEvents.WATCHER_SYNC,
             kind: "watcher",
             modelConstructor: this._modelConstructor,
             key: this._query.path.split("/").pop(),
-            value: payload
+            value: arrayToHash(payload.data),
+            offsets: this._options.offsets || {}
           });
         }
         this.db.watch(
