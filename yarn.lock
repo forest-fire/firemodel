@@ -1522,6 +1522,17 @@ abstracted-firebase@^0.33.0:
     serialized-query "^0.9.1"
     typed-conversions "^0.10.1"
 
+abstracted-firebase@^0.33.1:
+  version "0.33.1"
+  resolved "https://registry.yarnpkg.com/abstracted-firebase/-/abstracted-firebase-0.33.1.tgz#8e4ff4adae153f0d4c9e47d371aabda67379ef41"
+  integrity sha512-UBa1mWui7MI+m9d5r7YdYD5j0x4cTIwJqdN1kyeWspEz3iut689+uPBQsbsvYFcwD4VJcsGareIbvsFzwfoWhA==
+  dependencies:
+    "@firebase/auth-types" "^0.8.1"
+    "@firebase/database-types" "^0.4.5"
+    common-types "^1.12.9"
+    serialized-query "^0.9.1"
+    typed-conversions "^0.10.1"
+
 accepts@~1.3.4, accepts@~1.3.5, accepts@~1.3.7:
   version "1.3.7"
   resolved "https://registry.yarnpkg.com/accepts/-/accepts-1.3.7.tgz#531bc726517a3b2b41f850021c6cc15eaab507cd"
@@ -4216,10 +4227,10 @@ firebase-key@^2.0.2:
   resolved "https://registry.yarnpkg.com/firebase-key/-/firebase-key-2.0.2.tgz#44ffdc460faeb774ef95e04a43027042974cfe5c"
   integrity sha512-gH0u6apANQsqHUqcf+Yd49VaUQyKNCLxofwYx0gqUGcymeLs5HWg/3tXroGheYYH8+ynxbrnP/Z4F/FEqNy9Ow==
 
-firemock@^0.33.1:
-  version "0.33.1"
-  resolved "https://registry.yarnpkg.com/firemock/-/firemock-0.33.1.tgz#9075741280341e43c6728ca07de930a8e5766501"
-  integrity sha512-JMbonv/McFjDVpSGenDRczhfsWA+oimzEvm9MgivTFPnjrX8QFsiSs3MSYO3CIt17I1fMrF4rX9liWsaD2jbjQ==
+firemock@^0.33.2:
+  version "0.33.2"
+  resolved "https://registry.yarnpkg.com/firemock/-/firemock-0.33.2.tgz#a41f099891ff94e2a8f9aeafb825d49247b567bf"
+  integrity sha512-1c6Vm6vdqo40jRh7nnQmmarHW5fT0mPmsfi3E0J5gQpzggAy4GbcEbMV9SewO1ld/l5s6UldQ9O93udYM7fPtg==
   dependencies:
     "@firebase/app-types" "^0.4.5"
     "@firebase/auth-types" "^0.8.1"
