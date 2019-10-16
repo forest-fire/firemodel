@@ -7,7 +7,6 @@ const watchInitialization_1 = require("./watchInitialization");
 const common_types_1 = require("common-types");
 const watcherPool_1 = require("./watcherPool");
 const List_1 = require("../List");
-const typed_conversions_1 = require("typed-conversions");
 /**
  * The base class which both `WatchList` and `WatchRecord` derive.
  */
@@ -68,7 +67,7 @@ class WatchBase {
                         kind: "watcher",
                         modelConstructor: this._modelConstructor,
                         key: this._query.path.split("/").pop(),
-                        value: typed_conversions_1.arrayToHash(payload.data),
+                        value: payload.data,
                         offsets: this._options.offsets || {}
                     });
                 }

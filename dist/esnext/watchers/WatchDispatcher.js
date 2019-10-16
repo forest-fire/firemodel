@@ -37,6 +37,9 @@ watcherContext) => {
                 dbPath: "not-relevant, use toLocal and fromLocal"
             };
         }
+        else if (event.kind === "watcher") {
+            // do nothing
+        }
         else {
             // in the case of a watcher list-of records; when the database has no
             // records yet there is no way to fulfill the dynamic path segments without
@@ -60,9 +63,6 @@ watcherContext) => {
                         event.value === null
                             ? FmEvents.RECORD_REMOVED
                             : typeLookup[event.eventType];
-                    break;
-                case "watcher":
-                    type = event.type;
                     break;
                 default:
                     type = FmEvents.UNEXPECTED_ERROR;

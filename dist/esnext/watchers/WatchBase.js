@@ -5,7 +5,6 @@ import { waitForInitialization } from "./watchInitialization";
 import { createError } from "common-types";
 import { addToWatcherPool } from "./watcherPool";
 import { List } from "../List";
-import { arrayToHash } from "typed-conversions";
 /**
  * The base class which both `WatchList` and `WatchRecord` derive.
  */
@@ -66,7 +65,7 @@ export class WatchBase {
                         kind: "watcher",
                         modelConstructor: this._modelConstructor,
                         key: this._query.path.split("/").pop(),
-                        value: arrayToHash(payload.data),
+                        value: payload.data,
                         offsets: this._options.offsets || {}
                     });
                 }

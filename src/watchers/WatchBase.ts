@@ -116,10 +116,11 @@ export class WatchBase<T extends Model> {
             kind: "watcher",
             modelConstructor: this._modelConstructor,
             key: this._query.path.split("/").pop(),
-            value: arrayToHash(payload.data),
+            value: payload.data,
             offsets: this._options.offsets || {}
           });
         }
+
         this.db.watch(
           this._query,
           ["child_added", "child_changed", "child_moved", "child_removed"],
