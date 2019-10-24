@@ -158,7 +158,6 @@ export class List extends FireModel {
             .orderByChild("lastUpdated")
             .startAt(since);
         const list = await List.fromQuery(model, query, options);
-        console.log(list.data);
         return list;
     }
     /**

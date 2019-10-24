@@ -160,7 +160,6 @@ class List extends FireModel_1.FireModel {
             .orderByChild("lastUpdated")
             .startAt(since);
         const list = await List.fromQuery(model, query, options);
-        console.log(list.data);
         return list;
     }
     /**

@@ -10,7 +10,6 @@ export default async function cleanPredecessor(
   while (!empty || index > predecessors.length) {
     const path = predecessors.slice(0, index).join("/");
     const result = await db.getValue<IDictionary>(path);
-    console.log(path);
 
     if (!result || Object.keys(result).length === 0) {
       await db.remove(path);
