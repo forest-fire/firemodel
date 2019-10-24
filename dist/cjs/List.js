@@ -8,6 +8,7 @@ const path_1 = require("./path");
 const ModelMeta_1 = require("./ModelMeta");
 const errors_1 = require("./errors");
 const util_1 = require("./util");
+//#endregion
 const DEFAULT_IF_NOT_FOUND = "__DO_NOT_USE__";
 function addTimestamps(obj) {
     const datetime = new Date().getTime();
@@ -145,13 +146,9 @@ class List extends FireModel_1.FireModel {
         return list;
     }
     /**
-     * since
+     * **since**
      *
-     * Bring back all records that have changed since a given date
-     *
-     * @param schema the TYPE you are interested
-     * @param since  the datetime in miliseconds
-     * @param options
+     * Brings back all records that have changed since a given date (using `lastUpdated` field)
      */
     static async since(model, since, options = {}) {
         if (typeof since !== "number") {
@@ -163,6 +160,7 @@ class List extends FireModel_1.FireModel {
             .orderByChild("lastUpdated")
             .startAt(since);
         const list = await List.fromQuery(model, query, options);
+        console.log(list.data);
         return list;
     }
     /**
