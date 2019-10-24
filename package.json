@@ -1,6 +1,6 @@
 {
   "name": "firemodel",
-  "version": "0.33.3",
+  "version": "0.33.4",
   "description": "Modeling, Access, and Mocking for Firebase Projects",
   "license": "MIT",
   "repository": "https://github.com/forest-fire/firemodel",
@@ -30,8 +30,8 @@
     "docs:build": "vuepress build docs"
   },
   "dependencies": {
-    "abstracted-firebase": "^0.33.1",
-    "common-types": "^1.12.9",
+    "abstracted-firebase": "^0.33.2",
+    "common-types": "^1.12.12",
     "date-fns": "^1.30.1",
     "fast-copy": "2.0.3",
     "fast-deep-equal": "^2.0.1",
@@ -45,7 +45,7 @@
     "wait-in-parallel": "^1.2.6"
   },
   "peerDependencies": {
-    "firemock": "^0.33.2"
+    "firemock": "^0.33.4"
   },
   "devDependencies": {
     "@firebase/auth-types": "^0.8.1",
@@ -64,16 +64,16 @@
     "@vuepress/plugin-last-updated": "^1.2.0",
     "@vuepress/plugin-medium-zoom": "^1.2.0",
     "@vuepress/plugin-pwa": "^1.2.0",
-    "abstracted-admin": "^0.33.0",
-    "abstracted-client": "^0.33.0",
-    "async-shelljs": "^0.1.2",
+    "abstracted-admin": "^0.33.1",
+    "abstracted-client": "^0.33.1",
+    "async-shelljs": "^0.1.4",
     "chai": "^4.2.0",
     "chalk": "^2.4.2",
     "do-devops": "^0.2.3",
     "faker": "^4.1.0",
-    "firemock": "^0.33.2",
+    "firemock": "^0.33.4",
     "js-yaml": "^3.13.1",
-    "mermaid": "^8.2.3",
+    "mermaid": "^8.4.0",
     "mocha": "^6.2.1",
     "prettier": "^1.18.2",
     "rimraf": "^2.6.3",
