@@ -6,6 +6,7 @@ import { pathJoin } from "./path";
 import { getModelMeta } from "./ModelMeta";
 import { FireModelError } from "./errors";
 import { capitalize } from "./util";
+//#endregion
 const DEFAULT_IF_NOT_FOUND = "__DO_NOT_USE__";
 function addTimestamps(obj) {
     const datetime = new Date().getTime();
@@ -143,13 +144,9 @@ export class List extends FireModel {
         return list;
     }
     /**
-     * since
+     * **since**
      *
-     * Bring back all records that have changed since a given date
-     *
-     * @param schema the TYPE you are interested
-     * @param since  the datetime in miliseconds
-     * @param options
+     * Brings back all records that have changed since a given date (using `lastUpdated` field)
      */
     static async since(model, since, options = {}) {
         if (typeof since !== "number") {

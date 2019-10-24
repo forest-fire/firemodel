@@ -58,13 +58,9 @@ export declare class List<T extends Model> extends FireModel<T> {
      */
     static recent<T extends Model>(model: new () => T, howMany: number, offset?: number, options?: IListOptions<T>): Promise<List<T>>;
     /**
-     * since
+     * **since**
      *
-     * Bring back all records that have changed since a given date
-     *
-     * @param schema the TYPE you are interested
-     * @param since  the datetime in miliseconds
-     * @param options
+     * Brings back all records that have changed since a given date (using `lastUpdated` field)
      */
     static since<T extends Model>(model: new () => T, since: epochWithMilliseconds, options?: IListOptions<T>): Promise<List<T>>;
     /**

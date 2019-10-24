@@ -199,7 +199,6 @@ export class List<T extends Model> extends FireModel<T> {
       .startAt(since);
 
     const list = await List.fromQuery(model, query, options);
-    console.log(list.data);
 
     return list;
   }
