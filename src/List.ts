@@ -1,9 +1,9 @@
+//#region IMPORTS
 import { Model } from "./Model";
 import { Record } from "./Record";
 import { SerializedQuery, IComparisonOperator } from "serialized-query";
 import { epochWithMilliseconds, IDictionary, createError } from "common-types";
 import { FireModel } from "./FireModel";
-// tslint:disable-next-line:no-implicit-dependencies
 import { RealTimeDB } from "abstracted-firebase";
 import { IReduxDispatch } from "./state-mgmt/index";
 import { pathJoin } from "./path";
@@ -11,6 +11,7 @@ import { getModelMeta } from "./ModelMeta";
 import { IListOptions } from "./@types/general";
 import { FireModelError } from "./errors";
 import { capitalize } from "./util";
+//#endregion
 
 const DEFAULT_IF_NOT_FOUND = "__DO_NOT_USE__";
 
@@ -176,13 +177,9 @@ export class List<T extends Model> extends FireModel<T> {
   }
 
   /**
-   * since
+   * **since**
    *
-   * Bring back all records that have changed since a given date
-   *
-   * @param schema the TYPE you are interested
-   * @param since  the datetime in miliseconds
-   * @param options
+   * Brings back all records that have changed since a given date (using `lastUpdated` field)
    */
   public static async since<T extends Model>(
     model: new () => T,
@@ -200,7 +197,9 @@ export class List<T extends Model> extends FireModel<T> {
     const query = new SerializedQuery<T>()
       .orderByChild("lastUpdated")
       .startAt(since);
+
     const list = await List.fromQuery(model, query, options);
+    console.log(list.data);
 
     return list;
   }
@@ -287,6 +286,7 @@ export class List<T extends Model> extends FireModel<T> {
     const query = new SerializedQuery<T>()
       .orderByChild(property)
       .where(operation, val);
+
     const list = await List.fromQuery(model, query, options);
 
     return list;

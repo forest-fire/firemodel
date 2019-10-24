@@ -2,11 +2,7 @@ import { Model } from "../Model";
 import { SerializedQuery, ISerializedQueryIdentity } from "serialized-query";
 import { FmModelConstructor, ICompositeKey, IRecordOptions } from "../@types";
 import { IWatchEventClassification, IFmWatcherStartOptions } from "./types";
-import {
-  IReduxDispatch,
-  IWatcherEventContext,
-  IFmServerEvent
-} from "../state-mgmt";
+import { IReduxDispatch, IWatcherEventContext } from "../state-mgmt";
 import { RealTimeDB } from "abstracted-firebase";
 import { FireModel, FmEvents, IListOptions } from "../index";
 import { FireModelError, FireModelProxyError } from "../errors";
@@ -16,7 +12,6 @@ import { createError, IDictionary } from "common-types";
 import { addToWatcherPool } from "./watcherPool";
 import { WatchRecord } from "./WatchRecord";
 import { List } from "../List";
-import { arrayToHash } from "typed-conversions";
 
 /**
  * The base class which both `WatchList` and `WatchRecord` derive.

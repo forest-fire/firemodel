@@ -666,14 +666,14 @@ export class Record<T extends Model> extends FireModel<T> {
     const key = this.db.isMockDb
       ? fbKey()
       : await this.db.getPushKey(pathJoin(this.dbPath, property));
-    await this.db.set(pathJoin(this.dbPath, property), value);
+    await this.db.set(pathJoin(this.dbPath, property, key), value);
     await this.db.set(
       pathJoin(this.dbPath, "lastUpdated"),
       new Date().getTime()
     );
     // set firemodel state locally
     const currentState = this.get(property) || {};
-    const newState = { ...(currentState as any), [key]: value };
+    const newState = { ...(currentState as T[K]), [key]: value };
     this.set(property, newState);
 
     return key;
