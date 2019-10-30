@@ -470,12 +470,20 @@ class Record extends FireModel_1.FireModel {
      * updated and their new values
      */
     async update(props) {
+        const meta = ModelMeta_1.getModelMeta(this);
+        if (!meta.property) {
+            throw new errors_1.FireModelError(`There is a problem with this record's META information [ model: ${util_1.capitalize(this.modelName)}, id: ${this.id} ]. The property() method -- used to dig into properties on any given model appears to be missing!`, "firemodel/meta-missing");
+        }
         // can not update relationship properties
         if (Object.keys(props).some((key) => {
             const root = key.split(".")[0];
-            return ModelMeta_1.getModelMeta(this).property(root).isRelationship;
+            const rootProperties = meta.property(root);
+            if (!rootProperties) {
+                throw new errors_1.FireModelError(`While this record [ model: ${util_1.capitalize(this.modelName)}, id: ${this.id} ] does return a "META.property" function, looking up the property "${root}" has resulted in an invalid response [${typeof rootProperties}]`);
+            }
+            return rootProperties.isRelationship;
         })) {
-            const relProps = Object.keys(props).filter((p) => ModelMeta_1.getModelMeta(this).property(p).isRelationship);
+            const relProps = Object.keys(props).filter((p) => meta.property(p).isRelationship);
             throw new errors_1.FireModelError(`You called update on a hash which has relationships included in it. Please only use "update" for updating properties. The relationships you were attempting to update were: ${relProps.join(", ")}.`, `firemodel/not-allowed`);
         }
         const lastUpdated = new Date().getTime();
@@ -1003,6 +1011,9 @@ class Record extends FireModel_1.FireModel {
             this._data.createdAt = now;
         }
         this._data.lastUpdated = now;
+        // TODO: need to ensure that relationship which are set
+        // are updated using the _relationship_ based methods associate/disassociate
+        // so that bi-lateral relationships are established/maintained
         if (!this.db) {
             throw new errors_1.FireModelError(`Attempt to save Record failed as the Database has not been connected yet. Try setting FireModel's defaultDb first.`, "firemodel/db-not-ready");
         }
