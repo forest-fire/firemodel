@@ -473,9 +473,9 @@ class Record extends FireModel_1.FireModel {
         // can not update relationship properties
         if (Object.keys(props).some((key) => {
             const root = key.split(".")[0];
-            return this.META.property(root).isRelationship;
+            return ModelMeta_1.getModelMeta(this).property(root).isRelationship;
         })) {
-            const relProps = Object.keys(props).filter((p) => this.META.property(p).isRelationship);
+            const relProps = Object.keys(props).filter((p) => ModelMeta_1.getModelMeta(this).property(p).isRelationship);
             throw new errors_1.FireModelError(`You called update on a hash which has relationships included in it. Please only use "update" for updating properties. The relationships you were attempting to update were: ${relProps.join(", ")}.`, `firemodel/not-allowed`);
         }
         const lastUpdated = new Date().getTime();
