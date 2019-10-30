@@ -1,5 +1,5 @@
 import { Model } from "./Model";
-import { IReduxDispatch, IWatcherEventContext } from "./state-mgmt";
+import { IReduxDispatch, IWatcherEventContext, FmEvents } from "./state-mgmt";
 import { FireModel } from "./FireModel";
 type RealTimeDB = import("abstracted-firebase").RealTimeDB;
 
@@ -103,8 +103,13 @@ export class Watch<T extends Model = Model> {
     }
 
     if (!hashCode) {
+      const dispatch = getWatcherPool()[0].dispatch;
       db.unWatch();
       clearWatcherPool();
+      dispatch({
+        type: FmEvents.WATCHER_STOPPED_ALL,
+        registry: getWatcherPool()
+      });
     } else {
       const registry = getWatcherPool()[hashCode];
       db.unWatch(
@@ -113,6 +118,11 @@ export class Watch<T extends Model = Model> {
           : ["child_added", "child_changed", "child_moved", "child_removed"],
         registry.dispatch
       );
+      registry.dispatch({
+        type: FmEvents.WATCHER_STOPPED,
+        hashCode,
+        registry: getWatcherPool()
+      });
       removeFromWatcherPool(hashCode);
     }
   }

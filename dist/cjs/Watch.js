@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+const state_mgmt_1 = require("./state-mgmt");
 const FireModel_1 = require("./FireModel");
 const errors_1 = require("./errors");
 const watcherPool_1 = require("./watchers/watcherPool");
@@ -78,14 +79,24 @@ class Watch {
             throw e;
         }
         if (!hashCode) {
+            const dispatch = watcherPool_1.getWatcherPool()[0].dispatch;
             db.unWatch();
             watcherPool_1.clearWatcherPool();
+            dispatch({
+                type: state_mgmt_1.FmEvents.WATCHER_STOPPED_ALL,
+                registry: watcherPool_1.getWatcherPool()
+            });
         }
         else {
             const registry = watcherPool_1.getWatcherPool()[hashCode];
             db.unWatch(registry.eventFamily === "child"
                 ? "value"
                 : ["child_added", "child_changed", "child_moved", "child_removed"], registry.dispatch);
+            registry.dispatch({
+                type: state_mgmt_1.FmEvents.WATCHER_STOPPED,
+                hashCode,
+                registry: watcherPool_1.getWatcherPool()
+            });
             watcherPool_1.removeFromWatcherPool(hashCode);
         }
     }

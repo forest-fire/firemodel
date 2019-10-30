@@ -1,3 +1,4 @@
+import { FmEvents } from "./state-mgmt";
 import { FireModel } from "./FireModel";
 import { FireModelError } from "./errors";
 import { getWatcherPool, clearWatcherPool, removeFromWatcherPool } from "./watchers/watcherPool";
@@ -76,14 +77,24 @@ export class Watch {
             throw e;
         }
         if (!hashCode) {
+            const dispatch = getWatcherPool()[0].dispatch;
             db.unWatch();
             clearWatcherPool();
+            dispatch({
+                type: FmEvents.WATCHER_STOPPED_ALL,
+                registry: getWatcherPool()
+            });
         }
         else {
             const registry = getWatcherPool()[hashCode];
             db.unWatch(registry.eventFamily === "child"
                 ? "value"
                 : ["child_added", "child_changed", "child_moved", "child_removed"], registry.dispatch);
+            registry.dispatch({
+                type: FmEvents.WATCHER_STOPPED,
+                hashCode,
+                registry: getWatcherPool()
+            });
             removeFromWatcherPool(hashCode);
         }
     }
