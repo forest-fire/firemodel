@@ -1,7 +1,7 @@
 import { FmEvents } from "./state-mgmt";
 import { FireModel } from "./FireModel";
 import { FireModelError } from "./errors";
-import { getWatcherPool, clearWatcherPool, removeFromWatcherPool } from "./watchers/watcherPool";
+import { getWatcherPool, clearWatcherPool, removeFromWatcherPool, getWatcherPoolList } from "./watchers/watcherPool";
 import { WatchList } from "./watchers/WatchList";
 import { WatchRecord } from "./watchers/WatchRecord";
 /**
@@ -90,10 +90,14 @@ export class Watch {
             db.unWatch(registry.eventFamily === "child"
                 ? "value"
                 : ["child_added", "child_changed", "child_moved", "child_removed"], registry.dispatch);
+            // tslint:disable-next-line: no-object-literal-type-assertion
             registry.dispatch({
                 type: FmEvents.WATCHER_STOPPED,
-                hashCode,
-                registry: getWatcherPool()
+                watcherId: hashCode,
+                remaining: getWatcherPoolList().map(i => ({
+                    id: i.watcherId,
+                    name: i.watcherName
+                }))
             });
             removeFromWatcherPool(hashCode);
         }

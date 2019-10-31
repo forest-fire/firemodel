@@ -1,7 +1,11 @@
+import { hashToArray } from "typed-conversions";
 /** a cache of all the watched  */
 let watcherPool = {};
 export function getWatcherPool() {
     return watcherPool;
+}
+export function getWatcherPoolList() {
+    return hashToArray(getWatcherPool());
 }
 export function addToWatcherPool(item) {
     watcherPool[item.watcherId] = item;

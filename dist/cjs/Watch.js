@@ -92,10 +92,14 @@ class Watch {
             db.unWatch(registry.eventFamily === "child"
                 ? "value"
                 : ["child_added", "child_changed", "child_moved", "child_removed"], registry.dispatch);
+            // tslint:disable-next-line: no-object-literal-type-assertion
             registry.dispatch({
                 type: state_mgmt_1.FmEvents.WATCHER_STOPPED,
-                hashCode,
-                registry: watcherPool_1.getWatcherPool()
+                watcherId: hashCode,
+                remaining: watcherPool_1.getWatcherPoolList().map(i => ({
+                    id: i.watcherId,
+                    name: i.watcherName
+                }))
             });
             watcherPool_1.removeFromWatcherPool(hashCode);
         }

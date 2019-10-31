@@ -3,6 +3,7 @@ import { IReduxDispatch, IWatcherEventContext } from "../state-mgmt";
 /** a cache of all the watched  */
 declare let watcherPool: IDictionary<IWatcherEventContext<any>>;
 export declare function getWatcherPool(): IDictionary<IWatcherEventContext<any>>;
+export declare function getWatcherPoolList(): IWatcherEventContext<any>[];
 export declare function addToWatcherPool<T = IWatcherEventContext<any>>(item: IWatcherEventContext<T>): void;
 export declare function getFromWatcherPool(code: keyof typeof watcherPool): IWatcherEventContext<any>;
 export declare function clearWatcherPool(): void;

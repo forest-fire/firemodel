@@ -1,5 +1,11 @@
 import { Model } from "./Model";
-import { IReduxDispatch, IWatcherEventContext, FmEvents } from "./state-mgmt";
+import {
+  IReduxDispatch,
+  IWatcherEventContext,
+  FmEvents,
+  IFmWatchEvent,
+  IFmWatcherStopped
+} from "./state-mgmt";
 import { FireModel } from "./FireModel";
 type RealTimeDB = import("abstracted-firebase").RealTimeDB;
 
@@ -9,7 +15,8 @@ import { FireModelError } from "./errors";
 import {
   getWatcherPool,
   clearWatcherPool,
-  removeFromWatcherPool
+  removeFromWatcherPool,
+  getWatcherPoolList
 } from "./watchers/watcherPool";
 import { WatchList } from "./watchers/WatchList";
 import { WatchRecord } from "./watchers/WatchRecord";
@@ -118,11 +125,15 @@ export class Watch<T extends Model = Model> {
           : ["child_added", "child_changed", "child_moved", "child_removed"],
         registry.dispatch
       );
+      // tslint:disable-next-line: no-object-literal-type-assertion
       registry.dispatch({
         type: FmEvents.WATCHER_STOPPED,
-        hashCode,
-        registry: getWatcherPool()
-      });
+        watcherId: hashCode,
+        remaining: getWatcherPoolList().map(i => ({
+          id: i.watcherId,
+          name: i.watcherName
+        }))
+      } as IFmWatcherStopped);
       removeFromWatcherPool(hashCode);
     }
   }
