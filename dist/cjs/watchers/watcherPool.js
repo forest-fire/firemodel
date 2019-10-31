@@ -1,11 +1,16 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+const typed_conversions_1 = require("typed-conversions");
 /** a cache of all the watched  */
 let watcherPool = {};
 function getWatcherPool() {
     return watcherPool;
 }
 exports.getWatcherPool = getWatcherPool;
+function getWatcherPoolList() {
+    return typed_conversions_1.hashToArray(getWatcherPool());
+}
+exports.getWatcherPoolList = getWatcherPoolList;
 function addToWatcherPool(item) {
     watcherPool[item.watcherId] = item;
 }

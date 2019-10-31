@@ -1,11 +1,16 @@
 import { IDictionary } from "common-types";
 import { IReduxDispatch, IWatcherEventContext } from "../state-mgmt";
+import { hashToArray } from "typed-conversions";
 
 /** a cache of all the watched  */
 let watcherPool: IDictionary<IWatcherEventContext<any>> = {};
 
 export function getWatcherPool() {
   return watcherPool;
+}
+
+export function getWatcherPoolList() {
+  return hashToArray(getWatcherPool());
 }
 
 export function addToWatcherPool<T = IWatcherEventContext<any>>(

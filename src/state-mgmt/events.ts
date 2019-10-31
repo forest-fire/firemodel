@@ -56,6 +56,17 @@ export interface IFmWatcherEvent<T extends Model = Model> {
   offsets: IDictionary;
 }
 
+export interface IFmWatcherStopped {
+  type: typeof FmEvents.WATCHER_STOPPED;
+  watcherId: string;
+  remaining: [
+    {
+      id: string;
+      name: string;
+    }
+  ];
+}
+
 /**
  * **IFmWatchEvent**
  *
