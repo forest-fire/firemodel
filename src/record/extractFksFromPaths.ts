@@ -3,7 +3,7 @@ import { Model, Record, IFmPathValuePair } from "..";
 
 export function extractFksFromPaths<T extends Model>(
   rec: Record<T>,
-  prop: keyof T,
+  prop: keyof T & string,
   paths: IFmPathValuePair[]
 ) {
   const pathToModel = rec.dbPath;

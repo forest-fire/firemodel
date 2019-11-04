@@ -6,7 +6,7 @@ import { MissingReciprocalInverse } from "./MissingReciprocalInverse";
 export class IncorrectReciprocalInverse<
   T extends Model
 > extends FireModelError {
-  constructor(rec: Record<T>, property: keyof T) {
+  constructor(rec: Record<T>, property: keyof T & string) {
     super("", "firemodel/missing-reciprocal-inverse");
 
     let message: string;
@@ -20,15 +20,7 @@ export class IncorrectReciprocalInverse<
       throw e;
     } else {
       const recipricalInverse = fkInverse.inverseProperty;
-      message = `The model ${
-        rec.modelName
-      } is trying to leverage it's relationship with ${
-        fkRecord.modelName
-      } but it appears these two models are in conflict! ${
-        rec.modelName
-      } has been defined to look for an inverse property of "${inverseProperty}" but on ${
-        fkRecord.modelName
-      } model the inverse property points back to a property of "${recipricalInverse}"! Look at your model definitions and make sure this is addressed.`;
+      message = `The model ${rec.modelName} is trying to leverage it's relationship with ${fkRecord.modelName} but it appears these two models are in conflict! ${rec.modelName} has been defined to look for an inverse property of "${inverseProperty}" but on ${fkRecord.modelName} model the inverse property points back to a property of "${recipricalInverse}"! Look at your model definitions and make sure this is addressed.`;
     }
     this.message = message;
   }

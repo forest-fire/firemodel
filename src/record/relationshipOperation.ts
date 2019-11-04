@@ -37,7 +37,7 @@ export async function relationshipOperation<
    *
    * The property on this model which changing its relationship status in some way
    */
-  property: keyof F,
+  property: keyof F & string,
   /**
    * The array of _foreign keys_ (of the "from" model) which will be operated on
    */

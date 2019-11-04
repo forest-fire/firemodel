@@ -38,7 +38,7 @@ export declare function UnwatchedLocalEvent<T>(rec: Record<T>, event: IFmLocalEv
     localPostfix: string;
     kind: "relationship";
     operation: import("..").IFmRelationshipOperation;
-    property: keyof T;
+    property: keyof T & string;
     fks: string[];
     inverseProperty?: "id" | "lastUpdated" | "createdAt" | "META";
     from: string;

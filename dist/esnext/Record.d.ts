@@ -40,7 +40,7 @@ export declare class Record<T extends Model> extends FireModel<T> {
     /**
      * the **Model** who's properties are being interogated
      */
-    model: new () => T): string[];
+    model: new () => T): (keyof T & string)[];
     /**
      * create
      *
@@ -117,7 +117,7 @@ export declare class Record<T extends Model> extends FireModel<T> {
      * Associates a new FK to a relationship on the given `Model`; returning
      * the primary model as a return value
      */
-    static associate<T extends Model>(model: new () => T, id: pk, property: Extract<keyof T, string>, refs: IFkReference<any> | Array<IFkReference<any>>): Promise<Record<T>>;
+    static associate<T extends Model>(model: new () => T, id: pk, property: keyof T & string, refs: IFkReference<any> | Array<IFkReference<any>>): Promise<Record<T>>;
     private _existsOnDB;
     private _writeOperations;
     private _data?;
@@ -152,12 +152,12 @@ export declare class Record<T extends Model> extends FireModel<T> {
      * An array of "dynamic properties" that are derived fom the "dbOffset" to
      * produce the "dbPath"
      */
-    readonly dynamicPathComponents: string[];
+    readonly dynamicPathComponents: (keyof T & string)[];
     /**
      * the list of dynamic properties in the "localPrefix"
      * which must be resolved to achieve the "localPath"
      */
-    readonly localDynamicComponents: string[];
+    readonly localDynamicComponents: (keyof T & string)[];
     /**
      * A hash of values -- including at least "id" -- which represent
      * the composite key of a model.
@@ -219,7 +219,7 @@ export declare class Record<T extends Model> extends FireModel<T> {
      * Pushes new values onto properties on the record
      * which have been stated to be a "pushKey"
      */
-    pushKey<K extends keyof T, Object>(property: K, value: T[K][keyof T[K]] | any): Promise<fk>;
+    pushKey<K extends keyof T & string, Object>(property: K, value: T[K][keyof T[K]] | any): Promise<fk>;
     /**
      * **update**
      *
@@ -249,14 +249,14 @@ export declare class Record<T extends Model> extends FireModel<T> {
      * @param value the new value to set to
      * @param silent a flag to indicate whether the change to the prop should be updated to the database or not
      */
-    set<K extends keyof T>(prop: K, value: T[K], silent?: boolean): Promise<void>;
+    set<K extends keyof T>(prop: K & string, value: T[K], silent?: boolean): Promise<void>;
     /**
      * **associate**
      *
      * Associates the current model with another entity
      * regardless if the cardinality
      */
-    associate(property: Extract<keyof T, string>, refs: IFkReference<any> | Array<IFkReference<any>>, options?: IFmRelationshipOptions): Promise<void>;
+    associate(property: keyof T & string, refs: IFkReference<any> | Array<IFkReference<any>>, options?: IFmRelationshipOptions): Promise<void>;
     /**
      * **disassociate**
      *
@@ -277,7 +277,7 @@ export declare class Record<T extends Model> extends FireModel<T> {
      * @param fkRefs FK reference (or array of FKs) that should be added to reln
      * @param options change the behavior of this relationship transaction
      */
-    addToRelationship(property: keyof T, fkRefs: IFkReference<any> | Array<IFkReference<any>>, options?: IFmRelationshipOptionsForHasMany): Promise<void>;
+    addToRelationship(property: keyof T & string, fkRefs: IFkReference<any> | Array<IFkReference<any>>, options?: IFmRelationshipOptionsForHasMany): Promise<void>;
     /**
      * removeFromRelationship
      *
@@ -305,13 +305,13 @@ export declare class Record<T extends Model> extends FireModel<T> {
      * @param property the property containing the hasOne FK
      * @param ref the FK
      */
-    setRelationship(property: Extract<keyof T, string>, fkId: IFkReference<any>, options?: IFmRelationshipOptions): Promise<void>;
+    setRelationship(property: keyof T & string, fkId: IFkReference<any>, options?: IFmRelationshipOptions): Promise<void>;
     /**
      * get a property value from the record
      *
      * @param prop the property being retrieved
      */
-    get<K extends keyof T>(prop: K): Readonly<T>[K];
+    get<K extends keyof T & string>(prop: K): Readonly<T>[K];
     toString(): string;
     toJSON(): {
         dbPath: string;

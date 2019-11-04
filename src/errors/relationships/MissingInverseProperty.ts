@@ -12,7 +12,7 @@ export class MissingInverseProperty<T extends Model> extends FireModelError {
   public to: string;
   public inverseProperty: string;
 
-  constructor(rec: Record<T>, property: keyof T) {
+  constructor(rec: Record<T>, property: keyof T & string) {
     super("", "firemodel/missing-inverse-property");
 
     const fkRecord = Record.create(
@@ -23,15 +23,7 @@ export class MissingInverseProperty<T extends Model> extends FireModelError {
     const pkInverse = rec.META.relationship(property).inverseProperty;
     this.inverseProperty = pkInverse;
 
-    const message = `Missing Inverse Property: the model "${
-      this.from
-    }" has defined a relationship with the "${
-      this.to
-    }" model where the FK property is "${property}" and it states that the "inverse property" is "${pkInverse}" on the ${
-      this.to
-    } model. Unfortunately the ${
-      this.to
-    } model does NOT define a property called "${this.inverseProperty}".`;
+    const message = `Missing Inverse Property: the model "${this.from}" has defined a relationship with the "${this.to}" model where the FK property is "${property}" and it states that the "inverse property" is "${pkInverse}" on the ${this.to} model. Unfortunately the ${this.to} model does NOT define a property called "${this.inverseProperty}".`;
     this.message = message;
   }
 }

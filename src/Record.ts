@@ -353,7 +353,7 @@ export class Record<T extends Model> extends FireModel<T> {
   public static async associate<T extends Model>(
     model: new () => T,
     id: pk,
-    property: Extract<keyof T, string>,
+    property: keyof T & string,
     refs: IFkReference<any> | Array<IFkReference<any>>
   ) {
     const obj = await Record.get(model, id);
@@ -574,7 +574,8 @@ export class Record<T extends Model> extends FireModel<T> {
   public get localPath() {
     let prefix = this.localPrefix;
     this.localDynamicComponents.forEach(prop => {
-      prefix = prefix.replace(`:${prop}`, this.get(prop as any));
+      // TODO: another example of impossible typing coming off of a get()
+      prefix = prefix.replace(`:${prop}`, this.get(prop) as any);
     });
     return pathJoin(
       prefix,
@@ -646,7 +647,7 @@ export class Record<T extends Model> extends FireModel<T> {
    * Pushes new values onto properties on the record
    * which have been stated to be a "pushKey"
    */
-  public async pushKey<K extends keyof T, Object>(
+  public async pushKey<K extends keyof T & string, Object>(
     property: K,
     value: T[K][keyof T[K]] | any
   ): Promise<fk> {
@@ -766,7 +767,7 @@ export class Record<T extends Model> extends FireModel<T> {
    * @param silent a flag to indicate whether the change to the prop should be updated to the database or not
    */
   public async set<K extends keyof T>(
-    prop: K,
+    prop: K & string,
     value: T[K],
     silent: boolean = false
   ) {
@@ -811,7 +812,7 @@ export class Record<T extends Model> extends FireModel<T> {
    * regardless if the cardinality
    */
   public async associate(
-    property: Extract<keyof T, string>,
+    property: keyof T & string,
     // TODO: ideally stronger typing
     refs: IFkReference<any> | Array<IFkReference<any>>,
     options: IFmRelationshipOptions = {}
@@ -891,7 +892,7 @@ export class Record<T extends Model> extends FireModel<T> {
    * @param options change the behavior of this relationship transaction
    */
   public async addToRelationship(
-    property: keyof T,
+    property: keyof T & string,
     fkRefs: IFkReference<any> | Array<IFkReference<any>>,
     options: IFmRelationshipOptionsForHasMany = {}
   ) {
@@ -1022,7 +1023,7 @@ export class Record<T extends Model> extends FireModel<T> {
    * @param ref the FK
    */
   public async setRelationship(
-    property: Extract<keyof T, string>,
+    property: keyof T & string,
     fkId: IFkReference<any>,
     options: IFmRelationshipOptions = {}
   ) {
@@ -1047,7 +1048,7 @@ export class Record<T extends Model> extends FireModel<T> {
    *
    * @param prop the property being retrieved
    */
-  public get<K extends keyof T>(prop: K) {
+  public get<K extends keyof T & string>(prop: K) {
     return this.data[prop];
   }
 
@@ -1090,9 +1091,9 @@ export class Record<T extends Model> extends FireModel<T> {
     const hasOneRels: Array<keyof T> = (relationships || [])
       .filter(r => r.relType === "hasOne")
       .map(r => r.property) as Array<keyof T>;
-    const hasManyRels: Array<keyof T> = (relationships || [])
+    const hasManyRels: Array<keyof T & string> = (relationships || [])
       .filter(r => r.relType === "hasMany")
-      .map(r => r.property) as Array<keyof T>;
+      .map(r => r.property) as Array<keyof T & string>;
 
     const promises = [];
     /**
@@ -1367,14 +1368,14 @@ export class Record<T extends Model> extends FireModel<T> {
     if (!path.includes(":")) {
       return [];
     }
-    const results: string[] = [];
+    const results: Array<keyof T & string> = [];
     let remaining = path;
     let index = remaining.indexOf(":");
 
     while (index !== -1) {
       remaining = remaining.slice(index);
       const prop = remaining.replace(/\:(\w+).*/, "$1");
-      results.push(prop);
+      results.push(prop as keyof T & string);
       remaining = remaining.replace(`:${prop}`, "");
       index = remaining.indexOf(":");
     }
@@ -1406,7 +1407,7 @@ export class Record<T extends Model> extends FireModel<T> {
           } as a part of the route path but that property must be either a string or a number and instead was a ${typeof prop}`
         );
       }
-      path = path.replace(`:${prop}`, String(this.get(prop as keyof T)));
+      path = path.replace(`:${prop}`, String(this.get(prop)));
     });
 
     return path;
@@ -1467,6 +1468,49 @@ export class Record<T extends Model> extends FireModel<T> {
     }
 
     await this._localCrudOperation(IFmCrudOperations.add, undefined, options);
+    // now that the record has been added we need to follow-up with any relationship fk's that
+    // were part of this record. For these we must run an `associate` over them to ensure that
+    // inverse properties are established in the inverse direction
+    const relationshipsTouched = this.relationships.reduce(
+      (agg: Array<string & keyof T>, rel) => {
+        if (
+          rel.relType === "hasMany" &&
+          Object.keys(this.data[rel.property] as IDictionary<true>).length > 0
+        ) {
+          return agg.concat(rel.property);
+        } else if (rel.relType === "hasOne" && this.data[rel.property]) {
+          return agg.concat(rel.property);
+        } else {
+          return agg;
+        }
+      },
+      []
+    );
+    const promises: any[] = [];
+    try {
+      for (const prop of relationshipsTouched) {
+        const meta = this.META.relationship(prop);
+        if (meta.relType === "hasOne") {
+          // TODO: why is this damn typing so difficult?
+          promises.push(this.associate(prop, this.get(prop) as any));
+        }
+        if (meta.relType === "hasMany") {
+          Object.keys(this.get(prop)).forEach(fkRef =>
+            promises.push(this.associate(prop, fkRef))
+          );
+        }
+      }
+      await Promise.all(promises);
+    } catch (e) {
+      throw new FireModelProxyError(
+        e,
+        `The ${capitalize(this.modelName)} [${
+          this.id
+        }] was added by when attempting to add in the relationships which were inferred by record payload it ran into problems and there was no guarenteed way to fully roll back. The relationship props touched were: ${relationshipsTouched.join(
+          ", "
+        )}`
+      );
+    }
 
     return this;
   }
