@@ -1,6 +1,7 @@
 import { Model, Record } from "..";
 import { getModelMeta } from "../ModelMeta";
 import { IDictionary } from "common-types";
+import { IFkReference } from "../@types";
 
 /**
  * When creating a new record it is sometimes desirable to pass in
@@ -9,7 +10,7 @@ import { IDictionary } from "common-types";
  */
 export async function buildDeepRelationshipLinks<T extends Model>(
   rec: Record<T>,
-  property: keyof T
+  property: keyof T & string
 ) {
   const meta = getModelMeta(rec).property(property);
   return meta.relType === "hasMany"
@@ -19,7 +20,7 @@ export async function buildDeepRelationshipLinks<T extends Model>(
 
 async function processHasMany<T extends Model>(
   rec: Record<T>,
-  property: keyof T
+  property: keyof T & string
 ) {
   const meta = getModelMeta(rec).property(property);
   const fks: IDictionary = rec.get(property);
@@ -55,9 +56,9 @@ async function processHasMany<T extends Model>(
 
 async function processBelongsTo<T extends Model>(
   rec: Record<T>,
-  property: keyof T
+  property: keyof T & string
 ) {
-  const fk = rec.get(property);
+  const fk: IFkReference<T> = rec.get(property) as any;
   const meta = getModelMeta(rec).property(property);
 
   if (fk && typeof fk === "object") {

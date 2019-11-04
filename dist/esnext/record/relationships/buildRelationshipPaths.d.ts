@@ -13,4 +13,4 @@ import { Record } from "../../Record";
  * @param property the _property_ on the `Record` which holds the FK id
  * @param fkRef the "id" for the FK which is being worked on
  */
-export declare function buildRelationshipPaths<T>(rec: Record<T>, property: keyof T, fkRef: IFkReference, options?: IFmBuildRelationshipOptions): IFmPathValuePair[];
+export declare function buildRelationshipPaths<T>(rec: Record<T>, property: keyof T & string, fkRef: IFkReference, options?: IFmBuildRelationshipOptions): IFmPathValuePair[];

@@ -30,7 +30,7 @@ import { createCompositeKeyRefFromRecord } from "../createCompositeKeyString";
  */
 export function buildRelationshipPaths<T>(
   rec: Record<T>,
-  property: keyof T,
+  property: keyof T & string,
   fkRef: IFkReference,
   options: IFmBuildRelationshipOptions = {}
 ): IFmPathValuePair[] {

@@ -56,7 +56,7 @@ export interface IFmLocalRelationshipEvent<
   kind: "relationship";
   operation: IFmRelationshipOperation;
   /** the property on the `from` model which has a FK ref to `to` model */
-  property: keyof F;
+  property: keyof F & string;
   /**
    * The foreign key that the `from` model will be operating with on property `property`.
    * If the FK has a dynamic path then the FK will be represented as a composite ref.

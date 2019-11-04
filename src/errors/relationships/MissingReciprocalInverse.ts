@@ -4,7 +4,7 @@ import { Model } from "../../Model";
 import { capitalize } from "../../util";
 
 export class MissingReciprocalInverse<T extends Model> extends FireModelError {
-  constructor(rec: Record<T>, property: keyof T) {
+  constructor(rec: Record<T>, property: keyof T & string) {
     super("", "firemodel/missing-reciprocal-inverse");
 
     const fkRecord = Record.create(

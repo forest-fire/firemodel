@@ -415,7 +415,7 @@ export class List<T extends Model> extends FireModel<T> {
    * it is stated
    */
   public findWhere(
-    prop: keyof T,
+    prop: keyof T & string,
     value: T[typeof prop],
     defaultIfNotFound = DEFAULT_IF_NOT_FOUND
   ): Record<T> {

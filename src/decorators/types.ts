@@ -50,13 +50,13 @@ export interface IFmModelMeta<T extends Model = any> {
    */
   localModelName?: string;
   /** provides a boolean flag on whether the stated name is a property */
-  isProperty?: (prop: keyof T) => boolean;
+  isProperty?: (prop: keyof T & string) => boolean;
   /** a function to lookup the meta properties of a given property */
-  property?: (prop: keyof T) => IFmModelPropertyMeta<T>;
+  property?: (prop: keyof T & string) => IFmModelPropertyMeta<T>;
   /** provides a boolean flag on whether the stated name is a property */
-  isRelationship?: (prop: keyof T) => boolean;
+  isRelationship?: (prop: keyof T & string) => boolean;
   /** a function to lookup the meta properties of a given relationship */
-  relationship?: (prop: keyof T) => IFmModelRelationshipMeta<T>;
+  relationship?: (prop: keyof T & string) => IFmModelRelationshipMeta<T>;
   audit?: boolean | "server";
   /** A list of all properties and associated meta-data for the given schema */
   properties?: Array<IFmModelPropertyMeta<T>>;

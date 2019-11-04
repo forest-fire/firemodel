@@ -378,6 +378,7 @@ export class Record extends FireModel {
     get localPath() {
         let prefix = this.localPrefix;
         this.localDynamicComponents.forEach(prop => {
+            // TODO: another example of impossible typing coming off of a get()
             prefix = prefix.replace(`:${prop}`, this.get(prop));
         });
         return pathJoin(prefix, this.META.localModelName !== this.modelName
@@ -1013,6 +1014,38 @@ export class Record extends FireModel {
             throw new FireModelError(`Attempt to save Record failed as the Database has not been connected yet. Try setting FireModel's defaultDb first.`, "firemodel/db-not-ready");
         }
         await this._localCrudOperation("add" /* add */, undefined, options);
+        // now that the record has been added we need to follow-up with any relationship fk's that
+        // were part of this record. For these we must run an `associate` over them to ensure that
+        // inverse properties are established in the inverse direction
+        const relationshipsTouched = this.relationships.reduce((agg, rel) => {
+            if (rel.relType === "hasMany" &&
+                Object.keys(this.data[rel.property]).length > 0) {
+                return agg.concat(rel.property);
+            }
+            else if (rel.relType === "hasOne" && this.data[rel.property]) {
+                return agg.concat(rel.property);
+            }
+            else {
+                return agg;
+            }
+        }, []);
+        const promises = [];
+        try {
+            for (const prop of relationshipsTouched) {
+                const meta = this.META.relationship(prop);
+                if (meta.relType === "hasOne") {
+                    // TODO: why is this damn typing so difficult?
+                    promises.push(this.associate(prop, this.get(prop)));
+                }
+                if (meta.relType === "hasMany") {
+                    Object.keys(this.get(prop)).forEach(fkRef => promises.push(this.associate(prop, fkRef)));
+                }
+            }
+            await Promise.all(promises);
+        }
+        catch (e) {
+            throw new FireModelProxyError(e, `The ${capitalize(this.modelName)} [${this.id}] was added by when attempting to add in the relationships which were inferred by record payload it ran into problems and there was no guarenteed way to fully roll back. The relationship props touched were: ${relationshipsTouched.join(", ")}`);
+        }
         return this;
     }
 }

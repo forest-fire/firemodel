@@ -9,5 +9,5 @@ export declare class MissingInverseProperty<T extends Model> extends FireModelEr
     from: string;
     to: string;
     inverseProperty: string;
-    constructor(rec: Record<T>, property: keyof T);
+    constructor(rec: Record<T>, property: keyof T & string);
 }

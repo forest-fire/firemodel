@@ -139,7 +139,7 @@ export declare class List<T extends Model> extends FireModel<T> {
      * specified value. If no value is found then an error is thrown unless
      * it is stated
      */
-    findWhere(prop: keyof T, value: T[typeof prop], defaultIfNotFound?: string): Record<T>;
+    findWhere(prop: keyof T & string, value: T[typeof prop], defaultIfNotFound?: string): Record<T>;
     /**
      * provides a `map` function over the records managed by the List; there
      * will be no mutations to the data managed by the list
