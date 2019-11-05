@@ -15,7 +15,7 @@ export declare class AuditRecord<T extends Model> extends AuditBase {
     since(when: epochWithMilliseconds | string): Promise<IAuditLogItem[]>;
     before(when: epochWithMilliseconds | string): Promise<IAuditLogItem[]>;
     between(after: epochWithMilliseconds | string, before: epochWithMilliseconds | string): Promise<IAuditLogItem[]>;
-    protected readonly auditLogs: any;
-    protected readonly byId: any;
+    protected get auditLogs(): any;
+    protected get byId(): any;
     protected byProp(prop: string): any;
 }
