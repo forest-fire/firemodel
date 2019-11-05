@@ -1,5 +1,5 @@
 import { Model } from "../Model";
-import { IEventTimeContext, FmEvents, IFmLocalEvent } from "./index";
+import { FmEvents, IFmLocalEvent } from "./index";
 import { IWatcherEventContext } from "../state-mgmt";
 declare type IValueBasedWatchEvent = import("abstracted-firebase").IValueBasedWatchEvent;
 declare type IPathBasedWatchEvent = import("abstracted-firebase").IPathBasedWatchEvent;

@@ -65,5 +65,5 @@ export declare class WatchBase<T extends Model> {
      */
     buildWatcherItem(name?: string): IWatcherEventContext<T>;
     protected getCoreDispatch(): IReduxDispatch<import("..").IReduxAction, any>;
-    protected readonly db: RealTimeDB;
+    protected get db(): RealTimeDB;
 }
