@@ -1,10 +1,11 @@
 import { Model } from "../Model";
 import { IEventTimeContext, FmEvents, IFmLocalEvent } from "./index";
 import { IWatcherEventContext } from "../state-mgmt";
-import { IValueBasedWatchEvent, IPathBasedWatchEvent } from "abstracted-firebase";
+declare type IValueBasedWatchEvent = import("abstracted-firebase").IValueBasedWatchEvent;
+declare type IPathBasedWatchEvent = import("abstracted-firebase").IPathBasedWatchEvent;
 import { ICompositeKey } from "../@types";
 import { IFmLocalRecordEvent, IFmLocalRelationshipEvent } from "./IFmLocalEvent";
-import { IDictionary } from "firemock";
+import { IDictionary } from "common-types";
 export declare type IFmEventType = "value" | "child_added" | "child_moved" | "child_removed" | "child_changed";
 /**
  * An event coming from Firebase; the event property
@@ -112,3 +113,4 @@ export interface IEventTimeContext<T = any> {
     type: FmEvents;
     dbPath: string;
 }
+export {};
