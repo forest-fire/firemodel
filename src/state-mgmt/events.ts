@@ -1,22 +1,15 @@
 import { Model } from "../Model";
-import {
-  IEventTimeContext,
-  FmEvents,
-  IFmCrudOperations,
-  IFmLocalEvent
-} from "./index";
+import { IEventTimeContext, FmEvents, IFmLocalEvent } from "./index";
 import { IWatcherEventContext } from "../state-mgmt";
-import {
-  IValueBasedWatchEvent,
-  IPathBasedWatchEvent
-} from "abstracted-firebase";
+
+type IValueBasedWatchEvent = import("abstracted-firebase").IValueBasedWatchEvent;
+type IPathBasedWatchEvent = import("abstracted-firebase").IPathBasedWatchEvent;
 import { ICompositeKey } from "../@types";
 import {
   IFmLocalRecordEvent,
   IFmLocalRelationshipEvent
 } from "./IFmLocalEvent";
-import { ISerializedQueryIdentity, SerializedQuery } from "serialized-query";
-import { IDictionary } from "firemock";
+import { IDictionary } from "common-types";
 
 export type IFmEventType =
   | "value"
