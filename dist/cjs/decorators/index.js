@@ -12,6 +12,7 @@ exports.ownedBy = hasOne_1.ownedBy;
 var indexing_1 = require("./indexing");
 exports.index = indexing_1.index;
 exports.uniqueIndex = indexing_1.uniqueIndex;
+exports.getDbIndexes = indexing_1.getDbIndexes;
 __export(require("./constraints"));
 __export(require("./model"));
 __export(require("./defaultValue"));
