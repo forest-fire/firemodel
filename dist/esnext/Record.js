@@ -501,13 +501,15 @@ export class Record extends FireModel {
         this.isDirty = true;
         await this._localCrudOperation("remove" /* remove */, copy(this.data));
         this.isDirty = false;
+        // TODO: handle dynamic paths and also consider removing relationships
     }
     /**
      * Changes the local state of a property on the record
      *
      * @param prop the property on the record to be changed
      * @param value the new value to set to
-     * @param silent a flag to indicate whether the change to the prop should be updated to the database or not
+     * @param silent a flag to indicate whether the change to the prop should be updated
+     * to the database or not
      */
     async set(prop, value, silent = false) {
         const rollback = copy(this.data);
@@ -905,6 +907,32 @@ export class Record extends FireModel {
             const path = this.dbPath;
             switch (crudAction) {
                 case "remove":
+                    try {
+                        const test = this.dbPath;
+                    }
+                    catch (e) {
+                        throw new FireModelProxyError(e, `The attempt to "remove" the ${capitalize(this.modelName)} with ID of "${this.id}" has been aborted. This is often because you don't have the right properties set for the dynamic path. This model requires the following dynamic properties to uniquely define (and remove) it: ${this.dynamicPathComponents.join(", ")}`);
+                    }
+                    // Check for relationship props and dis-associate
+                    // before removing the actual record
+                    for (const rel of this.relationships) {
+                        const relProperty = this.get(rel.property);
+                        try {
+                            if (rel.relType === "hasOne" && relProperty) {
+                                await this.disassociate(rel.property, this.get(rel.property));
+                            }
+                            else if (rel.relType === "hasMany" && relProperty) {
+                                for (const relFk of Object.keys(relProperty)) {
+                                    await this.disassociate(rel.property, relFk);
+                                }
+                            }
+                        }
+                        catch (e) {
+                            throw new FireModelProxyError(e, `While trying to remove ${capitalize(this.modelName)}.${this.id} from the database, problems were encountered removing the relationship defined by the "${rel.property} property (which relates to the model ${rel.fkModelName}). This relationship has a cardinality of "${rel.relType}" and the value(s) were: ${rel.relType === "hasOne"
+                                ? Object.keys(this.get(rel.property))
+                                : this.get(rel.property)}`);
+                        }
+                    }
                     await this.db.remove(this.dbPath);
                     break;
                 case "add":

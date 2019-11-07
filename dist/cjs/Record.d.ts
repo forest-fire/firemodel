@@ -119,10 +119,6 @@ export declare class Record<T extends Model> extends FireModel<T> {
      * the primary model as a return value
      */
     static associate<T extends Model>(model: new () => T, id: pk, property: keyof T & string, refs: IFkReference<any> | Array<IFkReference<any>>): Promise<Record<T>>;
-    private _existsOnDB;
-    private _writeOperations;
-    private _data?;
-    constructor(model: new () => T, options?: IRecordOptions);
     /**
      * Given a database _path_ and a `Model`, pull out the composite key from
      * the path. This works for Models that do and _do not_ have dynamic segments
@@ -130,6 +126,10 @@ export declare class Record<T extends Model> extends FireModel<T> {
      * so long as the path does indeed have the `id` at the end of the path.
      */
     static getCompositeKeyFromPath<T extends Model>(model: new () => T, path: string): IDictionary<any>;
+    private _existsOnDB;
+    private _writeOperations;
+    private _data?;
+    constructor(model: new () => T, options?: IRecordOptions);
     get data(): Readonly<T>;
     get isDirty(): boolean;
     /**
@@ -250,7 +250,8 @@ export declare class Record<T extends Model> extends FireModel<T> {
      *
      * @param prop the property on the record to be changed
      * @param value the new value to set to
-     * @param silent a flag to indicate whether the change to the prop should be updated to the database or not
+     * @param silent a flag to indicate whether the change to the prop should be updated
+     * to the database or not
      */
     set<K extends keyof T>(prop: K & string, value: T[K], silent?: boolean): Promise<void>;
     /**
@@ -266,7 +267,7 @@ export declare class Record<T extends Model> extends FireModel<T> {
      * Removes an association between the current model and another entity
      * (regardless of the cardinality in the relationship)
      */
-    disassociate(property: Extract<keyof T, string>, refs: IFkReference<any> | Array<IFkReference<any>>, options?: IFmRelationshipOptions): Promise<void>;
+    disassociate(property: keyof T & string, refs: IFkReference<any> | Array<IFkReference<any>>, options?: IFmRelationshipOptions): Promise<void>;
     /**
      * Adds one or more fk's to a hasMany relationship.
      *
@@ -289,7 +290,7 @@ export declare class Record<T extends Model> extends FireModel<T> {
      * @param property the property which is acting as a FK
      * @param fkRefs the FK's on the property which should be removed
      */
-    removeFromRelationship(property: Extract<keyof T, string>, fkRefs: IFkReference<any> | Array<IFkReference<any>>, options?: IFmRelationshipOptionsForHasMany): Promise<void>;
+    removeFromRelationship(property: keyof T & string, fkRefs: IFkReference<any> | Array<IFkReference<any>>, options?: IFmRelationshipOptionsForHasMany): Promise<void>;
     /**
      * **clearRelationship**
      *
@@ -299,7 +300,7 @@ export declare class Record<T extends Model> extends FireModel<T> {
      * @param property the property containing the relationship to an external
      * entity
      */
-    clearRelationship(property: Extract<keyof T, string>, options?: IFmRelationshipOptions): Promise<void>;
+    clearRelationship(property: keyof T & string, options?: IFmRelationshipOptions): Promise<void>;
     /**
      * **setRelationship**
      *
