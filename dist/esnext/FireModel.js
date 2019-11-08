@@ -163,7 +163,7 @@ export class FireModel {
             agg[pathJoin(this.dbPath, curr)] = rec.get(curr);
             return agg;
         }, {});
-        return Object.assign({}, added, removed, updated);
+        return Object.assign(Object.assign(Object.assign({}, added), removed), updated);
     }
 }
 FireModel.auditLogs = "/auditing";

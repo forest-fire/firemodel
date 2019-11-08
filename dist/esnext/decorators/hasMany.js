@@ -35,7 +35,7 @@ fkClass, inverse) {
         if (inverseProperty) {
             payload.inverseProperty = inverseProperty;
         }
-        return propertyReflector(Object.assign({}, payload, { type: "Object" }), relationshipsByModel);
+        return propertyReflector(Object.assign(Object.assign({}, payload), { type: "Object" }), relationshipsByModel);
     }
     catch (e) {
         throw new DecoratorProblem("hasMany", e, { inverse });

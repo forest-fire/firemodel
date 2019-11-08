@@ -447,7 +447,7 @@ export class Record extends FireModel {
         await this.db.set(pathJoin(this.dbPath, "lastUpdated"), new Date().getTime());
         // set firemodel state locally
         const currentState = this.get(property) || {};
-        const newState = Object.assign({}, currentState, { [key]: value });
+        const newState = Object.assign(Object.assign({}, currentState), { [key]: value });
         this.set(property, newState);
         return key;
     }
@@ -483,10 +483,10 @@ export class Record extends FireModel {
             throw new FireModelError(`You called update on a hash which has relationships included in it. Please only use "update" for updating properties. The relationships you were attempting to update were: ${relProps.join(", ")}.`, `firemodel/not-allowed`);
         }
         const lastUpdated = new Date().getTime();
-        const changed = Object.assign({}, props, { lastUpdated });
+        const changed = Object.assign(Object.assign({}, props), { lastUpdated });
         const rollback = copy(this.data);
         // changes local Record to include updates immediately
-        this._data = Object.assign({}, this.data, changed);
+        this._data = Object.assign(Object.assign({}, this.data), changed);
         // performs a two phase commit using dispatch messages
         await this._localCrudOperation("update" /* update */, rollback);
         return;
@@ -527,7 +527,7 @@ export class Record extends FireModel {
         };
         // locally change Record values
         this.META.isDirty = true;
-        this._data = Object.assign({}, this._data, changed);
+        this._data = Object.assign(Object.assign({}, this._data), changed);
         // dispatch
         if (!silent) {
             await this._localCrudOperation("update" /* update */, rollback, {
@@ -886,7 +886,7 @@ export class Record extends FireModel {
             if (!options.silent) {
                 // Note: if used on frontend, the mutations must be careful to
                 // set this to the right path considering there is no watcher
-                await this.dispatch(UnwatchedLocalEvent(this, Object.assign({ type: actionTypeStart }, event, { value: withoutMetaOrPrivate(this.data) })));
+                await this.dispatch(UnwatchedLocalEvent(this, Object.assign(Object.assign({ type: actionTypeStart }, event), { value: withoutMetaOrPrivate(this.data) })));
             }
         }
         else {
@@ -950,7 +950,7 @@ export class Record extends FireModel {
             // send confirm event
             if (!options.silent && !options.silentAcceptance) {
                 if (watchers.length === 0) {
-                    await this.dispatch(UnwatchedLocalEvent(this, Object.assign({ type: actionTypeEnd }, event, { transactionId, value: withoutMetaOrPrivate(this.data) })));
+                    await this.dispatch(UnwatchedLocalEvent(this, Object.assign(Object.assign({ type: actionTypeEnd }, event), { transactionId, value: withoutMetaOrPrivate(this.data) })));
                 }
                 else {
                     const dispatch = WatchDispatcher(this.dispatch);
@@ -967,7 +967,7 @@ export class Record extends FireModel {
         }
         catch (e) {
             // send failure event
-            await this.dispatch(UnwatchedLocalEvent(this, Object.assign({ type: actionTypeFailure }, event, { transactionId, value: withoutMetaOrPrivate(this.data) })));
+            await this.dispatch(UnwatchedLocalEvent(this, Object.assign(Object.assign({ type: actionTypeFailure }, event), { transactionId, value: withoutMetaOrPrivate(this.data) })));
             throw new RecordCrudFailure(this, crudAction, transactionId, e);
         }
     }

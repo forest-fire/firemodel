@@ -10,7 +10,7 @@ export declare class AuditBase<T extends Model = Model> {
     protected _query: SerializedQuery;
     protected _recordId: string;
     protected _property: string;
-    protected readonly db: RealTimeDB;
-    protected readonly dbPath: any;
+    protected get db(): RealTimeDB;
+    protected get dbPath(): any;
     constructor(modelKlass: new () => T, options?: IModelOptions);
 }
