@@ -4,7 +4,7 @@ require("reflect-metadata");
 const reflector_1 = require("./reflector");
 const property_store_1 = require("./model-meta/property-store");
 function constrainedProperty(options = {}) {
-    return reflector_1.propertyReflector(Object.assign({}, options, { isRelationship: false, isProperty: true }), property_store_1.propertiesByModel);
+    return reflector_1.propertyReflector(Object.assign(Object.assign({}, options), { isRelationship: false, isProperty: true }), property_store_1.propertiesByModel);
 }
 exports.constrainedProperty = constrainedProperty;
 /** allows the introduction of a new constraint to the metadata of a property */

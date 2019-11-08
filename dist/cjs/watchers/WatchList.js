@@ -258,7 +258,7 @@ class WatchList extends WatchBase_1.WatchBase {
     setPathDependantProperties() {
         if (this._dynamicProperties.length === 0 ||
             Object.keys(this._offsets).length > 0) {
-            const lst = List_1.List.create(this._modelConstructor, Object.assign({}, this._options, { offsets: this._offsets }));
+            const lst = List_1.List.create(this._modelConstructor, Object.assign(Object.assign({}, this._options), { offsets: this._offsets }));
             this._query = new serialized_query_1.SerializedQuery(lst.dbPath);
             this._modelName = lst.modelName;
             this._pluralName = lst.pluralName;

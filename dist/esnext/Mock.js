@@ -4,7 +4,7 @@ import API from "./Mock/api";
 import { FireModelError } from "./errors";
 function defaultCardinality(r) {
     return r.META.relationships.reduce((prev, curr) => {
-        prev = Object.assign({}, prev, { [curr.property]: true });
+        prev = Object.assign(Object.assign({}, prev), { [curr.property]: true });
     }, {});
 }
 /**

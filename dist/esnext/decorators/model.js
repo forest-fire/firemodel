@@ -20,19 +20,19 @@ export function model(options = {}) {
                 console.log(`You set the audit property to "${options.audit}" which is invalid. Valid properties are true, false, and "server". The audit property will be set to false for now.`);
                 options.audit = false;
             }
-            const meta = Object.assign({}, options, { isProperty: isProperty(modelOfObject) }, { property: getModelProperty(modelOfObject) }, { properties: getProperties(modelOfObject) }, { isRelationship: isRelationship(modelOfObject) }, { relationship: getModelRelationship(modelOfObject) }, { relationships: getRelationships(modelOfObject) }, { dbIndexes: getDbIndexes(modelOfObject) }, { pushKeys: getPushKeys(modelOfObject) }, { dbOffset: options.dbOffset ? options.dbOffset : "" }, { audit: options.audit ? options.audit : false }, { plural: options.plural }, {
+            const meta = Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign({}, options), { isProperty: isProperty(modelOfObject) }), { property: getModelProperty(modelOfObject) }), { properties: getProperties(modelOfObject) }), { isRelationship: isRelationship(modelOfObject) }), { relationship: getModelRelationship(modelOfObject) }), { relationships: getRelationships(modelOfObject) }), { dbIndexes: getDbIndexes(modelOfObject) }), { pushKeys: getPushKeys(modelOfObject) }), { dbOffset: options.dbOffset ? options.dbOffset : "" }), { audit: options.audit ? options.audit : false }), { plural: options.plural }), {
                 allProperties: [
                     ...getProperties(modelOfObject).map(p => p.property),
                     ...getRelationships(modelOfObject).map(p => p.property)
                 ]
-            }, {
+            }), {
                 localPostfix: options.localPostfix === undefined ? "all" : options.localPostfix
-            }, {
+            }), {
                 localModelName: options.localModelName === undefined
                     ? modelOfObject.constructor.name.slice(0, 1).toLowerCase() +
                         modelOfObject.constructor.name.slice(1)
                     : options.localModelName
-            }, { isDirty });
+            }), { isDirty });
             addModelMeta(target.constructor.name.toLowerCase(), meta);
             Object.defineProperty(target.prototype, "META", {
                 get() {

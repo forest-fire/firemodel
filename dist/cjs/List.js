@@ -14,7 +14,7 @@ function addTimestamps(obj) {
     const datetime = new Date().getTime();
     const output = {};
     Object.keys(obj).forEach(i => {
-        output[i] = Object.assign({}, obj[i], { createdAt: datetime, lastUpdated: datetime });
+        output[i] = Object.assign(Object.assign({}, obj[i]), { createdAt: datetime, lastUpdated: datetime });
     });
     return output;
 }
