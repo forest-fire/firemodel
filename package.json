@@ -1,6 +1,6 @@
 {
   "name": "firemodel",
-  "version": "0.34.4",
+  "version": "0.34.6",
   "description": "Modeling, Access, and Mocking for Firebase Projects",
   "license": "MIT",
   "repository": "https://github.com/forest-fire/firemodel",
@@ -19,7 +19,7 @@
     "clean": "rimraf lib;",
     "clean:nuclear": "rimraf lib dist node_modules && yarn cache clean && rm yarn.lock && yarn && yarn upgrade",
     "lint": "./node_modules/.bin/tslint --force --format verbose \"src/**/*.ts\"",
-    "build": "tslint src/**/*.ts && tsc -P tsconfig.esnext.json && tsc -P tsconfig.cjs.json",
+    "build": "yarn tslint src/**/*.ts && yarn tsc -P tsconfig.esnext.json && yarn tsc -P tsconfig.cjs.json",
     "build:nuclear": "yarn clean:nuclear && yarn build",
     "test": "./node_modules/.bin/ts-node ./scripts/test.ts ",
     "deploy": "yarn build:nuclear && yarn test && yarn publish",
@@ -79,9 +79,9 @@
     "rimraf": "^2.6.3",
     "test-console": "^1.1.0",
     "ts-node": "^8.4.1",
-    "tslint": "^5.20.0",
+    "tslint": "^5.20.1",
     "tslint-config-prettier": "^1.18.0",
-    "typescript": "^3.7.1-rc",
+    "typescript": "3.5.3",
     "vue-property-decorator": "^8.2.2",
     "vuepress": "^1.2.0",
     "vuepress-plugin-autometa": "^0.1.12"

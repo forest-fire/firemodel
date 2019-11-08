@@ -6,16 +6,15 @@ import { RealTimeDB, IFirebaseConfig, IFirebaseAdminConfig } from "abstracted-fi
 import { IFmModelMeta, IFmModelPropertyMeta, IFmModelRelationshipMeta } from "./decorators/types";
 import { IFmChangedProperties } from "./@types";
 export declare class FireModel<T extends Model> {
-    static get defaultDb(): RealTimeDB;
     /**
-     * Any FireModel transaction needs to connect to the database
-     * via a passed-in reference to "abstracted-client" or "abstracted-admin"
-     * database. These references can be done with any/every transaction via
-     * the options hash but it is often more convient to set a "fallback" or
-     * "default" database to use should a given transaction not state a DB
-     * connection explicitly.
-     */
-    static set defaultDb(db: RealTimeDB);
+    * Any FireModel transaction needs to connect to the database
+    * via a passed-in reference to "abstracted-client" or "abstracted-admin"
+    * database. These references can be done with any/every transaction via
+    * the options hash but it is often more convient to set a "fallback" or
+    * "default" database to use should a given transaction not state a DB
+    * connection explicitly.
+    */
+    static defaultDb: RealTimeDB;
     /**
      * All Watchers and write-based transactions in FireModel offer a way to
      * call out to a "dispatch" function. This can be done on a per-transaction
@@ -23,40 +22,39 @@ export declare class FireModel<T extends Model> {
      * all subsequent transactions will use this dispatch function unless they are
      * explicitly passed another.
      */
-    static set dispatch(fn: IReduxDispatch);
     /**
-     * The default dispatch function which should be called/notified whenever
-     * a write based transaction has modified state.
-     */
-    static get dispatch(): IReduxDispatch;
+    * The default dispatch function which should be called/notified whenever
+    * a write based transaction has modified state.
+    */
+    static dispatch: IReduxDispatch;
     /**
      * The name of the model; typically a "sigular" name
      */
-    get modelName(): string;
+    readonly modelName: string;
     /**
      * The plural name of the model (which plays a role in storage of state in both
      * the database as well as the dispatch function's path)
      */
-    get pluralName(): any;
-    get dbPath(): string;
-    get localPath(): string;
-    get META(): IFmModelMeta<T>;
+    readonly pluralName: any;
+    readonly dbPath: string;
+    readonly localPath: string;
+    readonly META: IFmModelMeta<T>;
     /**
      * A list of all the properties -- and those properties
      * meta information -- contained on the given model
      */
-    get properties(): IFmModelPropertyMeta[];
+    readonly properties: IFmModelPropertyMeta[];
     /**
      * A list of all the realtionships -- and those relationships
      * meta information -- contained on the given model
      */
-    get relationships(): IFmModelRelationshipMeta[];
-    get dispatch(): IReduxDispatch<import("./state-mgmt").IReduxAction, any>;
-    static get isDefaultDispatch(): boolean;
-    get dispatchIsActive(): boolean;
+    readonly relationships: IFmModelRelationshipMeta[];
+    readonly dispatch: IReduxDispatch<import("./state-mgmt").IReduxAction, any>;
+    static readonly isDefaultDispatch: boolean;
+    readonly dispatchIsActive: boolean;
     /** the connected real-time database */
-    get db(): RealTimeDB;
-    get pushKeys(): string[];
+    readonly db: RealTimeDB;
+    readonly pushKeys: string[];
     static auditLogs: string;
     /**
      * **connect**

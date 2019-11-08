@@ -447,7 +447,7 @@ export class Record extends FireModel {
         await this.db.set(pathJoin(this.dbPath, "lastUpdated"), new Date().getTime());
         // set firemodel state locally
         const currentState = this.get(property) || {};
-        const newState = Object.assign(Object.assign({}, currentState), { [key]: value });
+        const newState = Object.assign({}, currentState, { [key]: value });
         this.set(property, newState);
         return key;
     }
@@ -483,10 +483,10 @@ export class Record extends FireModel {
             throw new FireModelError(`You called update on a hash which has relationships included in it. Please only use "update" for updating properties. The relationships you were attempting to update were: ${relProps.join(", ")}.`, `firemodel/not-allowed`);
         }
         const lastUpdated = new Date().getTime();
-        const changed = Object.assign(Object.assign({}, props), { lastUpdated });
+        const changed = Object.assign({}, props, { lastUpdated });
         const rollback = copy(this.data);
         // changes local Record to include updates immediately
-        this._data = Object.assign(Object.assign({}, this.data), changed);
+        this._data = Object.assign({}, this.data, changed);
         // performs a two phase commit using dispatch messages
         await this._localCrudOperation("update" /* update */, rollback);
         return;
@@ -501,13 +501,15 @@ export class Record extends FireModel {
         this.isDirty = true;
         await this._localCrudOperation("remove" /* remove */, copy(this.data));
         this.isDirty = false;
+        // TODO: handle dynamic paths and also consider removing relationships
     }
     /**
      * Changes the local state of a property on the record
      *
      * @param prop the property on the record to be changed
      * @param value the new value to set to
-     * @param silent a flag to indicate whether the change to the prop should be updated to the database or not
+     * @param silent a flag to indicate whether the change to the prop should be updated
+     * to the database or not
      */
     async set(prop, value, silent = false) {
         const rollback = copy(this.data);
@@ -525,7 +527,7 @@ export class Record extends FireModel {
         };
         // locally change Record values
         this.META.isDirty = true;
-        this._data = Object.assign(Object.assign({}, this._data), changed);
+        this._data = Object.assign({}, this._data, changed);
         // dispatch
         if (!silent) {
             await this._localCrudOperation("update" /* update */, rollback, {
@@ -884,7 +886,7 @@ export class Record extends FireModel {
             if (!options.silent) {
                 // Note: if used on frontend, the mutations must be careful to
                 // set this to the right path considering there is no watcher
-                await this.dispatch(UnwatchedLocalEvent(this, Object.assign(Object.assign({ type: actionTypeStart }, event), { value: withoutMetaOrPrivate(this.data) })));
+                await this.dispatch(UnwatchedLocalEvent(this, Object.assign({ type: actionTypeStart }, event, { value: withoutMetaOrPrivate(this.data) })));
             }
         }
         else {
@@ -905,6 +907,33 @@ export class Record extends FireModel {
             const path = this.dbPath;
             switch (crudAction) {
                 case "remove":
+                    try {
+                        const test = this.dbPath;
+                    }
+                    catch (e) {
+                        throw new FireModelProxyError(e, `The attempt to "remove" the ${capitalize(this.modelName)} with ID of "${this.id}" has been aborted. This is often because you don't have the right properties set for the dynamic path. This model requires the following dynamic properties to uniquely define (and remove) it: ${this.dynamicPathComponents.join(", ")}`);
+                    }
+                    // Check for relationship props and dis-associate
+                    // before removing the actual record
+                    // TODO: need to add tests for this!
+                    for (const rel of this.relationships) {
+                        const relProperty = this.get(rel.property);
+                        try {
+                            if (rel.relType === "hasOne" && relProperty) {
+                                await this.disassociate(rel.property, this.get(rel.property));
+                            }
+                            else if (rel.relType === "hasMany" && relProperty) {
+                                for (const relFk of Object.keys(relProperty)) {
+                                    await this.disassociate(rel.property, relFk);
+                                }
+                            }
+                        }
+                        catch (e) {
+                            throw new FireModelProxyError(e, `While trying to remove ${capitalize(this.modelName)}.${this.id} from the database, problems were encountered removing the relationship defined by the "${rel.property} property (which relates to the model ${rel.fkModelName}). This relationship has a cardinality of "${rel.relType}" and the value(s) were: ${rel.relType === "hasOne"
+                                ? Object.keys(this.get(rel.property))
+                                : this.get(rel.property)}`);
+                        }
+                    }
                     await this.db.remove(this.dbPath);
                     break;
                 case "add":
@@ -921,7 +950,7 @@ export class Record extends FireModel {
             // send confirm event
             if (!options.silent && !options.silentAcceptance) {
                 if (watchers.length === 0) {
-                    await this.dispatch(UnwatchedLocalEvent(this, Object.assign(Object.assign({ type: actionTypeEnd }, event), { transactionId, value: withoutMetaOrPrivate(this.data) })));
+                    await this.dispatch(UnwatchedLocalEvent(this, Object.assign({ type: actionTypeEnd }, event, { transactionId, value: withoutMetaOrPrivate(this.data) })));
                 }
                 else {
                     const dispatch = WatchDispatcher(this.dispatch);
@@ -938,7 +967,7 @@ export class Record extends FireModel {
         }
         catch (e) {
             // send failure event
-            await this.dispatch(UnwatchedLocalEvent(this, Object.assign(Object.assign({ type: actionTypeFailure }, event), { transactionId, value: withoutMetaOrPrivate(this.data) })));
+            await this.dispatch(UnwatchedLocalEvent(this, Object.assign({ type: actionTypeFailure }, event, { transactionId, value: withoutMetaOrPrivate(this.data) })));
             throw new RecordCrudFailure(this, crudAction, transactionId, e);
         }
     }

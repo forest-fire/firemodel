@@ -122,10 +122,10 @@ export async function localRelnOp(rec, event, type) {
         // locally modify Record's values
         // const ids = extractFksFromPaths(rec, event.property, event.paths);
         event.fks.map(fk => {
-            locallyUpdateFkOnRecord(rec, fk, Object.assign(Object.assign({}, event), { type }));
+            locallyUpdateFkOnRecord(rec, fk, Object.assign({}, event, { type }));
         });
         // local optimistic dispatch
-        rec.dispatch(Object.assign(Object.assign({}, event), { type }));
+        rec.dispatch(Object.assign({}, event, { type }));
         await rec.db.ref("/").update(event.paths.reduce((acc, curr) => {
             acc[curr.path] = curr.value;
             return acc;
@@ -137,7 +137,7 @@ export async function localRelnOp(rec, event, type) {
     }
 }
 export async function relnConfirmation(rec, event, type) {
-    rec.dispatch(Object.assign(Object.assign({}, event), { type }));
+    rec.dispatch(Object.assign({}, event, { type }));
 }
 export async function relnRollback(rec, event, type) {
     //
@@ -146,6 +146,6 @@ export async function relnRollback(rec, event, type) {
      * front end framework will need to know as it probably
      * adjusted _optimistically_
      */
-    rec.dispatch(Object.assign(Object.assign({}, event), { type }));
+    rec.dispatch(Object.assign({}, event, { type }));
 }
 //# sourceMappingURL=relationshipOperation.js.map

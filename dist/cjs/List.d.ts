@@ -11,8 +11,7 @@ export declare class List<T extends Model> extends FireModel<T> {
      * Sets the default database to be used by all FireModel classes
      * unless explicitly told otherwise
      */
-    static set defaultDb(db: RealTimeDB);
-    static get defaultDb(): RealTimeDB;
+    static defaultDb: RealTimeDB;
     /**
      * Set
      *
@@ -21,7 +20,7 @@ export declare class List<T extends Model> extends FireModel<T> {
      * same type that existed beforehand are removed.
      */
     static set<T extends Model>(model: new () => T, payload: IDictionary<T>): Promise<List<T>>;
-    static set dispatch(fn: IReduxDispatch);
+    static dispatch: IReduxDispatch;
     static create<T extends Model>(model: new () => T, options?: IListOptions<T>): List<T>;
     /**
      * Creates a List<T> which is populated with the passed in query
@@ -110,15 +109,15 @@ export declare class List<T extends Model> extends FireModel<T> {
     protected _offsets: Partial<T>;
     private _data;
     constructor(model: new () => T, options?: IListOptions<T>);
-    get length(): number;
-    get dbPath(): string;
+    readonly length: number;
+    readonly dbPath: string;
     /**
      * Gives the path in the client state tree to the beginning
      * where this LIST will reside.
      *
      * Includes `localPrefix` and `pluralName`, but does not include `localPostfix`
      */
-    get localPath(): any;
+    readonly localPath: any;
     /**
      * Used with local state management tools, it provides a postfix to the state tree path
      * The default is `all` and it will probably be used in most cases
@@ -126,7 +125,7 @@ export declare class List<T extends Model> extends FireModel<T> {
      * e.g. If the model is called `Tree` then your records will be stored at `trees/all`
      * (assuming the default `all` postfix)
      */
-    get localPostfix(): string;
+    readonly localPostfix: string;
     /** Returns another List with data filtered down by passed in filter function */
     filter(f: ListFilterFunction<T>): List<T>;
     /** Returns another List with data filtered down by passed in filter function */
@@ -157,7 +156,7 @@ export declare class List<T extends Model> extends FireModel<T> {
     /**
      * Gives access to the List's array of records
      */
-    get data(): T[];
+    readonly data: T[];
     /**
      * Returns the Record object with the given ID, errors if not found (name: NotFound)
      * unless call signature includes "defaultIfNotFound"

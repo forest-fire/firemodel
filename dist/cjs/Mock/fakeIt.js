@@ -35,7 +35,7 @@ function fakeIt(helper, type, ...rest) {
     }
     /** for mocks which use a hash-based second param */
     function options(defaultValue = {}) {
-        return rest[0] ? Object.assign(Object.assign({}, defaultValue), rest[0]) : undefined;
+        return rest[0] ? Object.assign({}, defaultValue, rest[0]) : undefined;
     }
     switch (type) {
         case "id":

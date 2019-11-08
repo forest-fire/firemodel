@@ -361,46 +361,6 @@ export class Record<T extends Model> extends FireModel<T> {
     return obj;
   }
 
-  //#endregion STATIC: Relationships
-
-  //#endregion
-
-  //#region INSTANCE DEFINITION
-  private _existsOnDB: boolean = false;
-  private _writeOperations: IWriteOperation[] = [];
-  private _data?: Partial<T> = {};
-
-  constructor(model: new () => T, protected options: IRecordOptions = {}) {
-    super();
-    if (!model) {
-      throw new FireModelError(
-        `You are trying to instantiate a Record but the "model constructor" passed in is empty!`,
-        `firemodel/not-allowed`
-      );
-    }
-
-    if (!model.constructor) {
-      console.log(
-        `The "model" property passed into the Record constructor is NOT a Model constructor! It is of type "${typeof model}": `,
-        model
-      );
-      if (typeof model === "string") {
-        model = FireModel.lookupModel(model);
-        if (!model) {
-          throw new FireModelError(
-            `Attempted to lookup the model in the registry but it was not found!`
-          );
-        }
-      } else {
-        throw new FireModelError(
-          `Can not instantiate a Record without a valid Model constructor`
-        );
-      }
-    }
-    this._modelConstructor = model;
-    this._model = new model();
-    this._data = new model();
-  }
   /**
    * Given a database _path_ and a `Model`, pull out the composite key from
    * the path. This works for Models that do and _do not_ have dynamic segments
@@ -451,6 +411,47 @@ export class Record<T extends Model> extends FireModel<T> {
     });
 
     return compositeKey;
+  }
+
+  //#endregion STATIC: Relationships
+
+  //#endregion
+
+  //#region INSTANCE DEFINITION
+  private _existsOnDB: boolean = false;
+  private _writeOperations: IWriteOperation[] = [];
+  private _data?: Partial<T> = {};
+
+  constructor(model: new () => T, protected options: IRecordOptions = {}) {
+    super();
+    if (!model) {
+      throw new FireModelError(
+        `You are trying to instantiate a Record but the "model constructor" passed in is empty!`,
+        `firemodel/not-allowed`
+      );
+    }
+
+    if (!model.constructor) {
+      console.log(
+        `The "model" property passed into the Record constructor is NOT a Model constructor! It is of type "${typeof model}": `,
+        model
+      );
+      if (typeof model === "string") {
+        model = FireModel.lookupModel(model);
+        if (!model) {
+          throw new FireModelError(
+            `Attempted to lookup the model in the registry but it was not found!`
+          );
+        }
+      } else {
+        throw new FireModelError(
+          `Can not instantiate a Record without a valid Model constructor`
+        );
+      }
+    }
+    this._modelConstructor = model;
+    this._model = new model();
+    this._data = new model();
   }
 
   public get data() {
@@ -757,6 +758,7 @@ export class Record<T extends Model> extends FireModel<T> {
     this.isDirty = true;
     await this._localCrudOperation(IFmCrudOperations.remove, copy(this.data));
     this.isDirty = false;
+    // TODO: handle dynamic paths and also consider removing relationships
   }
 
   /**
@@ -764,7 +766,8 @@ export class Record<T extends Model> extends FireModel<T> {
    *
    * @param prop the property on the record to be changed
    * @param value the new value to set to
-   * @param silent a flag to indicate whether the change to the prop should be updated to the database or not
+   * @param silent a flag to indicate whether the change to the prop should be updated
+   * to the database or not
    */
   public async set<K extends keyof T>(
     prop: K & string,
@@ -865,7 +868,7 @@ export class Record<T extends Model> extends FireModel<T> {
    * (regardless of the cardinality in the relationship)
    */
   public async disassociate(
-    property: Extract<keyof T, string>,
+    property: keyof T & string,
     // TODO: ideally stronger typing below
     refs: IFkReference<any> | Array<IFkReference<any>>,
     options: IFmRelationshipOptions = {}
@@ -932,7 +935,7 @@ export class Record<T extends Model> extends FireModel<T> {
    * @param fkRefs the FK's on the property which should be removed
    */
   public async removeFromRelationship(
-    property: Extract<keyof T, string>,
+    property: keyof T & string,
     fkRefs: IFkReference<any> | Array<IFkReference<any>>,
     options: IFmRelationshipOptionsForHasMany = {}
   ) {
@@ -978,7 +981,7 @@ export class Record<T extends Model> extends FireModel<T> {
    * entity
    */
   public async clearRelationship(
-    property: Extract<keyof T, string>,
+    property: keyof T & string,
     options: IFmRelationshipOptions = {}
   ) {
     const relType = this.META.relationship(property).relType;
@@ -1310,6 +1313,56 @@ export class Record<T extends Model> extends FireModel<T> {
 
       switch (crudAction) {
         case "remove":
+          try {
+            const test = this.dbPath;
+          } catch (e) {
+            throw new FireModelProxyError(
+              e,
+              `The attempt to "remove" the ${capitalize(
+                this.modelName
+              )} with ID of "${
+                this.id
+              }" has been aborted. This is often because you don't have the right properties set for the dynamic path. This model requires the following dynamic properties to uniquely define (and remove) it: ${this.dynamicPathComponents.join(
+                ", "
+              )}`
+            );
+          }
+
+          // Check for relationship props and dis-associate
+          // before removing the actual record
+          // TODO: need to add tests for this!
+          for (const rel of this.relationships) {
+            const relProperty = this.get(rel.property);
+            try {
+              if (rel.relType === "hasOne" && relProperty) {
+                await this.disassociate(rel.property, this.get(
+                  rel.property
+                ) as fk);
+              } else if (rel.relType === "hasMany" && relProperty) {
+                for (const relFk of Object.keys(relProperty)) {
+                  await this.disassociate(rel.property, relFk);
+                }
+              }
+            } catch (e) {
+              throw new FireModelProxyError(
+                e,
+                `While trying to remove ${capitalize(this.modelName)}.${
+                  this.id
+                } from the database, problems were encountered removing the relationship defined by the "${
+                  rel.property
+                } property (which relates to the model ${
+                  rel.fkModelName
+                }). This relationship has a cardinality of "${
+                  rel.relType
+                }" and the value(s) were: ${
+                  rel.relType === "hasOne"
+                    ? Object.keys(this.get(rel.property))
+                    : this.get(rel.property)
+                }`
+              );
+            }
+          }
+
           await this.db.remove(this.dbPath);
           break;
         case "add":

@@ -2,7 +2,7 @@ import "reflect-metadata";
 import { propertyReflector } from "./reflector";
 import { propertiesByModel } from "./model-meta/property-store";
 export function constrainedProperty(options = {}) {
-    return propertyReflector(Object.assign(Object.assign({}, options), { isRelationship: false, isProperty: true }), propertiesByModel);
+    return propertyReflector(Object.assign({}, options, { isRelationship: false, isProperty: true }), propertiesByModel);
 }
 /** allows the introduction of a new constraint to the metadata of a property */
 export function constrain(prop, value) {

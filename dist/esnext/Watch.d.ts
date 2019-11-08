@@ -15,16 +15,16 @@ export declare class Watch<T extends Model = Model> {
      * Sets the default database for all Firemodel
      * classes such as `FireModel`, `Record`, and `List`
      */
-    static set defaultDb(db: RealTimeDB);
+    static defaultDb: RealTimeDB;
     /**
      * Sets the default dispatch for all Firemodel
      * classes such as `FireModel`, `Record`, and `List`
      */
-    static set dispatch(d: IReduxDispatch);
+    static dispatch: IReduxDispatch;
     /**
      * returns a full list of all watchers
      */
-    static get inventory(): import("common-types").IDictionary<IWatcherEventContext<any>>;
+    static readonly inventory: import("common-types").IDictionary<IWatcherEventContext<any>>;
     static toJSON(): import("common-types").IDictionary<IWatcherEventContext<any>>;
     /**
      * lookup
@@ -35,7 +35,7 @@ export declare class Watch<T extends Model = Model> {
      * @param hashCode the unique hashcode given for each watcher
      */
     static lookup(hashCode: string): IWatcherEventContext;
-    static get watchCount(): number;
+    static readonly watchCount: number;
     static reset(): void;
     /**
      * Finds the watcher by a given name and returns the ID of the

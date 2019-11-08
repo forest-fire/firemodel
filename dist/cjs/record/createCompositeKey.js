@@ -16,9 +16,9 @@ function createCompositeKey(rec) {
         if (!model[key]) {
             throw new errors_1.FireModelError(`You can not create a composite key on a ${util_1.capitalize(rec.modelName)} without first setting the '${key}' property!`, "firemodel/not-ready");
         }
-        return Object.assign(Object.assign({}, prev), { [key]: model[key] });
+        return Object.assign({}, prev, { [key]: model[key] });
     }, {});
-    return rec.dynamicPathComponents.reduce((prev, key) => (Object.assign(Object.assign({}, prev), dynamicPathComponents)), { id: rec.id });
+    return rec.dynamicPathComponents.reduce((prev, key) => (Object.assign({}, prev, dynamicPathComponents)), { id: rec.id });
 }
 exports.createCompositeKey = createCompositeKey;
 //# sourceMappingURL=createCompositeKey.js.map
