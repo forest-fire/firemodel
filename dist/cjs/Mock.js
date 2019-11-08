@@ -9,7 +9,7 @@ const api_1 = __importDefault(require("./Mock/api"));
 const errors_1 = require("./errors");
 function defaultCardinality(r) {
     return r.META.relationships.reduce((prev, curr) => {
-        prev = Object.assign(Object.assign({}, prev), { [curr.property]: true });
+        prev = Object.assign({}, prev, { [curr.property]: true });
     }, {});
 }
 /**

@@ -28,9 +28,8 @@ export interface IWriteOperation {
 }
 export declare class Record<T extends Model> extends FireModel<T> {
     protected options: IRecordOptions;
-    static set defaultDb(db: RealTimeDB);
-    static get defaultDb(): RealTimeDB;
-    static set dispatch(fn: IReduxDispatch);
+    static defaultDb: RealTimeDB;
+    static dispatch: IReduxDispatch;
     /**
      * **dynamicPathProperties**
      *
@@ -130,78 +129,76 @@ export declare class Record<T extends Model> extends FireModel<T> {
     private _writeOperations;
     private _data?;
     constructor(model: new () => T, options?: IRecordOptions);
-    get data(): Readonly<T>;
-    get isDirty(): boolean;
+    readonly data: Readonly<T>;
     /**
-     * deprecated
-     */
-    set isDirty(value: boolean);
+    * deprecated
+    */
+    isDirty: boolean;
     /**
      * returns the fully qualified name in the database to this record;
      * this of course includes the record id so if that's not set yet calling
      * this getter will result in an error
      */
-    get dbPath(): string;
+    readonly dbPath: string;
     /**
      * provides a boolean flag which indicates whether the underlying
      * model has a "dynamic path" which ultimately comes from a dynamic
      * component in the "dbOffset" property defined in the model decorator
      */
-    get hasDynamicPath(): boolean;
+    readonly hasDynamicPath: boolean;
     /**
      * **dynamicPathComponents**
      *
      * An array of "dynamic properties" that are derived fom the "dbOffset" to
      * produce the "dbPath"
      */
-    get dynamicPathComponents(): (keyof T & string)[];
+    readonly dynamicPathComponents: (keyof T & string)[];
     /**
      * the list of dynamic properties in the "localPrefix"
      * which must be resolved to achieve the "localPath"
      */
-    get localDynamicComponents(): (keyof T & string)[];
+    readonly localDynamicComponents: (keyof T & string)[];
     /**
      * A hash of values -- including at least "id" -- which represent
      * the composite key of a model.
      */
-    get compositeKey(): ICompositeKey<T>;
+    readonly compositeKey: ICompositeKey<T>;
     /**
      * a string value which is used in relationships to fully qualify
      * a composite string (aka, a model which has a dynamic dbOffset)
      */
-    get compositeKeyRef(): string;
+    readonly compositeKeyRef: string;
     /**
      * The Record's primary key; this is the `id` property only. Not
      * the composite key.
      */
-    get id(): string;
     /**
-     * Allows setting the Record's `id` if it hasn't been set before.
-     * Resetting the `id` is not allowed.
-     */
-    set id(val: string);
+    * Allows setting the Record's `id` if it hasn't been set before.
+    * Resetting the `id` is not allowed.
+    */
+    id: string;
     /**
      * Returns the record's database _offset_ without the ID or any dynamic properties
      * yet interjected. The _dynamic properties_ however, will be show with a `:` prefix
      * to indicate where the the values will go.
      */
-    get dbOffset(): string;
+    readonly dbOffset: string;
     /**
      * returns the record's location in the frontend state management framework;
      * this can include dynamic properties characterized in the path string by
      * leading ":" character.
      */
-    get localPath(): any;
+    readonly localPath: any;
     /**
      * The path in the local state tree that brings you to
      * the record; this is differnt when retrieved from a
      * Record versus a List.
      */
-    get localPrefix(): string;
-    get existsOnDB(): boolean;
+    readonly localPrefix: string;
+    readonly existsOnDB: boolean;
     /** indicates whether this record is already being watched locally */
-    get isBeingWatched(): boolean;
-    get modelConstructor(): new () => T;
+    readonly isBeingWatched: boolean;
+    readonly modelConstructor: new () => T;
     /**
      * Goes out to the database and reloads this record
      */

@@ -47,7 +47,7 @@ watcherContext) => {
             if (watcherContext.watcherPaths) {
                 const fullPath = watcherContext.watcherPaths.find(i => i.includes(event.key));
                 const compositeKey = Record.getCompositeKeyFromPath(watcherContext.modelConstructor, fullPath);
-                event.value = Object.assign(Object.assign({}, (event.value || {})), compositeKey);
+                event.value = Object.assign({}, (event.value || {}), compositeKey);
             }
             // record events (both server and local)
             const recordProps = typeof event.value === "object"
@@ -73,7 +73,7 @@ watcherContext) => {
                 dbPath: rec.dbPath
             };
         }
-        const reduxAction = Object.assign(Object.assign(Object.assign({}, watcherContext), event), eventContext);
+        const reduxAction = Object.assign({}, watcherContext, event, eventContext);
         const results = await coreDispatchFn(reduxAction);
         // The mock server and client are now in sync
         hasInitialized(watcherContext.watcherId);

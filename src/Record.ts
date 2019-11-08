@@ -1330,6 +1330,7 @@ export class Record<T extends Model> extends FireModel<T> {
 
           // Check for relationship props and dis-associate
           // before removing the actual record
+          // TODO: need to add tests for this!
           for (const rel of this.relationships) {
             const relProperty = this.get(rel.property);
             try {
