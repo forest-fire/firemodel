@@ -6,7 +6,7 @@ import { FireModel } from "./FireModel";
 import { RealTimeDB } from "abstracted-firebase";
 import { IReduxDispatch } from "./state-mgmt/index";
 import { IListOptions } from "./@types/general";
-import { ICompositeKey } from "./@types";
+import { IPrimaryKey } from "./@types";
 export declare class List<T extends Model> extends FireModel<T> {
     /**
      * Sets the default database to be used by all FireModel classes
@@ -109,7 +109,7 @@ export declare class List<T extends Model> extends FireModel<T> {
      * because the "id" can be any form of `ICompositeKey` as well just a plain `id`. The naming
      * here is just to retain consistency with the **Watch** api.
      */
-    static ids<T extends Model>(model: new () => T, ...fks: Array<ICompositeKey<T>>): Promise<List<T>>;
+    static ids<T extends Model>(model: new () => T, ...fks: Array<IPrimaryKey<T>>): Promise<List<T>>;
     /**
      * If you want to just get the `dbPath` of a Model you can call
      * this static method and the path will be returned.

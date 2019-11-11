@@ -11,7 +11,7 @@ import { getModelMeta } from "./ModelMeta";
 import { IListOptions } from "./@types/general";
 import { FireModelError } from "./errors";
 import { capitalize } from "./util";
-import { ICompositeKey } from "./@types";
+import { ICompositeKey, IPrimaryKey } from "./@types";
 //#endregion
 
 const DEFAULT_IF_NOT_FOUND = "__DO_NOT_USE__";
@@ -304,7 +304,7 @@ export class List<T extends Model> extends FireModel<T> {
    */
   public static async ids<T extends Model>(
     model: new () => T,
-    ...fks: Array<ICompositeKey<T>>
+    ...fks: Array<IPrimaryKey<T>>
   ) {
     const promises: any[] = [];
     const results: T[] = [];
