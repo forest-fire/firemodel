@@ -6,6 +6,7 @@ import { FireModel } from "./FireModel";
 import { RealTimeDB } from "abstracted-firebase";
 import { IReduxDispatch } from "./state-mgmt/index";
 import { IListOptions } from "./@types/general";
+import { ICompositeKey } from "./@types";
 export declare class List<T extends Model> extends FireModel<T> {
     /**
      * Sets the default database to be used by all FireModel classes
@@ -99,6 +100,16 @@ export declare class List<T extends Model> extends FireModel<T> {
      * array item is the operator, the second the value you are comparing against.
      */
     static where<T extends Model, K extends keyof T>(model: new () => T, property: K, value: T[K] | [IComparisonOperator, T[K]], options?: IListOptions<T>): Promise<List<T>>;
+    /**
+     * Get's a _list_ of records. The return object is a `List` but the way it is composed
+     * doesn't actually do a query against the database but instead it just takes the array of
+     * `id`'s passed in,
+     *
+     * **Note:** the term `ids` is not entirely accurate, it should probably be phrased as `fks`
+     * because the "id" can be any form of `ICompositeKey` as well just a plain `id`. The naming
+     * here is just to retain consistency with the **Watch** api.
+     */
+    static ids<T extends Model>(model: new () => T, ...fks: Array<ICompositeKey<T>>): Promise<List<T>>;
     /**
      * If you want to just get the `dbPath` of a Model you can call
      * this static method and the path will be returned.

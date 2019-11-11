@@ -11,6 +11,7 @@ import { getModelMeta } from "./ModelMeta";
 import { IListOptions } from "./@types/general";
 import { FireModelError } from "./errors";
 import { capitalize } from "./util";
+import { ICompositeKey } from "./@types";
 //#endregion
 
 const DEFAULT_IF_NOT_FOUND = "__DO_NOT_USE__";
@@ -289,6 +290,32 @@ export class List<T extends Model> extends FireModel<T> {
     const list = await List.fromQuery(model, query, options);
 
     return list;
+  }
+
+  // TODO: add unit tests!
+  /**
+   * Get's a _list_ of records. The return object is a `List` but the way it is composed
+   * doesn't actually do a query against the database but instead it just takes the array of
+   * `id`'s passed in,
+   *
+   * **Note:** the term `ids` is not entirely accurate, it should probably be phrased as `fks`
+   * because the "id" can be any form of `ICompositeKey` as well just a plain `id`. The naming
+   * here is just to retain consistency with the **Watch** api.
+   */
+  public static async ids<T extends Model>(
+    model: new () => T,
+    ...fks: Array<ICompositeKey<T>>
+  ) {
+    const promises: any[] = [];
+    const results: T[] = [];
+    fks.forEach(fk => {
+      promises.push(Record.get(model, fk).then(p => results.push(p.data)));
+    });
+    await Promise.all(promises);
+    const obj = new List(model);
+    obj._data = results;
+
+    return obj;
   }
 
   /**

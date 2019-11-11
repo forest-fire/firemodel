@@ -224,6 +224,27 @@ class List extends FireModel_1.FireModel {
         const list = await List.fromQuery(model, query, options);
         return list;
     }
+    // TODO: add unit tests!
+    /**
+     * Get's a _list_ of records. The return object is a `List` but the way it is composed
+     * doesn't actually do a query against the database but instead it just takes the array of
+     * `id`'s passed in,
+     *
+     * **Note:** the term `ids` is not entirely accurate, it should probably be phrased as `fks`
+     * because the "id" can be any form of `ICompositeKey` as well just a plain `id`. The naming
+     * here is just to retain consistency with the **Watch** api.
+     */
+    static async ids(model, ...fks) {
+        const promises = [];
+        const results = [];
+        fks.forEach(fk => {
+            promises.push(Record_1.Record.get(model, fk).then(p => results.push(p.data)));
+        });
+        await Promise.all(promises);
+        const obj = new List(model);
+        obj._data = results;
+        return obj;
+    }
     /**
      * If you want to just get the `dbPath` of a Model you can call
      * this static method and the path will be returned.
