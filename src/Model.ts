@@ -15,7 +15,7 @@ export class Model {
   // prettier-ignore
   // TODO: This should be made required and the API updated to make it optional where appropriate
   /** The primary-key for the record */
-  @property @uniqueIndex public id?: string;
+  @property public id?: string;
   // prettier-ignore
   /** The last time that a given record was updated */
   @property @mock("dateRecentMiliseconds") @index public lastUpdated?: epochWithMilliseconds;

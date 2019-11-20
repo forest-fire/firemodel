@@ -10,11 +10,11 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 import { property } from "./decorators/constraints";
 import { mock } from "./decorators/mock";
 import { model } from "./decorators/model";
-import { index, uniqueIndex } from "./decorators/indexing";
+import { index } from "./decorators/indexing";
 let Model = class Model {
 };
 __decorate([
-    property, uniqueIndex,
+    property,
     __metadata("design:type", String)
 ], Model.prototype, "id", void 0);
 __decorate([
