@@ -1,7 +1,7 @@
 import NamedFakes from "./NamedFakes";
 import { fbKey } from "../index";
 import { IDictionary } from "common-types";
-import { format } from "date-fns";
+import { format, parseISO } from "date-fns";
 
 const sequence: IDictionary<number> = {};
 
