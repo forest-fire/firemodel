@@ -2,7 +2,7 @@
 import { Model } from "./Model";
 import { Record } from "./Record";
 import { SerializedQuery, IComparisonOperator } from "serialized-query";
-import { epochWithMilliseconds, IDictionary, createError } from "common-types";
+import { epochWithMilliseconds, IDictionary } from "common-types";
 import { FireModel } from "./FireModel";
 import { RealTimeDB } from "abstracted-firebase";
 import { IReduxDispatch } from "./state-mgmt/index";
@@ -537,12 +537,10 @@ export class List<T extends Model> extends FireModel<T> {
     const rec = this.findById(id, null);
     if (!rec) {
       if (!ignoreOnNotFound) {
-        const e = createError(
-          `firemodel/not-allowed`,
-          `Could not remove "${id}" in list of ${this.pluralName} as the ID was not found!`
+        throw new FireModelError(
+          `Could not remove "${id}" in list of ${this.pluralName} as the ID was not found!`,
+          `firemodel/not-allowed`
         );
-        e.name = "NotFound";
-        throw e;
       } else {
         return;
       }
@@ -601,11 +599,11 @@ export class List<T extends Model> extends FireModel<T> {
       const value = this._offsets[prop as keyof T];
 
       if (!["string", "number"].includes(typeof value)) {
-        throw createError(
-          "record/not-allowed",
+        throw new FireModelError(
           `The dynamic dbOffest is using the property "${prop}" on ${
             this.modelName
-          } as a part of the route path but that property must be either a string or a number and instead was a ${typeof prop}`
+          } as a part of the route path but that property must be either a string or a number and instead was a ${typeof prop}`,
+          "record/not-allowed"
         );
       }
       dbOffset = dbOffset.replace(`:${prop}`, String(value));

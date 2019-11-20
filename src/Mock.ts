@@ -1,5 +1,4 @@
 import { Model } from "./Model";
-import { createError } from "common-types";
 // tslint:disable-next-line:no-implicit-dependencies
 import { RealTimeDB } from "abstracted-firebase";
 import { Record } from "./Record";
@@ -30,9 +29,9 @@ export function Mock<T extends Model>(
     if (FireModel.defaultDb) {
       db = FireModel.defaultDb;
     } else {
-      throw createError(
-        "mock/no-database",
-        `You must either explicitly add a database on call to Mock() or ensure that the default database for Firemodel is set!`
+      throw new FireModelError(
+        `You must either explicitly add a database on call to Mock() or ensure that the default database for Firemodel is set!`,
+        "mock/no-database"
       );
     }
   }
