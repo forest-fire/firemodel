@@ -2,15 +2,7 @@
 // tslint:disable-next-line:no-implicit-dependencies
 import { RealTimeDB } from "abstracted-firebase";
 import { Model } from "./Model";
-import {
-  createError,
-  IDictionary,
-  Omit,
-  Nullable,
-  fk,
-  pk,
-  dotNotation
-} from "common-types";
+import { IDictionary, Omit, Nullable, fk, pk, dotNotation } from "common-types";
 import { key as fbKey } from "firebase-key";
 import { FireModel } from "./FireModel";
 import {
@@ -145,9 +137,9 @@ export class Record<T extends Model> extends FireModel<T> {
       !options.ignoreEmptyValues &&
       (!values || Object.keys(values).length === 0)
     ) {
-      throw createError(
-        `firemodel/record::local`,
-        "You used the static Record.local() method but passed nothing into the 'values' property! If you just want to skip this error then you can set the options to { ignoreEmptyValues: true } or just use the Record.create() method."
+      throw new FireModelError(
+        "You used the static Record.local() method but passed nothing into the 'values' property! If you just want to skip this error then you can set the options to { ignoreEmptyValues: true } or just use the Record.create() method.",
+        `firemodel/record::local`
       );
     }
 
@@ -479,9 +471,9 @@ export class Record<T extends Model> extends FireModel<T> {
    */
   public get dbPath() {
     if (this.data.id ? false : true) {
-      throw createError(
-        "record/not-ready",
-        `you can not ask for the dbPath before setting an "id" property [ ${this.modelName} ]`
+      throw new FireModelError(
+        `you can not ask for the dbPath before setting an "id" property [ ${this.modelName} ]`,
+        "record/not-ready"
       );
     }
 
@@ -653,16 +645,16 @@ export class Record<T extends Model> extends FireModel<T> {
     value: T[K][keyof T[K]] | any
   ): Promise<fk> {
     if (this.META.pushKeys.indexOf(property as any) === -1) {
-      throw createError(
-        "invalid-operation/not-pushkey",
-        `Invalid Operation: you can not push to property "${property}" as it has not been declared a pushKey property in the schema`
+      throw new FireModelError(
+        `Invalid Operation: you can not push to property "${property}" as it has not been declared a pushKey property in the schema`,
+        "invalid-operation/not-pushkey"
       );
     }
 
     if (!this.existsOnDB) {
-      throw createError(
-        "invalid-operation/not-on-db",
-        `Invalid Operation: you can not push to property "${property}" before saving the record to the database`
+      throw new FireModelError(
+        `Invalid Operation: you can not push to property "${property}" before saving the record to the database`,
+        "invalid-operation/not-on-db"
       );
     }
     const key = this.db.isMockDb
@@ -1447,17 +1439,17 @@ export class Record<T extends Model> extends FireModel<T> {
       const value = this.data[prop as keyof T];
 
       if (value ? false : true) {
-        throw createError(
-          "record/not-ready",
-          `You can not ask for the ${forProp} on a model like "${this.modelName}" which has a dynamic property of "${prop}" before setting that property [ id: ${this.id} ].`
+        throw new FireModelError(
+          `You can not ask for the ${forProp} on a model like "${this.modelName}" which has a dynamic property of "${prop}" before setting that property [ id: ${this.id} ].`,
+          "record/not-ready"
         );
       }
       if (!["string", "number"].includes(typeof value)) {
-        throw createError(
-          "record/not-allowed",
+        throw new FireModelError(
           `The path is using the property "${prop}" on ${
             this.modelName
-          } as a part of the route path but that property must be either a string or a number and instead was a ${typeof prop}`
+          } as a part of the route path but that property must be either a string or a number and instead was a ${typeof prop}`,
+          "record/not-allowed"
         );
       }
       path = path.replace(`:${prop}`, String(this.get(prop)));

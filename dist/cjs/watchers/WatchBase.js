@@ -4,7 +4,6 @@ const index_1 = require("../index");
 const errors_1 = require("../errors");
 const WatchDispatcher_1 = require("./WatchDispatcher");
 const watchInitialization_1 = require("./watchInitialization");
-const common_types_1 = require("common-types");
 const watcherPool_1 = require("./watcherPool");
 const List_1 = require("../List");
 /**
@@ -93,7 +92,7 @@ class WatchBase {
             return watcherItem;
         }
         catch (e) {
-            throw common_types_1.createError("firemodel/watcher-initialization", `The watcher "${watcherId}" failed to initialize`);
+            throw new errors_1.FireModelError(`The watcher "${watcherId}" failed to initialize`, "firemodel/watcher-initialization");
         }
     }
     /**

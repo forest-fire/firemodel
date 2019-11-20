@@ -2,7 +2,6 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const Record_1 = require("./Record");
 const serialized_query_1 = require("serialized-query");
-const common_types_1 = require("common-types");
 const FireModel_1 = require("./FireModel");
 const path_1 = require("./path");
 const ModelMeta_1 = require("./ModelMeta");
@@ -399,9 +398,7 @@ class List extends FireModel_1.FireModel {
         const rec = this.findById(id, null);
         if (!rec) {
             if (!ignoreOnNotFound) {
-                const e = common_types_1.createError(`firemodel/not-allowed`, `Could not remove "${id}" in list of ${this.pluralName} as the ID was not found!`);
-                e.name = "NotFound";
-                throw e;
+                throw new errors_1.FireModelError(`Could not remove "${id}" in list of ${this.pluralName} as the ID was not found!`, `firemodel/not-allowed`);
             }
             else {
                 return;
@@ -454,7 +451,7 @@ class List extends FireModel_1.FireModel {
         Object.keys(this._offsets || {}).forEach((prop) => {
             const value = this._offsets[prop];
             if (!["string", "number"].includes(typeof value)) {
-                throw common_types_1.createError("record/not-allowed", `The dynamic dbOffest is using the property "${prop}" on ${this.modelName} as a part of the route path but that property must be either a string or a number and instead was a ${typeof prop}`);
+                throw new errors_1.FireModelError(`The dynamic dbOffest is using the property "${prop}" on ${this.modelName} as a part of the route path but that property must be either a string or a number and instead was a ${typeof prop}`, "record/not-allowed");
             }
             dbOffset = dbOffset.replace(`:${prop}`, String(value));
         });

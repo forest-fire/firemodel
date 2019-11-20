@@ -8,7 +8,7 @@ import { FireModel, FmEvents, IListOptions } from "../index";
 import { FireModelError, FireModelProxyError } from "../errors";
 import { WatchDispatcher } from "./WatchDispatcher";
 import { waitForInitialization } from "./watchInitialization";
-import { createError, IDictionary } from "common-types";
+import { IDictionary } from "common-types";
 import { addToWatcherPool } from "./watcherPool";
 import { WatchRecord } from "./WatchRecord";
 import { List } from "../List";
@@ -150,9 +150,9 @@ export class WatchBase<T extends Model> {
 
       return watcherItem;
     } catch (e) {
-      throw createError(
-        "firemodel/watcher-initialization",
-        `The watcher "${watcherId}" failed to initialize`
+      throw new FireModelError(
+        `The watcher "${watcherId}" failed to initialize`,
+        "firemodel/watcher-initialization"
       );
     }
   }

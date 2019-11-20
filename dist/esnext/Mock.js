@@ -1,4 +1,3 @@
-import { createError } from "common-types";
 import { FireModel } from "./FireModel";
 import API from "./Mock/api";
 import { FireModelError } from "./errors";
@@ -19,7 +18,7 @@ export function Mock(modelConstructor, db) {
             db = FireModel.defaultDb;
         }
         else {
-            throw createError("mock/no-database", `You must either explicitly add a database on call to Mock() or ensure that the default database for Firemodel is set!`);
+            throw new FireModelError(`You must either explicitly add a database on call to Mock() or ensure that the default database for Firemodel is set!`, "mock/no-database");
         }
     }
     if (!db.isMockDb) {

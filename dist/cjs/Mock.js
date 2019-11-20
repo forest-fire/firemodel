@@ -3,7 +3,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const common_types_1 = require("common-types");
 const FireModel_1 = require("./FireModel");
 const api_1 = __importDefault(require("./Mock/api"));
 const errors_1 = require("./errors");
@@ -24,7 +23,7 @@ function Mock(modelConstructor, db) {
             db = FireModel_1.FireModel.defaultDb;
         }
         else {
-            throw common_types_1.createError("mock/no-database", `You must either explicitly add a database on call to Mock() or ensure that the default database for Firemodel is set!`);
+            throw new errors_1.FireModelError(`You must either explicitly add a database on call to Mock() or ensure that the default database for Firemodel is set!`, "mock/no-database");
         }
     }
     if (!db.isMockDb) {
