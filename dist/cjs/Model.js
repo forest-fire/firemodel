@@ -16,7 +16,7 @@ const indexing_1 = require("./decorators/indexing");
 let Model = class Model {
 };
 __decorate([
-    constraints_1.property, indexing_1.uniqueIndex,
+    constraints_1.property,
     __metadata("design:type", String)
 ], Model.prototype, "id", void 0);
 __decorate([
