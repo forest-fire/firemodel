@@ -139,27 +139,27 @@ function fakeIt(helper, type, ...rest) {
         case "dateRecent":
             return helper.faker.date.recent();
         case "dateRecentString":
-            return date_fns_1.format(helper.faker.date.recent(), "YYYY-MM-DD");
+            return date_fns_1.format(helper.faker.date.recent(), "yyyy-MM-dd");
         case "dateMiliseconds":
         case "dateRecentMiliseconds":
             return helper.faker.date.recent().getTime();
         case "datePast":
             return helper.faker.date.past();
         case "datePastString":
-            return date_fns_1.format(helper.faker.date.past(), "YYYY-MM-DD");
+            return date_fns_1.format(helper.faker.date.past(), "yyyy-MM-dd");
         case "datePastMiliseconds":
             return helper.faker.date.past().getTime();
         case "dateFuture":
             return helper.faker.date.future();
         /** returns string based date in format of "YYYY-MM-DD" */
         case "dateFutureString":
-            return date_fns_1.format(helper.faker.date.future(), "YYYY-MM-DD");
+            return date_fns_1.format(helper.faker.date.future(), "yyyy-MM-dd");
         case "dateFutureMiliseconds":
             return helper.faker.date.future().getTime();
         case "dateSoon":
             return helper.faker.date.soon();
         case "dateSoonString":
-            return date_fns_1.format(helper.faker.date.soon(), "YYYY-MM-DD");
+            return date_fns_1.format(helper.faker.date.soon(), "yyyy-MM-dd");
         case "dateSoonMiliseconds":
             return helper.faker.date.soon().getTime();
         case "imageAvatar":
