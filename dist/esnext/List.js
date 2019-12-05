@@ -50,7 +50,7 @@ export class List extends FireModel {
      * a destructive operation ... any other records of the
      * same type that existed beforehand are removed.
      */
-    static async set(model, payload, options) {
+    static async set(model, payload, options = {}) {
         try {
             const m = Record.create(model, options);
             // If Auditing is one we must be more careful
