@@ -52,7 +52,7 @@ class List extends FireModel_1.FireModel {
      * a destructive operation ... any other records of the
      * same type that existed beforehand are removed.
      */
-    static async set(model, payload, options) {
+    static async set(model, payload, options = {}) {
         try {
             const m = Record_1.Record.create(model, options);
             // If Auditing is one we must be more careful

@@ -21,7 +21,7 @@ export declare class List<T extends Model> extends FireModel<T> {
      * a destructive operation ... any other records of the
      * same type that existed beforehand are removed.
      */
-    static set<T extends Model>(model: new () => T, payload: IDictionary<T>, options: IListOptions<T>): Promise<List<T>>;
+    static set<T extends Model>(model: new () => T, payload: IDictionary<T>, options?: IListOptions<T>): Promise<List<T>>;
     static set dispatch(fn: IReduxDispatch);
     static create<T extends Model>(model: new () => T, options?: IListOptions<T>): List<T>;
     /**
