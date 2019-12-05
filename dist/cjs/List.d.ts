@@ -21,7 +21,7 @@ export declare class List<T extends Model> extends FireModel<T> {
      * a destructive operation ... any other records of the
      * same type that existed beforehand are removed.
      */
-    static set<T extends Model>(model: new () => T, payload: IDictionary<T>): Promise<List<T>>;
+    static set<T extends Model>(model: new () => T, payload: IDictionary<T>, options: IListOptions<T>): Promise<List<T>>;
     static set dispatch(fn: IReduxDispatch);
     static create<T extends Model>(model: new () => T, options?: IListOptions<T>): List<T>;
     /**
@@ -186,6 +186,9 @@ export declare class List<T extends Model> extends FireModel<T> {
      * @param defaultIfNotFound the default value returned if the ID is not found in the list
      */
     getData(id: string, defaultIfNotFound?: any): T;
+    /**
+     * Loads data into the `List` object
+     */
     load(pathOrQuery: string | SerializedQuery<T>): Promise<this>;
     private _injectDynamicDbOffsets;
 }

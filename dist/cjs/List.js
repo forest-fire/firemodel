@@ -52,12 +52,12 @@ class List extends FireModel_1.FireModel {
      * a destructive operation ... any other records of the
      * same type that existed beforehand are removed.
      */
-    static async set(model, payload) {
+    static async set(model, payload, options) {
         try {
-            const m = Record_1.Record.create(model);
+            const m = Record_1.Record.create(model, options);
             // If Auditing is one we must be more careful
             if (m.META.audit) {
-                const existing = await List.all(model);
+                const existing = await List.all(model, options);
                 if (existing.length > 0) {
                     // TODO: need to write an appropriate AUDIT EVENT
                     // TODO: implement
@@ -73,7 +73,7 @@ class List extends FireModel_1.FireModel {
                 const datetime = new Date().getTime();
                 await FireModel_1.FireModel.defaultDb.set(`${m.META.dbOffset}/${m.pluralName}`, addTimestamps(payload));
             }
-            const current = await List.all(model);
+            const current = await List.all(model, options);
             return current;
         }
         catch (e) {
@@ -97,7 +97,10 @@ class List extends FireModel_1.FireModel {
      */
     static async fromQuery(model, query, options = {}) {
         const list = List.create(model, options);
-        query.setPath(list.dbPath);
+        const path = options && options.offsets
+            ? List.dbPath(model, options.offsets)
+            : List.dbPath(model);
+        query.setPath(path);
         await list.load(query);
         return list;
     }
@@ -435,6 +438,9 @@ class List extends FireModel_1.FireModel {
             }
         }
     }
+    /**
+     * Loads data into the `List` object
+     */
     async load(pathOrQuery) {
         if (!this.db) {
             const e = new Error(`The attempt to load data into a List requires that the DB property be initialized first!`);
