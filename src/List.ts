@@ -53,13 +53,14 @@ export class List<T extends Model> extends FireModel<T> {
    */
   public static async set<T extends Model>(
     model: new () => T,
-    payload: IDictionary<T>
+    payload: IDictionary<T>,
+    options: IListOptions<T> = {}
   ) {
     try {
-      const m = Record.create(model);
+      const m = Record.create(model, options);
       // If Auditing is one we must be more careful
       if (m.META.audit) {
-        const existing = await List.all(model);
+        const existing = await List.all(model, options);
         if (existing.length > 0) {
           // TODO: need to write an appropriate AUDIT EVENT
           // TODO: implement
@@ -77,7 +78,7 @@ export class List<T extends Model> extends FireModel<T> {
         );
       }
 
-      const current = await List.all(model);
+      const current = await List.all(model, options);
       return current;
     } catch (e) {
       const err = new Error(`Problem adding new Record: ${e.message}`);
@@ -110,7 +111,14 @@ export class List<T extends Model> extends FireModel<T> {
     options: IListOptions<T> = {}
   ): Promise<List<T>> {
     const list = List.create(model, options);
-    query.setPath(list.dbPath);
+
+    const path =
+      options && options.offsets
+        ? List.dbPath(model, options.offsets)
+        : List.dbPath(model);
+
+    query.setPath(path);
+
     await list.load(query);
 
     return list;
@@ -578,6 +586,9 @@ export class List<T extends Model> extends FireModel<T> {
     }
   }
 
+  /**
+   * Loads data into the `List` object
+   */
   public async load(pathOrQuery: string | SerializedQuery<T>) {
     if (!this.db) {
       const e = new Error(
