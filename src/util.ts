@@ -18,6 +18,10 @@ export function slashNotation(...args: string[]) {
   return normalized(...args).join("/");
 }
 
+export function firstKey<T extends IDictionary = IDictionary>(thingy: T) {
+  return Object.keys(thingy)[0];
+}
+
 export function dotNotation(...args: string[]) {
   return normalized(...args)
     .join(".")

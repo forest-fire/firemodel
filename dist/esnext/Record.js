@@ -277,6 +277,49 @@ export class Record extends FireModel {
         });
         return compositeKey;
     }
+    /**
+     * Given a Model and a partial representation of that model, this will generate
+     * a composite key (in _object_ form) that conforms to the `ICompositeKey` interface
+     * and uniquely identifies the given record.
+     *
+     * @param model the class definition of the model you want the CompositeKey for
+     * @param object the data which will be used to generate the Composite key from
+     */
+    static compositeKey(model, obj) {
+        const dynamicSegments = Record.dynamicPathProperties(model).concat("id");
+        return dynamicSegments.reduce((agg, prop) => {
+            if (obj[prop] === undefined) {
+                throw new FireModelError(`You used attempted to generate a composite key of the model ${Record.modelName(model)} but the property "${prop}" is part of they dynamic path and the data passed in did not have a value for this property.`, "firemodel/not-ready");
+            }
+            agg[prop] = obj[prop];
+            return agg;
+        }, {});
+    }
+    /**
+     * Given a Model and a partial representation of that model, this will generate
+     * a composite key in _string_ form that conforms to the `IPrimaryKey` interface
+     * and uniquely identifies the given record.
+     *
+     * @param model the class definition of the model you want the CompositeKey for
+     * @param object the data which will be used to generate the Composite key from
+     */
+    static compositeKeyRef(model, object) {
+        const compositeKey = Record.compositeKey(model, object);
+        const nonIdKeys = Object.keys(compositeKey).reduce((agg, prop) => prop === "id" ? agg : agg.concat({ prop, value: compositeKey[prop] }), []);
+        return `${compositeKey.id}::${nonIdKeys
+            .map(tuple => `${tuple.prop}:${tuple.value}`)
+            .join("::")}`;
+    }
+    /**
+     * Returns the name of the name of the `Model`.
+     *
+     * Note: it returns the name in PascalCase _not_
+     * camelCase.
+     */
+    static modelName(model) {
+        const r = Record.create(model);
+        return capitalize(r.modelName);
+    }
     get data() {
         return this._data;
     }
@@ -937,7 +980,13 @@ export class Record extends FireModel {
                     await this.db.remove(this.dbPath);
                     break;
                 case "add":
-                    await this.db.set(path, this.data);
+                    try {
+                        await this.db.set(path, this.data);
+                    }
+                    catch (e) {
+                        throw new FireModelProxyError(e, `Problem setting the "${path}" database path. Data passed in was of type ${typeof this
+                            .data}. Error message encountered was: ${e.message}`, "firemodel/set-db");
+                    }
                     break;
                 case "update":
                     const paths = this._getPaths(this, { changed, added, removed });
@@ -994,7 +1043,7 @@ export class Record extends FireModel {
         this.dynamicPathComponents.forEach(prop => {
             const value = this.data[prop];
             if (value ? false : true) {
-                throw new FireModelError(`You can not ask for the ${forProp} on a model like "${this.modelName}" which has a dynamic property of "${prop}" before setting that property [ id: ${this.id} ].`, "record/not-ready");
+                throw new FireModelError(`You can not ask for the ${forProp} on a model like "${this.modelName}" which has a dynamic property of "${prop}" before setting that property [ data: ${JSON.stringify(this.data)} ].`, "record/not-ready");
             }
             if (!["string", "number"].includes(typeof value)) {
                 throw new FireModelError(`The path is using the property "${prop}" on ${this.modelName} as a part of the route path but that property must be either a string or a number and instead was a ${typeof prop}`, "record/not-allowed");

@@ -126,6 +126,31 @@ export declare class Record<T extends Model> extends FireModel<T> {
      * so long as the path does indeed have the `id` at the end of the path.
      */
     static getCompositeKeyFromPath<T extends Model>(model: new () => T, path: string): IDictionary<any>;
+    /**
+     * Given a Model and a partial representation of that model, this will generate
+     * a composite key (in _object_ form) that conforms to the `ICompositeKey` interface
+     * and uniquely identifies the given record.
+     *
+     * @param model the class definition of the model you want the CompositeKey for
+     * @param object the data which will be used to generate the Composite key from
+     */
+    static compositeKey<T extends Model>(model: new () => T, obj: Partial<T>): ICompositeKey<T>;
+    /**
+     * Given a Model and a partial representation of that model, this will generate
+     * a composite key in _string_ form that conforms to the `IPrimaryKey` interface
+     * and uniquely identifies the given record.
+     *
+     * @param model the class definition of the model you want the CompositeKey for
+     * @param object the data which will be used to generate the Composite key from
+     */
+    static compositeKeyRef<T extends Model>(model: new () => T, object: Partial<T>): string;
+    /**
+     * Returns the name of the name of the `Model`.
+     *
+     * Note: it returns the name in PascalCase _not_
+     * camelCase.
+     */
+    static modelName<T extends Model>(model: new () => T): string;
     private _existsOnDB;
     private _writeOperations;
     private _data?;

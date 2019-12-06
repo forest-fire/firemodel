@@ -61,7 +61,9 @@ describe("Watch →", () => {
       "authenticated/people/1234"
     );
 
-    await FireModel.defaultDb.remove("/authenticated/people/1234");
+    const r = await Record.get(Person, "1234");
+    await r.remove();
+
     await FireModel.defaultDb.set("/authenticated/people/1234", {
       name: "Bob",
       age: 15
@@ -71,9 +73,10 @@ describe("Watch →", () => {
     });
 
     const eventTypes = new Set(events.map(e => e.type));
-
+    console.log(eventTypes);
     expect(eventTypes.has(FmEvents.RECORD_CHANGED)).to.equal(true);
-    expect(eventTypes.has(FmEvents.RECORD_REMOVED)).to.equal(true);
+    expect(eventTypes.has(FmEvents.RECORD_REMOVED_LOCALLY)).to.equal(true);
+    expect(eventTypes.has(FmEvents.RECORD_REMOVED_CONFIRMATION)).to.equal(true);
     expect(eventTypes.has(FmEvents.WATCHER_STARTING)).to.equal(true);
     expect(eventTypes.has(FmEvents.WATCHER_STARTED)).to.equal(true);
   });

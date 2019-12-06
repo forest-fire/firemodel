@@ -7,8 +7,6 @@ import {
   IFmWatcherStopped
 } from "./state-mgmt";
 import { FireModel } from "./FireModel";
-type RealTimeDB = import("abstracted-firebase").RealTimeDB;
-
 import { IModelOptions } from "./@types/general";
 import { IPrimaryKey } from "./@types/record-types";
 import { FireModelError } from "./errors";
@@ -20,6 +18,9 @@ import {
 } from "./watchers/watcherPool";
 import { WatchList } from "./watchers/WatchList";
 import { WatchRecord } from "./watchers/WatchRecord";
+import first from "lodash.first";
+import { firstKey } from "./util";
+type RealTimeDB = import("abstracted-firebase").RealTimeDB;
 
 /**
  * A static library for interacting with _watchers_. It
@@ -91,8 +92,12 @@ export class Watch<T extends Model = Model> {
     return Object.keys(pool).find(i => pool[i].watcherName === name);
   }
 
-  /** stops watching either a specific watcher or ALL if no hash code is provided */
+  /**
+   * stops watching either a specific watcher or ALL if no hash code is provided
+   */
   public static stop(hashCode?: string, oneOffDB?: RealTimeDB) {
+    console.log(hashCode);
+
     const codes = new Set(Object.keys(getWatcherPool()));
     const db = oneOffDB || FireModel.defaultDb;
     if (!db) {
@@ -110,13 +115,20 @@ export class Watch<T extends Model = Model> {
     }
 
     if (!hashCode) {
-      const dispatch = getWatcherPool()[0].dispatch;
-      db.unWatch();
-      clearWatcherPool();
-      dispatch({
-        type: FmEvents.WATCHER_STOPPED_ALL,
-        registry: getWatcherPool()
-      });
+      const pool = getWatcherPool();
+      if (Object.keys(pool).length > 0) {
+        const keysAndPaths = Object.keys(pool).reduce(
+          (agg, key) => ({ ...agg, [key]: pool[key].watcherPaths }),
+          {}
+        );
+        const dispatch = pool[firstKey(pool)].dispatch;
+        db.unWatch();
+        clearWatcherPool();
+        dispatch({
+          type: FmEvents.WATCHER_STOPPED_ALL,
+          stopped: keysAndPaths
+        });
+      }
     } else {
       const registry = getWatcherPool()[hashCode];
       db.unWatch(

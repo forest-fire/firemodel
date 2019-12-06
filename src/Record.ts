@@ -1,5 +1,4 @@
 //#region IMPORTS
-// tslint:disable-next-line:no-implicit-dependencies
 import { RealTimeDB } from "abstracted-firebase";
 import { Model } from "./Model";
 import { IDictionary, Omit, Nullable, fk, pk, dotNotation } from "common-types";
@@ -403,6 +402,70 @@ export class Record<T extends Model> extends FireModel<T> {
     });
 
     return compositeKey;
+  }
+
+  /**
+   * Given a Model and a partial representation of that model, this will generate
+   * a composite key (in _object_ form) that conforms to the `ICompositeKey` interface
+   * and uniquely identifies the given record.
+   *
+   * @param model the class definition of the model you want the CompositeKey for
+   * @param object the data which will be used to generate the Composite key from
+   */
+  public static compositeKey<T extends Model>(
+    model: new () => T,
+    obj: Partial<T>
+  ): ICompositeKey<T> {
+    const dynamicSegments = Record.dynamicPathProperties(model).concat("id");
+    return dynamicSegments.reduce((agg: Partial<T>, prop: string & keyof T) => {
+      if (obj[prop] === undefined) {
+        throw new FireModelError(
+          `You used attempted to generate a composite key of the model ${Record.modelName(
+            model
+          )} but the property "${prop}" is part of they dynamic path and the data passed in did not have a value for this property.`,
+          "firemodel/not-ready"
+        );
+      }
+      agg[prop] = obj[prop];
+      return agg;
+    }, {}) as ICompositeKey<T>;
+  }
+
+  /**
+   * Given a Model and a partial representation of that model, this will generate
+   * a composite key in _string_ form that conforms to the `IPrimaryKey` interface
+   * and uniquely identifies the given record.
+   *
+   * @param model the class definition of the model you want the CompositeKey for
+   * @param object the data which will be used to generate the Composite key from
+   */
+  public static compositeKeyRef<T extends Model>(
+    model: new () => T,
+    object: Partial<T>
+  ): string {
+    const compositeKey = Record.compositeKey(model, object);
+    const nonIdKeys: Array<{ prop: string; value: any }> = Object.keys(
+      compositeKey
+    ).reduce(
+      (agg, prop: keyof typeof compositeKey & string) =>
+        prop === "id" ? agg : agg.concat({ prop, value: compositeKey[prop] }),
+      []
+    );
+
+    return `${compositeKey.id}::${nonIdKeys
+      .map(tuple => `${tuple.prop}:${tuple.value}`)
+      .join("::")}`;
+  }
+
+  /**
+   * Returns the name of the name of the `Model`.
+   *
+   * Note: it returns the name in PascalCase _not_
+   * camelCase.
+   */
+  public static modelName<T extends Model>(model: new () => T) {
+    const r = Record.create(model);
+    return capitalize(r.modelName);
   }
 
   //#endregion STATIC: Relationships
@@ -1327,9 +1390,10 @@ export class Record<T extends Model> extends FireModel<T> {
             const relProperty = this.get(rel.property);
             try {
               if (rel.relType === "hasOne" && relProperty) {
-                await this.disassociate(rel.property, this.get(
-                  rel.property
-                ) as fk);
+                await this.disassociate(
+                  rel.property,
+                  this.get(rel.property) as fk
+                );
               } else if (rel.relType === "hasMany" && relProperty) {
                 for (const relFk of Object.keys(relProperty)) {
                   await this.disassociate(rel.property, relFk);
@@ -1358,7 +1422,16 @@ export class Record<T extends Model> extends FireModel<T> {
           await this.db.remove(this.dbPath);
           break;
         case "add":
-          await this.db.set(path, this.data);
+          try {
+            await this.db.set(path, this.data);
+          } catch (e) {
+            throw new FireModelProxyError(
+              e,
+              `Problem setting the "${path}" database path. Data passed in was of type ${typeof this
+                .data}. Error message encountered was: ${e.message}`,
+              "firemodel/set-db"
+            );
+          }
           break;
         case "update":
           const paths = this._getPaths(this, { changed, added, removed });
@@ -1440,7 +1513,11 @@ export class Record<T extends Model> extends FireModel<T> {
 
       if (value ? false : true) {
         throw new FireModelError(
-          `You can not ask for the ${forProp} on a model like "${this.modelName}" which has a dynamic property of "${prop}" before setting that property [ id: ${this.id} ].`,
+          `You can not ask for the ${forProp} on a model like "${
+            this.modelName
+          }" which has a dynamic property of "${prop}" before setting that property [ data: ${JSON.stringify(
+            this.data
+          )} ].`,
           "record/not-ready"
         );
       }

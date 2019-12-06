@@ -6,6 +6,7 @@ const errors_1 = require("./errors");
 const watcherPool_1 = require("./watchers/watcherPool");
 const WatchList_1 = require("./watchers/WatchList");
 const WatchRecord_1 = require("./watchers/WatchRecord");
+const util_1 = require("./util");
 /**
  * A static library for interacting with _watchers_. It
  * provides the entry point into the watcher API and then
@@ -66,8 +67,11 @@ class Watch {
         const pool = watcherPool_1.getWatcherPool();
         return Object.keys(pool).find(i => pool[i].watcherName === name);
     }
-    /** stops watching either a specific watcher or ALL if no hash code is provided */
+    /**
+     * stops watching either a specific watcher or ALL if no hash code is provided
+     */
     static stop(hashCode, oneOffDB) {
+        console.log(hashCode);
         const codes = new Set(Object.keys(watcherPool_1.getWatcherPool()));
         const db = oneOffDB || FireModel_1.FireModel.defaultDb;
         if (!db) {
@@ -79,13 +83,17 @@ class Watch {
             throw e;
         }
         if (!hashCode) {
-            const dispatch = watcherPool_1.getWatcherPool()[0].dispatch;
-            db.unWatch();
-            watcherPool_1.clearWatcherPool();
-            dispatch({
-                type: state_mgmt_1.FmEvents.WATCHER_STOPPED_ALL,
-                registry: watcherPool_1.getWatcherPool()
-            });
+            const pool = watcherPool_1.getWatcherPool();
+            if (Object.keys(pool).length > 0) {
+                const keysAndPaths = Object.keys(pool).reduce((agg, key) => (Object.assign(Object.assign({}, agg), { [key]: pool[key].watcherPaths })), {});
+                const dispatch = pool[util_1.firstKey(pool)].dispatch;
+                db.unWatch();
+                watcherPool_1.clearWatcherPool();
+                dispatch({
+                    type: state_mgmt_1.FmEvents.WATCHER_STOPPED_ALL,
+                    stopped: keysAndPaths
+                });
+            }
         }
         else {
             const registry = watcherPool_1.getWatcherPool()[hashCode];
