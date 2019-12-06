@@ -71,7 +71,7 @@ class WatchList extends WatchBase_1.WatchBase {
         }
         for (const id of ids) {
             this._underlyingRecordWatchers.push(this._options.offsets
-                ? index_1.Watch.record(this._modelConstructor, Object.assign({ id }, this._options.offsets))
+                ? index_1.Watch.record(this._modelConstructor, Object.assign(Object.assign({}, (typeof id === "string" ? { id } : id)), this._options.offsets))
                 : index_1.Watch.record(this._modelConstructor, id));
         }
         this._watcherSource = "list-of-records";
