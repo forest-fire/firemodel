@@ -294,7 +294,7 @@ export class WatchList<T extends Model> extends WatchBase<T> {
    * @param value either just a value (in which case "equality" is the operator), or a tuple with operator followed by value (e.g., [">", 34])
    */
   public where<K extends keyof T>(
-    property: K,
+    property: K & string,
     value: T[K] | [IComparisonOperator, T[K]]
   ): WatchList<T> {
     let operation: IComparisonOperator = "=";

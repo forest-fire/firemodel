@@ -142,7 +142,7 @@ export declare class WatchList<T extends Model> extends WatchBase<T> {
      * @param property the property which the comparison operater is being compared to
      * @param value either just a value (in which case "equality" is the operator), or a tuple with operator followed by value (e.g., [">", 34])
      */
-    where<K extends keyof T>(property: K, value: T[K] | [IComparisonOperator, T[K]]): WatchList<T>;
+    where<K extends keyof T>(property: K & string, value: T[K] | [IComparisonOperator, T[K]]): WatchList<T>;
     /**
      * Sets properties that could be effected by _dynamic paths_
      */

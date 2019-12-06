@@ -259,7 +259,7 @@ export class List<T extends Model> extends FireModel<T> {
    */
   public static async find<T extends Model, K extends keyof T>(
     model: new () => T,
-    property: K,
+    property: K & string,
     value: T[K] | [IComparisonOperator, T[K]],
     options: IListOptions<T> = {}
   ) {
@@ -281,7 +281,7 @@ export class List<T extends Model> extends FireModel<T> {
    */
   public static async where<T extends Model, K extends keyof T>(
     model: new () => T,
-    property: K,
+    property: K & string,
     value: T[K] | [IComparisonOperator, T[K]],
     options: IListOptions<T> = {}
   ) {

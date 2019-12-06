@@ -86,7 +86,7 @@ export declare class List<T extends Model> extends FireModel<T> {
      * Runs a `List.where()` search and returns the first result as a _model_
      * of type `T`. If no results were found it returns `undefined`.
      */
-    static find<T extends Model, K extends keyof T>(model: new () => T, property: K, value: T[K] | [IComparisonOperator, T[K]], options?: IListOptions<T>): Promise<T>;
+    static find<T extends Model, K extends keyof T>(model: new () => T, property: K & string, value: T[K] | [IComparisonOperator, T[K]], options?: IListOptions<T>): Promise<T>;
     /**
      * **List.where()**
      *
@@ -99,7 +99,7 @@ export declare class List<T extends Model> extends FireModel<T> {
      * override this default by adding a _tuple_ to the `value` where the first
      * array item is the operator, the second the value you are comparing against.
      */
-    static where<T extends Model, K extends keyof T>(model: new () => T, property: K, value: T[K] | [IComparisonOperator, T[K]], options?: IListOptions<T>): Promise<List<T>>;
+    static where<T extends Model, K extends keyof T>(model: new () => T, property: K & string, value: T[K] | [IComparisonOperator, T[K]], options?: IListOptions<T>): Promise<List<T>>;
     /**
      * Get's a _list_ of records. The return object is a `List` but the way it is composed
      * doesn't actually do a query against the database but instead it just takes the array of
