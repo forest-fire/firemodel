@@ -68,7 +68,9 @@ export class WatchList extends WatchBase {
             throw new FireModelError(`You attempted to setup a watcher list on a given set of ID's of "${this._modelName}" but the list of ID's was empty!`, "firemodel/not-ready");
         }
         for (const id of ids) {
-            this._underlyingRecordWatchers.push(Watch.record(this._modelConstructor, id));
+            this._underlyingRecordWatchers.push(this._options.offsets
+                ? Watch.record(this._modelConstructor, Object.assign({ id }, this._options.offsets))
+                : Watch.record(this._modelConstructor, id));
         }
         this._watcherSource = "list-of-records";
         this._eventType = "value";

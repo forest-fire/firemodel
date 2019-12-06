@@ -87,7 +87,12 @@ export class WatchList<T extends Model> extends WatchBase<T> {
     }
     for (const id of ids) {
       this._underlyingRecordWatchers.push(
-        Watch.record<T>(this._modelConstructor, id)
+        this._options.offsets
+          ? Watch.record<T>(this._modelConstructor, {
+              id,
+              ...this._options.offsets
+            })
+          : Watch.record<T>(this._modelConstructor, id)
       );
     }
     this._watcherSource = "list-of-records";
