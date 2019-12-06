@@ -17,6 +17,10 @@ function slashNotation(...args) {
     return normalized(...args).join("/");
 }
 exports.slashNotation = slashNotation;
+function firstKey(thingy) {
+    return Object.keys(thingy)[0];
+}
+exports.firstKey = firstKey;
 function dotNotation(...args) {
     return normalized(...args)
         .join(".")

@@ -195,9 +195,7 @@ describe("Record > ", () => {
   });
 
   it("calling remove() removes from DB and notifies FE state-mgmt", async () => {
-    await Mock(Person, db)
-      .createRelationshipLinks()
-      .generate(10);
+    await Mock(Person, db).generate(10);
     const peeps = await List.all(Person);
     expect(peeps.length).to.equal(10);
     const person = Record.createWith(Person, peeps.data[0]);
@@ -219,9 +217,7 @@ describe("Record > ", () => {
   }).timeout(3000);
 
   it("calling static remove() removes from DB, notifies FE state-mgmt", async () => {
-    await Mock(Person, db)
-      .createRelationshipLinks()
-      .generate(10);
+    await Mock(Person, db).generate(10);
     const peeps = await List.all(Person);
     const id = peeps.data[0].id;
     expect(peeps.length).to.equal(10);

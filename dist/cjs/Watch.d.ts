@@ -1,10 +1,10 @@
 import { Model } from "./Model";
 import { IReduxDispatch, IWatcherEventContext } from "./state-mgmt";
-declare type RealTimeDB = import("abstracted-firebase").RealTimeDB;
 import { IModelOptions } from "./@types/general";
 import { IPrimaryKey } from "./@types/record-types";
 import { WatchList } from "./watchers/WatchList";
 import { WatchRecord } from "./watchers/WatchRecord";
+declare type RealTimeDB = import("abstracted-firebase").RealTimeDB;
 /**
  * A static library for interacting with _watchers_. It
  * provides the entry point into the watcher API and then
@@ -42,7 +42,9 @@ export declare class Watch<T extends Model = Model> {
      * first match
      */
     static findByName(name: string): string;
-    /** stops watching either a specific watcher or ALL if no hash code is provided */
+    /**
+     * stops watching either a specific watcher or ALL if no hash code is provided
+     */
     static stop(hashCode?: string, oneOffDB?: RealTimeDB): void;
     /**
      * Configures the watcher to be a `value` watcher on Firebase

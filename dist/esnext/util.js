@@ -10,6 +10,9 @@ export function normalized(...args) {
 export function slashNotation(...args) {
     return normalized(...args).join("/");
 }
+export function firstKey(thingy) {
+    return Object.keys(thingy)[0];
+}
 export function dotNotation(...args) {
     return normalized(...args)
         .join(".")

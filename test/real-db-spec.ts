@@ -26,7 +26,11 @@ describe("Tests using REAL db =>’", () => {
     await db.waitForConnection();
   });
   after(async () => {
-    await db.remove(`/authenticated/fancyPeople`, true);
+    try {
+      await db.remove(`/authenticated/fancyPeople`);
+    } catch (e) {
+      //
+    }
   });
   it("List.since() works", async () => {
     try {
@@ -144,9 +148,18 @@ describe("Tests using REAL db =>’", () => {
       id: "abcd",
       name: "Jim Jones"
     });
+    console.log(events.map(i => i.type));
 
-    const addEvents = events.filter(e => e.type === FmEvents.RECORD_CHANGED);
-    expect(addEvents).to.have.lengthOf(1);
-    expect(addEvents[0].key).to.equal(person.id);
+    const addedLocally = events.filter(
+      e => e.type === FmEvents.RECORD_ADDED_LOCALLY
+    );
+    expect(addedLocally).to.have.lengthOf(1);
+    expect(addedLocally[0].key).to.equal(person.id);
+
+    const confirmed = events.filter(
+      e => e.type === FmEvents.RECORD_ADDED_CONFIRMATION
+    );
+    expect(confirmed).to.have.lengthOf(1);
+    expect(confirmed[0].key).to.equal(person.id);
   });
 });

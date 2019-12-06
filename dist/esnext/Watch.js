@@ -4,6 +4,7 @@ import { FireModelError } from "./errors";
 import { getWatcherPool, clearWatcherPool, removeFromWatcherPool, getWatcherPoolList } from "./watchers/watcherPool";
 import { WatchList } from "./watchers/WatchList";
 import { WatchRecord } from "./watchers/WatchRecord";
+import { firstKey } from "./util";
 /**
  * A static library for interacting with _watchers_. It
  * provides the entry point into the watcher API and then
@@ -64,8 +65,11 @@ export class Watch {
         const pool = getWatcherPool();
         return Object.keys(pool).find(i => pool[i].watcherName === name);
     }
-    /** stops watching either a specific watcher or ALL if no hash code is provided */
+    /**
+     * stops watching either a specific watcher or ALL if no hash code is provided
+     */
     static stop(hashCode, oneOffDB) {
+        console.log(hashCode);
         const codes = new Set(Object.keys(getWatcherPool()));
         const db = oneOffDB || FireModel.defaultDb;
         if (!db) {
@@ -77,13 +81,17 @@ export class Watch {
             throw e;
         }
         if (!hashCode) {
-            const dispatch = getWatcherPool()[0].dispatch;
-            db.unWatch();
-            clearWatcherPool();
-            dispatch({
-                type: FmEvents.WATCHER_STOPPED_ALL,
-                registry: getWatcherPool()
-            });
+            const pool = getWatcherPool();
+            if (Object.keys(pool).length > 0) {
+                const keysAndPaths = Object.keys(pool).reduce((agg, key) => (Object.assign(Object.assign({}, agg), { [key]: pool[key].watcherPaths })), {});
+                const dispatch = pool[firstKey(pool)].dispatch;
+                db.unWatch();
+                clearWatcherPool();
+                dispatch({
+                    type: FmEvents.WATCHER_STOPPED_ALL,
+                    stopped: keysAndPaths
+                });
+            }
         }
         else {
             const registry = getWatcherPool()[hashCode];

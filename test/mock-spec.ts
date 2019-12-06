@@ -36,7 +36,11 @@ describe("Mocking:", () => {
   });
   after(async () => {
     const fancy = Record.create(FancyPerson);
-    await realDb.remove(fancy.dbOffset);
+    try {
+      await realDb.remove(fancy.dbOffset);
+    } catch (e) {
+      console.log(`Got error in cleanup: `, e.message);
+    }
   });
   beforeEach(async () => {
     db = await DB.connect({ mocking: true });

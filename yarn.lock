@@ -883,7 +883,13 @@
   version "7.0.3"
   resolved "https://registry.yarnpkg.com/@types/json-schema/-/json-schema-7.0.3.tgz#bdfd69d61e464dcc81b25159c270d75a73c1a636"
 
-"@types/lodash@^4.14.142":
+"@types/lodash.first@^3.0.6":
+  version "3.0.6"
+  resolved "https://registry.yarnpkg.com/@types/lodash.first/-/lodash.first-3.0.6.tgz#32e81d0d4055aed6381e0ddfe323f220f6cf5b36"
+  dependencies:
+    "@types/lodash" "*"
+
+"@types/lodash@*", "@types/lodash@^4.14.142":
   version "4.14.149"
   resolved "https://registry.yarnpkg.com/@types/lodash/-/lodash-4.14.149.tgz#1342d63d948c6062838fbf961012f74d4e638440"
 
@@ -6942,9 +6948,9 @@ serialize-javascript@^2.1.0:
   version "2.1.1"
   resolved "https://registry.yarnpkg.com/serialize-javascript/-/serialize-javascript-2.1.1.tgz#952907a04a3e3a75af7f73d92d15e233862048b2"
 
-serialized-query@^0.9.1, serialized-query@^0.9.3, serialized-query@^0.9.5:
-  version "0.9.5"
-  resolved "https://registry.yarnpkg.com/serialized-query/-/serialized-query-0.9.5.tgz#150e18da4926fdc3feb40d7f9b78e14071ae3b23"
+serialized-query@^0.9.1, serialized-query@^0.9.3, serialized-query@^0.9.6:
+  version "0.9.6"
+  resolved "https://registry.yarnpkg.com/serialized-query/-/serialized-query-0.9.6.tgz#8c8498b4420790c752d9e5ce2dad5e5edd3028a8"
   dependencies:
     common-types "^1.12.13"
 

@@ -4,6 +4,7 @@ import { Model } from "./Model";
 import { IFmChangedProperties } from "./@types";
 export declare function normalized(...args: string[]): string[];
 export declare function slashNotation(...args: string[]): string;
+export declare function firstKey<T extends IDictionary = IDictionary>(thingy: T): string;
 export declare function dotNotation(...args: string[]): string;
 export interface IExtendedError extends Error {
     underlying: any;

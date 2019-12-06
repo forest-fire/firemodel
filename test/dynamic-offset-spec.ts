@@ -136,14 +136,18 @@ describe("Dynamic offsets work with relationships", () => {
   });
 
   it("addToRelationship works for M:M (FK has shared dynamic segment; using implicit composite key)", async () => {
-    const motherId = (await Mock(DeepPerson).generate(1, {
-      age: 55,
-      group: "test"
-    })).pop();
-    const fatherId = (await Mock(DeepPerson).generate(1, {
-      age: 61,
-      group: "test"
-    })).pop();
+    const motherId = (
+      await Mock(DeepPerson).generate(1, {
+        age: 55,
+        group: "test"
+      })
+    ).pop();
+    const fatherId = (
+      await Mock(DeepPerson).generate(1, {
+        age: 61,
+        group: "test"
+      })
+    ).pop();
 
     await person.addToRelationship("parents", [
       motherId.compositeKey,
@@ -152,14 +156,18 @@ describe("Dynamic offsets work with relationships", () => {
   });
 
   it("addToRelationshipo works for M:M (FK has shared dynamic segment; using explicit composite key)", async () => {
-    const motherId = (await Mock(DeepPerson).generate(1, {
-      age: 55,
-      group: "test"
-    })).pop();
-    const fatherId = (await Mock(DeepPerson).generate(1, {
-      age: 61,
-      group: "test"
-    })).pop();
+    const motherId = (
+      await Mock(DeepPerson).generate(1, {
+        age: 55,
+        group: "test"
+      })
+    ).pop();
+    const fatherId = (
+      await Mock(DeepPerson).generate(1, {
+        age: 61,
+        group: "test"
+      })
+    ).pop();
     let mother = await Record.get(DeepPerson, {
       id: motherId.id,
       group: "test"
@@ -189,14 +197,18 @@ describe("Dynamic offsets work with relationships", () => {
   });
 
   it("addToRelationshipo works for M:M (FK has different dynamic segment; using explicit composite key)", async () => {
-    const motherId = (await Mock(DeepPerson).generate(1, {
-      age: 55,
-      group: "test"
-    })).pop();
-    const fatherId = (await Mock(DeepPerson).generate(1, {
-      age: 61,
-      group: "test"
-    })).pop();
+    const motherId = (
+      await Mock(DeepPerson).generate(1, {
+        age: 55,
+        group: "test"
+      })
+    ).pop();
+    const fatherId = (
+      await Mock(DeepPerson).generate(1, {
+        age: 61,
+        group: "test"
+      })
+    ).pop();
     let mother = await Record.get(DeepPerson, `${motherId.id}::group:test2`);
     let father = await Record.get(DeepPerson, `${fatherId.id}::group:test2`);
 
@@ -297,7 +309,12 @@ describe("LIST uses static offsets() with static API methods", () => {
     const people = await List.where(DeepPerson, "age", 45, {
       offsets: { group: "test" }
     });
-    expect(people.length).to.equal(6);
+    expect(people.length).to.equal(
+      6,
+      `There should have been 6 records but got ${
+        people.length
+      }. The id's returned were: ${people.map(i => i.id)}.`
+    );
     expect(people.filter(i => i.age === 45)).is.length(6);
   });
 });
@@ -419,7 +436,7 @@ describe("WATCHers work with dynamic dbOffsets", () => {
       events.push(evt);
     };
     FireModel.dispatch = dispatch;
-    const watchRecord = await Watch.record(DeepPerson, {
+    const watchRecord = Watch.record(DeepPerson, {
       id: "12345",
       group: "CA"
     });
