@@ -1,6 +1,6 @@
 {
   "name": "firemodel",
-  "version": "0.35.5",
+  "version": "0.35.6",
   "description": "Modeling, Access, and Mocking for Firebase Projects",
   "license": "MIT",
   "repository": "https://github.com/forest-fire/firemodel",
@@ -39,7 +39,7 @@
     "get-value": "^3.0.1",
     "pluralize": "^8.0.0",
     "reflect-metadata": "^0.1.13",
-    "serialized-query": "^0.9.3",
+    "serialized-query": "^0.9.5",
     "set-value": "^3.0.0",
     "typed-conversions": "^0.10.1",
     "wait-in-parallel": "^1.2.6"
