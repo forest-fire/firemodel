@@ -602,58 +602,66 @@
   version "3.1.0"
   resolved "https://registry.yarnpkg.com/@braintree/sanitize-url/-/sanitize-url-3.1.0.tgz#8ff71d51053cd5ee4981e5a501d80a536244f7fd"
 
-"@firebase/app-types@0.4.8", "@firebase/app-types@^0.4.8":
-  version "0.4.8"
-  resolved "https://registry.yarnpkg.com/@firebase/app-types/-/app-types-0.4.8.tgz#be69cbf3a7550c900d7af943adb2a3d1dcce6631"
+"@firebase/app-types@0.4.9", "@firebase/app-types@^0.4.8":
+  version "0.4.9"
+  resolved "https://registry.yarnpkg.com/@firebase/app-types/-/app-types-0.4.9.tgz#953e9da55d061343339f20f37ac54ef4d6324774"
 
 "@firebase/app@^0.4.24", "@firebase/app@^0.4.25":
-  version "0.4.25"
-  resolved "https://registry.yarnpkg.com/@firebase/app/-/app-0.4.25.tgz#b55a3e6516d3fba2a4e4198bb498ceb0259fbe72"
+  version "0.4.26"
+  resolved "https://registry.yarnpkg.com/@firebase/app/-/app-0.4.26.tgz#ddd6e8244e07580faf909acc0ee9b7698fc233bc"
   dependencies:
-    "@firebase/app-types" "0.4.8"
-    "@firebase/logger" "0.1.31"
-    "@firebase/util" "0.2.34"
+    "@firebase/app-types" "0.4.9"
+    "@firebase/component" "0.1.0"
+    "@firebase/logger" "0.1.32"
+    "@firebase/util" "0.2.35"
     dom-storage "2.1.0"
     tslib "1.10.0"
     xmlhttprequest "1.8.0"
 
-"@firebase/auth-types@0.9.1", "@firebase/auth-types@^0.9.0", "@firebase/auth-types@^0.9.1":
-  version "0.9.1"
-  resolved "https://registry.yarnpkg.com/@firebase/auth-types/-/auth-types-0.9.1.tgz#988cc0b5807ec20d56eaa6262f5fa317f9138a35"
+"@firebase/auth-types@0.9.2", "@firebase/auth-types@^0.9.0", "@firebase/auth-types@^0.9.1":
+  version "0.9.2"
+  resolved "https://registry.yarnpkg.com/@firebase/auth-types/-/auth-types-0.9.2.tgz#eb5545c5ab11626ff8826a7b6ac12c42a21797ac"
 
 "@firebase/auth-types@^0.8.1":
   version "0.8.2"
   resolved "https://registry.yarnpkg.com/@firebase/auth-types/-/auth-types-0.8.2.tgz#9722138481724a16a79f7d645e9c5598cc932269"
 
 "@firebase/auth@^0.13.1":
-  version "0.13.1"
-  resolved "https://registry.yarnpkg.com/@firebase/auth/-/auth-0.13.1.tgz#4a205f5f84ac2b3c87d9cae41b7ca2d5a037376f"
+  version "0.13.2"
+  resolved "https://registry.yarnpkg.com/@firebase/auth/-/auth-0.13.2.tgz#a127306d773c23ac102bd7daff8654096d68d003"
   dependencies:
-    "@firebase/auth-types" "0.9.1"
+    "@firebase/auth-types" "0.9.2"
 
-"@firebase/database-types@0.4.8", "@firebase/database-types@^0.4.7", "@firebase/database-types@^0.4.8":
-  version "0.4.8"
-  resolved "https://registry.yarnpkg.com/@firebase/database-types/-/database-types-0.4.8.tgz#ec225ac9e37a31cb0aa827b86d0073dfdc5289f1"
+"@firebase/component@0.1.0":
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/@firebase/component/-/component-0.1.0.tgz#84984650340fc89cfe67d9aef96396e387cc3606"
   dependencies:
-    "@firebase/app-types" "0.4.8"
+    "@firebase/util" "0.2.35"
+    tslib "1.10.0"
+
+"@firebase/database-types@0.4.9", "@firebase/database-types@^0.4.7", "@firebase/database-types@^0.4.8":
+  version "0.4.9"
+  resolved "https://registry.yarnpkg.com/@firebase/database-types/-/database-types-0.4.9.tgz#32a49e72084493dcd1a6120b51f3b93b501cd654"
+  dependencies:
+    "@firebase/app-types" "0.4.9"
 
 "@firebase/database@^0.5.11", "@firebase/database@^0.5.13":
-  version "0.5.13"
-  resolved "https://registry.yarnpkg.com/@firebase/database/-/database-0.5.13.tgz#1d8296d15efefeafe26877f9753fe1f283a0ec63"
+  version "0.5.14"
+  resolved "https://registry.yarnpkg.com/@firebase/database/-/database-0.5.14.tgz#758bc5cc6f50736e31c5fb41f6c95c1ac5052311"
   dependencies:
-    "@firebase/database-types" "0.4.8"
-    "@firebase/logger" "0.1.31"
-    "@firebase/util" "0.2.34"
+    "@firebase/database-types" "0.4.9"
+    "@firebase/logger" "0.1.32"
+    "@firebase/util" "0.2.35"
     faye-websocket "0.11.3"
     tslib "1.10.0"
 
-"@firebase/logger@0.1.31":
-  version "0.1.31"
-  resolved "https://registry.yarnpkg.com/@firebase/logger/-/logger-0.1.31.tgz#e0ab28af14333786952d7a5154f90d0453414d24"
+"@firebase/logger@0.1.32":
+  version "0.1.32"
+  resolved "https://registry.yarnpkg.com/@firebase/logger/-/logger-0.1.32.tgz#754359c41995d66ee84d698e1c25ec9539b86388"
 
-"@firebase/util@0.2.34", "@firebase/util@^0.2.34":
-  version "0.2.34"
-  resolved "https://registry.yarnpkg.com/@firebase/util/-/util-0.2.34.tgz#a84fc09a68e82012b650964944e8ffc956ec4912"
+"@firebase/util@0.2.35", "@firebase/util@^0.2.34":
+  version "0.2.35"
+  resolved "https://registry.yarnpkg.com/@firebase/util/-/util-0.2.35.tgz#b350d624ff6bb87b8510785a40aa207774336440"
   dependencies:
     tslib "1.10.0"
 
@@ -682,15 +690,15 @@
     through2 "^3.0.0"
 
 "@google-cloud/paginator@^2.0.0":
-  version "2.0.2"
-  resolved "https://registry.yarnpkg.com/@google-cloud/paginator/-/paginator-2.0.2.tgz#fdcfbe93bf037f3caa0c678e962efd0382062417"
+  version "2.0.3"
+  resolved "https://registry.yarnpkg.com/@google-cloud/paginator/-/paginator-2.0.3.tgz#c7987ad05d1c3ebcef554381be80e9e8da4e4882"
   dependencies:
     arrify "^2.0.0"
     extend "^3.0.2"
 
 "@google-cloud/projectify@^1.0.0":
-  version "1.0.2"
-  resolved "https://registry.yarnpkg.com/@google-cloud/projectify/-/projectify-1.0.2.tgz#8ea0af54459bb7c94e0cd69d1ab64f3380ae164d"
+  version "1.0.4"
+  resolved "https://registry.yarnpkg.com/@google-cloud/projectify/-/projectify-1.0.4.tgz#28daabebba6579ed998edcadf1a8f3be17f3b5f0"
 
 "@google-cloud/promisify@^1.0.0":
   version "1.0.4"
@@ -2247,7 +2255,7 @@ common-tags@^1.8.0:
   version "1.8.0"
   resolved "https://registry.yarnpkg.com/common-tags/-/common-tags-1.8.0.tgz#8e3153e542d4a39e9b10554434afaaf98956a937"
 
-common-types@^1.12.1, common-types@^1.12.12, common-types@^1.12.13, common-types@^1.12.9, common-types@^1.9.6, common-types@^1.9.7:
+common-types@^1.12.1, common-types@^1.12.12, common-types@^1.12.13, common-types@^1.9.6, common-types@^1.9.7:
   version "1.12.13"
   resolved "https://registry.yarnpkg.com/common-types/-/common-types-1.12.13.tgz#d0f871b28f76b45d90d942bfd650342ada3bac99"
   dependencies:
@@ -6427,8 +6435,8 @@ pseudomap@^1.0.2:
   resolved "https://registry.yarnpkg.com/pseudomap/-/pseudomap-1.0.2.tgz#f052a28da70e618917ef0a8ac34c1ae5a68286b3"
 
 psl@^1.1.24:
-  version "1.5.0"
-  resolved "https://registry.yarnpkg.com/psl/-/psl-1.5.0.tgz#47fd1292def7fdb1e138cd78afa8814cebcf7b13"
+  version "1.6.0"
+  resolved "https://registry.yarnpkg.com/psl/-/psl-1.6.0.tgz#60557582ee23b6c43719d9890fb4170ecd91e110"
 
 public-encrypt@^4.0.0:
   version "4.0.3"
@@ -6934,11 +6942,11 @@ serialize-javascript@^2.1.0:
   version "2.1.1"
   resolved "https://registry.yarnpkg.com/serialize-javascript/-/serialize-javascript-2.1.1.tgz#952907a04a3e3a75af7f73d92d15e233862048b2"
 
-serialized-query@^0.9.1, serialized-query@^0.9.3:
-  version "0.9.3"
-  resolved "https://registry.yarnpkg.com/serialized-query/-/serialized-query-0.9.3.tgz#6fb1e1d5ba01e5db525d158780d7d2f276a6260f"
+serialized-query@^0.9.1, serialized-query@^0.9.3, serialized-query@^0.9.5:
+  version "0.9.5"
+  resolved "https://registry.yarnpkg.com/serialized-query/-/serialized-query-0.9.5.tgz#150e18da4926fdc3feb40d7f9b78e14071ae3b23"
   dependencies:
-    common-types "^1.12.9"
+    common-types "^1.12.13"
 
 serve-index@^1.9.1:
   version "1.9.1"
