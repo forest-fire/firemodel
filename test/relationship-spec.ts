@@ -312,22 +312,22 @@ describe("Relationship > ", () => {
       person: person.id
     });
 
-    // const pay1 = await Record.add(PersonPay, {
-    //   amount: "2400.00",
-    //   person: person.id
-    // });
+    const pay1 = await Record.add(PersonPay, {
+      amount: "2400.00",
+      person: person.id
+    });
     console.log(pay.dbPath);
     await pay.remove();
 
-    // expect(events).to.have.lengthOf(10);
-    // const eventTypes = new Set(events.map(e => e.type));
-    // expect(eventTypes.has(FmEvents.RECORD_REMOVED_LOCALLY)).is.equal(true);
-    // expect(eventTypes.has(FmEvents.RECORD_REMOVED_CONFIRMATION)).is.equal(true);
+    expect(events).to.have.lengthOf(10);
+    const eventTypes = new Set(events.map(e => e.type));
+    expect(eventTypes.has(FmEvents.RECORD_REMOVED_LOCALLY)).is.equal(true);
+    expect(eventTypes.has(FmEvents.RECORD_REMOVED_CONFIRMATION)).is.equal(true);
 
-    // const payList = await List.all(PersonPay, { offsets: { person: person.id }});
+    const payList = await List.all(PersonPay, { offsets: { person: person.id }});
 
-    // expect(payList).to.have.lengthOf(1);
-    // const ids = payList.map(p => p.id);
-    // expect(ids.includes(pay.id)).to.equal(false);
+    expect(payList).to.have.lengthOf(1);
+    const ids = payList.map(p => p.id);
+    expect(ids.includes(pay.id)).to.equal(false);
   });
 }).timeout(4000);
