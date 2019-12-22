@@ -78,6 +78,15 @@ export declare class Record<T extends Model> extends FireModel<T> {
      */
     static update<T extends Model>(model: new () => T, id: string | ICompositeKey<T>, updates: Nullable<Partial<T>>, options?: IRecordOptions): Promise<Record<T>>;
     /**
+     * Pushes a new item into a property that is setup as a "pushKey"
+     *
+     * @param model the model being operated on
+     * @param id  `id` or `composite-key` that uniquely identifies a record
+     * @param property the property on the record
+     * @param payload the new payload you want to push into the array
+     */
+    static pushKey<T extends Model>(model: new () => T, id: string | ICompositeKey<T>, property: keyof T & string, payload: any): Promise<string>;
+    /**
      * **createWith**
      *
      * A static initializer that creates a Record of a given class

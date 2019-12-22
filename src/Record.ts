@@ -256,6 +256,24 @@ export class Record<T extends Model> extends FireModel<T> {
   }
 
   /**
+   * Pushes a new item into a property that is setup as a "pushKey"
+   *
+   * @param model the model being operated on
+   * @param id  `id` or `composite-key` that uniquely identifies a record
+   * @param property the property on the record
+   * @param payload the new payload you want to push into the array
+   */
+  public static async pushKey<T extends Model>(
+    model: new () => T,
+    id: string | ICompositeKey<T>,
+    property: keyof T & string,
+    payload: any
+  ) {
+    const obj = await Record.get(model, id);
+    return obj.pushKey(property, payload);
+  }
+
+  /**
    * **createWith**
    *
    * A static initializer that creates a Record of a given class

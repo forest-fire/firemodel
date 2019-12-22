@@ -179,6 +179,18 @@ class Record extends FireModel_1.FireModel {
         return r;
     }
     /**
+     * Pushes a new item into a property that is setup as a "pushKey"
+     *
+     * @param model the model being operated on
+     * @param id  `id` or `composite-key` that uniquely identifies a record
+     * @param property the property on the record
+     * @param payload the new payload you want to push into the array
+     */
+    static async pushKey(model, id, property, payload) {
+        const obj = await Record.get(model, id);
+        return obj.pushKey(property, payload);
+    }
+    /**
      * **createWith**
      *
      * A static initializer that creates a Record of a given class
