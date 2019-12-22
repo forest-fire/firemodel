@@ -267,9 +267,10 @@ export class Record<T extends Model> extends FireModel<T> {
     model: new () => T,
     id: string | ICompositeKey<T>,
     property: keyof T & string,
-    payload: any
+    payload: any,
+    options: IRecordOptions = {}
   ) {
-    const obj = await Record.get(model, id);
+    const obj = await Record.get(model, id, options);
     return obj.pushKey(property, payload);
   }
 

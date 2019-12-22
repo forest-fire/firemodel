@@ -186,8 +186,8 @@ class Record extends FireModel_1.FireModel {
      * @param property the property on the record
      * @param payload the new payload you want to push into the array
      */
-    static async pushKey(model, id, property, payload) {
-        const obj = await Record.get(model, id);
+    static async pushKey(model, id, property, payload, options = {}) {
+        const obj = await Record.get(model, id, options);
         return obj.pushKey(property, payload);
     }
     /**
