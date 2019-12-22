@@ -85,7 +85,7 @@ export declare class Record<T extends Model> extends FireModel<T> {
      * @param property the property on the record
      * @param payload the new payload you want to push into the array
      */
-    static pushKey<T extends Model>(model: new () => T, id: string | ICompositeKey<T>, property: keyof T & string, payload: any): Promise<string>;
+    static pushKey<T extends Model>(model: new () => T, id: string | ICompositeKey<T>, property: keyof T & string, payload: any, options?: IRecordOptions): Promise<string>;
     /**
      * **createWith**
      *
