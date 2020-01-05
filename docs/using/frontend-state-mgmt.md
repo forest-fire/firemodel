@@ -54,7 +54,7 @@ You might expect that the responsibility for writing the database Actions and Mu
 
 Vuex provides a convenient plugin architecture that allows us to provide all of the needed dependencies, integration between Vuex and Firemodel, as well as additional features not yet discussed. This plugin -- [`vuex-plugin-firemodel`](https://github.com/forest-fire/vuex-plugin-firemodel) -- has it's own documentation site which can be found at:
 
-- [vuex-plugin-firemodel Docs](https://vuex.firemodel.info)
+- [https://vuex.firemodel.info](https://vuex.firemodel.info)
 
 To avoid duplication we will not go into great depth here but we do want to mention another level of abstraction that is available to VueJS users who use the Vue CLI. For these users, getting everything you need to start using Firemodel is as simple as:
 

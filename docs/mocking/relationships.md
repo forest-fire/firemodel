@@ -11,7 +11,7 @@ Up to now our examples have stayed focused on model properties but clearly you w
 export class Person extends Model {
   @property name: string;
   @hasMany children?: fk[];
-  @belongsTo employer: fk;
+  @belongsTo(Company) employer: fk;
 }
 ```
 
