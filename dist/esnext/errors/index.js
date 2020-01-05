@@ -1,4 +1,5 @@
 export * from "./FireModelError";
+export * from "./DexieError";
 export * from "./FireModelProxyError";
 export * from "./relationships/index";
 export * from "./mocks/MockError";
