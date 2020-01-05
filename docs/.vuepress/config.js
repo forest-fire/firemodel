@@ -7,6 +7,7 @@ module.exports = {
         buttonText: "Refresh"
       }
     },
+    mermaid: true,
     "@vuepress/back-to-top": true,
     "@vuepress/last-updated": true,
     "@vuepress/medium-zoom": true,
@@ -30,7 +31,7 @@ module.exports = {
       "link",
       {
         rel: "favicon",
-        href: "/icon/icon-16.png",
+        href: "/icons/icon-16.png",
         type: "image/png",
         sizes: "16x16"
       }
@@ -39,7 +40,7 @@ module.exports = {
       "link",
       {
         rel: "favicon",
-        href: "/icon/icon-32.png",
+        href: "/icons/icon-32.png",
         type: "image/png",
         sizes: "32x32"
       }
@@ -48,37 +49,37 @@ module.exports = {
       "link",
       {
         rel: "favicon",
-        href: "/icon/icon-48.png",
+        href: "/icons/icon-48.png",
         type: "image/png",
         sizes: "48x48"
       }
     ],
     [
       "link",
-      { rel: "icon", href: "/icon/icon-rounded-32.png", sizes: "32x32" }
+      { rel: "icon", href: "/icons/icon-rounded-32.png", sizes: "32x32" }
     ],
     [
       "link",
-      { rel: "icon", href: "/icon/icon-rounded-48.png", sizes: "48x48" }
+      { rel: "icon", href: "/icons/icon-rounded-48.png", sizes: "48x48" }
     ],
     [
       "link",
-      { rel: "icon", href: "/icon/icon-rounded-192.png", sizes: "192x192" }
+      { rel: "icon", href: "/icons/icon-rounded-192.png", sizes: "192x192" }
     ],
     [
       "link",
-      { rel: "icon", href: "/icon/icon-rounded-225.png", sizes: "225x225" }
+      { rel: "icon", href: "/icons/icon-rounded-225.png", sizes: "225x225" }
     ],
     [
       "link",
-      { rel: "icon", href: "/icon/icon-rounded-512.png", sizes: "512x512" }
+      { rel: "icon", href: "/icons/icon-rounded-512.png", sizes: "512x512" }
     ],
     ["link", { rel: "manifest", href: "/manifest.json" }],
     [
       "link",
       {
         rel: "apple-touch-icon-precomposed",
-        href: "/icon/icon-rounded-192.png",
+        href: "/icons/icon-rounded-192.png",
         sizes: "192x192"
       }
     ],
@@ -145,7 +146,11 @@ module.exports = {
     ],
     [
       "link",
-      { rel: "apple-touch-icon", sizes: "152x152", href: "touch-icon-ipad" }
+      {
+        rel: "apple-touch-icon",
+        sizes: "152x152",
+        href: "/icons/touch-icon-ipad"
+      }
     ],
     [
       "link",
@@ -160,13 +165,21 @@ module.exports = {
       {
         rel: "apple-touch-icon",
         sizes: "167x167",
-        href: "touch-icon-ipad-retina"
+        href: "/icons/touch-icon-ipad-retina"
       }
     ]
   ],
-  // serviceWorker: true,
+  markdown: {
+    config: md => {
+      // md.set({ breaks: false });
+      md.use(require("./plugins/mermaid"));
+    }
+  },
   themeConfig: {
     editLinks: true,
+    serviceWorker: {
+      updatePopup: true
+    },
     nav: [
       {
         text: "Getting Started",
@@ -235,12 +248,10 @@ module.exports = {
           collapsable: false,
           children: [
             "frontend-state-mgmt",
-            "auth",
             "dynamic-paths",
             "auditing",
-            "graphql",
             "dexie",
-            "proxy-objects"
+            "graphql"
           ]
         },
         {

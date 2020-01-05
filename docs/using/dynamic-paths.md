@@ -2,15 +2,15 @@
 
 ## Introduction
 
-The term _dynamic-paths_ refers to the use of the [Model Constraint](../modeling/model-constraints.html#database-offseting) property **dbOffset** and specifically the inclusion of a non-static path such as ":group" in that property. Use of dynamic paths is reserved for situations where certain the records of a given Model is divided in large part by a property (or multiple properties) and you want to preserve the ability to query and filter results on the server side beyond these variables or want more fine grained control over the security/permissions of the data in Firebase.
+The term _dynamic-paths_ refers to the use of the [Model Constraint](../modeling/model-constraints.html#database-offseting) property **dbOffset** and specifically the inclusion of a non-static path such as `:group` in that property. Use of dynamic paths is typically reserved for situations where certain the records of a given `Model` is divided in large part by a property (or multiple properties) and you want to preserve the ability to query and filter results on the server side beyond these variables or want more fine grained control over the security/permissions of the data in Firebase.
 
 For more on _why_ you might want to use dynamic paths refer to the [**Modeling → Dynamic Paths**](../modelling/dynamic-paths) section.
 
 ## Composite Keys
 
-When you are using normal database paths than the `id` property of any given record represents the primary key for the record. Once you've moved to dynamic properties the `id` no longer is guarenteed to provide uniqueness (it _could_ be unique but there is no assurance of that). For this reason the idea of a "composite key" is important to understand.
+When you are using normal database paths than the `id` property of any given record represents the primary key for the record. Once you've moved to dynamic properties the `id` no longer is guarenteed to provide uniqueness (it _could_ be unique but there is no assurance of that). For this reason the idea of a _composite_ (or compound) key is important to understand.
 
-A composite key is a basket of key/value pairs which _do_ provide a uniqueness gaurentee for records that reside on a dynamic path. In **Firemodel** they are represented in two ways:
+A composite key is a dictionary of key/value pairs which _together_ provide a uniqueness gaurentee for records that reside on a dynamic path. In **Firemodel** they are represented in two ways:
 
 ```typescript
 // an object representation
@@ -39,15 +39,13 @@ const product = Record.get(Product, "prod-id::state:CT" } );
 
 ### Adding a Record
 
-In the case you want to add a new Record you actually don't need to make any changes just so long as you include values for the properties which make up the composite key :
+In the case you want to add a new record you actually don't need to make any changes so long as you include values for all the properties which make up the composite key:
 
 ```typescript
 const product = Record.add(Product, { id: "prod-id", state: "CT", ... } );
 ```
 
 ### Updating a Record
-
-The signature is unchanged but the `id` is instead the **Composite Key**.
 
 ```typescript
 const product = Record.update(Product, { id: "prod-id", state: "CT"}, { ... } );
@@ -59,7 +57,7 @@ const product = Record.update(Product, { id: "prod-id", state: "CT"}, { ... } );
 const product = Record.remove(Product, { id: "prod-id", state: "CT"} );
 ```
 
-### Getting a List
+### Getting a `List`
 
 Unlike operating with `Record`, `List`'s need a little more work to build in the _offset properties_ needed to build out their database path. This is achieved by adding an `offsets` to the _options_ parameter passed in:
 
@@ -157,15 +155,13 @@ Mocking model's which have dynamic offsets leverages one of two strategies:
      await Mock(Product, db).generate(10);
     ```
 
-    The this example there would be an even distribution of products between "CT" and "MA" and the products which have a random distibution between "Groceries" and "Cosmetics".
+    In this example there would be an even distribution of products between "CT" and "MA" and the products which have a random distibution between "Groceries" and "Cosmetics".
 
 Both of these methods are possible but it is considered best practice that you set each model which has a dynamic offset to a mock that constrains to a reasonable set and then you can apply exceptions where needed. This "best practice" becomes essential if you are using Mocks with the `followRelationships()` method.
 
-## Other Details
+## Utility Functions
 
-### Record's API surface for Dynamic Paths
-
-**Record**'s have gotten a few additions to their API surface that might be useful when working with dynamic paths:
+**Record**'s API surface has a few useful utility functions for working with dynamic paths:
 
 - `dbPath` - is not new but it now responds with the dynamic path rather then just pushing out a static string as defined in _dbOffset_.
 - `hasDynamicPath` - a boolean flag indicating if underlying Model has dynamic segments
@@ -173,38 +169,3 @@ Both of these methods are possible but it is considered best practice that you s
 - `compositeKey` - returns the composite key for the underlying Model; will throw error if all required parameters are not yet set
 - `compositeKeyRef` - returns the composite key as a string
 
-### Relationships and Mocks
-
-It's when we start talking about _relationships_ and _mocks_ of relationships that things become more complicated. In order to tackle this topic, let's look at the testing strategy which was used to test relationships:
-
-![test strategy](./assets/test-strategy.png)
-
-As this mindmap suggests, there are a lot of ways that model's can relate (and this diagram only illustrates some of them). On the one hand, however, relating one model to another is a pretty straight forward thing. Adding _dynamic paths_ simply means that instead of using `fk` which just points to the other record's `id` we must point to the **Composite Key**. Also, it has been mentioned previously that in the case of FK's we use the string based notation that you can get from `record.compositeKeyRef`. So what's so complicated?
-
-Well from a testing standpoint there are a lot of edge cases but let's not worry ourselves over that level of detail. If you want to understand it check out the tests in [`dynamic-offset-spec.ts`](../../test/dynamic-offset-spec.ts). What we do want to cover is the following subtlies of mock data that we will want to create:
-
-- **Signature.** Does a model with a dynamic path referencing another model with the same dynamic signature always relate to the same path? In other words, if both a `Product` and `Order` are dynamically pathed on a specific `geo`; should there be a rule that forces Mock to observe that rule?
-- **Reflexive.** What about the same situation as above but where `Product` has an inverse relationship to itself?
-- **Passthrough.** When you execute generate() you can state a set of "exceptions" which the Model you're mocking should set to a static value. Typically that means
-
-#### Path Behavior
-
-All of these conditions _matter_ when you're trying to build quality business data. Fortunately the first two conditions can be specified in your mocks. Here's how you do it:
-
-```typescript
-const products = Mock(Product, db).dynamicPathBehavior('signature').generate(10);
-const products2 = Mock(Product, db).dynamicPathBehavior('signature-exact').generate(10);
-const products3 = Mock(Product, db).dynamicPathBehavior('reflexive').generate(10);
-```
-
-In the first case (using "signature") _all_ relationships which share a common set of dynamic attributes. The second case is very similar (using "signature-exact") but it states that the full `dbOffset` -- including static text and ordering of dynamic attributes -- must be the same.
-
-The final case, allows for keeping any Model which self-references itself to stay on the same dynamic paths but other Models will be allowed to modulate based on the `@mock()` settings applied to their dynamic segments.
-
-#### Override Bahavior
-
-The **Passthrough** feature mentioned above is less to do strictly with dynamic paths (although it clearly can effect it) and more to do with whether the "overrides" which are passed into the initial model should be passed along to the models which the primary model has a FK relationship with.
-
-> Note, the importance of this is only relevant if you are using the `followRelationships()` option off of **Mock**
-
-By default the answer is "no" but you can change this by simply invoking `.overridesPassThrough()`.

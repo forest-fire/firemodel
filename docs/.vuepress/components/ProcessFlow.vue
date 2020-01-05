@@ -1,13 +1,13 @@
 <template>
   <div class="process-flow">
     <div class="definition">
-      <slot/>
+      <slot />
     </div>
     <div class="flow"></div>
   </div>
 </template>
 
-<script lang="ts">
+<script lang="js">
 let mermaidInitialized;
 
 async function paint(ctx) {
@@ -41,9 +41,7 @@ async function paint(ctx) {
   } catch (e) {
     ctx.$el.querySelector(
       ".flow"
-    ).innerHTML = `<p><span class="error-text">Error loading the mermaid process flow!</span> The configuration was:<br/>&nbsp;<br/>${defn}<P/>Try plugging this into the <a href="https://mermaidjs.github.io/mermaid-live-editor">Mermaid Live Editor</a> to debug</p><p>The exact error reported was:<br/>&nbsp<br/>${
-      e.message
-    }</p>`;
+    ).innerHTML = `<p><span class="error-text">Error loading the mermaid process flow!</span> The configuration was:<br/>&nbsp;<br/>${defn}<P/>Try plugging this into the <a href="https://mermaidjs.github.io/mermaid-live-editor">Mermaid Live Editor</a> to debug</p><p>The exact error reported was:<br/>&nbsp<br/>${e.message}</p>`;
     console.group("mermaid error");
     console.log("Definition was:", defn);
     console.log();

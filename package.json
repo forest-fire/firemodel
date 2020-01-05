@@ -30,6 +30,7 @@
     "docs:build": "vuepress build docs"
   },
   "dependencies": {
+    "@types/mermaid": "^8.2.1",
     "abstracted-firebase": "^0.36.0",
     "common-types": "^1.12.15",
     "date-fns": "^2.8.1",
@@ -44,7 +45,8 @@
     "serialized-query": "^0.10.0",
     "set-value": "^3.0.0",
     "typed-conversions": "^0.10.1",
-    "wait-in-parallel": "^1.2.6"
+    "wait-in-parallel": "^1.2.6",
+    "mermaid": "^8.4.4"
   },
   "peerDependencies": {
     "firemock": "^0.36.0"
@@ -77,7 +79,6 @@
     "faker": "^4.1.0",
     "firemock": "^0.36.0",
     "js-yaml": "^3.13.1",
-    "mermaid": "^8.4.4",
     "mocha": "^6.2.2",
     "prettier": "^1.19.1",
     "rimraf": "^3.0.0",

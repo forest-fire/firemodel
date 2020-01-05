@@ -1031,6 +1031,11 @@
   resolved "https://registry.yarnpkg.com/@types/long/-/long-4.0.0.tgz#719551d2352d301ac8b81db732acb6bdc28dbdef"
   integrity sha512-1w52Nyx4Gq47uuu0EVcsHBxZFJgurQ+rTKS3qMHxR1GY2T8c2AJYd6vZoZ9q1rupaDjU0yT+Jc2XTyXkjeMA+Q==
 
+"@types/mermaid@^8.2.1":
+  version "8.2.1"
+  resolved "https://registry.yarnpkg.com/@types/mermaid/-/mermaid-8.2.1.tgz#778fd45393965d6acf885b878911627fe9365d56"
+  integrity sha512-y3n4I34mKBGmHPiP7+dL7c+gMe+dI9h3I/5N6WJXHpnVn8hHcWH+YSsf+GwNx1LmjYVHmK8rcfbumjG+uprS0Q==
+
 "@types/minimatch@*":
   version "3.0.3"
   resolved "https://registry.yarnpkg.com/@types/minimatch/-/minimatch-3.0.3.tgz#3dca0e3f33b200fc7d1139c0cd96c1268cadfd9d"
