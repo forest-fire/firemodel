@@ -7,7 +7,7 @@ module.exports = {
         buttonText: "Refresh"
       }
     },
-    mermaid: true,
+    // mermaid: true,
     "@vuepress/back-to-top": true,
     "@vuepress/last-updated": true,
     "@vuepress/medium-zoom": true,
@@ -169,12 +169,12 @@ module.exports = {
       }
     ]
   ],
-  markdown: {
-    config: md => {
-      // md.set({ breaks: false });
-      md.use(require("./plugins/mermaid"));
-    }
-  },
+  // markdown: {
+  //   config: md => {
+  //     // md.set({ breaks: false });
+  //     md.use(require("./plugins/mermaid"));
+  //   }
+  // },
   themeConfig: {
     editLinks: true,
     serviceWorker: {

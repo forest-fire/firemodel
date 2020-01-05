@@ -152,7 +152,7 @@ export class DexieDb {
   private _singularToPlural: IDictionary<string> = {};
   /** the current version number for the indexDB database */
   private _currentVersion: number = 1;
-  private _priors: Array<IDexiePriorVersion<any, any>> = [];
+  private _priors: IDexiePriorVersion[] = [];
   /** flag to indicate whether the Dexie DB has begun the initialization */
   private _isMapped: boolean = false;
 
@@ -200,7 +200,7 @@ export class DexieDb {
    * - [Dexie Docs](https://dexie.org/docs/Tutorial/Design#database-versioning)
    * - [Prior Version _typing_](https://github.com/forest-fire/firemodel/blob/master/src/%40types/dexie.ts)
    */
-  public addPriorVersion(version: IDexiePriorVersion<any, any>) {
+  public addPriorVersion(version: IDexiePriorVersion) {
     this._priors.push(version);
     this._currentVersion++;
 

@@ -1,6 +1,8 @@
 # Frontend State Mgmt
 
-When working with modern frontend frameworks like Vue and React it is likely we are using a front-end _state management framework_ like **Redux** or **Vuex**. These frameworks work really well with a "real time database" like Firebase and can be integrated very simply.
+## Overview
+
+When working with modern frontend frameworks like Vue and React it is likely we are using a front-end _state management framework_ like **Redux** or **Vuex**. These frameworks work really well with a "real-time database" like Firebase and can be integrated relatively easily.
 
 Without really meaning to start the conversation of frontend state management, the [Watching Firebase](./watching.html) section brought up the idea of a `dispatch()` function which gets called when a change takes place. For those of you familiar with Redux or Vuex there is shared nominclature in having a "dispatch" function and that is in fact where we'll start when talking about integration.
 
@@ -8,9 +10,9 @@ When integrating state into a frontend state management frameworks broadly there
 
 - **Dispatch** - connect your frontend framework's _dispatch_ to Firemodel
 - **Actions** - ensure we have all the required Firemodel _Actions_ defined in our local store
-- **Mutations** - ensure all the _Mutations_ committed by the Actions are available to change state
+- **Mutations** - ensure all the _Mutations_ (or reducers in Redux parlance) committed by the Actions are available to change state
 
-Our examples and nomenclature will be assuming **Vuex** but **Redux** should be almost identical (and likely most other frontend state management tools too).
+While any frontend framework should be able to be integrated, we have primarily focused on VueJS and Vuex in recent years. For Vuex we have an "out of the box" solution which can be used as either a Vuex Plugin or a CLI plugin. For more on this go to the [Vuex and Vue CLI plugins](#Vuex) section.
 
 ## Dispatch
 
@@ -39,8 +41,6 @@ At this point, any time a Firemodel mutation is fired it will be fired _into_ Vu
 ## Events, Actions and Mutations
 
 Assuming you followed the instructions above regarding _dispatch_, your state management framework will now be getting *Events* sent to it from **Firemodel**. These events will have a `type` which must be matched by an Action in your local store. Further, Actions do not modify state directly, instead they call *mutation* functions (or *reducers* in Redux parlance). The diagram below shows the high-level flow:
-
-<process-flow>graph LR; subgraph Firemodel; FireEvent("Firebase Event")-->|from watch|Event;LocalEvent("Local Event")-->|from crud|Event;ServerConfirm("Server Confirmation")-->|from crud|Event; end; subgraph StateMgmt; Event-->Dispatch["dispatch(event)"];Dispatch-->|calls|Action; Action-->Trigger["commit()"]; Trigger-->|calls|Mutation["Mutation Fn"]; Action-.->Trigger2["commit()"];Trigger2-.->|calls|Mutation2["Mutation Fn"]; end;</process-flow>
 
 So if you're following along, you'll expect that the responsibility for writing the database Actions and Mutations would fall to you as the consumer of this library and you _can_ do this if you choose but in 99% of cases you should instead use the `vuex-plugin-firemodel` which provides both for you automatically. See the next section for more details.
 

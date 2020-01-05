@@ -75,7 +75,7 @@ export declare class DexieDb {
      * - [Dexie Docs](https://dexie.org/docs/Tutorial/Design#database-versioning)
      * - [Prior Version _typing_](https://github.com/forest-fire/firemodel/blob/master/src/%40types/dexie.ts)
      */
-    addPriorVersion(version: IDexiePriorVersion<any, any>): this;
+    addPriorVersion(version: IDexiePriorVersion): this;
     /**
      * Returns a typed **Dexie** `Table` object for a given model class
      */

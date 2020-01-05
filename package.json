@@ -30,7 +30,6 @@
     "docs:build": "vuepress build docs"
   },
   "dependencies": {
-    "@types/mermaid": "^8.2.1",
     "abstracted-firebase": "^0.36.0",
     "common-types": "^1.12.15",
     "date-fns": "^2.8.1",
@@ -45,8 +44,7 @@
     "serialized-query": "^0.10.0",
     "set-value": "^3.0.0",
     "typed-conversions": "^0.10.1",
-    "wait-in-parallel": "^1.2.6",
-    "mermaid": "^8.4.4"
+    "wait-in-parallel": "^1.2.6"
   },
   "peerDependencies": {
     "firemock": "^0.36.0"
@@ -60,7 +58,7 @@
     "@types/lodash": "^4.14.149",
     "@types/lodash.first": "^3.0.6",
     "@types/mocha": "^5.2.7",
-    "@types/node": "^12.12.21",
+    "@types/node": "^10.14.0",
     "@types/pluralize": "^0.0.29",
     "@types/rimraf": "^2.0.2",
     "@types/set-value": "^2.0.0",
@@ -86,12 +84,12 @@
     "ts-node": "^8.5.4",
     "tslint": "^5.20.1",
     "tslint-config-prettier": "^1.18.0",
-    "typescript": "^3.7.2",
+    "typescript": "^3.7.4",
     "vue-property-decorator": "^8.3.0",
     "vuepress": "^1.2.0",
     "vuepress-plugin-autometa": "^0.1.13"
   },
   "engines": {
-    "node": ">=8.10.0"
+    "node": ">=10.0.0"
   }
 }
