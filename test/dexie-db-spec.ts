@@ -39,7 +39,7 @@ const cars = [
 ];
 DexieDb.indexedDB(indexedDB, fdbKeyRange);
 
-describe.only("DexieModel => ", () => {
+describe("DexieModel => ", () => {
   it("DexieModel can be instantiated with single Model", async () => {
     const d = new DexieDb("testing", Car);
     expect(d).to.be.instanceOf(DexieDb);

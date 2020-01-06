@@ -9,7 +9,8 @@ const util_1 = require("../util");
  * API.
  */
 class DexieRecord {
-    constructor(table, meta) {
+    constructor(modelConstructor, table, meta) {
+        this.modelConstructor = modelConstructor;
         this.table = table;
         this.meta = meta;
     }
@@ -43,9 +44,10 @@ class DexieRecord {
         const now = new Date().getTime();
         record.createdAt = now;
         record.lastUpdated = now;
-        return this.table.add(record).catch(e => {
+        const pk = await this.table.add(record).catch(e => {
             throw new errors_1.DexieError(`DexieRecord: Problem adding record to ${util_1.capitalize(this.meta.modelName)}: ${e.message}`, `dexie/${e.code || e.name || "add"}`);
         });
+        return this.get(pk);
     }
     /**
      * Update an existing record in the **IndexDB**
@@ -53,13 +55,19 @@ class DexieRecord {
     async update(pk, updateHash) {
         const now = new Date().getTime();
         updateHash.lastUpdated = now;
-        return this.table.update(pk, updateHash).catch(e => {
+        const result = await this.table.update(pk, updateHash).catch(e => {
             throw new errors_1.DexieError(`DexieRecord: Problem updating ${util_1.capitalize(this.meta.modelName)}.${typeof pk === "string" ? pk : pk.id}: ${e.message}`, `dexie/${e.code || e.name || "update"}`);
         });
+        if (result === 0) {
+            throw new errors_1.DexieError(`The primary key passed in to record.update(${JSON.stringify(pk)}) was NOT found in the IndexedDB!`, "dexie/record-not-found");
+        }
+        if (result > 1) {
+            throw new errors_1.DexieError(`While calling record.update(${JSON.stringify(pk)}) MORE than one record was updated!`, "dexie/unexpected-error");
+        }
     }
     async remove(id) {
         return this.table.delete(id).catch(e => {
-            throw new errors_1.DexieError(`DexieRecord: problem removing record ${JSON.stringify(id)} from the ${util_1.capitalize(this.meta.modelName)}: ${e.message}`, `dexie/${e.code || e.name || "remove"}`);
+            throw new errors_1.DexieError(`Problem removing record ${JSON.stringify(id)} from the ${util_1.capitalize(this.meta.modelName)}: ${e.message}`, `dexie/${e.code || e.name || "remove"}`);
         });
     }
 }

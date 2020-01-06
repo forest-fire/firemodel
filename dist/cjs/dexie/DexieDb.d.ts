@@ -2,8 +2,9 @@ import { IModelConstructor } from "..";
 import { Model } from "../Model";
 import { IDictionary } from "common-types";
 import Dexie from "dexie";
-import { IDexiePriorVersion, IDexieModelMeta } from "../@types/optional/dexie";
+import { IDexiePriorVersion } from "../@types/optional/dexie";
 import { DexieRecord } from "./DexieRecord";
+import { DexieList } from "./DexieList";
 /**
  * Provides a simple API to convert to/work with **Dexie** models
  * from a **Firemodel** model definition.
@@ -84,21 +85,21 @@ export declare class DexieDb {
      * Provides a **Firemodel**-_like_ API surface to interact with singular
      * records.
      *
-     * @param model the **Firemodel** `Model` name
+     * @param model the **Firemodel** model (aka, the constructor)
      */
-    record(model: string): DexieRecord<Model>;
+    record<T extends Model>(model: IModelConstructor<T>): DexieRecord<T>;
     /**
      * Provides a very **Firemodel**-_like_ API surface to interact with LIST based
      * queries.
      *
      * @param model the **Firemodel** `Model` name
      */
-    list(model: string): void;
+    list<T extends Model>(model: IModelConstructor<T>): DexieList<T>;
     /**
      * Returns the META for a given `Model` identified by
      * the model's _plural_ (checked first) or _singular_ name.
      */
-    meta(name: string, _originated?: string): IDexieModelMeta;
+    meta(name: string, _originated?: string): any;
     /**
      * Returns a constructor for a given **Firemodel** `Model`
      *

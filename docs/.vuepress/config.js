@@ -216,8 +216,7 @@ module.exports = {
             "property-constraints",
             "dynamic-paths",
             "relationships",
-            "db-permissions",
-            "db-indexes"
+            "permissions-and-indexes"
           ]
         },
         {

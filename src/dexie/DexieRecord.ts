@@ -3,7 +3,6 @@ import { IPrimaryKey } from "../@types";
 import { Dexie } from "dexie";
 import { Model } from "../Model";
 import { key as fbKey } from "firebase-key";
-import { IFmModelMeta } from "../decorators";
 import { IDexieModelMeta } from "../@types/optional/dexie";
 import { DexieError } from "../errors";
 import { capitalize } from "../util";
@@ -15,6 +14,7 @@ import { capitalize } from "../util";
  */
 export class DexieRecord<T extends Model> {
   constructor(
+    private modelConstructor: IModelConstructor<T>,
     private table: Dexie.Table<any, any>,
     private meta: IDexieModelMeta
   ) {}
@@ -26,7 +26,7 @@ export class DexieRecord<T extends Model> {
    * @param pk the primary key for the record; which is just the `id` in many cases
    * but becomes a `CompositeKey` if the model has a dynamic path.
    */
-  async get(pk: IPrimaryKey<T>) {
+  async get(pk: IPrimaryKey<T>): Promise<T> {
     return this.table.get(pk).catch(e => {
       throw new DexieError(
         `DexieRecord: problem getting record ${JSON.stringify(
@@ -64,7 +64,7 @@ export class DexieRecord<T extends Model> {
     const now = new Date().getTime();
     record.createdAt = now;
     record.lastUpdated = now;
-    return this.table.add(record).catch(e => {
+    const pk: IPrimaryKey<T> = await this.table.add(record as T).catch(e => {
       throw new DexieError(
         `DexieRecord: Problem adding record to ${capitalize(
           this.meta.modelName
@@ -72,6 +72,7 @@ export class DexieRecord<T extends Model> {
         `dexie/${e.code || e.name || "add"}`
       );
     });
+    return this.get(pk);
   }
 
   /**
@@ -81,7 +82,7 @@ export class DexieRecord<T extends Model> {
     const now = new Date().getTime();
     updateHash.lastUpdated = now;
 
-    return this.table.update(pk, updateHash).catch(e => {
+    const result = await this.table.update(pk, updateHash).catch(e => {
       throw new DexieError(
         `DexieRecord: Problem updating ${capitalize(this.meta.modelName)}.${
           typeof pk === "string" ? pk : pk.id
@@ -89,14 +90,32 @@ export class DexieRecord<T extends Model> {
         `dexie/${e.code || e.name || "update"}`
       );
     });
+
+    if (result === 0) {
+      throw new DexieError(
+        `The primary key passed in to record.update(${JSON.stringify(
+          pk
+        )}) was NOT found in the IndexedDB!`,
+        "dexie/record-not-found"
+      );
+    }
+
+    if (result > 1) {
+      throw new DexieError(
+        `While calling record.update(${JSON.stringify(
+          pk
+        )}) MORE than one record was updated!`,
+        "dexie/unexpected-error"
+      );
+    }
   }
 
   async remove(id: IPrimaryKey<T>) {
     return this.table.delete(id).catch(e => {
       throw new DexieError(
-        `DexieRecord: problem removing record ${JSON.stringify(
-          id
-        )} from the ${capitalize(this.meta.modelName)}: ${e.message}`,
+        `Problem removing record ${JSON.stringify(id)} from the ${capitalize(
+          this.meta.modelName
+        )}: ${e.message}`,
         `dexie/${e.code || e.name || "remove"}`
       );
     });

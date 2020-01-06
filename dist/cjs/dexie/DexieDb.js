@@ -7,6 +7,7 @@ const __1 = require("..");
 const errors_1 = require("../errors");
 const dexie_1 = __importDefault(require("dexie"));
 const DexieRecord_1 = require("./DexieRecord");
+const DexieList_1 = require("./DexieList");
 /**
  * Provides a simple API to convert to/work with **Dexie** models
  * from a **Firemodel** model definition.
@@ -185,19 +186,20 @@ class DexieDb {
      * Provides a **Firemodel**-_like_ API surface to interact with singular
      * records.
      *
-     * @param model the **Firemodel** `Model` name
+     * @param model the **Firemodel** model (aka, the constructor)
      */
     record(model) {
-        if (!this._models[model]) {
-            const isPlural = this.pluralNames.includes(model);
+        const r = __1.Record.create(model);
+        if (!this.modelNames.includes(r.modelName)) {
+            const isPlural = this.pluralNames.includes(r.modelName);
             throw new errors_1.DexieError(`Attempt to reach the record API via DexieDb.record("${model}") failed as there is no known Firemodel model of that name. ${isPlural
                 ? "It looks like you may have accidentally used the plural name instead"
-                : ""}`, "dexie/model-does-not-exist");
+                : ""}. Known model types are: ${this.modelNames.join(", ")}`, "dexie/model-does-not-exist");
         }
         if (!this.isOpen()) {
             this.open();
         }
-        return new DexieRecord_1.DexieRecord(this.table(this._singularToPlural[model]), this.meta(model));
+        return new DexieRecord_1.DexieRecord(model, this.table(this._singularToPlural[r.modelName]), this.meta(r.modelName));
     }
     /**
      * Provides a very **Firemodel**-_like_ API surface to interact with LIST based
@@ -206,12 +208,13 @@ class DexieDb {
      * @param model the **Firemodel** `Model` name
      */
     list(model) {
-        if (!this.isMapped) {
-            this.mapModels();
-        }
+        const r = __1.Record.create(model);
         if (!this.isOpen()) {
             this.open();
         }
+        const table = this.table(this._singularToPlural[r.modelName]);
+        const meta = this.meta(r.modelName);
+        return new DexieList_1.DexieList(model, table, meta);
     }
     /**
      * Returns the META for a given `Model` identified by

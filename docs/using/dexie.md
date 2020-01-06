@@ -36,11 +36,10 @@ The CRUD interactions will be done through four API's -- Record, List, Table, an
 You gain access to the Record API off of the `DexieDb.record` function; it would be accessed like so:
 
 ```typescript
+import { Person, Car, Todo } from './models';
 const db = new DexieDb('test-database', Person, Car, Todo);
-const recordApi = db.record('car')
+const recordApi = db.record(Car)
 ```
-
-> **Note:** the Firemodel-_like_ API's like the Record API expect a reference of the singular model name `car`; not the plural `cars`
 
 Although an implementation detail, it may be useful to know that this API is implemented with the `DexieRecord` class. This class provides basic record-level crud operations:
 
@@ -58,8 +57,9 @@ Although an implementation detail, it may be useful to know that this API is imp
 To give a representative example of how you might use the API, let's add a new Car to the database:
 
 ```typescript
+import { Person, Car, Todo } from './models';
 const db = new DexieDb('test-database', Person, Car, Todo);
-const car = db.record('car');
+const car = db.record(Car);
 await car.add({ id: '1234', make: 'Ford', model: 'Fiesta', modelYear: 1999 })
 const gotIt = await car.get('1234');
 ```
@@ -101,12 +101,11 @@ The Table API is a very nice SQL-like API that **Dexie** exposes. For more on th
 An example of how you might use it though could like this:
 
 ```typescript
+import { Person, Car, Todo } from './models';
 const db = new DexieDb('test-database', Person, Car, Todo);
-const cars = db.table('cars');
+const cars = db.table(Car);
 const olderCars = await cars.where('modelYear').below(2000).toArray();
 ```
-
-> **Note:** unlike the Record and List API's the Table API (and Dexie in general) use the plural nominclature; so in this case we refer to `cars` not `car`
 
 In this example, the property `olderCars` ends up being an array of `Car` objects. Fully typed and ready for your driving pleasure.
 
@@ -119,6 +118,7 @@ Transactional support is a powerful feature that ensures that there is [atomicit
 Gaining access to this API is just a matter of referencing the `transaction` property of `DexieDb`:
 
 ```typescript
+import { Person, Car, Todo } from './models';
 const db = new DexieDb('test-database', Person, Car, Todo);
 const transactionApi = db.transaction;
 ```
