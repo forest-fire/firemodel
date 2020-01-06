@@ -3,7 +3,7 @@
     "declaration": true,
     "module": "esnext",
     "target": "es2017",
-    "lib": ["es2016", "es2017", "esnext.asynciterable", "es2015.reflect"],
+    "lib": ["es2017", "esnext.asynciterable", "es2015.reflect", "DOM"],
     "moduleResolution": "node",
     "sourceMap": true,
     "noImplicitAny": true,
