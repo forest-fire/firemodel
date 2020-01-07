@@ -19,3 +19,8 @@ export interface IDexieModelMeta extends IFmModelMeta {
     hasDynamicPath: boolean;
     dynamicPathComponents: string[];
 }
+export interface IDexieListOptions<T> {
+    orderBy?: keyof T & string;
+    limit?: number;
+    offset?: number;
+}

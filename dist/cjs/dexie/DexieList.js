@@ -26,6 +26,26 @@ class DexieList {
             throw new errors_1.DexieError(`Problem with list(${util_1.capitalize(this.meta.modelName)}).all(${options}): ${e.message}`, `dexie/${e.code || e.name || "list.all"}`);
         });
     }
+    async where(prop, value, options = {}) {
+        // const c = this.table.orderBy(options.orderBy || "lastUpdated");
+        const [op, val] = Array.isArray(value) && ["=", ">", "<"].includes(value[0])
+            ? value
+            : ["=", value];
+        let query = op === "="
+            ? this.table.where(prop).equals(val)
+            : op === ">"
+                ? this.table.where(prop).above(val)
+                : this.table.where(prop).below(val);
+        if (options.limit) {
+            query = query.limit(options.limit);
+        }
+        if (options.offset) {
+            query = query.offset(options.offset);
+        }
+        return query.toArray().catch(e => {
+            throw new errors_1.DexieError(`list.where(${prop}, ${value}, ${JSON.stringify(options)}) failed to execute: ${e.message}`, `dexie/${e.code || e.name || "list.where"}`);
+        });
+    }
 }
 exports.DexieList = DexieList;
 //# sourceMappingURL=DexieList.js.map

@@ -94,7 +94,7 @@ export declare class DexieDb {
      *
      * @param model the **Firemodel** `Model` name
      */
-    list<T extends Model>(model: IModelConstructor<T>): DexieList<T>;
+    list<T extends Model>(model: IModelConstructor<T>): DexieList<T, keyof T>;
     /**
      * Returns the META for a given `Model` identified by
      * the model's _plural_ (checked first) or _singular_ name.
