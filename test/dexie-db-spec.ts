@@ -11,6 +11,8 @@ import indexedDB from "fake-indexeddb";
 import fdbKeyRange from "fake-indexeddb/lib/FDBKeyRange";
 import DeepPerson from "./testing/dynamicPaths/DeepPerson";
 
+DexieDb.indexedDB(indexedDB, fdbKeyRange);
+
 const cars = [
   {
     id: "123",
@@ -37,7 +39,6 @@ const cars = [
     createAt: 8982
   }
 ];
-DexieDb.indexedDB(indexedDB, fdbKeyRange);
 
 describe("DexieModel => ", () => {
   it("DexieModel can be instantiated with single Model", async () => {
@@ -91,7 +92,7 @@ describe("DexieModel => ", () => {
 
   it("table() method returns a Dexie.Table class", async () => {
     const d = new DexieDb("testing", Car);
-    const t = d.table("cars");
+    const t = d.table(Car);
     expect(t).to.be.an("object");
     expect(t.add).to.be.a("function");
     expect(t.bulkAdd).to.be.a("function");
@@ -100,7 +101,7 @@ describe("DexieModel => ", () => {
 
   it("table() gets back valid schema properties", async () => {
     const d = new DexieDb("testing", Car);
-    const t = d.table("cars");
+    const t = d.table(Car);
     expect(t.schema.name).to.equal("cars");
     expect(t.schema.mappedClass).to.be.a("function");
     expect(t.schema.primKey.name).to.equal("id");
@@ -108,8 +109,8 @@ describe("DexieModel => ", () => {
 
   it("table.schema is good for both dynamic and static models", async () => {
     const d = new DexieDb("testing", Car, DeepPerson);
-    const fancyCars = d.table("cars");
-    const people = d.table("deepPeople");
+    const fancyCars = d.table(Car);
+    const people = d.table(DeepPerson);
 
     expect(fancyCars.schema.primKey.name).to.equal("id");
     expect(fancyCars.schema.primKey.keyPath).to.equal("id");
@@ -155,13 +156,14 @@ describe("DexieModel => ", () => {
       console.log(e);
     });
 
-    const t = db.table("cars");
+    const t = db.table(Car);
     await t.bulkAdd(cars).catch(e => {
       throw new Error(e);
     });
     const car: Car = await t.get("123").catch(e => {
       throw new Error(e);
     });
+
     expect(car).to.be.an.instanceOf(Car);
     const expected = cars.find(i => i.id === "123");
     expect(car.modelYear).to.equal(expected.modelYear);

@@ -3,6 +3,7 @@ import { FireModelError, DexieError } from "../errors";
 import Dexie from "dexie";
 import { DexieRecord } from "./DexieRecord";
 import { DexieList } from "./DexieList";
+import { capitalize } from "../util";
 /**
  * Provides a simple API to convert to/work with **Dexie** models
  * from a **Firemodel** model definition.
@@ -154,26 +155,27 @@ export class DexieDb {
         return this;
     }
     /**
+     * Checks whether Dexie/IndexedDB is managing the state for a given
+     * `Model`
+     *
+     * @param model the `Model` in question
+     */
+    modelIsManagedByDexie(model) {
+        const r = Record.create(model);
+        return this.modelNames.includes(r.modelName);
+    }
+    /**
      * Returns a typed **Dexie** `Table` object for a given model class
      */
-    table(tbl) {
-        if (!this.isMapped) {
-            this.mapModels();
-        }
+    table(model) {
+        const r = Record.create(model);
         if (!this.isOpen()) {
             this.open();
         }
-        if (!this._models[tbl]) {
-            const singular = this._singularToPlural[tbl] ? true : false;
-            if (singular) {
-                throw new DexieError(`Attempt to call DexieDb.table("${tbl}") failed because Dexie organizes tables by a model's PLURAL name. There is a model called "${tbl}" but the table name is "${this._singularToPlural[tbl]}"`, "dexie/table-does-not-exist");
-            }
-            else {
-                throw new DexieError(`Attempt to call DexieDb.table("${tbl}) failed because there is no known table of that name. The tables which Dexie is currently aware of are: ${this.pluralNames}`, "dexie/table-does-not-exist");
-            }
+        if (!this.modelIsManagedByDexie(model)) {
+            throw new DexieError(`Attempt to get a Dexie.Table for "${capitalize(r.modelName)}" Firemodel model but this model is not being managed by Dexie! Models being managed are: ${this.modelNames.join(", ")}`, "dexie/table-does-not-exist");
         }
-        const model = this.modelConstructor(tbl);
-        const table = this._db.table(tbl);
+        const table = this._db.table(r.pluralName);
         table.mapToClass(model);
         return table;
     }
@@ -194,7 +196,7 @@ export class DexieDb {
         if (!this.isOpen()) {
             this.open();
         }
-        return new DexieRecord(model, this.table(this._singularToPlural[r.modelName]), this.meta(r.modelName));
+        return new DexieRecord(model, this.table(model), this.meta(r.modelName));
     }
     /**
      * Provides a very **Firemodel**-_like_ API surface to interact with LIST based
@@ -207,7 +209,9 @@ export class DexieDb {
         if (!this.isOpen()) {
             this.open();
         }
-        const table = this.table(this._singularToPlural[r.modelName]);
+        const table = r.hasDynamicPath
+            ? this.table(model)
+            : this.table(model);
         const meta = this.meta(r.modelName);
         return new DexieList(model, table, meta);
     }

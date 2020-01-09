@@ -5,6 +5,7 @@ import Dexie from "dexie";
 import { IDexiePriorVersion } from "../@types/optional/dexie";
 import { DexieRecord } from "./DexieRecord";
 import { DexieList } from "./DexieList";
+import { IPrimaryKey } from "../@types";
 /**
  * Provides a simple API to convert to/work with **Dexie** models
  * from a **Firemodel** model definition.
@@ -78,9 +79,16 @@ export declare class DexieDb {
      */
     addPriorVersion(version: IDexiePriorVersion): this;
     /**
+     * Checks whether Dexie/IndexedDB is managing the state for a given
+     * `Model`
+     *
+     * @param model the `Model` in question
+     */
+    modelIsManagedByDexie<T extends Model>(model: IModelConstructor<T>): boolean;
+    /**
      * Returns a typed **Dexie** `Table` object for a given model class
      */
-    table(tbl: string): Dexie.Table<any, any>;
+    table<T extends Model>(model: IModelConstructor<T>): Dexie.Table<T, IPrimaryKey<T>>;
     /**
      * Provides a **Firemodel**-_like_ API surface to interact with singular
      * records.
@@ -94,7 +102,7 @@ export declare class DexieDb {
      *
      * @param model the **Firemodel** `Model` name
      */
-    list<T extends Model>(model: IModelConstructor<T>): DexieList<T, keyof T>;
+    list<T extends Model>(model: IModelConstructor<T>): DexieList<T>;
     /**
      * Returns the META for a given `Model` identified by
      * the model's _plural_ (checked first) or _singular_ name.

@@ -44,5 +44,30 @@ export class DexieList {
             throw new DexieError(`list.where(${prop}, ${value}, ${JSON.stringify(options)}) failed to execute: ${e.message}`, `dexie/${e.code || e.name || "list.where"}`);
         });
     }
+    /**
+     * Get the "_x_" most recent records of a given type (based on the
+     * `lastUpdated` property).
+     */
+    async recent(limit, skip) {
+        //
+    }
+    /**
+     * Get all records updated since a given timestamp.
+     */
+    async since(datetime, options = {}) {
+        return this.where("lastUpdated", [">", datetime]);
+    }
+    /**
+     * Get the _last_ "x" records which were created.
+     */
+    async last(limit, skip) {
+        //
+    }
+    /**
+     * Get the _first_ "x" records which were created (aka, the earliest records created)
+     */
+    async first(limit, skip) {
+        //
+    }
 }
 //# sourceMappingURL=DexieList.js.map

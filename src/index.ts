@@ -16,3 +16,5 @@ export * from "./Mock/types";
 export { fk, pk } from "common-types";
 export { key as fbKey } from "firebase-key";
 export * from "./record/createCompositeKey";
+
+export * from "./dexie/index";

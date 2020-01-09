@@ -122,3 +122,4 @@ import { Person, Car, Todo } from './models';
 const db = new DexieDb('test-database', Person, Car, Todo);
 const transactionApi = db.transaction;
 ```
+

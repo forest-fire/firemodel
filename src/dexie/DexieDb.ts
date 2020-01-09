@@ -1,11 +1,13 @@
-import { IModelConstructor, Record, IFmModelMeta } from "..";
+import { IModelConstructor, Record, IFmModelMeta, ICompositeKey } from "..";
 import { FireModelError, DexieError } from "../errors";
 import { Model } from "../Model";
-import { IDictionary } from "common-types";
+import { IDictionary, pk } from "common-types";
 import Dexie from "dexie";
 import { IDexiePriorVersion, IDexieModelMeta } from "../@types/optional/dexie";
 import { DexieRecord } from "./DexieRecord";
 import { DexieList } from "./DexieList";
+import { capitalize } from "../util";
+import { IPrimaryKey } from "../@types";
 
 /**
  * Provides a simple API to convert to/work with **Dexie** models
@@ -209,31 +211,43 @@ export class DexieDb {
   }
 
   /**
+   * Checks whether Dexie/IndexedDB is managing the state for a given
+   * `Model`
+   *
+   * @param model the `Model` in question
+   */
+  public modelIsManagedByDexie<T extends Model>(model: IModelConstructor<T>) {
+    const r = Record.create(model);
+    return this.modelNames.includes(r.modelName);
+  }
+
+  /**
    * Returns a typed **Dexie** `Table` object for a given model class
    */
-  public table(tbl: string) {
-    if (!this.isMapped) {
-      this.mapModels();
-    }
+  public table<T extends Model>(
+    model: IModelConstructor<T>
+  ): Dexie.Table<T, IPrimaryKey<T>> {
+    const r = Record.create(model);
+
     if (!this.isOpen()) {
       this.open();
     }
-    if (!this._models[tbl]) {
-      const singular = this._singularToPlural[tbl] ? true : false;
-      if (singular) {
-        throw new DexieError(
-          `Attempt to call DexieDb.table("${tbl}") failed because Dexie organizes tables by a model's PLURAL name. There is a model called "${tbl}" but the table name is "${this._singularToPlural[tbl]}"`,
-          "dexie/table-does-not-exist"
-        );
-      } else {
-        throw new DexieError(
-          `Attempt to call DexieDb.table("${tbl}) failed because there is no known table of that name. The tables which Dexie is currently aware of are: ${this.pluralNames}`,
-          "dexie/table-does-not-exist"
-        );
-      }
+
+    if (!this.modelIsManagedByDexie(model)) {
+      throw new DexieError(
+        `Attempt to get a Dexie.Table for "${capitalize(
+          r.modelName
+        )}" Firemodel model but this model is not being managed by Dexie! Models being managed are: ${this.modelNames.join(
+          ", "
+        )}`,
+        "dexie/table-does-not-exist"
+      );
     }
-    const model = this.modelConstructor(tbl);
-    const table = this._db.table(tbl);
+
+    const table = this._db.table(r.pluralName) as Dexie.Table<
+      T,
+      IPrimaryKey<T>
+    >;
     table.mapToClass(model);
 
     return table;
@@ -264,7 +278,7 @@ export class DexieDb {
 
     return new DexieRecord(
       model,
-      this.table(this._singularToPlural[r.modelName]) as Dexie.Table<T, any>,
+      this.table(model) as Dexie.Table<T, any>,
       this.meta(r.modelName)
     );
   }
@@ -280,9 +294,10 @@ export class DexieDb {
     if (!this.isOpen()) {
       this.open();
     }
-    const table = this.table(
-      this._singularToPlural[r.modelName]
-    ) as Dexie.Table<T, any>;
+    const table = r.hasDynamicPath
+      ? (this.table(model) as Dexie.Table<T, ICompositeKey<T>>)
+      : (this.table(model) as Dexie.Table<T, pk>);
+
     const meta = this.meta(r.modelName);
 
     return new DexieList(model, table, meta);
