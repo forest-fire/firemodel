@@ -6,7 +6,9 @@ import {
   fks,
   hasOne,
   fk,
-  mock
+  mock,
+  uniqueIndex,
+  index
 } from "../../../src";
 import Hobby from "./Hobby";
 import Company from "./Company";
@@ -24,7 +26,7 @@ export interface IDeepName {
 @model({ dbOffset: "/group/:group/testing" })
 export default class DeepPerson extends Model {
   @property name: IDeepName;
-  @property @mock("number", { min: 18, max: 75 }) age: number;
+  @property @mock("number", { min: 18, max: 75 }) @index age: number;
   // prettier-ignore
   @property @mock("random", "The Dude", "Jackass", "Boomer", "Buster") nickname?: string;
   // prettier-ignore
@@ -34,19 +36,19 @@ export default class DeepPerson extends Model {
   // prettier-ignore
   @property @mock("phoneNumber") phoneNumber?: string;
   // prettier-ignore
-  @hasOne(() => School, "students") school?: fk;
+  @hasOne(School, "students") school?: fk;
   // prettier-ignore
-  @hasOne(() => Location, "residents") home?: fk;
+  @hasOne(Location, "residents") home?: fk;
   // prettier-ignore
-  @hasOne(() => Company, "employees") employer?: fk;
+  @hasOne(Company, "employees") employer?: fk;
   // prettier-ignore
-  @hasMany(() => Hobby, "practitioners") hobbies?: fks;
+  @hasMany(Hobby, "practitioners") hobbies?: fks;
   // prettier-ignore
-  @hasMany(() => Car, "owners") cars?: fks;
+  @hasMany(Car, "owners") cars?: fks;
   // prettier-ignore
-  @hasMany(() => DeepPerson, "children") parents?: fks;
+  @hasMany('DeepPerson', "children") parents?: fks;
   // prettier-ignore
-  @hasMany(() => DeepPerson, "parents") children?: fks;
+  @hasMany('DeepPerson', "parents") children?: fks;
   // prettier-ignore
-  @hasMany(() => HumanAttribute) attributes?: fks;
+  @hasMany(HumanAttribute) attributes?: fks;
 }

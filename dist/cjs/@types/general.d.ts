@@ -80,3 +80,7 @@ export interface IFmPathValuePair {
 export interface IFmHasId {
     id: string;
 }
+/**
+ * Get the type of an Object's property
+ */
+export declare type PropType<TObj, TProp extends keyof TObj> = TObj[TProp];

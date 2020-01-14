@@ -40,12 +40,13 @@ function scriptNames(scripts: string[]) {
 }
 
 async function lintSource() {
-  return asyncExec(`tslint src/**/*`);
+  return asyncExec(`tslint src/**/*.ts`);
 }
 
 async function mochaTests(stg: string, searchTerms: string[]) {
   process.env.AWS_STAGE = stg;
-  process.env.TS_NODE_COMPILER_OPTIONS = '{ "noImplicitAny": false }';
+  process.env.TS_NODE_COMPILER_OPTIONS =
+    '{ "noImplicitAny": false, "esModuleInterop": true, "allowSyntheticDefaultImports": true }';
   await asyncExec(
     `mocha --exit --require ts-node/register ` + searchTerms.join(" ")
   );

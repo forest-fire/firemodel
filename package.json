@@ -1,6 +1,6 @@
 {
   "name": "firemodel",
-  "version": "0.36.2",
+  "version": "0.36.3",
   "description": "Modeling, Access, and Mocking for Firebase Projects",
   "license": "MIT",
   "repository": "https://github.com/forest-fire/firemodel",
@@ -31,8 +31,9 @@
   },
   "dependencies": {
     "abstracted-firebase": "^0.36.0",
-    "common-types": "^1.12.15",
-    "date-fns": "^2.8.1",
+    "common-types": "^1.12.18",
+    "date-fns": "^2.9.0",
+    "dexie": "^2.0.4",
     "fast-copy": "2.0.4",
     "fast-deep-equal": "^2.0.1",
     "firebase-key": "^2.0.2",
@@ -40,7 +41,7 @@
     "lodash.first": "^3.0.0",
     "pluralize": "^8.0.0",
     "reflect-metadata": "^0.1.13",
-    "serialized-query": "^0.10.0",
+    "serialized-query": "^0.10.3",
     "set-value": "^3.0.0",
     "typed-conversions": "^0.10.1",
     "wait-in-parallel": "^1.2.6"
@@ -57,7 +58,7 @@
     "@types/lodash": "^4.14.149",
     "@types/lodash.first": "^3.0.6",
     "@types/mocha": "^5.2.7",
-    "@types/node": "^12.12.21",
+    "@types/node": "^10.14.0",
     "@types/pluralize": "^0.0.29",
     "@types/rimraf": "^2.0.2",
     "@types/set-value": "^2.0.0",
@@ -72,10 +73,10 @@
     "chai": "^4.2.0",
     "chalk": "^3.0.0",
     "do-devops": "^0.3.2",
+    "fake-indexeddb": "^3.0.0",
     "faker": "^4.1.0",
     "firemock": "^0.36.0",
     "js-yaml": "^3.13.1",
-    "mermaid": "^8.4.4",
     "mocha": "^6.2.2",
     "prettier": "^1.19.1",
     "rimraf": "^3.0.0",
@@ -83,12 +84,12 @@
     "ts-node": "^8.5.4",
     "tslint": "^5.20.1",
     "tslint-config-prettier": "^1.18.0",
-    "typescript": "^3.7.2",
+    "typescript": "^3.7.4",
     "vue-property-decorator": "^8.3.0",
     "vuepress": "^1.2.0",
     "vuepress-plugin-autometa": "^0.1.13"
   },
   "engines": {
-    "node": ">=8.10.0"
+    "node": ">=8.6.0"
   }
 }

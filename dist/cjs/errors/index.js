@@ -4,6 +4,7 @@ function __export(m) {
 }
 Object.defineProperty(exports, "__esModule", { value: true });
 __export(require("./FireModelError"));
+__export(require("./DexieError"));
 __export(require("./FireModelProxyError"));
 __export(require("./relationships/index"));
 __export(require("./mocks/MockError"));

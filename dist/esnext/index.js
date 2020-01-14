@@ -12,4 +12,5 @@ export * from "./@types/index";
 export { pathJoin } from "./path";
 export { key as fbKey } from "firebase-key";
 export * from "./record/createCompositeKey";
+export * from "./dexie/index";
 //# sourceMappingURL=index.js.map

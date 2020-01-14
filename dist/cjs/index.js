@@ -25,4 +25,5 @@ exports.pathJoin = path_1.pathJoin;
 var firebase_key_1 = require("firebase-key");
 exports.fbKey = firebase_key_1.key;
 __export(require("./record/createCompositeKey"));
+__export(require("./dexie/index"));
 //# sourceMappingURL=index.js.map
