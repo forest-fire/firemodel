@@ -1,6 +1,6 @@
 {
   "name": "firemodel",
-  "version": "0.36.2",
+  "version": "0.36.3",
   "description": "Modeling, Access, and Mocking for Firebase Projects",
   "license": "MIT",
   "repository": "https://github.com/forest-fire/firemodel",
@@ -31,8 +31,8 @@
   },
   "dependencies": {
     "abstracted-firebase": "^0.36.0",
-    "common-types": "^1.12.15",
-    "date-fns": "^2.8.1",
+    "common-types": "^1.12.18",
+    "date-fns": "^2.9.0",
     "dexie": "^2.0.4",
     "fast-copy": "2.0.4",
     "fast-deep-equal": "^2.0.1",
@@ -41,7 +41,7 @@
     "lodash.first": "^3.0.0",
     "pluralize": "^8.0.0",
     "reflect-metadata": "^0.1.13",
-    "serialized-query": "^0.10.0",
+    "serialized-query": "^0.10.3",
     "set-value": "^3.0.0",
     "typed-conversions": "^0.10.1",
     "wait-in-parallel": "^1.2.6"
