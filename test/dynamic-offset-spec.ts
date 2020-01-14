@@ -12,16 +12,8 @@ import {
 } from "../src";
 import DeepPerson, { IDeepName } from "./testing/dynamicPaths/DeepPerson";
 import { DeeperPerson } from "./testing/dynamicPaths/DeeperPerson";
-import { MockedPerson } from "./testing/dynamicPaths/MockedPerson";
-import { MockedPerson2 } from "./testing/dynamicPaths/MockedPerson2";
 import Hobby from "./testing/dynamicPaths/Hobby";
-import {
-  firstKey,
-  firstRecord,
-  lastRecord,
-  captureStderr,
-  captureStdout
-} from "./testing/helpers";
+import { firstKey, firstRecord, lastRecord } from "./testing/helpers";
 import Company from "./testing/dynamicPaths/Company";
 import { HumanAttribute } from "./testing/dynamicPaths/HumanAttribute";
 import { IDictionary } from "common-types";

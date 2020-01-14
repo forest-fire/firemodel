@@ -148,7 +148,6 @@ describe("Tests using REAL db =>’", () => {
       id: "abcd",
       name: "Jim Jones"
     });
-    console.log(events.map(i => i.type));
 
     const addedLocally = events.filter(
       e => e.type === FmEvents.RECORD_ADDED_LOCALLY

@@ -36,15 +36,15 @@ export default class DeepPerson extends Model {
   // prettier-ignore
   @property @mock("phoneNumber") phoneNumber?: string;
   // prettier-ignore
-  @hasOne(School, "students") school?: fk;
+  @hasOne(() => School, "students") school?: fk;
   // prettier-ignore
-  @hasOne(Location, "residents") home?: fk;
+  @hasOne(() => Location, "residents") home?: fk;
   // prettier-ignore
-  @hasOne(Company, "employees") employer?: fk;
+  @hasOne(() => Company, "employees") employer?: fk;
   // prettier-ignore
-  @hasMany(Hobby, "practitioners") hobbies?: fks;
+  @hasMany(() => Hobby, "practitioners") hobbies?: fks;
   // prettier-ignore
-  @hasMany(Car, "owners") cars?: fks;
+  @hasMany(() => Car, "owners") cars?: fks;
   // prettier-ignore
   @hasMany('DeepPerson', "children") parents?: fks;
   // prettier-ignore
