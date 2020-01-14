@@ -144,8 +144,7 @@ describe("DexieModel => ", () => {
       .to.include("lastUpdated")
       .and.to.include("createdAt");
 
-    expect(nonUniqueIndexes).to.have.lengthOf(1);
-    console.log(people.schema);
+    expect(nonUniqueIndexes).to.have.lengthOf(2);
   });
 
   it("table() allows for bulkAdd() then get()", async () => {
@@ -158,7 +157,7 @@ describe("DexieModel => ", () => {
     });
 
     const t = db.table(Car);
-    await t.bulkAdd(cars).catch(e => {
+    await t.bulkPut(cars).catch(e => {
       throw new Error(e);
     });
     const car: Car = await t.get("123").catch(e => {

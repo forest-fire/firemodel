@@ -1444,11 +1444,12 @@ export class Record<T extends Model> extends FireModel<T> {
           try {
             await this.db.set(path, this.data);
           } catch (e) {
+
             throw new FireModelProxyError(
               e,
               `Problem setting the "${path}" database path. Data passed in was of type ${typeof this
                 .data}. Error message encountered was: ${e.message}`,
-              "firemodel/set-db"
+              `firemodel/${e.code = "PERMISSION_DENIED" ? 'permission-denied' : 'set-db'}`
             );
           }
           break;

@@ -10,6 +10,7 @@ import indexedDB from "fake-indexeddb";
 import fdbKeyRange from "fake-indexeddb/lib/FDBKeyRange";
 import DeepPerson from "./testing/dynamicPaths/DeepPerson";
 import { wait } from "common-types";
+import { fbKey } from "../src";
 DexieDb.indexedDB(indexedDB, fdbKeyRange);
 
 describe("Dexie - Record API", () => {
@@ -33,14 +34,14 @@ describe("Dexie - Record API", () => {
   it("Able to call add() and then get() to show lifecycle", async () => {
     const car = d.record(Car);
     const addResponse = await car.add({
-      id: "1234",
+      id: fbKey(),
       model: "Fiesta",
       cost: 20000
     });
     expect(addResponse).to.be.an.instanceOf(Car);
 
-    const result = await car.get("1234");
-    expect(result.id).to.equal("1234");
+    const result = await car.get(addResponse.id);
+    expect(result.id).to.equal(addResponse.id);
     expect(result.model).to.equal("Fiesta");
     expect(result.lastUpdated).to.be.a("number");
     expect(result.createdAt).to.be.a("number");

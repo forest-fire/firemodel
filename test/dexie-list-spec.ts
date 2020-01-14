@@ -10,7 +10,7 @@ import fdbKeyRange from "fake-indexeddb/lib/FDBKeyRange";
 import { carData, peopleData } from "./dexie-test-data";
 DexieDb.indexedDB(indexedDB, fdbKeyRange);
 
-describe.only("Dexie List API", () => {
+describe("Dexie List API", () => {
   let db: DexieDb;
   beforeEach(async () => {
     db = new DexieDb("testing", Car, DeepPerson);

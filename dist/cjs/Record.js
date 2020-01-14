@@ -1002,7 +1002,7 @@ class Record extends FireModel_1.FireModel {
                     }
                     catch (e) {
                         throw new errors_1.FireModelProxyError(e, `Problem setting the "${path}" database path. Data passed in was of type ${typeof this
-                            .data}. Error message encountered was: ${e.message}`, "firemodel/set-db");
+                            .data}. Error message encountered was: ${e.message}`, `firemodel/${e.code = "PERMISSION_DENIED" ? 'permission-denied' : 'set-db'}`);
                     }
                     break;
                 case "update":
