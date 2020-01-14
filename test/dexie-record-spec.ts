@@ -8,7 +8,6 @@ import { DexieRecord } from "../src/dexie/DexieRecord";
 
 import indexedDB from "fake-indexeddb";
 import fdbKeyRange from "fake-indexeddb/lib/FDBKeyRange";
-import { db } from "firemock/dist/esnext/database";
 import DeepPerson from "./testing/dynamicPaths/DeepPerson";
 import { wait } from "common-types";
 DexieDb.indexedDB(indexedDB, fdbKeyRange);

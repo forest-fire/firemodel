@@ -7,6 +7,7 @@ import { capitalize } from "../util";
 import { IComparisonOperator } from "serialized-query";
 import { epoch } from "common-types";
 import { PropType } from "../@types/index";
+import { reverse } from "dns";
 
 /**
  * Provides a simple API for list based queries that resembles the Firemodel `List` API
@@ -19,12 +20,18 @@ export class DexieList<T extends Model> {
     private meta: IDexieModelMeta
   ) {}
 
+  /**
+   * Get a full list of _all_ records of a given model type
+   */
   async all(
     options: IDexieListOptions<T> = {
       orderBy: "lastUpdated"
     }
   ) {
-    const c = this.table.orderBy(options.orderBy);
+    // TODO: had to remove the `orderBy` for models with a composite key; no idea why!
+    const c = this.meta.hasDynamicPath
+      ? this.table
+      : this.table.orderBy(options.orderBy);
     if (options.limit) {
       c.limit(options.limit);
     }
@@ -42,6 +49,12 @@ export class DexieList<T extends Model> {
     });
   }
 
+  /**
+   * Limit the list of records based on the evaluation of a single
+   * properties value. Default comparison is equality but you can
+   * change the `value` to a Tuple and include the `<` or `>` operator
+   * as the first param to get other comparison operators.
+   */
   async where<K extends keyof T>(
     prop: K & string,
     value: PropType<T, K> | [IComparisonOperator, PropType<T, K>],
@@ -82,7 +95,18 @@ export class DexieList<T extends Model> {
    * `lastUpdated` property).
    */
   async recent(limit: number, skip?: number) {
-    //
+    const c = skip
+      ? this.table
+          .orderBy("lastUpdated")
+          .reverse()
+          .limit(limit)
+          .offset(skip)
+      : this.table
+          .orderBy("lastUpdated")
+          .reverse()
+          .limit(limit);
+
+    return c.toArray();
   }
 
   /**
@@ -96,13 +120,31 @@ export class DexieList<T extends Model> {
    * Get the _last_ "x" records which were created.
    */
   async last(limit: number, skip?: number) {
-    //
+    const c = skip
+      ? this.table
+          .orderBy("createdAt")
+          .reverse()
+          .limit(limit)
+          .offset(skip)
+      : this.table
+          .orderBy("createdAt")
+          .reverse()
+          .limit(limit);
+
+    return c.toArray();
   }
 
   /**
    * Get the _first_ "x" records which were created (aka, the earliest records created)
    */
   async first(limit: number, skip?: number) {
-    //
+    const c = skip
+      ? this.table
+          .orderBy("createdAt")
+          .limit(limit)
+          .offset(skip)
+      : this.table.orderBy("createdAt").limit(limit);
+
+    return c.toArray();
   }
 }

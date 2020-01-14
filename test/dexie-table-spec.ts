@@ -12,7 +12,7 @@ DexieDb.indexedDB(indexedDB, fdbKeyRange);
 
 import { carData, peopleData } from "./dexie-test-data";
 
-describe.only("Dexie Table API", () => {
+describe("Dexie Table API", () => {
   let db: DexieDb;
   beforeEach(async () => {
     db = new DexieDb("testing", Car, DeepPerson);
@@ -56,9 +56,10 @@ describe.only("Dexie Table API", () => {
   it("bulkPut() of a model which has a composite key / dynamic path", async () => {
     const tbl = db.table(DeepPerson);
     await tbl.bulkPut(peopleData);
-    const response = await db.table(DeepPerson).toArray();
+    const response = await tbl.toArray();
     expect(response).to.have.lengthOf(peopleData.length);
     const ids = response.map(i => i.id);
     expect(ids).includes(peopleData[0].id);
+    expect(ids).includes(peopleData[1].id);
   });
 });

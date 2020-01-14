@@ -74,6 +74,10 @@ export class DexieDb {
                 .concat((r.META.dbIndexes || [])
                 .filter(i => i.isIndex && !i.isUniqueIndex)
                 .map(i => i.property))
+                // include dynamic props (if they're not explicitly marked as indexes)
+                .concat(r.hasDynamicPath
+                ? r.dynamicPathComponents.filter(i => !r.META.dbIndexes.map(idx => idx.property).includes(i))
+                : [])
                 .forEach(i => dexieModel.push(i));
             // MULTI-LEVEL Indexes
             const multiEntryIndex = []

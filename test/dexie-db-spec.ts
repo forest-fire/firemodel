@@ -144,7 +144,8 @@ describe("DexieModel => ", () => {
       .to.include("lastUpdated")
       .and.to.include("createdAt");
 
-    expect(nonUniqueIndexes).to.have.lengthOf(0);
+    expect(nonUniqueIndexes).to.have.lengthOf(1);
+    console.log(people.schema);
   });
 
   it("table() allows for bulkAdd() then get()", async () => {
