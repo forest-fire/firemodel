@@ -7,6 +7,7 @@ const UnknownRelationshipProblem_1 = require("../errors/relationships/UnknownRel
 const locallyUpdateFkOnRecord_1 = require("./locallyUpdateFkOnRecord");
 const createCompositeKeyString_1 = require("./createCompositeKeyString");
 const util_1 = require("../util");
+const errors_1 = require("../errors");
 /**
  * **relationshipOperation**
  *
@@ -104,11 +105,15 @@ paths, options = {}) {
         }
         try {
             await localRelnOp(rec, event, localEvent);
+            await relnConfirmation(rec, event, confirmEvent);
         }
         catch (e) {
+            console.warn({
+                message: `Firemodel: encountered error in relationshipOperation(). Error was: ${e.message}. Now dispatching a rollback event.`,
+                relationshipEvent: event
+            });
             await relnRollback(rec, event, rollbackEvent);
         }
-        await relnConfirmation(rec, event, confirmEvent);
     }
     catch (e) {
         if (e.firemodel) {
@@ -135,8 +140,7 @@ async function localRelnOp(rec, event, type) {
         }, {}));
     }
     catch (e) {
-        // TODO: complete err handling
-        throw e;
+        throw new errors_1.FireModelProxyError(e, `While operating doing a local relationship operation ran into an error. Note that the "paths" passed in were:\n${JSON.stringify(event.paths)}.\n\nThe underlying error message was:`);
     }
 }
 exports.localRelnOp = localRelnOp;

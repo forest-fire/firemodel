@@ -5,6 +5,7 @@ import { UnknownRelationshipProblem } from "../errors/relationships/UnknownRelat
 import { locallyUpdateFkOnRecord } from "./locallyUpdateFkOnRecord";
 import { createCompositeRef } from "./createCompositeKeyString";
 import { capitalize } from "../util";
+import { FireModelProxyError } from "../errors";
 /**
  * **relationshipOperation**
  *
@@ -102,11 +103,15 @@ paths, options = {}) {
         }
         try {
             await localRelnOp(rec, event, localEvent);
+            await relnConfirmation(rec, event, confirmEvent);
         }
         catch (e) {
+            console.warn({
+                message: `Firemodel: encountered error in relationshipOperation(). Error was: ${e.message}. Now dispatching a rollback event.`,
+                relationshipEvent: event
+            });
             await relnRollback(rec, event, rollbackEvent);
         }
-        await relnConfirmation(rec, event, confirmEvent);
     }
     catch (e) {
         if (e.firemodel) {
@@ -132,8 +137,7 @@ export async function localRelnOp(rec, event, type) {
         }, {}));
     }
     catch (e) {
-        // TODO: complete err handling
-        throw e;
+        throw new FireModelProxyError(e, `While operating doing a local relationship operation ran into an error. Note that the "paths" passed in were:\n${JSON.stringify(event.paths)}.\n\nThe underlying error message was:`);
     }
 }
 export async function relnConfirmation(rec, event, type) {

@@ -12,7 +12,7 @@ export class FireModelProxyError extends FireModelError {
     super("", !name ? `firemodel/${e.name}` : name);
 
     this.originalError = e;
-    this.message = context ? `${context}. ${e.message}.` : e.message;
+    this.message = context ? `${context}.\n\n${e.message}.` : e.message;
     this.stack = e.stack;
   }
 }
