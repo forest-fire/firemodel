@@ -1,4 +1,4 @@
-import { IDictionary, pathJoin } from "common-types";
+import { pathJoin } from "common-types";
 import { Model, Record, IFmPathValuePair } from "..";
 
 export function extractFksFromPaths<T extends Model>(
@@ -8,18 +8,15 @@ export function extractFksFromPaths<T extends Model>(
 ) {
   const pathToModel = rec.dbPath;
   const relnType = rec.META.relationship(prop).relType;
-  return paths.reduce(
-    (acc, p) => {
-      const fkProp = pathJoin(pathToModel, prop);
+  return paths.reduce((acc, p) => {
+    const fkProp = pathJoin(pathToModel, prop);
 
-      if (p.path.includes(fkProp)) {
-        const parts = p.path.split("/");
-        const fkId = relnType === "hasOne" ? p.value : parts.pop();
-        acc = acc.concat(fkId);
-      }
+    if (p.path.includes(fkProp)) {
+      const parts = p.path.split("/");
+      const fkId = relnType === "hasOne" ? p.value : parts.pop();
+      acc = acc.concat(fkId);
+    }
 
-      return acc;
-    },
-    [] as string[]
-  );
+    return acc;
+  }, [] as string[]);
 }

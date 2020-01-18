@@ -1,10 +1,10 @@
 // tslint:disable: no-implicit-dependencies
 // tslint:disable: no-submodule-imports
 import { expect } from "chai";
-import { DexieDb, DexieList } from "../src/index";
+import { DexieDb, DexieList } from "../src/dexie/index";
 import { Car } from "./testing/Car";
 import DeepPerson from "./testing/dynamicPaths/DeepPerson";
-
+import "./testing/fake-indexeddb";
 import indexedDB from "fake-indexeddb";
 import fdbKeyRange from "fake-indexeddb/lib/FDBKeyRange";
 import { carData, peopleData } from "./dexie-test-data";
