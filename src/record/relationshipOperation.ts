@@ -126,11 +126,17 @@ export async function relationshipOperation<
       await localRelnOp(rec, event, localEvent);
       await relnConfirmation(rec, event, confirmEvent);
     } catch (e) {
-      console.warn({
-        message: `Firemodel: encountered error in relationshipOperation(). Error was: ${e.message}. Now dispatching a rollback event.`,
-        relationshipEvent: event
-      });
       await relnRollback(rec, event, rollbackEvent);
+      throw new FireModelProxyError(
+        e,
+        `Encountered an error executing a relationship operation between the "${
+          event.from
+        }" model and "${
+          event.to
+        }". The paths that were being modified were: ${event.paths
+          .map(i => i.path)
+          .join("- \n")}\n A dispatch for a rollback event has been issued.`
+      );
     }
   } catch (e) {
     if (e.firemodel) {
