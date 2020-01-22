@@ -136,7 +136,7 @@ export interface IFmModelAttributeBase<T> {
     fkConstructor?: IFmFunctionToConstructor;
     fkModelName?: string;
 }
-export declare type MockFunction = (context: import("firemock").MockHelper) => any | Promise<any>;
+export declare type MockFunction<T = any> = (context: import('firemock').MockHelper) => T | Promise<T>;
 export declare type FmMockType = keyof typeof NamedFakes | MockFunction;
 export interface IModelIndexMeta {
     /**
