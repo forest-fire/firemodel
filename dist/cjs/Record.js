@@ -1106,7 +1106,7 @@ class Record extends FireModel_1.FireModel {
         // are updated using the _relationship_ based methods associate/disassociate
         // so that bi-lateral relationships are established/maintained
         if (!this.db) {
-            throw new errors_1.FireModelError(`Attempt to save Record failed as the Database has not been connected yet. Try setting FireModel's defaultDb first.`, "firemodel/db-not-ready");
+            throw new errors_1.FireModelError(`An attempt to add a ${util_1.capitalize(this.modelName)} record failed as the Database has not been connected yet. Try setting FireModel's defaultDb first.`, "firemodel/db-not-ready");
         }
         await this._localCrudOperation("add" /* add */, undefined, options);
         // now that the record has been added we need to follow-up with any relationship fk's that
@@ -1123,7 +1123,7 @@ class Record extends FireModel_1.FireModel {
             else {
                 return agg;
             }
-        }, []);
+        }, []).filter(prop => this.META.relationship(prop).inverseProperty);
         const promises = [];
         try {
             for (const prop of relationshipsTouched) {
@@ -1139,7 +1139,7 @@ class Record extends FireModel_1.FireModel {
             await Promise.all(promises);
         }
         catch (e) {
-            throw new errors_1.FireModelProxyError(e, `The ${util_1.capitalize(this.modelName)} [${this.id}] was added by when attempting to add in the relationships which were inferred by record payload it ran into problems and there was no guarenteed way to fully roll back. The relationship props touched were: ${relationshipsTouched.join(", ")}`);
+            throw new errors_1.FireModelProxyError(e, `An ${util_1.capitalize(this.modelName)} [${this.id}] model was being added but when attempting to add in the relationships which were inferred by the record payload it ran into problems. The relationship(s) which had properties defined -- and which had a bi-lateral FK relationship (e.g., both models will track the relationship versus just the ${util_1.capitalize(this.modelName)} [${this.id} model) --  were: ${relationshipsTouched.join(", ")}`);
         }
         return this;
     }

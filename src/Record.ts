@@ -1604,7 +1604,7 @@ export class Record<T extends Model> extends FireModel<T> {
     // so that bi-lateral relationships are established/maintained
     if (!this.db) {
       throw new FireModelError(
-        `Attempt to save Record failed as the Database has not been connected yet. Try setting FireModel's defaultDb first.`,
+        `An attempt to add a ${ capitalize(this.modelName) } record failed as the Database has not been connected yet. Try setting FireModel's defaultDb first.`,
         "firemodel/db-not-ready"
       );
     }
@@ -1627,7 +1627,7 @@ export class Record<T extends Model> extends FireModel<T> {
         }
       },
       []
-    );
+    ).filter(prop => this.META.relationship(prop).inverseProperty);
     const promises: any[] = [];
     try {
       for (const prop of relationshipsTouched) {
@@ -1646,9 +1646,11 @@ export class Record<T extends Model> extends FireModel<T> {
     } catch (e) {
       throw new FireModelProxyError(
         e,
-        `The ${capitalize(this.modelName)} [${
+        `An ${capitalize(this.modelName)} [${
           this.id
-        }] was added by when attempting to add in the relationships which were inferred by record payload it ran into problems and there was no guarenteed way to fully roll back. The relationship props touched were: ${relationshipsTouched.join(
+        }] model was being added but when attempting to add in the relationships which were inferred by the record payload it ran into problems. The relationship(s) which had properties defined -- and which had a bi-lateral FK relationship (e.g., both models will track the relationship versus just the ${capitalize(this.modelName)} [${
+          this.id
+        } model) --  were: ${relationshipsTouched.join(
           ", "
         )}`
       );
