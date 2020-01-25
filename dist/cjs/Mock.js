@@ -27,9 +27,7 @@ function Mock(modelConstructor, db) {
         }
     }
     if (!db.isMockDb) {
-        throw new errors_1.FireModelError(`When calling the Mock() function you provide a "mock database" not a live Firebase DB! ${db === FireModel_1.FireModel.defaultDb
-            ? "Note: the db connection was taken from the default FireModel database, if that's not what you intended you can explicitly pass in the DB in the call to Mock() as the second parameter."
-            : ""}`, "firemodel/not-mock-db");
+        console.warn('You are using Mock() with a real database; typically a mock database is preferred');
     }
     return api_1.default(db, modelConstructor);
 }

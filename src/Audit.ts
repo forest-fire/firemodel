@@ -3,7 +3,6 @@ import { epochWithMilliseconds } from "common-types";
 import { FireModel } from "./FireModel";
 import { pathJoin } from "./path";
 import { AuditList } from "./AuditList";
-import { Parallel } from "wait-in-parallel";
 import { fbKey } from "./index";
 import { AuditRecord } from "./AuditRecord";
 import { IModelOptions } from "./@types";
@@ -56,11 +55,10 @@ export async function writeAudit(
   const db = options.db || FireModel.defaultDb;
   const timestamp = new Date().getTime();
   const writePath = pathJoin(FireModel.auditLogs, pluralName);
-  const p = new Parallel();
+  const waitFor: any[] = []
   const createdAt = new Date().getTime();
   const auditId = fbKey();
-  p.add(
-    `audit-log-${action}-on-${recordId}`,
+  waitFor.push(
     db.set<IAuditLogItem>(pathJoin(writePath, "all", auditId), {
       createdAt,
       recordId,
@@ -83,9 +81,9 @@ export async function writeAudit(
       value: createdAt
     });
   });
-  p.add("byId", mps.execute());
+  waitFor.push(mps.execute());
 
-  await p.isDone();
+  await Promise.all(waitFor);
 }
 
 export class Audit<T extends Model = Model> {

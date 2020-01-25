@@ -39,7 +39,7 @@ export default function API<T>(db: RealTimeDB, modelConstructor: new () => T) {
       // this is primarily to form the "composite key" where it is needed
       const record = Record.createWith(modelConstructor, exceptions as Partial<
         T
-      >);
+      >, { db: this.db });
 
       if (record.hasDynamicPath) {
         // which props -- required for compositeKey -- are not yet

@@ -1,7 +1,6 @@
 import { FireModel } from "./FireModel";
 import { pathJoin } from "./path";
 import { AuditList } from "./AuditList";
-import { Parallel } from "wait-in-parallel";
 import { fbKey } from "./index";
 import { AuditRecord } from "./AuditRecord";
 /**
@@ -19,10 +18,10 @@ export async function writeAudit(recordId, pluralName, action, changes, options 
     const db = options.db || FireModel.defaultDb;
     const timestamp = new Date().getTime();
     const writePath = pathJoin(FireModel.auditLogs, pluralName);
-    const p = new Parallel();
+    const waitFor = [];
     const createdAt = new Date().getTime();
     const auditId = fbKey();
-    p.add(`audit-log-${action}-on-${recordId}`, db.set(pathJoin(writePath, "all", auditId), {
+    waitFor.push(db.set(pathJoin(writePath, "all", auditId), {
         createdAt,
         recordId,
         timestamp,
@@ -41,8 +40,8 @@ export async function writeAudit(recordId, pluralName, action, changes, options 
             value: createdAt
         });
     });
-    p.add("byId", mps.execute());
-    await p.isDone();
+    waitFor.push(mps.execute());
+    await Promise.all(waitFor);
 }
 export class Audit {
     static list(modelKlass, options = {}) {
