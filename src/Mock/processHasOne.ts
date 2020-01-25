@@ -3,8 +3,6 @@ import { Record } from "../Record";
 import { IFmModelRelationshipMeta } from "../decorators";
 import { IMockConfig, IMockResponse } from "./types";
 import { Mock } from "../Mock";
-import { Parallel } from "wait-in-parallel";
-import cleanPredecessor from "./cleanPredecessor";
 
 export async function processHasOne<T>(
   source: Record<T>,

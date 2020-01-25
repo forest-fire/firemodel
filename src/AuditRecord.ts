@@ -34,7 +34,7 @@ export class AuditRecord<T extends Model> extends AuditBase {
       pathJoin(this.auditLogs, i.id)
     );
     const p = new Parallel<IAuditLogItem>();
-    ids.map(id => p.add(id, this.db.getValue(id)));
+    ids.map(id => p.add(id, this.db.getValue<IAuditLogItem>(id)));
     const results = await p.isDoneAsArray();
     return results;
   }

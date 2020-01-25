@@ -3,7 +3,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const FireModel_1 = require("./FireModel");
 const path_1 = require("./path");
 const AuditList_1 = require("./AuditList");
-const wait_in_parallel_1 = require("wait-in-parallel");
 const index_1 = require("./index");
 const AuditRecord_1 = require("./AuditRecord");
 /**
@@ -21,10 +20,10 @@ async function writeAudit(recordId, pluralName, action, changes, options = {}) {
     const db = options.db || FireModel_1.FireModel.defaultDb;
     const timestamp = new Date().getTime();
     const writePath = path_1.pathJoin(FireModel_1.FireModel.auditLogs, pluralName);
-    const p = new wait_in_parallel_1.Parallel();
+    const waitFor = [];
     const createdAt = new Date().getTime();
     const auditId = index_1.fbKey();
-    p.add(`audit-log-${action}-on-${recordId}`, db.set(path_1.pathJoin(writePath, "all", auditId), {
+    waitFor.push(db.set(path_1.pathJoin(writePath, "all", auditId), {
         createdAt,
         recordId,
         timestamp,
@@ -43,8 +42,8 @@ async function writeAudit(recordId, pluralName, action, changes, options = {}) {
             value: createdAt
         });
     });
-    p.add("byId", mps.execute());
-    await p.isDone();
+    waitFor.push(mps.execute());
+    await Promise.all(waitFor);
 }
 exports.writeAudit = writeAudit;
 class Audit {

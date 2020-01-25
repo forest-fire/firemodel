@@ -2,7 +2,6 @@ import { RealTimeDB } from "abstracted-firebase";
 import { IDictionary } from "common-types";
 import { Model } from "../Model";
 import { Record } from "../Record";
-import { Parallel } from "wait-in-parallel";
 import { IMockConfig, IMockResponse } from "./types";
 import { processHasMany } from "./processHasMany";
 import { processHasOne } from "./processHasOne";
