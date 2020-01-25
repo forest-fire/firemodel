@@ -27,7 +27,7 @@ export default function API(db, modelConstructor) {
             const relns = addRelationships(db, config, exceptions);
             // create record; using any incoming exception to build the object.
             // this is primarily to form the "composite key" where it is needed
-            const record = Record.createWith(modelConstructor, exceptions);
+            const record = Record.createWith(modelConstructor, exceptions, { db: this.db });
             if (record.hasDynamicPath) {
                 // which props -- required for compositeKey -- are not yet
                 // set
