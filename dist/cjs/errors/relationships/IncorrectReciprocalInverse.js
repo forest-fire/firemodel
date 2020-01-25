@@ -7,7 +7,7 @@ class IncorrectReciprocalInverse extends FireModelError_1.FireModelError {
     constructor(rec, property) {
         super("", "firemodel/missing-reciprocal-inverse");
         let message;
-        const fkRecord = Record_1.Record.create(rec.META.relationship(property).fkConstructor());
+        const fkRecord = Record_1.Record.create(rec.META.relationship(property).fkConstructor(), { db: rec.db });
         const inverseProperty = rec.META.relationship(property).inverseProperty;
         const fkInverse = fkRecord.META.relationship(inverseProperty);
         if (!fkInverse) {

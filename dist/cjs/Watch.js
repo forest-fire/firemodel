@@ -71,7 +71,6 @@ class Watch {
      * stops watching either a specific watcher or ALL if no hash code is provided
      */
     static stop(hashCode, oneOffDB) {
-        console.log(hashCode);
         const codes = new Set(Object.keys(watcherPool_1.getWatcherPool()));
         const db = oneOffDB || FireModel_1.FireModel.defaultDb;
         if (!db) {

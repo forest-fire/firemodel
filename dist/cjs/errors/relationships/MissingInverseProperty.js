@@ -10,7 +10,7 @@ const util_1 = require("../../util");
 class MissingInverseProperty extends FireModelError_1.FireModelError {
     constructor(rec, property) {
         super("", "firemodel/missing-inverse-property");
-        const fkRecord = Record_1.Record.create(rec.META.relationship(property).fkConstructor());
+        const fkRecord = Record_1.Record.create(rec.META.relationship(property).fkConstructor(), { db: rec.db });
         this.from = util_1.capitalize(rec.modelName);
         this.to = util_1.capitalize(fkRecord.modelName);
         const pkInverse = rec.META.relationship(property).inverseProperty;

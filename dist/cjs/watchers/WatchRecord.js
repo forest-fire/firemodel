@@ -16,7 +16,7 @@ class WatchRecord extends WatchBase_1.WatchBase {
         }
         o._eventType = "value";
         o._watcherSource = "record";
-        const r = __1.Record.createWith(modelConstructor, pk);
+        const r = __1.Record.createWith(modelConstructor, pk, options.db ? { db: options.db } : {});
         o._query = new serialized_query_1.SerializedQuery(`${r.dbPath}`);
         o._modelConstructor = modelConstructor;
         o._modelName = r.modelName;

@@ -41,7 +41,7 @@ export function buildRelationshipPaths<T>(
     const altHasManyValue = options.altHasManyValue || true;
     const fkModelConstructor = meta.relationship(property).fkConstructor();
     const inverseProperty = meta.relationship(property).inverseProperty;
-    const fkRecord = Record.createWith(fkModelConstructor, fkRef);
+    const fkRecord = Record.createWith(fkModelConstructor, fkRef, {db: rec.db});
     const results: IFmPathValuePair[] = [];
 
     /**
