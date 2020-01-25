@@ -16,7 +16,7 @@ export class MissingInverseProperty<T extends Model> extends FireModelError {
     super("", "firemodel/missing-inverse-property");
 
     const fkRecord = Record.create(
-      rec.META.relationship(property).fkConstructor()
+      rec.META.relationship(property).fkConstructor(), { db: rec.db }
     );
     this.from = capitalize(rec.modelName);
     this.to = capitalize(fkRecord.modelName);

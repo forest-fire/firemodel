@@ -8,7 +8,7 @@ export class MissingReciprocalInverse<T extends Model> extends FireModelError {
     super("", "firemodel/missing-reciprocal-inverse");
 
     const fkRecord = Record.create(
-      rec.META.relationship(property).fkConstructor()
+      rec.META.relationship(property).fkConstructor(), { db: rec.db }
     );
     const pkInverse = rec.META.relationship(property).inverseProperty;
     const fkInverse =

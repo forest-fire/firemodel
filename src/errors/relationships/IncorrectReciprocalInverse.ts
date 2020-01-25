@@ -11,7 +11,7 @@ export class IncorrectReciprocalInverse<
 
     let message: string;
     const fkRecord = Record.create(
-      rec.META.relationship(property).fkConstructor()
+      rec.META.relationship(property).fkConstructor(), { db: rec.db }
     );
     const inverseProperty = rec.META.relationship(property).inverseProperty;
     const fkInverse = fkRecord.META.relationship(inverseProperty as any);

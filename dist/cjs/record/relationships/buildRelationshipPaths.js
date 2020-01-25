@@ -26,7 +26,7 @@ function buildRelationshipPaths(rec, property, fkRef, options = {}) {
         const altHasManyValue = options.altHasManyValue || true;
         const fkModelConstructor = meta.relationship(property).fkConstructor();
         const inverseProperty = meta.relationship(property).inverseProperty;
-        const fkRecord = Record_1.Record.createWith(fkModelConstructor, fkRef);
+        const fkRecord = Record_1.Record.createWith(fkModelConstructor, fkRef, { db: rec.db });
         const results = [];
         /**
          * Normalize to a composite key format
