@@ -152,7 +152,9 @@ export declare class Record<T extends Model> extends FireModel<T> {
      * @param model the class definition of the model you want the CompositeKey for
      * @param object the data which will be used to generate the Composite key from
      */
-    static compositeKeyRef<T extends Model>(model: new () => T, object: Partial<T>): string;
+    static compositeKeyRef<T extends Model>(model: new () => T, 
+    /** either a partial model or just the `id` of the model if model is not a dynamic path */
+    object: Partial<T> | string): string;
     /**
      * Returns the name of the name of the `Model`.
      *
