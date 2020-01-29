@@ -315,7 +315,17 @@ export class Record extends FireModel {
      * @param model the class definition of the model you want the CompositeKey for
      * @param object the data which will be used to generate the Composite key from
      */
-    static compositeKeyRef(model, object) {
+    static compositeKeyRef(model, 
+    /** either a partial model or just the `id` of the model if model is not a dynamic path */
+    object) {
+        if (typeof object === "string") {
+            if (Record.dynamicPathProperties.length === 0) {
+                return object;
+            }
+            else {
+                throw new FireModelError(`Attempt to get a compositeKeyRef() but passed in a string/id value instead of a composite key for a model [ ${Record.modelName(model)} ] which HAS dynamic properties!`, "not-allowed");
+            }
+        }
         const compositeKey = Record.compositeKey(model, object);
         const nonIdKeys = Object.keys(compositeKey).reduce((agg, prop) => prop === "id" ? agg : agg.concat({ prop, value: compositeKey[prop] }), []);
         return `${compositeKey.id}::${nonIdKeys
@@ -997,7 +1007,9 @@ export class Record extends FireModel {
                     }
                     catch (e) {
                         throw new FireModelProxyError(e, `Problem setting the "${path}" database path. Data passed in was of type ${typeof this
-                            .data}. Error message encountered was: ${e.message}`, `firemodel/${e.code = "PERMISSION_DENIED" ? 'permission-denied' : 'set-db'}`);
+                            .data}. Error message encountered was: ${e.message}`, `firemodel/${(e.code = "PERMISSION_DENIED"
+                            ? "permission-denied"
+                            : "set-db")}`);
                     }
                     break;
                 case "update":
@@ -1107,7 +1119,8 @@ export class Record extends FireModel {
         // now that the record has been added we need to follow-up with any relationship fk's that
         // were part of this record. For these we must run an `associate` over them to ensure that
         // inverse properties are established in the inverse direction
-        const relationshipsTouched = this.relationships.reduce((agg, rel) => {
+        const relationshipsTouched = this.relationships
+            .reduce((agg, rel) => {
             if (rel.relType === "hasMany" &&
                 Object.keys(this.data[rel.property]).length > 0) {
                 return agg.concat(rel.property);
@@ -1118,7 +1131,8 @@ export class Record extends FireModel {
             else {
                 return agg;
             }
-        }, []).filter(prop => this.META.relationship(prop).inverseProperty);
+        }, [])
+            .filter(prop => this.META.relationship(prop).inverseProperty);
         const promises = [];
         try {
             for (const prop of relationshipsTouched) {

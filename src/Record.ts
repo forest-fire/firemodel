@@ -460,8 +460,21 @@ export class Record<T extends Model> extends FireModel<T> {
    */
   public static compositeKeyRef<T extends Model>(
     model: new () => T,
-    object: Partial<T>
+    /** either a partial model or just the `id` of the model if model is not a dynamic path */
+    object: Partial<T> | string
   ): string {
+    if (typeof object === "string") {
+      if (Record.dynamicPathProperties.length === 0) {
+        return object;
+      } else {
+        throw new FireModelError(
+          `Attempt to get a compositeKeyRef() but passed in a string/id value instead of a composite key for a model [ ${Record.modelName(
+            model
+          )} ] which HAS dynamic properties!`,
+          "not-allowed"
+        );
+      }
+    }
     const compositeKey = Record.compositeKey(model, object);
     const nonIdKeys: Array<{ prop: string; value: any }> = Object.keys(
       compositeKey
@@ -1444,12 +1457,13 @@ export class Record<T extends Model> extends FireModel<T> {
           try {
             await this.db.set(path, this.data);
           } catch (e) {
-
             throw new FireModelProxyError(
               e,
               `Problem setting the "${path}" database path. Data passed in was of type ${typeof this
                 .data}. Error message encountered was: ${e.message}`,
-              `firemodel/${e.code = "PERMISSION_DENIED" ? 'permission-denied' : 'set-db'}`
+              `firemodel/${(e.code = "PERMISSION_DENIED"
+                ? "permission-denied"
+                : "set-db")}`
             );
           }
           break;
@@ -1604,7 +1618,9 @@ export class Record<T extends Model> extends FireModel<T> {
     // so that bi-lateral relationships are established/maintained
     if (!this.db) {
       throw new FireModelError(
-        `An attempt to add a ${ capitalize(this.modelName) } record failed as the Database has not been connected yet. Try setting FireModel's defaultDb first.`,
+        `An attempt to add a ${capitalize(
+          this.modelName
+        )} record failed as the Database has not been connected yet. Try setting FireModel's defaultDb first.`,
         "firemodel/db-not-ready"
       );
     }
@@ -1613,8 +1629,8 @@ export class Record<T extends Model> extends FireModel<T> {
     // now that the record has been added we need to follow-up with any relationship fk's that
     // were part of this record. For these we must run an `associate` over them to ensure that
     // inverse properties are established in the inverse direction
-    const relationshipsTouched = this.relationships.reduce(
-      (agg: Array<string & keyof T>, rel) => {
+    const relationshipsTouched = this.relationships
+      .reduce((agg: Array<string & keyof T>, rel) => {
         if (
           rel.relType === "hasMany" &&
           Object.keys(this.data[rel.property] as IDictionary<true>).length > 0
@@ -1625,9 +1641,8 @@ export class Record<T extends Model> extends FireModel<T> {
         } else {
           return agg;
         }
-      },
-      []
-    ).filter(prop => this.META.relationship(prop).inverseProperty);
+      }, [])
+      .filter(prop => this.META.relationship(prop).inverseProperty);
     const promises: any[] = [];
     try {
       for (const prop of relationshipsTouched) {
@@ -1648,11 +1663,9 @@ export class Record<T extends Model> extends FireModel<T> {
         e,
         `An ${capitalize(this.modelName)} [${
           this.id
-        }] model was being added but when attempting to add in the relationships which were inferred by the record payload it ran into problems. The relationship(s) which had properties defined -- and which had a bi-lateral FK relationship (e.g., both models will track the relationship versus just the ${capitalize(this.modelName)} [${
-          this.id
-        } model) --  were: ${relationshipsTouched.join(
-          ", "
-        )}`
+        }] model was being added but when attempting to add in the relationships which were inferred by the record payload it ran into problems. The relationship(s) which had properties defined -- and which had a bi-lateral FK relationship (e.g., both models will track the relationship versus just the ${capitalize(
+          this.modelName
+        )} [${this.id} model) --  were: ${relationshipsTouched.join(", ")}`
       );
     }
 
