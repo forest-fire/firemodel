@@ -464,7 +464,7 @@ export class Record<T extends Model> extends FireModel<T> {
     object: Partial<T> | string
   ): string {
     if (typeof object === "string") {
-      if (Record.dynamicPathProperties.length === 0) {
+      if (Record.dynamicPathProperties.length === 0 || object.includes(":")) {
         return object;
       } else {
         throw new FireModelError(

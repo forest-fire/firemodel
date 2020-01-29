@@ -324,7 +324,7 @@ class Record extends FireModel_1.FireModel {
     /** either a partial model or just the `id` of the model if model is not a dynamic path */
     object) {
         if (typeof object === "string") {
-            if (Record.dynamicPathProperties.length === 0) {
+            if (Record.dynamicPathProperties.length === 0 || object.includes(":")) {
                 return object;
             }
             else {
