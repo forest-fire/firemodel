@@ -328,7 +328,7 @@ class Record extends FireModel_1.FireModel {
                 return object;
             }
             else {
-                throw new errors_1.FireModelError(`Attempt to get a compositeKeyRef() but passed in a string/id value instead of a composite key for a model [ ${Record.modelName(model)} ] which HAS dynamic properties!`, "not-allowed");
+                throw new errors_1.FireModelError(`Attempt to get a compositeKeyRef() but passed in a string/id value instead of a composite key for a model [ ${Record.modelName(model)}, "${object}" ] which HAS dynamic properties! Required props are: ${Record.dynamicPathProperties(model).join(", ")}`, "not-allowed");
             }
         }
         const compositeKey = Record.compositeKey(model, object);
