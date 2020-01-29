@@ -470,7 +470,9 @@ export class Record<T extends Model> extends FireModel<T> {
         throw new FireModelError(
           `Attempt to get a compositeKeyRef() but passed in a string/id value instead of a composite key for a model [ ${Record.modelName(
             model
-          )} ] which HAS dynamic properties!`,
+          )}, "${object}" ] which HAS dynamic properties! Required props are: ${Record.dynamicPathProperties(
+            model
+          ).join(", ")}`,
           "not-allowed"
         );
       }
