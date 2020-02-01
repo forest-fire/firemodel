@@ -148,6 +148,16 @@ class DexieDb {
         return this._isMapped;
     }
     /**
+     * The tables (and schemas) which Dexie is currently managing
+     * in IndexedDB.
+     *
+     * Note: this will throw a "not-ready" error
+     * if Dexie has _not_ yet connected to the DB.
+     */
+    get dexieTables() {
+        return this.db.tables.map(t => ({ name: t.name, schema: t.schema }));
+    }
+    /**
      * Allows the addition of prior versions of the database. This sits on top
      * of the Dexie abstraction so you get all the nice benefits of that API.
      *

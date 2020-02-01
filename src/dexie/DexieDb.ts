@@ -152,6 +152,17 @@ export class DexieDb {
     return this._isMapped;
   }
 
+  /**
+   * The tables (and schemas) which Dexie is currently managing
+   * in IndexedDB.
+   *
+   * Note: this will throw a "not-ready" error
+   * if Dexie has _not_ yet connected to the DB.
+   */
+  public get dexieTables() {
+    return this.db.tables.map(t => ({ name: t.name, schema: t.schema }));
+  }
+
   /** simple dictionary of Dixie model defn's for indexation */
   private _models: IDictionary<string> = {};
   private _constructors: IDictionary<IModelConstructor<any>> = {};
