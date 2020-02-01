@@ -50,6 +50,17 @@ export declare class DexieDb {
     get db(): Readonly<Dexie>;
     get status(): string;
     get isMapped(): boolean;
+    /**
+     * The tables (and schemas) which Dexie is currently managing
+     * in IndexedDB.
+     *
+     * Note: this will throw a "not-ready" error
+     * if Dexie has _not_ yet connected to the DB.
+     */
+    get dexieTables(): {
+        name: string;
+        schema: Dexie.TableSchema;
+    }[];
     /** simple dictionary of Dixie model defn's for indexation */
     private _models;
     private _constructors;

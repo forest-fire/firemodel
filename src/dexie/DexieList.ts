@@ -7,7 +7,6 @@ import { capitalize } from "../util";
 import { IComparisonOperator } from "serialized-query";
 import { epoch } from "common-types";
 import { PropType } from "../@types/index";
-import { reverse } from "dns";
 
 /**
  * Provides a simple API for list based queries that resembles the Firemodel `List` API
