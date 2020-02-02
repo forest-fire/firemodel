@@ -26,9 +26,10 @@ export class DexieList {
         if (options.offset) {
             c.offset(options.offset);
         }
-        return c.toArray().catch(e => {
+        const results = c.toArray().catch(e => {
             throw new DexieError(`Problem with list(${capitalize(this.meta.modelName)}).all(${options}): ${e.message}`, `dexie/${e.code || e.name || "list.all"}`);
         });
+        return results || [];
     }
     /**
      * Limit the list of records based on the evaluation of a single
@@ -52,9 +53,10 @@ export class DexieList {
         if (options.offset) {
             query = query.offset(options.offset);
         }
-        return query.toArray().catch(e => {
+        const results = query.toArray().catch(e => {
             throw new DexieError(`list.where(${prop}, ${value}, ${JSON.stringify(options)}) failed to execute: ${e.message}`, `dexie/${e.code || e.name || "list.where"}`);
         });
+        return results || [];
     }
     /**
      * Get the "_x_" most recent records of a given type (based on the
