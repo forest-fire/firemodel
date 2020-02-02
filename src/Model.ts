@@ -18,10 +18,10 @@ export class Model {
   @property public id?: string;
   // prettier-ignore
   /** The last time that a given record was updated */
-  @property @mock("dateRecentMiliseconds") @uniqueIndex public lastUpdated?: epochWithMilliseconds;
+  @property @mock("dateRecentMiliseconds") @index public lastUpdated?: epochWithMilliseconds;
   // prettier-ignore
   /** The datetime at which this record was first created */
-  @property @mock("datePastMiliseconds") @uniqueIndex public createdAt?: epochWithMilliseconds;
+  @property @mock("datePastMiliseconds") @index public createdAt?: epochWithMilliseconds;
   /** Metadata properties of the given schema */
   public META?: IFmModelMeta;
 }
