@@ -463,11 +463,13 @@ export class Record<T extends Model> extends FireModel<T> {
     /** either a partial model or just the `id` of the model if model is not a dynamic path */
     object: Partial<T> | string
   ): string {
+    if (Record.dynamicPathProperties(model).length === 0) {
+      return typeof object === "string" ? object : object.id;
+    }
+
     if (typeof object === "string") {
-      if (
-        Record.dynamicPathProperties(model).length === 0 ||
-        object.includes(":")
-      ) {
+      if (object.includes(":")) {
+        // Forward strings which already appear to be composite key reference
         return object;
       } else {
         throw new FireModelError(

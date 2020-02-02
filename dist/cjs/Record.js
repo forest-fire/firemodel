@@ -323,9 +323,12 @@ class Record extends FireModel_1.FireModel {
     static compositeKeyRef(model, 
     /** either a partial model or just the `id` of the model if model is not a dynamic path */
     object) {
+        if (Record.dynamicPathProperties(model).length === 0) {
+            return typeof object === "string" ? object : object.id;
+        }
         if (typeof object === "string") {
-            if (Record.dynamicPathProperties(model).length === 0 ||
-                object.includes(":")) {
+            if (object.includes(":")) {
+                // Forward strings which already appear to be composite key reference
                 return object;
             }
             else {
