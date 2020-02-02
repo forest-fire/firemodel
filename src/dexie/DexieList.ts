@@ -26,7 +26,7 @@ export class DexieList<T extends Model> {
     options: IDexieListOptions<T> = {
       orderBy: "lastUpdated"
     }
-  ) {
+  ): Promise<T[]> {
     // TODO: had to remove the `orderBy` for models with a composite key; no idea why!
     const c = this.meta.hasDynamicPath
       ? this.table
@@ -38,7 +38,7 @@ export class DexieList<T extends Model> {
       c.offset(options.offset);
     }
 
-    return c.toArray().catch(e => {
+    const results = c.toArray().catch(e => {
       throw new DexieError(
         `Problem with list(${capitalize(
           this.meta.modelName
@@ -46,6 +46,7 @@ export class DexieList<T extends Model> {
         `dexie/${e.code || e.name || "list.all"}`
       );
     });
+    return results || [];
   }
 
   /**
@@ -58,7 +59,7 @@ export class DexieList<T extends Model> {
     prop: K & string,
     value: PropType<T, K> | [IComparisonOperator, PropType<T, K>],
     options: IDexieListOptions<T> = {}
-  ) {
+  ): Promise<T[]> {
     // const c = this.table.orderBy(options.orderBy || "lastUpdated");
     const [op, val] =
       Array.isArray(value) && ["=", ">", "<"].includes(value[0])
@@ -79,7 +80,7 @@ export class DexieList<T extends Model> {
       query = query.offset(options.offset);
     }
 
-    return query.toArray().catch(e => {
+    const results = query.toArray().catch(e => {
       throw new DexieError(
         `list.where(${prop}, ${value}, ${JSON.stringify(
           options
@@ -87,6 +88,8 @@ export class DexieList<T extends Model> {
         `dexie/${e.code || e.name || "list.where"}`
       );
     });
+
+    return results || [];
   }
 
   /**
@@ -111,14 +114,17 @@ export class DexieList<T extends Model> {
   /**
    * Get all records updated since a given timestamp.
    */
-  async since(datetime: epoch, options: IDexieListOptions<T> = {}) {
+  async since(
+    datetime: epoch,
+    options: IDexieListOptions<T> = {}
+  ): Promise<T[]> {
     return this.where("lastUpdated", [">", datetime]);
   }
 
   /**
    * Get the _last_ "x" records which were created.
    */
-  async last(limit: number, skip?: number) {
+  async last(limit: number, skip?: number): Promise<T[]> {
     const c = skip
       ? this.table
           .orderBy("createdAt")
@@ -136,7 +142,7 @@ export class DexieList<T extends Model> {
   /**
    * Get the _first_ "x" records which were created (aka, the earliest records created)
    */
-  async first(limit: number, skip?: number) {
+  async first(limit: number, skip?: number): Promise<T[]> {
     const c = skip
       ? this.table
           .orderBy("createdAt")
