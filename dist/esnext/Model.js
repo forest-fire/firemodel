@@ -10,7 +10,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 import { property } from "./decorators/constraints";
 import { mock } from "./decorators/mock";
 import { model } from "./decorators/model";
-import { uniqueIndex } from "./decorators/indexing";
+import { index } from "./decorators/indexing";
 let Model = class Model {
 };
 __decorate([
@@ -18,11 +18,11 @@ __decorate([
     __metadata("design:type", String)
 ], Model.prototype, "id", void 0);
 __decorate([
-    property, mock("dateRecentMiliseconds"), uniqueIndex,
+    property, mock("dateRecentMiliseconds"), index,
     __metadata("design:type", Number)
 ], Model.prototype, "lastUpdated", void 0);
 __decorate([
-    property, mock("datePastMiliseconds"), uniqueIndex,
+    property, mock("datePastMiliseconds"), index,
     __metadata("design:type", Number)
 ], Model.prototype, "createdAt", void 0);
 Model = __decorate([

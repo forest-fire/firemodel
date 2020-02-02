@@ -20,11 +20,11 @@ __decorate([
     __metadata("design:type", String)
 ], Model.prototype, "id", void 0);
 __decorate([
-    constraints_1.property, mock_1.mock("dateRecentMiliseconds"), indexing_1.uniqueIndex,
+    constraints_1.property, mock_1.mock("dateRecentMiliseconds"), indexing_1.index,
     __metadata("design:type", Number)
 ], Model.prototype, "lastUpdated", void 0);
 __decorate([
-    constraints_1.property, mock_1.mock("datePastMiliseconds"), indexing_1.uniqueIndex,
+    constraints_1.property, mock_1.mock("datePastMiliseconds"), indexing_1.index,
     __metadata("design:type", Number)
 ], Model.prototype, "createdAt", void 0);
 Model = __decorate([
