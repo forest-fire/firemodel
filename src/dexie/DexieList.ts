@@ -42,7 +42,7 @@ export class DexieList<T extends Model> {
       throw new DexieError(
         `Problem with list(${capitalize(
           this.meta.modelName
-        )}).all(${options}): ${e.message}`,
+        )}).all(${JSON.stringify(options)}): ${e.message}`,
         `dexie/${e.code || e.name || "list.all"}`
       );
     });

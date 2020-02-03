@@ -29,7 +29,7 @@ class DexieList {
             c.offset(options.offset);
         }
         const results = c.toArray().catch(e => {
-            throw new errors_1.DexieError(`Problem with list(${util_1.capitalize(this.meta.modelName)}).all(${options}): ${e.message}`, `dexie/${e.code || e.name || "list.all"}`);
+            throw new errors_1.DexieError(`Problem with list(${util_1.capitalize(this.meta.modelName)}).all(${JSON.stringify(options)}): ${e.message}`, `dexie/${e.code || e.name || "list.all"}`);
         });
         return results || [];
     }
