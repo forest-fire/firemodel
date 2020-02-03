@@ -27,7 +27,7 @@ export class DexieList {
             c.offset(options.offset);
         }
         const results = c.toArray().catch(e => {
-            throw new DexieError(`Problem with list(${capitalize(this.meta.modelName)}).all(${options}): ${e.message}`, `dexie/${e.code || e.name || "list.all"}`);
+            throw new DexieError(`Problem with list(${capitalize(this.meta.modelName)}).all(${JSON.stringify(options)}): ${e.message}`, `dexie/${e.code || e.name || "list.all"}`);
         });
         return results || [];
     }
