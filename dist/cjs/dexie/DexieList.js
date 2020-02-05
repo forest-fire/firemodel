@@ -56,7 +56,7 @@ class DexieList {
             query = query.offset(options.offset);
         }
         const results = query.toArray().catch(e => {
-            throw new errors_1.DexieError(`list.where(${prop}, ${value}, ${JSON.stringify(options)}) failed to execute: ${e.message}`, `dexie/${e.code || e.name || "list.where"}`);
+            throw new errors_1.DexieError(`list.where("${prop}", ${JSON.stringify(value)}, ${JSON.stringify(options)}) failed to execute: ${e.message}`, `dexie/${e.code || e.name || "list.where"}`);
         });
         return results || [];
     }
