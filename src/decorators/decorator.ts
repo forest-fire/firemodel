@@ -1,5 +1,5 @@
 import "reflect-metadata";
-import { Model } from "../Model";
+import { Model } from "../models/Model";
 import { IDictionary } from "common-types";
 import get from "get-value";
 import set from "set-value";

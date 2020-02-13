@@ -1,10 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const FireModel_1 = require("./FireModel");
-const path_1 = require("./path");
-const AuditList_1 = require("./AuditList");
 const index_1 = require("./index");
-const AuditRecord_1 = require("./AuditRecord");
+const Record_1 = require("./Record");
+const util_1 = require("./util");
 /**
  * writeAudit
  *
@@ -16,43 +15,14 @@ const AuditRecord_1 = require("./AuditRecord");
  * @param changes array of changes
  * @param options
  */
-async function writeAudit(recordId, pluralName, action, changes, options = {}) {
+async function writeAudit(record, action, changes, options = {}) {
     const db = options.db || FireModel_1.FireModel.defaultDb;
-    const timestamp = new Date().getTime();
-    const writePath = path_1.pathJoin(FireModel_1.FireModel.auditLogs, pluralName);
-    const waitFor = [];
-    const createdAt = new Date().getTime();
-    const auditId = index_1.fbKey();
-    waitFor.push(db.set(path_1.pathJoin(writePath, "all", auditId), {
-        createdAt,
-        recordId,
-        timestamp,
+    await Record_1.Record.add(index_1.AuditLog, {
+        modelName: util_1.capitalize(record.modelName),
+        modelId: record.id,
         action,
-        changes: changes.map(c => {
-            c.before = c.before === undefined ? null : c.before;
-            c.after = c.after === undefined ? null : c.after;
-            return c;
-        })
-    }));
-    const mps = db.multiPathSet(path_1.pathJoin(writePath, "byId", recordId));
-    mps.add({ path: path_1.pathJoin("all", auditId), value: createdAt });
-    changes.map(change => {
-        mps.add({
-            path: path_1.pathJoin("props", change.property, auditId),
-            value: createdAt
-        });
-    });
-    waitFor.push(mps.execute());
-    await Promise.all(waitFor);
+        changes
+    }, { db });
 }
 exports.writeAudit = writeAudit;
-class Audit {
-    static list(modelKlass, options = {}) {
-        return new AuditList_1.AuditList(modelKlass, options);
-    }
-    static record(modelKlass, id, options = {}) {
-        return new AuditRecord_1.AuditRecord(modelKlass, id, options);
-    }
-}
-exports.Audit = Audit;
 //# sourceMappingURL=Audit.js.map

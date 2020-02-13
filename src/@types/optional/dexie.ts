@@ -2,7 +2,7 @@ import { IDictionary } from "common-types";
 import { IFmModelMeta } from "../../decorators";
 import Dexie from "dexie";
 import { IModelConstructor } from "../../record/relationships/modelRegistration";
-import { Model } from "../../Model";
+import { Model } from "../../models/Model";
 
 export interface IDexiePriorVersion {
   /**

@@ -1,4 +1,4 @@
-import { Model } from "./Model";
+import { Model } from "./models/Model";
 import { Record } from "./Record";
 import { SerializedQuery, IComparisonOperator } from "serialized-query";
 import { epochWithMilliseconds, IDictionary } from "common-types";
@@ -87,6 +87,11 @@ export declare class List<T extends Model> extends FireModel<T> {
      * of type `T`. If no results were found it returns `undefined`.
      */
     static find<T extends Model, K extends keyof T>(model: new () => T, property: K & string, value: T[K] | [IComparisonOperator, T[K]], options?: IListOptions<T>): Promise<T>;
+    /**
+     * Puts an array of records into Firemodel as one operation; this operation
+     * is only available to those who are using the Admin SDK/API.
+     */
+    static bulkPut<T extends Model>(model: new () => T, records: T[] | IDictionary<T>, options?: IListOptions<T>): Promise<void>;
     /**
      * **List.where()**
      *

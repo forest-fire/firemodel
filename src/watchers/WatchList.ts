@@ -1,5 +1,5 @@
 import { WatchBase } from "./WatchBase";
-import { Model } from "../Model";
+import { Model } from "../models/Model";
 import { IListOptions, IFkReference, IPrimaryKey } from "../@types";
 import { List } from "../List";
 import { Record } from "../Record";

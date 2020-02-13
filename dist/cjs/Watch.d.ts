@@ -1,4 +1,4 @@
-import { Model } from "./Model";
+import { Model } from "./models/Model";
 import { IReduxDispatch, IWatcherEventContext } from "./state-mgmt";
 import { IModelOptions } from "./@types/general";
 import { IPrimaryKey } from "./@types/record-types";

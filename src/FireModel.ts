@@ -1,4 +1,4 @@
-import { Model } from "./Model";
+import { Model } from "./models/Model";
 // prettier-ignore
 type Record<T> = import("./Record").Record<T>;
 import { IDictionary, pathJoin } from "common-types";

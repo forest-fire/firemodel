@@ -1,4 +1,4 @@
-import { Model } from "./Model";
+import { Model } from "./models/Model";
 import { Record } from "./Record";
 import { RealTimeDB } from "abstracted-firebase";
 import { SerializedQuery } from "serialized-query";

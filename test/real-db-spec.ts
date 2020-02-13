@@ -21,7 +21,7 @@ helpers.setupEnv();
 const db = new DB();
 FireModel.defaultDb = db;
 
-describe("Tests using REAL db =>’", () => {
+describe("Tests using REAL db =>ï¿½", () => {
   before(async () => {
     await db.waitForConnection();
   });

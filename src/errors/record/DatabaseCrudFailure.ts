@@ -1,6 +1,6 @@
 import { FireModelError } from "../FireModelError";
 import { Record } from "../../Record";
-import { Model } from "../../Model";
+import { Model } from "../../models/Model";
 import { IFmCrudOperation } from "../../state-mgmt";
 import { capitalize } from "../../util";
 

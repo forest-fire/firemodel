@@ -1,6 +1,6 @@
 import { IFmRelationshipOperation, IFmRelationshipOptions } from "../@types";
 import { Record } from "../Record";
-import { Model } from "../Model";
+import { Model } from "../models/Model";
 import { FmEvents, IFmPathValuePair, IFmRelationshipOptionsForHasMany, IFkReference } from "..";
 import { IFmLocalRelationshipEvent } from "../state-mgmt";
 /**

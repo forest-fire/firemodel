@@ -1,10 +1,9 @@
 import { IDictionary } from "common-types";
-import { IAuditChange } from "./Audit";
-import { Model } from "./Model";
+import { Model } from "./models/Model";
 import { hashToArray } from "typed-conversions";
 import { propertiesByModel } from "./decorators/model-meta/property-store";
 import equal from "fast-deep-equal";
-import { IFmChangedProperties } from "./@types";
+import { IFmChangedProperties, IAuditChange } from "./@types";
 import { getModelMeta } from "./ModelMeta";
 
 export function normalized(...args: string[]) {

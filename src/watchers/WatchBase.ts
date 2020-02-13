@@ -1,4 +1,4 @@
-import { Model } from "../Model";
+import { Model } from "../models/Model";
 import { SerializedQuery, ISerializedQueryIdentity } from "serialized-query";
 import { FmModelConstructor, ICompositeKey, IRecordOptions } from "../@types";
 import { IWatchEventClassification, IFmWatcherStartOptions } from "./types";

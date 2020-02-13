@@ -7,6 +7,7 @@ const path_1 = require("./path");
 const ModelMeta_1 = require("./ModelMeta");
 const errors_1 = require("./errors");
 const util_1 = require("./util");
+const typed_conversions_1 = require("typed-conversions");
 //#endregion
 const DEFAULT_IF_NOT_FOUND = "__DO_NOT_USE__";
 function addTimestamps(obj) {
@@ -200,6 +201,20 @@ class List extends FireModel_1.FireModel {
     static async find(model, property, value, options = {}) {
         const results = await List.where(model, property, value, options);
         return results.length > 0 ? results.data[0] : undefined;
+    }
+    /**
+     * Puts an array of records into Firemodel as one operation; this operation
+     * is only available to those who are using the Admin SDK/API.
+     */
+    static async bulkPut(model, records, options = {}) {
+        if (!FireModel_1.FireModel.defaultDb.isAdminApi) {
+            throw new errors_1.FireModelError(`You must use the Admin SDK/API to use the bulkPut feature. This may change in the future but in part because the dispatch functionality is not yet set it is restricted to the Admin API for now.`);
+        }
+        if (Array.isArray(records)) {
+            records = typed_conversions_1.arrayToHash(records);
+        }
+        const dbPath = List.dbPath(model, options.offsets);
+        await FireModel_1.FireModel.defaultDb.update(dbPath, records);
     }
     /**
      * **List.where()**

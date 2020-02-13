@@ -1,5 +1,5 @@
 import { IModelConstructor } from "..";
-import { Model } from "../Model";
+import { Model } from "../models/Model";
 import { IDictionary } from "common-types";
 import Dexie from "dexie";
 import { IDexiePriorVersion } from "../@types/optional/dexie";

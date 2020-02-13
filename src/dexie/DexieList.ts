@@ -1,4 +1,4 @@
-import { Model } from "../Model";
+import { Model } from "../models/Model";
 import { IModelConstructor } from "..";
 import Dexie, { IndexableType } from "dexie";
 import { IDexieModelMeta, IDexieListOptions } from "../@types/optional/dexie";
@@ -82,7 +82,7 @@ export class DexieList<T extends Model> {
 
     const results = query.toArray().catch(e => {
       throw new DexieError(
-        `list.where(${prop}, ${value}, ${JSON.stringify(
+        `list.where("${prop}", ${JSON.stringify(value)}, ${JSON.stringify(
           options
         )}) failed to execute: ${e.message}`,
         `dexie/${e.code || e.name || "list.where"}`

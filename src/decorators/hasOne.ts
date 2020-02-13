@@ -1,4 +1,4 @@
-import { Model } from "../Model";
+import { Model } from "../models/Model";
 import { propertyReflector } from "./reflector";
 import { Omit } from "common-types";
 import { relationshipsByModel } from "./model-meta/relationship-store";

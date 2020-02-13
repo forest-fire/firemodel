@@ -138,10 +138,10 @@ describe("relationship decorators: ", () => {
   it("@relationships represent all relationships in a model", async () => {
     const person = new Person();
     const props = person.META.relationships.map(r => r.property);
+    console.log(props);
 
     expect(props).to.include("mother");
     expect(props).to.include("father");
-    expect(props).to.include("parents");
     expect(props).to.include("concerts");
     expect(props).to.include("company");
     expect(props).to.include("pays");

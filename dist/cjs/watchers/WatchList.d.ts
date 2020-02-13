@@ -1,5 +1,5 @@
 import { WatchBase } from "./WatchBase";
-import { Model } from "../Model";
+import { Model } from "../models/Model";
 import { IListOptions, IPrimaryKey } from "../@types";
 import { SerializedQuery, IComparisonOperator } from "serialized-query";
 import { epochWithMilliseconds } from "common-types";

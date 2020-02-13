@@ -22,7 +22,7 @@ export function Mock(modelConstructor, db) {
         }
     }
     if (!db.isMockDb) {
-        console.warn('You are using Mock() with a real database; typically a mock database is preferred');
+        console.warn("You are using Mock() with a real database; typically a mock database is preferred");
     }
     return API(db, modelConstructor);
 }

@@ -1,6 +1,6 @@
 import { IModelConstructor, Record, IFmModelMeta, ICompositeKey } from "..";
 import { FireModelError, DexieError } from "../errors";
-import { Model } from "../Model";
+import { Model } from "../models/Model";
 import { IDictionary, pk } from "common-types";
 import Dexie from "dexie";
 import { IDexiePriorVersion, IDexieModelMeta } from "../@types/optional/dexie";

@@ -1,4 +1,4 @@
-import { Model } from "./Model";
+import { Model } from "./models/Model";
 // tslint:disable-next-line:no-implicit-dependencies
 import { RealTimeDB } from "abstracted-firebase";
 import { Record } from "./Record";
@@ -7,12 +7,9 @@ import API from "./Mock/api";
 import { FireModelError } from "./errors";
 
 function defaultCardinality<T>(r: Record<T>) {
-  return r.META.relationships.reduce(
-    (prev, curr) => {
-      prev = { ...prev, [curr.property]: true };
-    },
-    {} as any
-  );
+  return r.META.relationships.reduce((prev, curr) => {
+    prev = { ...prev, [curr.property]: true };
+  }, {} as any);
 }
 
 /**
@@ -37,7 +34,9 @@ export function Mock<T extends Model>(
   }
 
   if (!db.isMockDb) {
-    console.warn('You are using Mock() with a real database; typically a mock database is preferred')
+    console.warn(
+      "You are using Mock() with a real database; typically a mock database is preferred"
+    );
   }
 
   return API<T>(db, modelConstructor);

@@ -1,7 +1,7 @@
 import { IModelConstructor } from "../index";
 import { IPrimaryKey } from "../@types";
 import { Dexie } from "dexie";
-import { Model } from "../Model";
+import { Model } from "../models/Model";
 import { key as fbKey } from "firebase-key";
 import { IDexieModelMeta } from "../@types/optional/dexie";
 import { DexieError } from "../errors";

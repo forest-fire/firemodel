@@ -2,7 +2,7 @@ import { FmEvents, IFmCrudOperations } from "./index";
 // tslint:disable-next-line: no-implicit-dependencies
 import { EventType } from "@firebase/database-types";
 import { IMultiPathUpdates } from "../FireModel";
-import { Model } from "../Model";
+import { Model } from "../models/Model";
 import {
   IFmRelationshipOperation,
   IFmPathValuePair,

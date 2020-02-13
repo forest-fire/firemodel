@@ -1,4 +1,4 @@
-import { Model } from "./Model";
+import { Model } from "./models/Model";
 import { FireModel } from "./FireModel";
 import { Record } from "./Record";
 import { pathJoin } from "./path";

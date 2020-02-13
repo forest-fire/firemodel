@@ -1,7 +1,7 @@
 import { IModelConstructor } from "../index";
 import { IPrimaryKey } from "../@types";
 import { Dexie } from "dexie";
-import { Model } from "../Model";
+import { Model } from "../models/Model";
 import { IDexieModelMeta } from "../@types/optional/dexie";
 /**
  * Provides a simple API to do CRUD operations

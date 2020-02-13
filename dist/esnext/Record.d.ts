@@ -1,5 +1,5 @@
 import { RealTimeDB } from "abstracted-firebase";
-import { Model } from "./Model";
+import { Model } from "./models/Model";
 import { IDictionary, Omit, Nullable, fk, pk } from "common-types";
 import { FireModel } from "./FireModel";
 import { IReduxDispatch } from "./state-mgmt";
