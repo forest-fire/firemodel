@@ -9,6 +9,7 @@ import { Person as Peeps } from "./testing/PersonAsPeeps";
 import { FireModel } from "../src/FireModel";
 import { FmEvents } from "../src/state-mgmt";
 import { Mock } from "../src/Mock";
+import { wait } from "common-types";
 
 describe("Record > ", () => {
   let db: DB;
@@ -94,6 +95,7 @@ describe("Record > ", () => {
 
     // db tests
     const bartAgain = await Record.get(Person, "1234", { db });
+
     expect(bartAgain.data.tags[k1]).to.equal("doh!");
     expect(bartAgain.data.tags[k2]).to.equal("whazzup?");
   });

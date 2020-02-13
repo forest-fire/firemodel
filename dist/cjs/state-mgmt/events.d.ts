@@ -1,4 +1,4 @@
-import { Model } from "../Model";
+import { Model } from "../models/Model";
 import { FmEvents, IFmLocalEvent } from "./index";
 import { IWatcherEventContext } from "../state-mgmt";
 declare type IValueBasedWatchEvent = import("abstracted-firebase").IValueBasedWatchEvent;
@@ -14,9 +14,9 @@ export declare type IFmEventType = "value" | "child_added" | "child_moved" | "ch
  * value in these events but in downstream conditional logic
  * it's useful to have it listed as "optional"
  */
-export declare type IFmServerEvent = IValueBasedWatchEvent | IPathBasedWatchEvent & {
+export declare type IFmServerEvent = IValueBasedWatchEvent | (IPathBasedWatchEvent & {
     value?: undefined;
-};
+});
 /**
  * **IFmServerOrLocalEvent**
  *

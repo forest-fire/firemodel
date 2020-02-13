@@ -1,6 +1,6 @@
 import { FireModelError } from "../FireModelError";
 import { Record } from "../../Record";
-import { Model } from "../../Model";
+import { Model } from "../../models/Model";
 import { MissingReciprocalInverse } from "./MissingReciprocalInverse";
 
 export class IncorrectReciprocalInverse<
@@ -11,7 +11,8 @@ export class IncorrectReciprocalInverse<
 
     let message: string;
     const fkRecord = Record.create(
-      rec.META.relationship(property).fkConstructor(), { db: rec.db }
+      rec.META.relationship(property).fkConstructor(),
+      { db: rec.db }
     );
     const inverseProperty = rec.META.relationship(property).inverseProperty;
     const fkInverse = fkRecord.META.relationship(inverseProperty as any);

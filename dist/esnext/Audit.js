@@ -1,8 +1,7 @@
 import { FireModel } from "./FireModel";
-import { pathJoin } from "./path";
-import { AuditList } from "./AuditList";
-import { fbKey } from "./index";
-import { AuditRecord } from "./AuditRecord";
+import { AuditLog } from "./index";
+import { Record } from "./Record";
+import { capitalize } from "./util";
 /**
  * writeAudit
  *
@@ -14,41 +13,13 @@ import { AuditRecord } from "./AuditRecord";
  * @param changes array of changes
  * @param options
  */
-export async function writeAudit(recordId, pluralName, action, changes, options = {}) {
+export async function writeAudit(record, action, changes, options = {}) {
     const db = options.db || FireModel.defaultDb;
-    const timestamp = new Date().getTime();
-    const writePath = pathJoin(FireModel.auditLogs, pluralName);
-    const waitFor = [];
-    const createdAt = new Date().getTime();
-    const auditId = fbKey();
-    waitFor.push(db.set(pathJoin(writePath, "all", auditId), {
-        createdAt,
-        recordId,
-        timestamp,
+    await Record.add(AuditLog, {
+        modelName: capitalize(record.modelName),
+        modelId: record.id,
         action,
-        changes: changes.map(c => {
-            c.before = c.before === undefined ? null : c.before;
-            c.after = c.after === undefined ? null : c.after;
-            return c;
-        })
-    }));
-    const mps = db.multiPathSet(pathJoin(writePath, "byId", recordId));
-    mps.add({ path: pathJoin("all", auditId), value: createdAt });
-    changes.map(change => {
-        mps.add({
-            path: pathJoin("props", change.property, auditId),
-            value: createdAt
-        });
-    });
-    waitFor.push(mps.execute());
-    await Promise.all(waitFor);
-}
-export class Audit {
-    static list(modelKlass, options = {}) {
-        return new AuditList(modelKlass, options);
-    }
-    static record(modelKlass, id, options = {}) {
-        return new AuditRecord(modelKlass, id, options);
-    }
+        changes
+    }, { db });
 }
 //# sourceMappingURL=Audit.js.map

@@ -1,4 +1,4 @@
-import { Model } from "../Model";
+import { Model } from "../models/Model";
 import { WatchBase } from "./WatchBase";
 import { IPrimaryKey, IModelOptions } from "../@types";
 export declare class WatchRecord<T extends Model> extends WatchBase<T> {

@@ -1,5 +1,5 @@
 import NamedFakes from "../Mock/NamedFakes";
-import { Model } from "../Model";
+import { Model } from "../models/Model";
 import { IFnToModelConstructor } from "../record/relationships/modelRegistration";
 export declare type FmRelationshipType = "hasMany" | "hasOne";
 /**
@@ -138,7 +138,7 @@ export interface IFmModelAttributeBase<T> {
     fkConstructor?: IFmFunctionToConstructor;
     fkModelName?: string;
 }
-export declare type MockFunction<T = any> = (context: import('firemock').MockHelper) => T | Promise<T>;
+export declare type MockFunction<T = any> = (context: import("firemock").MockHelper) => T | Promise<T>;
 export declare type FmMockType = keyof typeof NamedFakes | MockFunction;
 export interface IModelIndexMeta {
     /**

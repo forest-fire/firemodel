@@ -1,4 +1,4 @@
-import { Model } from "../Model";
+import { Model } from "../models/Model";
 import { IModelConstructor } from "..";
 import Dexie, { IndexableType } from "dexie";
 import { IDexieModelMeta, IDexieListOptions } from "../@types/optional/dexie";

@@ -1,6 +1,6 @@
 import { FireModelError } from "../FireModelError";
 import { Record } from "../../Record";
-import { Model } from "../../Model";
+import { Model } from "../../models/Model";
 import { capitalize } from "../../util";
 
 export class MissingReciprocalInverse<T extends Model> extends FireModelError {
@@ -8,7 +8,8 @@ export class MissingReciprocalInverse<T extends Model> extends FireModelError {
     super("", "firemodel/missing-reciprocal-inverse");
 
     const fkRecord = Record.create(
-      rec.META.relationship(property).fkConstructor(), { db: rec.db }
+      rec.META.relationship(property).fkConstructor(),
+      { db: rec.db }
     );
     const pkInverse = rec.META.relationship(property).inverseProperty;
     const fkInverse =

@@ -1,5 +1,5 @@
 import { IDictionary } from "common-types";
-import { Model } from "../../Model";
+import { Model } from "../../models/Model";
 import { hashToArray } from "typed-conversions";
 import { IFmModelPropertyMeta } from "../types";
 
@@ -10,9 +10,9 @@ export function isProperty(modelKlass: IDictionary) {
 }
 
 /** Properties accumlated by propertyDecorators  */
-export const propertiesByModel: IDictionary<
-  IDictionary<IFmModelPropertyMeta>
-> = {};
+export const propertiesByModel: IDictionary<IDictionary<
+  IFmModelPropertyMeta
+>> = {};
 
 /** allows the addition of meta information to be added to a model's properties */
 export function addPropertyToModelMeta<T extends Model = Model>(

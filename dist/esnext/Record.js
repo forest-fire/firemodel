@@ -512,12 +512,14 @@ export class Record extends FireModel {
         const key = this.db.isMockDb
             ? fbKey()
             : await this.db.getPushKey(pathJoin(this.dbPath, property));
-        await this.db.set(pathJoin(this.dbPath, property, key), value);
-        await this.db.set(pathJoin(this.dbPath, "lastUpdated"), new Date().getTime());
+        await this.db.update(pathJoin(this.dbPath, property), {
+            [pathJoin(this.dbPath, property, key)]: value,
+            [pathJoin(this.dbPath, "lastUpdated")]: new Date().getTime()
+        });
         // set firemodel state locally
         const currentState = this.get(property) || {};
         const newState = Object.assign(Object.assign({}, currentState), { [key]: value });
-        this.set(property, newState);
+        await this.set(property, newState);
         return key;
     }
     /**
@@ -868,7 +870,7 @@ export class Record extends FireModel {
                     update: "updated",
                     remove: "removed"
                 };
-                await writeAudit(this.id, this.pluralName, pastTense[action], auditLogEntries, { db: this.db });
+                await writeAudit(this, pastTense[action], auditLogEntries, { db: this.db });
             }
         }
         catch (e) {

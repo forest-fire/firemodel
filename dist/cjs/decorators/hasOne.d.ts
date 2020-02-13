@@ -1,4 +1,4 @@
-import { Model } from "../Model";
+import { Model } from "../models/Model";
 import { IFmRelationshipDirectionality } from "./types";
 import { IFnToModelConstructor, IModelConstructor } from "../record/relationships/modelRegistration";
 export declare function belongsTo(

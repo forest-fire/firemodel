@@ -26,16 +26,5 @@ export class Person extends Model {
   @property @min(1) @max(100) public age?: number;
   @property public gender?: "male" | "female" | "other";
   @property public scratchpad?: IDictionary;
-  // prettier-ignore
-  @property @pushKey public tags?: IDictionary<string>;
-  // prettier-ignore
-  @hasOne(() => Person, "parents") public mother?: fk;
-  // prettier-ignore
-  @hasOne(() => Person, "parents") public father?: fk;
-  // prettier-ignore
-  @hasMany(() => Person) public parents?: IDictionary;
-  // prettier-ignore
-  @hasOne(() => Concert) public concerts?: IDictionary;
-  // prettier-ignore
   @hasOne(() => Company) public company?: fk;
 }

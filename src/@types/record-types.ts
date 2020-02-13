@@ -1,6 +1,6 @@
 import { IDictionary, fk, pk, epoch } from "common-types";
 import { IFmHasId } from "./general";
-import { Model } from "../Model";
+import { Model } from "../models/Model";
 import { RealTimeDB } from "abstracted-firebase";
 
 export type IIdWithDynamicPrefix = IDictionary<number | string> & {

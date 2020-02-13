@@ -1,4 +1,4 @@
-import { Model } from "../Model";
+import { Model } from "../models/Model";
 import { WatchBase } from "./WatchBase";
 import { IPrimaryKey, IModelOptions } from "../@types";
 import { FireModelError } from "../errors";
@@ -26,7 +26,11 @@ export class WatchRecord<T extends Model> extends WatchBase<T> {
     o._eventType = "value";
     o._watcherSource = "record";
 
-    const r = Record.createWith<T>(modelConstructor, pk, options.db ? { db: options.db }: {});
+    const r = Record.createWith<T>(
+      modelConstructor,
+      pk,
+      options.db ? { db: options.db } : {}
+    );
     o._query = new SerializedQuery<T>(`${r.dbPath}`);
     o._modelConstructor = modelConstructor;
     o._modelName = r.modelName;

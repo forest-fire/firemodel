@@ -1,4 +1,4 @@
-import { Model } from "./Model";
+import { Model } from "./models/Model";
 import { RealTimeDB } from "abstracted-firebase";
 /**
  * Provides a _Model_ aware means of mocking your data.

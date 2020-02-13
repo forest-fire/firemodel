@@ -1,6 +1,6 @@
 //#region IMPORTS
 import { RealTimeDB } from "abstracted-firebase";
-import { Model } from "./Model";
+import { Model } from "./models/Model";
 import { IDictionary, Omit, Nullable, fk, pk, dotNotation } from "common-types";
 import { key as fbKey } from "firebase-key";
 import { FireModel } from "./FireModel";
@@ -19,7 +19,7 @@ import {
 } from "./state-mgmt/index";
 import { pathJoin } from "./path";
 import { getModelMeta } from "./ModelMeta";
-import { writeAudit, IAuditChange, IAuditOperations } from "./Audit";
+import { writeAudit } from "./Audit";
 import { compareHashes, withoutMetaOrPrivate, capitalize } from "./util";
 import {
   IFkReference,
@@ -30,7 +30,9 @@ import {
 import {
   IFmModelPropertyMeta,
   IFmRelationshipOptionsForHasMany,
-  createCompositeKey
+  createCompositeKey,
+  IAuditChange,
+  IAuditOperations
 } from ".";
 import { findWatchers } from "./watchers/findWatchers";
 import { isHasManyRelationship } from "./verifications/isHasManyRelationship";
@@ -762,15 +764,16 @@ export class Record<T extends Model> extends FireModel<T> {
     const key = this.db.isMockDb
       ? fbKey()
       : await this.db.getPushKey(pathJoin(this.dbPath, property));
-    await this.db.set(pathJoin(this.dbPath, property, key), value);
-    await this.db.set(
-      pathJoin(this.dbPath, "lastUpdated"),
-      new Date().getTime()
-    );
+
+    await this.db.update(pathJoin(this.dbPath, property), {
+      [pathJoin(this.dbPath, property, key)]: value,
+      [pathJoin(this.dbPath, "lastUpdated")]: new Date().getTime()
+    });
+
     // set firemodel state locally
     const currentState = this.get(property) || {};
     const newState = { ...(currentState as T[K]), [key]: value };
-    this.set(property, newState);
+    await this.set(property, newState);
 
     return key;
   }
@@ -1267,9 +1270,8 @@ export class Record<T extends Model> extends FireModel<T> {
           remove: "removed"
         };
 
-        await writeAudit(
-          this.id,
-          this.pluralName,
+        await writeAudit<T>(
+          this,
           pastTense[action] as IAuditOperations,
           auditLogEntries,
           { db: this.db }

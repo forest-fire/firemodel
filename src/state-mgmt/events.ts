@@ -1,4 +1,4 @@
-import { Model } from "../Model";
+import { Model } from "../models/Model";
 import { FmEvents, IFmLocalEvent } from "./index";
 import { IWatcherEventContext } from "../state-mgmt";
 
@@ -27,7 +27,7 @@ export type IFmEventType =
  */
 export type IFmServerEvent =
   | IValueBasedWatchEvent
-  | IPathBasedWatchEvent & { value?: undefined };
+  | (IPathBasedWatchEvent & { value?: undefined });
 
 /**
  * **IFmServerOrLocalEvent**

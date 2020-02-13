@@ -1,6 +1,6 @@
 import { FireModelError } from "../FireModelError";
 import { Record } from "../../Record";
-import { Model } from "../../Model";
+import { Model } from "../../models/Model";
 import { capitalize } from "../../util";
 
 /**
@@ -16,7 +16,8 @@ export class MissingInverseProperty<T extends Model> extends FireModelError {
     super("", "firemodel/missing-inverse-property");
 
     const fkRecord = Record.create(
-      rec.META.relationship(property).fkConstructor(), { db: rec.db }
+      rec.META.relationship(property).fkConstructor(),
+      { db: rec.db }
     );
     this.from = capitalize(rec.modelName);
     this.to = capitalize(fkRecord.modelName);

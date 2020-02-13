@@ -1,6 +1,6 @@
 import { IDictionary } from "common-types";
 import { IWatcherEventContext } from "../state-mgmt/index";
-import { Model } from "../Model";
+import { Model } from "../models/Model";
 export declare const hasInitialized: (watcherId?: string, value?: true | "timed-out") => IDictionary<boolean | "timed-out">;
 /**
  * Waits for a newly started watcher to get back the first

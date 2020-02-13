@@ -4,8 +4,9 @@ function __export(m) {
 }
 Object.defineProperty(exports, "__esModule", { value: true });
 __export(require("./decorators/index"));
-var Model_1 = require("./Model");
-exports.Model = Model_1.Model;
+var index_1 = require("./models/index");
+exports.Model = index_1.Model;
+exports.AuditLog = index_1.AuditLog;
 __export(require("./Record"));
 __export(require("./record/relationships/modelRegistration"));
 var List_1 = require("./List");
@@ -14,8 +15,6 @@ var Mock_1 = require("./Mock");
 exports.Mock = Mock_1.Mock;
 var FireModel_1 = require("./FireModel");
 exports.FireModel = FireModel_1.FireModel;
-var Audit_1 = require("./Audit");
-exports.Audit = Audit_1.Audit;
 var Watch_1 = require("./Watch");
 exports.Watch = Watch_1.Watch;
 __export(require("./state-mgmt/index"));

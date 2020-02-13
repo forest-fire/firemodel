@@ -69,8 +69,8 @@ describe("DexieModel => ", () => {
     expect(d.models.cars).to.include("&id");
     expect(d.models.cars).to.include("modelYear");
     expect(d.models.cars).to.not.include("&modelYear");
-    expect(d.models.cars).to.include("&lastUpdated");
-    expect(d.models.cars).to.include("&createdAt");
+    expect(d.models.cars).to.include("lastUpdated");
+    expect(d.models.cars).to.include("createdAt");
   });
 
   it("Dexie model definition works for dynamically pathed model", async () => {
@@ -78,8 +78,8 @@ describe("DexieModel => ", () => {
     expect(d.models.deeperPeople).to.be.a("string");
     expect(d.models.deeperPeople).to.include("[id+group+subGroup]");
     expect(d.models.deeperPeople).to.not.include("&id");
-    expect(d.models.deeperPeople).to.include("&lastUpdated");
-    expect(d.models.deeperPeople).to.include("&createdAt");
+    expect(d.models.deeperPeople).to.include("lastUpdated");
+    expect(d.models.deeperPeople).to.include("createdAt");
   });
 
   it("calling addPriorVersion() once increments the version", async () => {
@@ -122,10 +122,10 @@ describe("DexieModel => ", () => {
       .filter(i => !i.unique)
       .map(i => i.name);
 
-    expect(uniqueIndexes)
+    expect(nonUniqueIndexes)
       .and.to.include("lastUpdated")
-      .and.to.include("createdAt");
-    expect(nonUniqueIndexes).to.include("modelYear");
+      .and.to.include("createdAt")
+      .and.to.include("modelYear");
 
     expect(people.schema.primKey.name).to.equal("[id+group]");
     expect(people.schema.primKey.keyPath)
@@ -140,11 +140,11 @@ describe("DexieModel => ", () => {
       .filter(i => !i.unique)
       .map(i => i.name);
 
-    expect(uniqueIndexes)
+    expect(nonUniqueIndexes)
       .to.include("lastUpdated")
       .and.to.include("createdAt");
 
-    expect(nonUniqueIndexes).to.have.lengthOf(2);
+    expect(nonUniqueIndexes).to.have.lengthOf(4);
   });
 
   it("table() allows for bulkAdd() then get()", async () => {

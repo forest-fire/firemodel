@@ -14,7 +14,7 @@ import {
   getRelationships
 } from "./model-meta/relationship-store";
 import { IFmModelMeta } from "./types";
-import { Model } from "../Model";
+import { Model } from "../models/Model";
 import { FmModelConstructor } from "../@types/general";
 import { modelRegister } from "../record/relationships/modelRegistration";
 

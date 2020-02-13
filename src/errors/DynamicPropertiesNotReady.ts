@@ -1,6 +1,6 @@
 import { FireModelError } from "./FireModelError";
 import { Record } from "../Record";
-import { Model } from "../Model";
+import { Model } from "../models/Model";
 
 export class DynamicPropertiesNotReady<T extends Model> extends FireModelError {
   constructor(rec: Record<T>, message?: string) {

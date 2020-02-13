@@ -1,10 +1,9 @@
-import { IAuditLogItem } from "./Audit";
 import { epochWithMilliseconds } from "common-types";
-import { Model } from "./Model";
+import { Model } from "./models/Model";
 import { AuditBase } from "./AuditBase";
 import { pathJoin } from "./path";
 import { SerializedQuery } from "serialized-query";
-import { IModelOptions } from "./@types";
+import { IModelOptions, IAuditLogItem } from "./@types";
 
 export class AuditList<T extends Model> extends AuditBase<T> {
   constructor(modelKlass: new () => T, options: IModelOptions = {}) {

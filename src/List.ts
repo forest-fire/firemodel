@@ -1,5 +1,5 @@
 //#region IMPORTS
-import { Model } from "./Model";
+import { Model } from "./models/Model";
 import { Record } from "./Record";
 import { SerializedQuery, IComparisonOperator } from "serialized-query";
 import { epochWithMilliseconds, IDictionary } from "common-types";
@@ -12,6 +12,7 @@ import { IListOptions } from "./@types/general";
 import { FireModelError } from "./errors";
 import { capitalize } from "./util";
 import { ICompositeKey, IPrimaryKey } from "./@types";
+import { arrayToHash } from "typed-conversions";
 //#endregion
 
 const DEFAULT_IF_NOT_FOUND = "__DO_NOT_USE__";
@@ -265,6 +266,29 @@ export class List<T extends Model> extends FireModel<T> {
   ) {
     const results = await List.where(model, property, value, options);
     return results.length > 0 ? results.data[0] : undefined;
+  }
+
+  /**
+   * Puts an array of records into Firemodel as one operation; this operation
+   * is only available to those who are using the Admin SDK/API.
+   */
+  public static async bulkPut<T extends Model>(
+    model: new () => T,
+    records: T[] | IDictionary<T>,
+    options: IListOptions<T> = {}
+  ) {
+    if (!FireModel.defaultDb.isAdminApi) {
+      throw new FireModelError(
+        `You must use the Admin SDK/API to use the bulkPut feature. This may change in the future but in part because the dispatch functionality is not yet set it is restricted to the Admin API for now.`
+      );
+    }
+
+    if (Array.isArray(records)) {
+      records = arrayToHash<T>(records);
+    }
+
+    const dbPath = List.dbPath(model, options.offsets);
+    await FireModel.defaultDb.update(dbPath, records);
   }
 
   /**

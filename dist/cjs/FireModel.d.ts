@@ -1,4 +1,4 @@
-import { Model } from "./Model";
+import { Model } from "./models/Model";
 declare type Record<T> = import("./Record").Record<T>;
 import { IDictionary } from "common-types";
 import { IReduxDispatch } from "./state-mgmt";

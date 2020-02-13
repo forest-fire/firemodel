@@ -1,4 +1,4 @@
-import { Model } from "../../Model";
+import { Model } from "../../models/Model";
 /**
  * Registered a model's constructor so that it can be used by name. This
  * is sometime necessary due to circular dependencies.

@@ -1,11 +1,11 @@
 import { IDictionary } from "common-types";
-import { Model } from "../../Model";
+import { Model } from "../../models/Model";
 import { hashToArray } from "typed-conversions";
 import { IFmModelRelationshipMeta } from "../types";
 
-export const relationshipsByModel: IDictionary<
-  IDictionary<IFmModelRelationshipMeta>
-> = {};
+export const relationshipsByModel: IDictionary<IDictionary<
+  IFmModelRelationshipMeta
+>> = {};
 
 /** allows the addition of meta information to be added to a model's relationships */
 export function addRelationshipToModelMeta<T extends Model = Model>(

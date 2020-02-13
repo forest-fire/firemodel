@@ -1,7 +1,7 @@
 import { FmEvents, IFmCrudOperations } from "./index";
 import { EventType } from "@firebase/database-types";
 import { IMultiPathUpdates } from "../FireModel";
-import { Model } from "../Model";
+import { Model } from "../models/Model";
 import { IFmRelationshipOperation, IFmPathValuePair } from "../@types";
 import { fk, pk } from "common-types";
 /**

@@ -1,6 +1,6 @@
 import { RealTimeDB } from "abstracted-firebase";
 import { IDictionary } from "common-types";
-import { Model } from "../Model";
+import { Model } from "../models/Model";
 import { Record } from "../Record";
 import { IMockConfig, IMockResponse } from "./types";
 /**

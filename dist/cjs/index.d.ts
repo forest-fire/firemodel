@@ -1,11 +1,10 @@
 export * from "./decorators/index";
-export { Model } from "./Model";
+export { Model, AuditLog } from "./models/index";
 export * from "./Record";
 export * from "./record/relationships/modelRegistration";
 export { List } from "./List";
 export { Mock } from "./Mock";
 export { FireModel } from "./FireModel";
-export { Audit } from "./Audit";
 export { Watch } from "./Watch";
 export * from "./watchers/types";
 export * from "./state-mgmt/index";
