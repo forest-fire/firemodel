@@ -110,11 +110,11 @@ function withoutMetaOrPrivate(model) {
 }
 exports.withoutMetaOrPrivate = withoutMetaOrPrivate;
 function capitalize(str) {
-    return str.slice(0, 1).toUpperCase() + str.slice(1);
+    return str ? str.slice(0, 1).toUpperCase() + str.slice(1) : "";
 }
 exports.capitalize = capitalize;
 function lowercase(str) {
-    return str.slice(0, 1).toLowerCase() + str.slice(1);
+    return str ? str.slice(0, 1).toLowerCase() + str.slice(1) : "";
 }
 exports.lowercase = lowercase;
 function stripLeadingSlash(str) {
