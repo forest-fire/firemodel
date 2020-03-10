@@ -29,7 +29,13 @@ class DexieList {
             c.offset(options.offset);
         }
         const results = c.toArray().catch(e => {
-            throw new errors_1.DexieError(`Problem with list(${util_1.capitalize(this.meta.modelName)}).all(${JSON.stringify(options)}): ${e.message}`, `dexie/${e.code || e.name || "list.all"}`);
+            if (e.code === "NotFoundError" || e.name === "NotFoundError") {
+                console.info(`No records for model ${util_1.capitalize(this.meta.modelName)} found!`);
+                return [];
+            }
+            else {
+                throw new errors_1.DexieError(`Problem with list(${util_1.capitalize(this.meta.modelName)}).all(${JSON.stringify(options)}): ${e.message}`, `dexie/${e.code || e.name || "list.all"}`);
+            }
         });
         return results || [];
     }
@@ -56,7 +62,13 @@ class DexieList {
             query = query.offset(options.offset);
         }
         const results = query.toArray().catch(e => {
-            throw new errors_1.DexieError(`list.where("${prop}", ${JSON.stringify(value)}, ${JSON.stringify(options)}) failed to execute: ${e.message}`, `dexie/${e.code || e.name || "list.where"}`);
+            if (e.code === "NotFoundError" || e.name === "NotFoundError") {
+                console.info(`No records for model ${util_1.capitalize(this.meta.modelName)} found!`);
+                return [];
+            }
+            else {
+                throw new errors_1.DexieError(`list.where("${prop}", ${JSON.stringify(value)}, ${JSON.stringify(options)}) failed to execute: ${e.message}`, `dexie/${e.code || e.name || "list.where"}`);
+            }
         });
         return results || [];
     }
@@ -97,7 +109,15 @@ class DexieList {
                 .orderBy("createdAt")
                 .reverse()
                 .limit(limit);
-        return c.toArray();
+        return c.toArray().catch(e => {
+            if (e.code === "NotFoundError" || e.name === "NotFoundError") {
+                console.info(`No records for model ${util_1.capitalize(this.meta.modelName)} found!`);
+                return [];
+            }
+            else {
+                throw new errors_1.DexieError(`list.last(${limit}${skip ? `, skip: ${skip}` : ""}) failed to execute: ${e.message}`, `dexie/${e.code || e.name || "list.last"}`);
+            }
+        });
     }
     /**
      * Get the _first_ "x" records which were created (aka, the earliest records created)
@@ -109,7 +129,15 @@ class DexieList {
                 .limit(limit)
                 .offset(skip)
             : this.table.orderBy("createdAt").limit(limit);
-        return c.toArray();
+        return c.toArray().catch(e => {
+            if (e.code === "NotFoundError" || e.name === "NotFoundError") {
+                console.info(`No records for model ${util_1.capitalize(this.meta.modelName)} found!`);
+                return [];
+            }
+            else {
+                throw new errors_1.DexieError(`list.first(${limit}${skip ? `, skip: ${skip}` : ""}) failed to execute: ${e.message}`, `dexie/${e.code || e.name || "list.first"}`);
+            }
+        });
     }
 }
 exports.DexieList = DexieList;
