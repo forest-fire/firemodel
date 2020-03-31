@@ -127,7 +127,7 @@ export declare class Record<T extends Model> extends FireModel<T> {
      * Associates a new FK to a relationship on the given `Model`; returning
      * the primary model as a return value
      */
-    static associate<T extends Model>(model: new () => T, id: pk, property: keyof T & string, refs: IFkReference<any> | Array<IFkReference<any>>): Promise<Record<T>>;
+    static associate<T extends Model>(model: new () => T, id: pk, property: keyof T & string, refs: IFkReference<any> | IFkReference<any>[]): Promise<Record<T>>;
     /**
      * Given a database _path_ and a `Model`, pull out the composite key from
      * the path. This works for Models that do and _do not_ have dynamic segments
@@ -296,14 +296,14 @@ export declare class Record<T extends Model> extends FireModel<T> {
      * Associates the current model with another entity
      * regardless if the cardinality
      */
-    associate(property: keyof T & string, refs: IFkReference<any> | Array<IFkReference<any>>, options?: IFmRelationshipOptions): Promise<void>;
+    associate(property: keyof T & string, refs: IFkReference<any> | IFkReference<any>[], options?: IFmRelationshipOptions): Promise<void>;
     /**
      * **disassociate**
      *
      * Removes an association between the current model and another entity
      * (regardless of the cardinality in the relationship)
      */
-    disassociate(property: keyof T & string, refs: IFkReference<any> | Array<IFkReference<any>>, options?: IFmRelationshipOptions): Promise<void>;
+    disassociate(property: keyof T & string, refs: IFkReference<any> | IFkReference<any>[], options?: IFmRelationshipOptions): Promise<void>;
     /**
      * Adds one or more fk's to a hasMany relationship.
      *
@@ -317,7 +317,7 @@ export declare class Record<T extends Model> extends FireModel<T> {
      * @param fkRefs FK reference (or array of FKs) that should be added to reln
      * @param options change the behavior of this relationship transaction
      */
-    addToRelationship(property: keyof T & string, fkRefs: IFkReference<any> | Array<IFkReference<any>>, options?: IFmRelationshipOptionsForHasMany): Promise<void>;
+    addToRelationship(property: keyof T & string, fkRefs: IFkReference<any> | IFkReference<any>[], options?: IFmRelationshipOptionsForHasMany): Promise<void>;
     /**
      * removeFromRelationship
      *
@@ -326,7 +326,7 @@ export declare class Record<T extends Model> extends FireModel<T> {
      * @param property the property which is acting as a FK
      * @param fkRefs the FK's on the property which should be removed
      */
-    removeFromRelationship(property: keyof T & string, fkRefs: IFkReference<any> | Array<IFkReference<any>>, options?: IFmRelationshipOptionsForHasMany): Promise<void>;
+    removeFromRelationship(property: keyof T & string, fkRefs: IFkReference<any> | IFkReference<any>[], options?: IFmRelationshipOptionsForHasMany): Promise<void>;
     /**
      * **clearRelationship**
      *

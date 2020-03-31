@@ -114,7 +114,7 @@ export declare class List<T extends Model> extends FireModel<T> {
      * because the "id" can be any form of `ICompositeKey` as well just a plain `id`. The naming
      * here is just to retain consistency with the **Watch** api.
      */
-    static ids<T extends Model>(model: new () => T, ...fks: Array<IPrimaryKey<T>>): Promise<List<T>>;
+    static ids<T extends Model>(model: new () => T, ...fks: IPrimaryKey<T>[]): Promise<List<T>>;
     /**
      * If you want to just get the `dbPath` of a Model you can call
      * this static method and the path will be returned.
