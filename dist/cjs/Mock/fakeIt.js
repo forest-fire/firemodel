@@ -157,11 +157,13 @@ function fakeIt(helper, type, ...rest) {
         case "dateFutureMiliseconds":
             return helper.faker.date.future().getTime();
         case "dateSoon":
-            return helper.faker.date.soon();
+            return helper.faker.date.between(new Date(), new Date(new Date().getTime() + 5 * 24 * 60 * 1000));
         case "dateSoonString":
-            return date_fns_1.format(helper.faker.date.soon(), "yyyy-MM-dd");
+            return date_fns_1.format(helper.faker.date.between(new Date(), new Date(new Date().getTime() + 5 * 24 * 60 * 1000)), "yyyy-MM-dd");
         case "dateSoonMiliseconds":
-            return helper.faker.date.soon().getTime();
+            return helper.faker.date
+                .between(new Date(), new Date(new Date().getTime() + 5 * 24 * 60 * 1000))
+                .getTime();
         case "imageAvatar":
             return helper.faker.image.avatar();
         case "imageAnimal":
