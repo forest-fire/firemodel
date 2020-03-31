@@ -366,7 +366,7 @@ export class Record<T extends Model> extends FireModel<T> {
     model: new () => T,
     id: pk,
     property: keyof T & string,
-    refs: IFkReference<any> | Array<IFkReference<any>>
+    refs: IFkReference<any> | IFkReference<any>[]
   ) {
     const obj = await Record.get(model, id);
     await obj.associate(property, refs);
@@ -485,7 +485,7 @@ export class Record<T extends Model> extends FireModel<T> {
       }
     }
     const compositeKey = Record.compositeKey(model, object);
-    const nonIdKeys: Array<{ prop: string; value: any }> = Object.keys(
+    const nonIdKeys: { prop: string; value: any }[] = Object.keys(
       compositeKey
     ).reduce(
       (agg, prop: keyof typeof compositeKey & string) =>
@@ -914,7 +914,7 @@ export class Record<T extends Model> extends FireModel<T> {
   public async associate(
     property: keyof T & string,
     // TODO: ideally stronger typing
-    refs: IFkReference<any> | Array<IFkReference<any>>,
+    refs: IFkReference<any> | IFkReference<any>[],
     options: IFmRelationshipOptions = {}
   ) {
     const meta = getModelMeta(this);
@@ -967,7 +967,7 @@ export class Record<T extends Model> extends FireModel<T> {
   public async disassociate(
     property: keyof T & string,
     // TODO: ideally stronger typing below
-    refs: IFkReference<any> | Array<IFkReference<any>>,
+    refs: IFkReference<any> | IFkReference<any>[],
     options: IFmRelationshipOptions = {}
   ) {
     const relType = this.META.relationship(property).relType;
@@ -993,7 +993,7 @@ export class Record<T extends Model> extends FireModel<T> {
    */
   public async addToRelationship(
     property: keyof T & string,
-    fkRefs: IFkReference<any> | Array<IFkReference<any>>,
+    fkRefs: IFkReference<any> | IFkReference<any>[],
     options: IFmRelationshipOptionsForHasMany = {}
   ) {
     const altHasManyValue = options.altHasManyValue || true;
@@ -1033,7 +1033,7 @@ export class Record<T extends Model> extends FireModel<T> {
    */
   public async removeFromRelationship(
     property: keyof T & string,
-    fkRefs: IFkReference<any> | Array<IFkReference<any>>,
+    fkRefs: IFkReference<any> | IFkReference<any>[],
     options: IFmRelationshipOptionsForHasMany = {}
   ) {
     if (!isHasManyRelationship(this, property)) {

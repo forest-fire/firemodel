@@ -1,18 +1,45 @@
 {
-  "extends": ["tslint:latest", "tslint-config-prettier"],
+  "extends": [
+    "tslint:latest",
+    "tslint-config-prettier"
+  ],
   "rules": {
-    "quotemark": [false],
-    "no-console": [false],
+    "quotemark": [
+      false
+    ],
+    "no-console": [
+      false
+    ],
     "object-literal-sort-keys": false,
     "no-trailing-whitespace": false,
-    "ordered-imports": [false],
+    "ordered-imports": [
+      false
+    ],
     "no-string-literal": false,
-    "max-line-length": [false],
-    "trailing-comma": [false],
-    "variable-name": [false],
-    "arrow-parens": [false],
-    "no-namespace": [true, "allow-declarations"],
-    "member-access": [false],
-    "jsdoc-format": [false]
+    "max-line-length": [
+      false
+    ],
+    "trailing-comma": [
+      false
+    ],
+    "variable-name": [
+      false
+    ],
+    "arrow-parens": [
+      false
+    ],
+    "no-namespace": [
+      true,
+      "allow-declarations"
+    ],
+    "member-access": [
+      false
+    ],
+    "jsdoc-format": [
+      false
+    ],
+    "array-type": [
+      false
+    ]
   }
 }

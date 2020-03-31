@@ -336,7 +336,7 @@ export class List<T extends Model> extends FireModel<T> {
    */
   public static async ids<T extends Model>(
     model: new () => T,
-    ...fks: Array<IPrimaryKey<T>>
+    ...fks: IPrimaryKey<T>[]
   ) {
     const promises: any[] = [];
     const results: T[] = [];
