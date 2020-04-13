@@ -1,5 +1,6 @@
-import { RealTimeDB } from "abstracted-firebase";
+import { AbstractedDatabase } from "abstracted-database";
 import { IDictionary } from "common-types";
+
 import { Model } from "../models/Model";
 import { Record } from "../Record";
 import { IMockConfig, IMockResponse } from "./types";
@@ -10,7 +11,7 @@ import { processHasOne } from "./processHasOne";
  * Adds relationships to mocked records
  */
 export default function addRelationships<T extends Model>(
-  db: RealTimeDB,
+  db: AbstractedDatabase,
   config: IMockConfig,
   exceptions: IDictionary = {}
 ) {

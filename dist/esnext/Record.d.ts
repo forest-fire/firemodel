@@ -1,21 +1,12 @@
-import { RealTimeDB } from "abstracted-firebase";
+import { AbstractedDatabase } from "abstracted-database";
+import { IDictionary, Nullable, fk, pk } from "common-types";
 import { Model } from "./models/Model";
-import { IDictionary, Omit, Nullable, fk, pk } from "common-types";
 import { FireModel } from "./FireModel";
 import { IReduxDispatch } from "./state-mgmt";
 import { IFMEventName, IFmCrudOperations, IFmDispatchOptions } from "./state-mgmt/index";
 import { IFkReference, ICompositeKey, IRecordOptions } from "./@types/record-types";
 import { IFmRelationshipOptionsForHasMany } from ".";
 import { IFmRelationshipOptions } from "./@types";
-import { IFmModelMeta } from "./decorators";
-/**
- * a Model that doesn't require the ID tag (or the META tag which not a true
- * property of the model)
- * */
-export declare type ModelOptionalId<T extends Model> = Omit<T, "id" | "META"> & {
-    id?: string;
-    META?: IFmModelMeta;
-};
 export interface IWriteOperation {
     id: string;
     type: "set" | "pushKey" | "update";
@@ -28,8 +19,8 @@ export interface IWriteOperation {
 }
 export declare class Record<T extends Model> extends FireModel<T> {
     protected options: IRecordOptions;
-    static set defaultDb(db: RealTimeDB);
-    static get defaultDb(): RealTimeDB;
+    static set defaultDb(db: AbstractedDatabase);
+    static get defaultDb(): AbstractedDatabase;
     static set dispatch(fn: IReduxDispatch);
     /**
      * **dynamicPathProperties**
@@ -65,7 +56,7 @@ export declare class Record<T extends Model> extends FireModel<T> {
      * @param payload the data for the new record; this optionally can include the "id" but if left off the new record will use a firebase pushkey
      * @param options
      */
-    static add<T extends Model>(model: (new () => T) | string, payload: ModelOptionalId<T>, options?: IRecordOptions): Promise<Record<T>>;
+    static add<T extends Model>(model: (new () => T) | string, payload: T, options?: IRecordOptions): Promise<Record<T>>;
     /**
      * **update**
      *

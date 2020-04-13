@@ -94,7 +94,10 @@ export class Watch {
         }
         else {
             const registry = getWatcherPool()[hashCode];
-            db.unWatch(registry.eventFamily === "child"
+            db.unWatch(
+            // TODO: fix this typing issue.
+            // @ts-ignore
+            registry.eventFamily === "child"
                 ? "value"
                 : ["child_added", "child_changed", "child_moved", "child_removed"], registry.dispatch);
             // tslint:disable-next-line: no-object-literal-type-assertion

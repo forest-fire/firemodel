@@ -1,12 +1,13 @@
+import { AbstractedDatabase } from "abstracted-database";
+
 import { Mock, Record, IFmModelRelationshipMeta } from "..";
 import { IMockConfig, IMockResponse } from "./types";
-import { RealTimeDB } from "abstracted-firebase";
 
 export async function processHasMany<T>(
   record: Record<T>,
   rel: IFmModelRelationshipMeta<T>,
   config: IMockConfig,
-  db: RealTimeDB
+  db: AbstractedDatabase
 ): Promise<IMockResponse<T>> {
   // by creating a mock we are giving any dynamic path segments
   // an opportunity to be mocked (this is best practice)

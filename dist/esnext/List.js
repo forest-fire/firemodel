@@ -1,12 +1,11 @@
-import { Record } from "./Record";
+import { arrayToHash } from "typed-conversions";
 import { SerializedQuery } from "serialized-query";
+import { Record } from "./Record";
 import { FireModel } from "./FireModel";
 import { pathJoin } from "./path";
 import { getModelMeta } from "./ModelMeta";
 import { FireModelError } from "./errors";
 import { capitalize } from "./util";
-import { arrayToHash } from "typed-conversions";
-//#endregion
 const DEFAULT_IF_NOT_FOUND = "__DO_NOT_USE__";
 function addTimestamps(obj) {
     const datetime = new Date().getTime();

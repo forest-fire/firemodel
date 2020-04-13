@@ -1,7 +1,7 @@
+import { AbstractedDatabase } from "abstracted-database";
 import { IDictionary } from "common-types";
-import { RealTimeDB } from "abstracted-firebase";
 import { IMockResponse } from "./types";
-export default function API<T>(db: RealTimeDB, modelConstructor: new () => T): {
+export default function API<T>(db: AbstractedDatabase, modelConstructor: new () => T): {
     /**
      * generate
      *

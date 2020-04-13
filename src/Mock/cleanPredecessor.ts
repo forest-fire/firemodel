@@ -1,8 +1,8 @@
-import { RealTimeDB } from "abstracted-firebase";
+import { AbstractedDatabase } from "abstracted-database";
 import { IDictionary } from "common-types";
 
 export default async function cleanPredecessor(
-  db: RealTimeDB,
+  db: AbstractedDatabase,
   predecessors: string[]
 ) {
   let empty = false;

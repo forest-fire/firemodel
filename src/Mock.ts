@@ -1,6 +1,6 @@
+import { AbstractedDatabase } from "abstracted-database";
+
 import { Model } from "./models/Model";
-// tslint:disable-next-line:no-implicit-dependencies
-import { RealTimeDB } from "abstracted-firebase";
 import { Record } from "./Record";
 import { FireModel } from "./FireModel";
 import API from "./Mock/api";
@@ -20,7 +20,7 @@ function defaultCardinality<T>(r: Record<T>) {
  */
 export function Mock<T extends Model>(
   modelConstructor: new () => T,
-  db?: RealTimeDB
+  db?: AbstractedDatabase
 ) {
   if (!db) {
     if (FireModel.defaultDb) {

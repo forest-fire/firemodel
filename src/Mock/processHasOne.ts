@@ -1,4 +1,5 @@
-import { RealTimeDB } from "abstracted-firebase";
+import { AbstractedDatabase } from "abstracted-database";
+
 import { Record } from "../Record";
 import { IFmModelRelationshipMeta } from "../decorators";
 import { IMockConfig, IMockResponse } from "./types";
@@ -8,7 +9,7 @@ export async function processHasOne<T>(
   source: Record<T>,
   rel: IFmModelRelationshipMeta<T>,
   config: IMockConfig,
-  db: RealTimeDB
+  db: AbstractedDatabase
 ): Promise<IMockResponse<T>> {
   const fkMock = Mock(rel.fkConstructor(), db);
   const fkMockMeta = (await fkMock.generate(1)).pop();

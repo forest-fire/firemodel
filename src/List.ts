@@ -1,10 +1,11 @@
-//#region IMPORTS
+import { arrayToHash } from "typed-conversions";
+import { AbstractedDatabase } from "abstracted-database";
+import { epochWithMilliseconds, IDictionary } from "common-types";
+import { SerializedQuery, IComparisonOperator } from "serialized-query";
+
 import { Model } from "./models/Model";
 import { Record } from "./Record";
-import { SerializedQuery, IComparisonOperator } from "serialized-query";
-import { epochWithMilliseconds, IDictionary } from "common-types";
 import { FireModel } from "./FireModel";
-import { RealTimeDB } from "abstracted-firebase";
 import { IReduxDispatch } from "./state-mgmt/index";
 import { pathJoin } from "./path";
 import { getModelMeta } from "./ModelMeta";
@@ -12,8 +13,6 @@ import { IListOptions } from "./@types/general";
 import { FireModelError } from "./errors";
 import { capitalize } from "./util";
 import { ICompositeKey, IPrimaryKey } from "./@types";
-import { arrayToHash } from "typed-conversions";
-//#endregion
 
 const DEFAULT_IF_NOT_FOUND = "__DO_NOT_USE__";
 
@@ -37,7 +36,7 @@ export class List<T extends Model> extends FireModel<T> {
    * Sets the default database to be used by all FireModel classes
    * unless explicitly told otherwise
    */
-  public static set defaultDb(db: RealTimeDB) {
+  public static set defaultDb(db: AbstractedDatabase) {
     FireModel.defaultDb = db;
   }
 

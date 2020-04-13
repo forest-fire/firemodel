@@ -1,21 +1,17 @@
+import { AbstractedDatabase } from "abstracted-database";
+
 import { Model } from "./models/Model";
-// prettier-ignore
 type Record<T> = import("./Record").Record<T>;
 import { IDictionary, pathJoin } from "common-types";
 import { IReduxDispatch } from "./state-mgmt";
 import { getModelMeta } from "./ModelMeta";
-import {
-  RealTimeDB,
-  IFirebaseConfig,
-  IFirebaseAdminConfig
-} from "abstracted-firebase";
+import { IClientConfig, IAdminConfig } from "@forest-fire/types";
 import {
   IFmModelMeta,
   IFmModelPropertyMeta,
   IFmModelRelationshipMeta
 } from "./decorators/types";
 import { IFmChangedProperties } from "./@types";
-import { FireModelError } from "./errors";
 import {
   modelRegister,
   listRegisteredModels,
@@ -41,7 +37,7 @@ export class FireModel<T extends Model> {
    * "default" database to use should a given transaction not state a DB
    * connection explicitly.
    */
-  public static set defaultDb(db: RealTimeDB) {
+  public static set defaultDb(db: AbstractedDatabase) {
     this._defaultDb = db;
   }
 
@@ -136,7 +132,7 @@ export class FireModel<T extends Model> {
   }
 
   /** the connected real-time database */
-  public get db(): RealTimeDB {
+  public get db(): AbstractedDatabase {
     if (!this._db) {
       this._db = FireModel.defaultDb;
     }
@@ -175,11 +171,11 @@ const db = await FireModel.connect(DB, options);
    * databases) but the vast majority of projects only have ONE firebase
    * database so this just makes the whole process much easier.
    */
-  public static async connect<T extends RealTimeDB>(
+  public static async connect<T extends AbstractedDatabase>(
     RTDB: {
-      connect: (options: Partial<IFirebaseAdminConfig> & IFirebaseConfig) => T;
+      connect: (options: Partial<IAdminConfig> & IClientConfig) => T;
     },
-    options: Partial<IFirebaseAdminConfig> & IFirebaseConfig
+    options: Partial<IAdminConfig> & IClientConfig
   ) {
     const db = await RTDB.connect(options);
     FireModel.defaultDb = db;
@@ -204,7 +200,7 @@ const db = await FireModel.connect(DB, options);
     // TODO: implement this!
     return false;
   }
-  private static _defaultDb: RealTimeDB;
+  private static _defaultDb: AbstractedDatabase;
   private static _dispatchActive: boolean = false;
   /** the dispatch function used to interact with frontend frameworks */
   private static _dispatch: IReduxDispatch = defaultDispatch;
@@ -216,7 +212,7 @@ const db = await FireModel.connect(DB, options);
   /** the data structure/model that this class operates around */
   protected _model: T;
   protected _modelConstructor: new () => T;
-  protected _db: RealTimeDB;
+  protected _db: AbstractedDatabase;
 
   //#endregion
 

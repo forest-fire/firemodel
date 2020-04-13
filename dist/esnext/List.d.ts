@@ -1,9 +1,9 @@
+import { AbstractedDatabase } from "abstracted-database";
+import { epochWithMilliseconds, IDictionary } from "common-types";
+import { SerializedQuery, IComparisonOperator } from "serialized-query";
 import { Model } from "./models/Model";
 import { Record } from "./Record";
-import { SerializedQuery, IComparisonOperator } from "serialized-query";
-import { epochWithMilliseconds, IDictionary } from "common-types";
 import { FireModel } from "./FireModel";
-import { RealTimeDB } from "abstracted-firebase";
 import { IReduxDispatch } from "./state-mgmt/index";
 import { IListOptions } from "./@types/general";
 import { IPrimaryKey } from "./@types";
@@ -12,8 +12,8 @@ export declare class List<T extends Model> extends FireModel<T> {
      * Sets the default database to be used by all FireModel classes
      * unless explicitly told otherwise
      */
-    static set defaultDb(db: RealTimeDB);
-    static get defaultDb(): RealTimeDB;
+    static set defaultDb(db: AbstractedDatabase);
+    static get defaultDb(): AbstractedDatabase;
     /**
      * Set
      *
