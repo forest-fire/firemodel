@@ -129,8 +129,6 @@ export class Watch<T extends Model = Model> {
     } else {
       const registry = getWatcherPool()[hashCode];
       db.unWatch(
-        // TODO: fix this typing issue.
-        // @ts-ignore
         registry.eventFamily === "child"
           ? "value"
           : ["child_added", "child_changed", "child_moved", "child_removed"],
