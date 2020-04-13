@@ -46,6 +46,8 @@
     "wait-in-parallel": "^1.2.6"
   },
   "devDependencies": {
+    "@firebase/auth-types": "^0.9.5",
+    "@forest-fire/types": "^0.1.0",
     "@types/chai": "^4.2.9",
     "@types/faker": "^4.1.11",
     "@types/get-value": "^3.0.1",
