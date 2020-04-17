@@ -32,7 +32,8 @@ import {
   IFmRelationshipOptionsForHasMany,
   createCompositeKey,
   IAuditChange,
-  IAuditOperations
+  IAuditOperations,
+  List
 } from ".";
 import { findWatchers } from "./watchers/findWatchers";
 import { isHasManyRelationship } from "./verifications/isHasManyRelationship";
@@ -191,9 +192,8 @@ export class Record<T extends Model> extends FireModel<T> {
       r = Record.createWith(model, payload as Partial<T>, options);
 
       if (!payload.id) {
-        payload.id = r.db.isMockDb
-          ? fbKey()
-          : await r.db.getPushKey(r.dbOffset);
+        const path = List.dbPath(model, payload);
+        payload.id = await r.db.getPushKey(path);
       }
 
       await r._initialize(payload as T, options);
