@@ -8,7 +8,7 @@ import {
   Watch,
   Record,
   FmEvents,
-  IReduxAction
+  IReduxAction,
 } from "../src";
 import { DB } from "abstracted-admin";
 import * as chai from "chai";
@@ -58,11 +58,8 @@ describe("Mocking:", () => {
     const people = await List.all(SimplePerson);
 
     expect(people).to.have.lengthOf(10);
-    people.map(person => {
-      expect(person.age)
-        .to.be.a("number")
-        .greaterThan(0)
-        .lessThan(101);
+    people.map((person) => {
+      expect(person.age).to.be.a("number").greaterThan(0).lessThan(101);
     });
   });
 
@@ -71,7 +68,7 @@ describe("Mocking:", () => {
     const people = await List.all(FancyPerson);
 
     expect(people).to.have.lengthOf(10);
-    people.map(person => {
+    people.map((person) => {
       expect(person.otherPhone).to.be.a("string");
       expect(/[\.\(-]/.test(person.otherPhone)).to.equal(true);
     });
@@ -81,7 +78,7 @@ describe("Mocking:", () => {
     await Mock(FancyPerson, db).generate(10);
     const people = await List.all(FancyPerson);
     expect(people).to.have.lengthOf(10);
-    people.map(person => {
+    people.map((person) => {
       expect(person.foobar).to.be.a("string");
       expect(person.foobar).to.contain("hello");
     });
@@ -96,7 +93,7 @@ describe("Mocking:", () => {
     const people = await List.all(FancyPerson);
     expect(people).to.have.lengthOf(numberOfFolks);
 
-    people.map(person => {
+    people.map((person) => {
       expect(person.employer).to.be.a("string");
       expect(person.cars).to.be.an("object");
     });
@@ -121,18 +118,18 @@ describe("Mocking:", () => {
     expect(company.length).to.equal(numberOfFolks);
     expect(people).to.have.lengthOf(numberOfFolks * 5);
 
-    const carIds = cars.map(car => car.id);
-    carIds.map(id => people.findWhere("cars", id));
+    const carIds = cars.map((car) => car.id);
+    carIds.map((id) => people.findWhere("cars", id));
 
-    const companyIds = company.map(c => c.id);
-    companyIds.map(id => people.findWhere("employer", id));
+    const companyIds = company.map((c) => c.id);
+    companyIds.map((id) => people.findWhere("employer", id));
   });
 
   it("using a specific config for createRelationshipLinks works as expected", async () => {
     const numberOfFolks = 25;
     await Mock(FancyPerson, db)
       .followRelationshipLinks({
-        cars: [3, 5]
+        cars: [3, 5],
       })
       .generate(numberOfFolks);
     const people = await List.all(FancyPerson);
@@ -144,10 +141,10 @@ describe("Mocking:", () => {
     const events: IDictionary[] = [];
     FireModel.dispatch = async (e: IReduxAction) => events.push(e);
     await Record.add(FancyPerson, {
-      name: "Bob Barker"
+      name: "Bob Barker",
     });
 
-    const types = events.map(e => e.type);
+    const types = events.map((e) => e.type);
 
     expect(types).to.include(FmEvents.RECORD_ADDED_LOCALLY);
     expect(types).to.include(FmEvents.RECORD_ADDED_CONFIRMATION);
@@ -169,7 +166,7 @@ describe("Mocking:", () => {
       await Record.add(
         FancyPerson,
         {
-          name: "Bob Barker"
+          name: "Bob Barker",
         },
         { silent: true }
       );
@@ -182,18 +179,16 @@ describe("Mocking:", () => {
     FireModel.defaultDb = realDb;
     const events: IDictionary[] = [];
     FireModel.dispatch = async (e: IReduxAction) => events.push(e);
-    const w = await Watch.list(FancyPerson)
-      .all()
-      .start();
+    const w = await Watch.list(FancyPerson).all().start();
 
     // await Mock(FancyPerson).generate(1);
     await Record.add(FancyPerson, {
-      name: "Bob Barker"
+      name: "Bob Barker",
     });
     await wait(5); // ensures that DB event has time to fire
 
     const eventTypes: Set<string> = new Set();
-    events.forEach(e => eventTypes.add(e.type));
+    events.forEach((e) => eventTypes.add(e.type));
     console.log(eventTypes);
 
     expect(Array.from(eventTypes)).to.include(FmEvents.RECORD_ADDED);
@@ -203,9 +198,11 @@ describe("Mocking:", () => {
     expect(Array.from(eventTypes)).to.include(
       "@firemodel/RECORD_ADDED_CONFIRMATION"
     );
-    const locally = events.find(e => e.type === FmEvents.RECORD_ADDED_LOCALLY);
+    const locally = events.find(
+      (e) => e.type === FmEvents.RECORD_ADDED_LOCALLY
+    );
     const confirm = events.find(
-      e => e.type === FmEvents.RECORD_ADDED_CONFIRMATION
+      (e) => e.type === FmEvents.RECORD_ADDED_CONFIRMATION
     );
     expect(locally).to.haveOwnProperty("transactionId");
     expect(confirm).to.haveOwnProperty("transactionId");
@@ -221,14 +218,19 @@ describe("Mocking:", () => {
       .all()
       .start({ name: "my-test-watcher" });
 
+    let eventTypes: Set<string> = new Set(events.map((e) => e.type));
+    expect(Array.from(eventTypes)).to.not.include(FmEvents.RECORD_ADDED);
+
     await Mock(FancyPerson).generate(1);
-    const eventTypes: Set<string> = new Set(events.map(e => e.type));
+    eventTypes = new Set(events.map((e) => e.type));
 
     expect(Array.from(eventTypes)).to.not.include(FmEvents.RECORD_ADDED);
     await Record.add(FancyPerson, {
-      name: "Bob the Builder"
+      name: "Bob the Builder",
     });
-    const eventTypes2: string[] = Array.from(new Set(events.map(e => e.type)));
+    const eventTypes2: string[] = Array.from(
+      new Set(events.map((e) => e.type))
+    );
 
     expect(eventTypes2).to.include(FmEvents.RECORD_ADDED);
   });

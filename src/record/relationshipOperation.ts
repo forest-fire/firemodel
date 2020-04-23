@@ -5,7 +5,7 @@ import {
   FmEvents,
   IFmPathValuePair,
   IFmRelationshipOptionsForHasMany,
-  IFkReference
+  IFkReference,
 } from "..";
 import { IDictionary } from "common-types";
 import { getModelMeta } from "../ModelMeta";
@@ -53,19 +53,19 @@ export async function relationshipOperation<
   options: IFmRelationshipOptions | IFmRelationshipOptionsForHasMany = {}
 ) {
   // make sure all FK's are strings
-  const fks = fkRefs.map(fk => {
+  const fks = fkRefs.map((fk) => {
     return typeof fk === "object" ? createCompositeRef(fk) : fk;
   });
   const dispatchEvents = {
     set: [
       FmEvents.RELATIONSHIP_SET_LOCALLY,
       FmEvents.RELATIONSHIP_SET_CONFIRMATION,
-      FmEvents.RELATIONSHIP_SET_ROLLBACK
+      FmEvents.RELATIONSHIP_SET_ROLLBACK,
     ],
     clear: [
       FmEvents.RELATIONSHIP_REMOVED_LOCALLY,
       FmEvents.RELATIONSHIP_REMOVED_CONFIRMATION,
-      FmEvents.RELATIONSHIP_REMOVED_ROLLBACK
+      FmEvents.RELATIONSHIP_REMOVED_ROLLBACK,
     ],
     // update: [
     //   FMEvents.RELATIONSHIP_UPDATED_LOCALLY,
@@ -75,13 +75,13 @@ export async function relationshipOperation<
     add: [
       FmEvents.RELATIONSHIP_ADDED_LOCALLY,
       FmEvents.RELATIONSHIP_ADDED_CONFIRMATION,
-      FmEvents.RELATIONSHIP_ADDED_ROLLBACK
+      FmEvents.RELATIONSHIP_ADDED_ROLLBACK,
     ],
     remove: [
       FmEvents.RELATIONSHIP_REMOVED_LOCALLY,
       FmEvents.RELATIONSHIP_REMOVED_CONFIRMATION,
-      FmEvents.RELATIONSHIP_REMOVED_ROLLBACK
-    ]
+      FmEvents.RELATIONSHIP_REMOVED_ROLLBACK,
+    ],
   };
 
   try {
@@ -92,13 +92,9 @@ export async function relationshipOperation<
     const fkMeta = getModelMeta(fkRecord.data);
     const transactionId: string =
       "t-reln-" +
-      Math.random()
-        .toString(36)
-        .substr(2, 5) +
+      Math.random().toString(36).substr(2, 5) +
       "-" +
-      Math.random()
-        .toString(36)
-        .substr(2, 5);
+      Math.random().toString(36).substr(2, 5);
 
     const event: Omit<IFmLocalRelationshipEvent<F, T>, "type"> = {
       key: rec.compositeKeyRef,
@@ -114,7 +110,7 @@ export async function relationshipOperation<
       fromLocal: rec.localPath,
       toLocal: fkRecord.localPath,
       fromConstructor: rec.modelConstructor,
-      toConstructor: fkRecord.modelConstructor
+      toConstructor: fkRecord.modelConstructor,
     };
 
     const inverseProperty = rec.META.relationship(property).inverseProperty;
@@ -134,7 +130,7 @@ export async function relationshipOperation<
         }" model and "${
           event.to
         }". The paths that were being modified were: ${event.paths
-          .map(i => i.path)
+          .map((i) => i.path)
           .join("- \n")}\n A dispatch for a rollback event has been issued.`
       );
     }
@@ -155,11 +151,12 @@ export async function localRelnOp<F extends Model, T extends Model>(
   try {
     // locally modify Record's values
     // const ids = extractFksFromPaths(rec, event.property, event.paths);
-    event.fks.map(fk => {
+    event.fks.map((fk) => {
       locallyUpdateFkOnRecord(rec, fk, { ...event, type });
     });
     // local optimistic dispatch
     rec.dispatch({ ...event, type });
+    // TODO: replace with multiPathSet/transaction
     await rec.db.ref("/").update(
       event.paths.reduce((acc: IDictionary, curr) => {
         acc[curr.path] = curr.value;

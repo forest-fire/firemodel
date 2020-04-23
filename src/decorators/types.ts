@@ -151,9 +151,7 @@ export interface IFmModelAttributeBase<T> {
   fkModelName?: string;
 }
 
-export type MockFunction<T = any> = (
-  context: import("firemock").MockHelper
-) => T | Promise<T>;
+export type MockFunction<T = any> = (context: MockHelper) => T | Promise<T>;
 export type FmMockType = keyof typeof NamedFakes | MockFunction;
 
 export interface IModelIndexMeta {

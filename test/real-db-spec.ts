@@ -5,7 +5,7 @@ import {
   Watch,
   FmEvents,
   IFmLocalEvent,
-  IReduxAction
+  IReduxAction,
 } from "../src";
 import { DB } from "abstracted-admin";
 import * as chai from "chai";
@@ -36,13 +36,13 @@ describe("Tests using REAL db =>�", () => {
     try {
       await Record.add(Person, {
         name: "Carl Yazstrimski",
-        age: 99
+        age: 99,
       });
       const timestamp = new Date().getTime();
       await helpers.wait(50);
       await Record.add(Person, {
         name: "Bob Geldof",
-        age: 65
+        age: 65,
       });
       const since = List.since(Person, timestamp);
 
@@ -62,7 +62,7 @@ describe("Tests using REAL db =>�", () => {
       .all()
       .start({ name: "my-test-watcher" });
 
-    const eventTypes: string[] = Array.from(new Set(events.map(e => e.type)));
+    const eventTypes: string[] = Array.from(new Set(events.map((e) => e.type)));
 
     expect(eventTypes).to.include(FmEvents.WATCHER_STARTING);
     expect(eventTypes).to.include(FmEvents.WATCHER_STARTED);
@@ -70,9 +70,11 @@ describe("Tests using REAL db =>�", () => {
     expect(eventTypes).to.not.include(FmEvents.RECORD_ADDED_LOCALLY);
 
     await Record.add(FancyPerson, {
-      name: "Bob the Builder"
+      name: "Bob the Builder",
     });
-    const eventTypes2: string[] = Array.from(new Set(events.map(e => e.type)));
+    const eventTypes2: string[] = Array.from(
+      new Set(events.map((e) => e.type))
+    );
 
     expect(eventTypes2).to.include(FmEvents.RECORD_ADDED);
   });
@@ -80,7 +82,7 @@ describe("Tests using REAL db =>�", () => {
   it("Updating a record with duplicate values does not fire event watcher event", async () => {
     const events: IDictionary[] = [];
     const bob = await Record.add(FancyPerson, {
-      name: "Bob Marley"
+      name: "Bob Marley",
     });
     const w = await Watch.list(FancyPerson)
       .all()
@@ -88,7 +90,7 @@ describe("Tests using REAL db =>�", () => {
     FireModel.dispatch = async (e: IReduxAction) => events.push(e);
     await Record.update(FancyPerson, bob.id, { name: "Bob Marley" });
     await wait(50);
-    const eventTypes: string[] = Array.from(new Set(events.map(e => e.type)));
+    const eventTypes: string[] = Array.from(new Set(events.map((e) => e.type)));
 
     expect(eventTypes).to.include(FmEvents.RECORD_CHANGED_LOCALLY);
     expect(eventTypes).to.include(FmEvents.RECORD_CHANGED_CONFIRMATION);
@@ -98,7 +100,7 @@ describe("Tests using REAL db =>�", () => {
   it("Detects changes at various nested levels of the watch/listener", async () => {
     let events: Array<IFmLocalEvent<FancyPerson>> = [];
     const jack = await Record.add(FancyPerson, {
-      name: "Jack Johnson"
+      name: "Jack Johnson",
     });
     FireModel.dispatch = async (e: IFmLocalEvent<FancyPerson>) =>
       events.push(e);
@@ -108,14 +110,14 @@ describe("Tests using REAL db =>�", () => {
     // deep path set
     const deepPath = pathJoin(jack.dbPath, "/favorite/sports/basketball");
     await db.set(deepPath, true);
-    const eventTypes: string[] = Array.from(new Set(events.map(e => e.type)));
+    const eventTypes: string[] = Array.from(new Set(events.map((e) => e.type)));
     expect(eventTypes).to.include(FmEvents.WATCHER_STARTING);
     expect(eventTypes).to.include(FmEvents.WATCHER_STARTED);
     expect(
       eventTypes,
       `RECORD_ADDED should have been included [${eventTypes}]`
     ).to.include(FmEvents.RECORD_ADDED);
-    const added = events.filter(e => e.type === FmEvents.RECORD_ADDED).pop();
+    const added = events.filter((e) => e.type === FmEvents.RECORD_ADDED).pop();
     expect(added.key).to.equal(jack.id);
     events = [];
     // child path updated directly
@@ -129,7 +131,7 @@ describe("Tests using REAL db =>�", () => {
     // full update of record
     await db.set(jack.dbPath, {
       name: jack.data.name,
-      favorite: "red sox"
+      favorite: "red sox",
     });
     expect(events).to.have.lengthOf(1);
     const replaced = events.pop();
@@ -137,26 +139,28 @@ describe("Tests using REAL db =>�", () => {
     expect(replaced.key).to.equal(jack.id);
   });
 
-  it("value listener returns correct key and value", async () => {
+  it.skip("value listener returns correct key and value", async () => {
     const events: IDictionary[] = [];
     FireModel.dispatch = async (e: IReduxAction) => events.push(e);
     const w = await Watch.record(FancyPerson, "abcd").start({
-      name: "value-listener"
+      name: "value-listener",
     });
 
     const person = await Record.add(FancyPerson, {
       id: "abcd",
-      name: "Jim Jones"
+      name: "Jim Jones",
     });
 
     const addedLocally = events.filter(
-      e => e.type === FmEvents.RECORD_ADDED_LOCALLY
+      (e) => e.type === FmEvents.RECORD_ADDED_LOCALLY
     );
+    console.log(addedLocally);
+
     expect(addedLocally).to.have.lengthOf(1);
     expect(addedLocally[0].key).to.equal(person.id);
 
     const confirmed = events.filter(
-      e => e.type === FmEvents.RECORD_ADDED_CONFIRMATION
+      (e) => e.type === FmEvents.RECORD_ADDED_CONFIRMATION
     );
     expect(confirmed).to.have.lengthOf(1);
     expect(confirmed[0].key).to.equal(person.id);

@@ -20,11 +20,11 @@ const DEFAULT_IF_NOT_FOUND = "__DO_NOT_USE__";
 function addTimestamps<T extends Model>(obj: IDictionary) {
   const datetime = new Date().getTime();
   const output: IDictionary = {};
-  Object.keys(obj).forEach(i => {
+  Object.keys(obj).forEach((i) => {
     output[i] = {
       ...obj[i],
       createdAt: datetime,
-      lastUpdated: datetime
+      lastUpdated: datetime,
     };
   });
 
@@ -340,8 +340,8 @@ export class List<T extends Model> extends FireModel<T> {
   ) {
     const promises: any[] = [];
     const results: T[] = [];
-    fks.forEach(fk => {
-      promises.push(Record.get(model, fk).then(p => results.push(p.data)));
+    fks.forEach((fk) => {
+      promises.push(Record.get(model, fk).then((p) => results.push(p.data)));
     });
     await Promise.all(promises);
     const obj = new List(model);
@@ -495,8 +495,8 @@ export class List<T extends Model> extends FireModel<T> {
           this.META.isProperty(prop) ||
           (this.META.isRelationship(prop) &&
             this.META.relationship(prop).relType === "hasOne")
-            ? this.map(i => i[prop])
-            : this.map(i => Object.keys(i[prop]));
+            ? this.map((i) => i[prop])
+            : this.map((i) => Object.keys(i[prop]));
         const e = new Error(
           `List<${
             this.modelName
@@ -550,7 +550,7 @@ export class List<T extends Model> extends FireModel<T> {
     id: string,
     defaultIfNotFound: any = DEFAULT_IF_NOT_FOUND
   ): Record<T> {
-    const find = this.filter(f => f.id === id);
+    const find = this.filter((f) => f.id === id);
     if (find.length === 0) {
       if (defaultIfNotFound !== DEFAULT_IF_NOT_FOUND) {
         return defaultIfNotFound;
@@ -579,7 +579,7 @@ export class List<T extends Model> extends FireModel<T> {
     }
 
     const removed = await Record.remove(this._modelConstructor, id, rec);
-    this._data = this.filter(f => f.id !== id).data;
+    this._data = this.filter((f) => f.id !== id).data;
   }
 
   public async add(payload: T) {
@@ -630,18 +630,23 @@ export class List<T extends Model> extends FireModel<T> {
       return dbOffset;
     }
 
-    Object.keys(this._offsets || {}).forEach((prop: string) => {
-      const value = this._offsets[prop as keyof T];
+    const dynamicPathProps = Record.dynamicPathProperties(
+      this._modelConstructor
+    );
 
-      if (!["string", "number"].includes(typeof value)) {
-        throw new FireModelError(
-          `The dynamic dbOffest is using the property "${prop}" on ${
-            this.modelName
-          } as a part of the route path but that property must be either a string or a number and instead was a ${typeof prop}`,
-          "record/not-allowed"
-        );
+    Object.keys(this._offsets || {}).forEach((prop: keyof T & string) => {
+      if (dynamicPathProps.includes(prop)) {
+        const value = this._offsets[prop as keyof T];
+        if (!["string", "number"].includes(typeof value)) {
+          throw new FireModelError(
+            `The dynamic dbOffset is using the property "${prop}" on ${
+              this.modelName
+            } as a part of the route path but that property must be either a string or a number and instead was a ${typeof value}`,
+            "record/not-allowed"
+          );
+        }
+        dbOffset = dbOffset.replace(`:${prop}`, String(value));
       }
-      dbOffset = dbOffset.replace(`:${prop}`, String(value));
     });
 
     if (dbOffset.includes(":")) {

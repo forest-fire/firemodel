@@ -6,68 +6,20 @@ const expect = chai.expect;
 
 setupEnv();
 
-describe("Multi-path Set →", () => {
-  it("duplicate paths throw error", async () => {
+describe("Wrapping abstracted-xxx's Multi-path Set →", () => {
+  it("basic multipath set, sets at given paths", async () => {
     const db = await Admin.connect();
-    const mps = db.multiPathSet("foo/bar");
-    const data = [
-      {
-        path:
-          "/auditing/people/byId/-LG71JiaTVG5qMobx5vh/all/-LG71JibMhlEQ4V_MMfQ",
-        value: 1530216926118
-      },
-      {
-        path:
-          "/auditing/people/byId/-LG71JiaTVG5qMobx5vh/props/name/-LG71JibMhlEQ4V_MMfQ",
-        value: 1530216926118
-      },
-      {
-        path:
-          "/auditing/people/byId/-LG71JiaTVG5qMobx5vh/props/age/-LG71JibMhlEQ4V_MMfQ",
-        value: 1530216926118
-      }
-    ];
-    data.map(item => {
-      mps.add(item);
+    await db.multiPathSet({
+      "/auditing/people/byId/-LG71JiaTVG5qMobx5vh/all/-LG71JibMhlEQ4V_MMfQ": 1530216926118,
+      "/auditing/people/byId/-LG71JiaTVG5qMobx5vh/props/name/-LG71JibMhlEQ4V_MMfQ": 1530216926118,
+      "/auditing/people/byId/-LG71JiaTVG5qMobx5vh/props/age/-LG71JibMhlEQ4V_MMfQ": 1530216926118,
     });
+    const data = await db.getRecord(
+      "/auditing/people/byId/-LG71JiaTVG5qMobx5vh/"
+    );
 
-    try {
-      mps.add({
-        path:
-          "/auditing/people/byId/-LG71JiaTVG5qMobx5vh/all/-LG71JibMhlEQ4V_MMfQ",
-        value: 1530216926119
-      });
-    } catch (e) {
-      expect(e.name).to.equal("DuplicatePath");
-    }
-  });
-
-  it("fullpaths is what it should be", async () => {
-    const db = await Admin.connect();
-    const mps = db.multiPathSet("foo/bar");
-    const data = [
-      {
-        path:
-          "/auditing/people/byId/-LG71JiaTVG5qMobx5vh/all/-LG71JibMhlEQ4V_MMfQ",
-        value: 1530216926118
-      },
-      {
-        path:
-          "/auditing/people/byId/-LG71JiaTVG5qMobx5vh/props/name/-LG71JibMhlEQ4V_MMfQ",
-        value: 1530216926118
-      },
-      {
-        path:
-          "/auditing/people/byId/-LG71JiaTVG5qMobx5vh/props/age/-LG71JibMhlEQ4V_MMfQ",
-        value: 1530216926118
-      }
-    ];
-    data.map(item => {
-      mps.add(item);
-    });
-
-    expect(mps.fullPaths).to.be.an("array");
-    expect(mps.fullPaths[0]).to.be.a("string");
-    expect(mps.fullPaths[0]).to.equal("foo/bar" + data[0].path);
+    expect(data).to.haveOwnProperty("all");
+    expect(data).to.haveOwnProperty("props");
+    expect(data.all["-LG71JibMhlEQ4V_MMfQ"]).to.equal(1530216926118);
   });
 });
