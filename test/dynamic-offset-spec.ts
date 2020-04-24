@@ -8,7 +8,7 @@ import {
   List,
   Watch,
   FmEvents,
-  IReduxAction
+  IReduxAction,
 } from "../src";
 import DeepPerson, { IDeepName } from "./testing/dynamicPaths/DeepPerson";
 import { DeeperPerson } from "./testing/dynamicPaths/DeeperPerson";
@@ -31,17 +31,15 @@ describe("Dynamic offsets reflected in path", () => {
     const person = await Record.add(DeepPerson, {
       name: {
         first: "Bob",
-        last: "Marley"
+        last: "Marley",
       },
       age: 60,
       group: "foobar",
-      phoneNumber: "555-1212"
+      phoneNumber: "555-1212",
     });
 
     expect(person.META.dbOffset).to.equal("/group/:group/testing");
-    expect(person.dynamicPathComponents)
-      .to.be.lengthOf(1)
-      .and.contain("group");
+    expect(person.dynamicPathComponents).to.be.lengthOf(1).and.contain("group");
     expect(person.dbPath).to.contain(`${person.data.group}/testing`);
   });
 
@@ -49,12 +47,12 @@ describe("Dynamic offsets reflected in path", () => {
     const person = await Record.add(DeeperPerson, {
       name: {
         first: "Bob",
-        last: "Marley"
+        last: "Marley",
       },
       age: 60,
       group: "foo",
       subGroup: "bar",
-      phoneNumber: "555-1212"
+      phoneNumber: "555-1212",
     });
 
     expect(person.META.dbOffset).to.equal(":group/:subGroup/testing");
@@ -71,12 +69,12 @@ describe("Dynamic offsets reflected in path", () => {
     const person = await Record.add(DeeperPerson, {
       name: {
         first: "Bob",
-        last: "Marley"
+        last: "Marley",
       },
       age: 60,
       group: "foo",
       subGroup: "bar",
-      phoneNumber: "555-1212"
+      phoneNumber: "555-1212",
     });
 
     expect(db.mock.db.foo.bar.testing).to.be.an("object");
@@ -87,7 +85,7 @@ describe("Dynamic offsets reflected in path", () => {
     const p2 = await Record.get(DeeperPerson, {
       id: person.id,
       group: person.data.group,
-      subGroup: person.data.subGroup
+      subGroup: person.data.subGroup,
     });
 
     expect(p2.id).to.equal(person.id);
@@ -106,11 +104,11 @@ describe("Dynamic offsets work with relationships", () => {
     person = await Record.add(DeepPerson, {
       name: {
         first: "Joe",
-        last: "Blow"
+        last: "Blow",
       },
       age: 30,
       group: "test",
-      phoneNumber: "555-1234"
+      phoneNumber: "555-1234",
     });
     await Mock(Hobby, db).generate(4);
     hobbies = await List.all(Hobby);
@@ -131,19 +129,19 @@ describe("Dynamic offsets work with relationships", () => {
     const motherId = (
       await Mock(DeepPerson).generate(1, {
         age: 55,
-        group: "test"
+        group: "test",
       })
     ).pop();
     const fatherId = (
       await Mock(DeepPerson).generate(1, {
         age: 61,
-        group: "test"
+        group: "test",
       })
     ).pop();
 
     await person.addToRelationship("parents", [
       motherId.compositeKey,
-      fatherId.compositeKey
+      fatherId.compositeKey,
     ]);
   });
 
@@ -151,28 +149,28 @@ describe("Dynamic offsets work with relationships", () => {
     const motherId = (
       await Mock(DeepPerson).generate(1, {
         age: 55,
-        group: "test"
+        group: "test",
       })
     ).pop();
     const fatherId = (
       await Mock(DeepPerson).generate(1, {
         age: 61,
-        group: "test"
+        group: "test",
       })
     ).pop();
     let mother = await Record.get(DeepPerson, {
       id: motherId.id,
-      group: "test"
+      group: "test",
     });
     let father = await Record.get(DeepPerson, {
       id: fatherId.id,
-      group: "test"
+      group: "test",
     });
 
     // add reln
     await person.addToRelationship("parents", [
       mother.compositeKey,
-      father.compositeKey
+      father.compositeKey,
     ]);
 
     // refresh records
@@ -192,13 +190,13 @@ describe("Dynamic offsets work with relationships", () => {
     const motherId = (
       await Mock(DeepPerson).generate(1, {
         age: 55,
-        group: "test"
+        group: "test",
       })
     ).pop();
     const fatherId = (
       await Mock(DeepPerson).generate(1, {
         age: 61,
-        group: "test"
+        group: "test",
       })
     ).pop();
     let mother = await Record.get(DeepPerson, `${motherId.id}::group:test2`);
@@ -207,7 +205,7 @@ describe("Dynamic offsets work with relationships", () => {
     // add reln
     await person.addToRelationship("parents", [
       mother.compositeKey,
-      father.compositeKey
+      father.compositeKey,
     ]);
 
     // refresh records
@@ -228,7 +226,7 @@ describe("Dynamic offsets work with relationships", () => {
       name: "acme",
       state: "CA",
       group: "test",
-      employees: {}
+      employees: {},
     });
     person.setRelationship("employer", company.compositeKeyRef);
 
@@ -244,7 +242,7 @@ describe("Dynamic offsets work with relationships", () => {
       name: "acme",
       state: "CA",
       group: "test2",
-      employees: {}
+      employees: {},
     });
     person.setRelationship("employer", company.compositeKeyRef);
 
@@ -258,7 +256,7 @@ describe("Dynamic offsets work with relationships", () => {
   it("setRelationship works for 1:M (where FK is not on a dynamic path)", async () => {
     let attribute = await Record.add(HumanAttribute, {
       attribute: "smart",
-      category: "abc"
+      category: "abc",
     });
     person.addToRelationship("attributes", attribute.compositeKeyRef);
 
@@ -299,15 +297,15 @@ describe("LIST uses static offsets() with static API methods", () => {
     await Mock(DeepPerson).generate(6, { group: "test", age: 45 });
     await Mock(DeepPerson).generate(5, { group: "test2", age: 45 });
     const people = await List.where(DeepPerson, "age", 45, {
-      offsets: { group: "test" }
+      offsets: { group: "test" },
     });
     expect(people.length).to.equal(
       6,
       `There should have been 6 records but got ${
         people.length
-      }. The id's returned were: ${people.map(i => i.id)}.`
+      }. The id's returned were: ${people.map((i) => i.id)}.`
     );
-    expect(people.filter(i => i.age === 45)).is.length(6);
+    expect(people.filter((i) => i.age === 45)).is.length(6);
   });
 });
 
@@ -430,7 +428,7 @@ describe("WATCHers work with dynamic dbOffsets", () => {
     FireModel.dispatch = dispatch;
     const watchRecord = Watch.record(DeepPerson, {
       id: "12345",
-      group: "CA"
+      group: "CA",
     });
 
     expect(watchRecord.start).to.be.a("function");
@@ -448,10 +446,10 @@ describe("WATCHers work with dynamic dbOffsets", () => {
       id: "12345",
       group: "CA",
       age: 23,
-      name: { first: "Charlie", last: "Chaplin" }
+      name: { first: "Charlie", last: "Chaplin" },
     });
 
-    expect(events.map(i => i.type)).to.include(
+    expect(events.map((i) => i.type)).to.include(
       FmEvents.RECORD_ADDED_CONFIRMATION
     );
   });
@@ -475,17 +473,15 @@ describe("WATCHers work with dynamic dbOffsets", () => {
 
     const watcher = await watchList.all().start();
 
-    expect(watcher)
-      .to.haveOwnProperty("watcherId")
-      .and.to.be.a("string");
+    expect(watcher).to.haveOwnProperty("watcherId").and.to.be.a("string");
 
     await Record.add(DeepPerson, {
       name: { first: "Robert", last: "Kennedy" },
       age: 55,
-      group: "CA"
+      group: "CA",
     });
 
-    expect(events.map(i => i.type)).to.include(
+    expect(events.map((i) => i.type)).to.include(
       FmEvents.RECORD_ADDED_CONFIRMATION
     );
   });
@@ -502,12 +498,12 @@ function fkPropertyStructureForHasOne<T>(
   props: Array<keyof T>,
   withDynamicPath: boolean
 ) {
-  props.forEach(prop => {
+  props.forEach((prop) => {
     const firstFk = firstRecord<T>(record)[prop];
     const lastFk = lastRecord<T>(record)[prop];
-    const fks = [firstFk, lastFk].filter(i => i);
+    const fks = [firstFk, lastFk].filter((i) => i);
 
-    fks.forEach(fk => {
+    fks.forEach((fk) => {
       expect(fk).to.be.a("string");
       if (withDynamicPath) {
         expect(fk).to.include("::");
@@ -523,12 +519,12 @@ function fkPropertyStructureForHasMany<T>(
   props: Array<keyof T>,
   withDynamicPath: boolean
 ) {
-  props.forEach(prop => {
+  props.forEach((prop) => {
     const firstFk = firstRecord<T>(record)[prop];
     const lastFk = lastRecord<T>(record)[prop];
-    const fks = [firstFk, lastFk].filter(i => i).map(i => firstKey(i));
+    const fks = [firstFk, lastFk].filter((i) => i).map((i) => firstKey(i));
 
-    fks.forEach(fk => {
+    fks.forEach((fk) => {
       expect(fk).to.be.a("string");
       if (withDynamicPath) {
         expect(fk).to.include("::");

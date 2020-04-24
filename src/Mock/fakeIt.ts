@@ -2,6 +2,7 @@ import NamedFakes from "./NamedFakes";
 import { fbKey } from "../index";
 import { IDictionary } from "common-types";
 import { format, parseISO } from "date-fns";
+import { MockHelper } from "abstracted-firebase";
 
 const sequence: IDictionary<number> = {};
 
@@ -9,7 +10,7 @@ function getDistribution<T = any>(...distribution: Array<[number, T]>) {
   const num = Math.floor(Math.random() * 100) + 1;
   let start = 1;
   let outcome;
-  const d = distribution.map(i => {
+  const d = distribution.map((i) => {
     const [percentage, value] = i;
     const end = start + percentage - 1;
     const val = { start, end, value };
@@ -17,7 +18,7 @@ function getDistribution<T = any>(...distribution: Array<[number, T]>) {
     return val;
   });
 
-  d.forEach(i => {
+  d.forEach((i) => {
     if (num >= i.start && num <= i.end) {
       outcome = i.value;
       // console.log("set", num, `${start} => ${start + percentage}`);
@@ -26,7 +27,7 @@ function getDistribution<T = any>(...distribution: Array<[number, T]>) {
   if (!outcome) {
     throw new Error(
       `The mock distribution's random number [ ${num} ] fell outside the range of probability; make sure that your percentages add up to 100 [ ${distribution
-        .map(i => i[0])
+        .map((i) => i[0])
         .join(", ")} ]`
     );
   }
@@ -35,7 +36,7 @@ function getDistribution<T = any>(...distribution: Array<[number, T]>) {
 }
 
 export default function fakeIt<T = any>(
-  helper: import("firemock").MockHelper,
+  helper: MockHelper,
   type: keyof typeof NamedFakes,
   ...rest: any[]
 ) {
@@ -69,7 +70,7 @@ export default function fakeIt<T = any>(
         min: 1,
         max: 100,
         precision: 2,
-        variableCents: false
+        variableCents: false,
       });
       let cents: string;
       if (price.variableCents) {
@@ -139,7 +140,7 @@ export default function fakeIt<T = any>(
     case "coordinate":
       return {
         latitude: Number(helper.faker.address.latitude()),
-        longitude: Number(helper.faker.address.longitude())
+        longitude: Number(helper.faker.address.longitude()),
       };
     /**
      * Adds a gender of "male", "female" or "other" but with more likelihood of
@@ -153,7 +154,7 @@ export default function fakeIt<T = any>(
         "female",
         "male",
         "female",
-        "other"
+        "other",
       ]);
     case "age":
       return helper.faker.random.number({ min: 1, max: 99 });

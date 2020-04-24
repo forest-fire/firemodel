@@ -1,12 +1,13 @@
 import mockProperties from "./mockProperties";
 import addRelationships from "./addRelationships";
 import { Record } from "../Record";
+import { FireMock } from "abstracted-firebase";
 import { FireModelError } from "../errors";
 let mockPrepared = false;
 export default function API(db, modelConstructor) {
     const config = {
         relationshipBehavior: "ignore",
-        exceptionPassthrough: false
+        exceptionPassthrough: false,
     };
     const MockApi = {
         /**
@@ -19,7 +20,6 @@ export default function API(db, modelConstructor) {
          */
         async generate(count, exceptions = {}) {
             if (!mockPrepared) {
-                const FireMock = (await import("firemock")).Mock;
                 await FireMock.prepare();
                 mockPrepared = true;
             }
@@ -31,13 +31,13 @@ export default function API(db, modelConstructor) {
             if (record.hasDynamicPath) {
                 // which props -- required for compositeKey -- are not yet
                 // set
-                const notCovered = record.dynamicPathComponents.filter(key => !Object.keys(exceptions).includes(key));
+                const notCovered = record.dynamicPathComponents.filter((key) => !Object.keys(exceptions).includes(key));
                 // for now we are stating that these two mock-types can
                 // be used to dig us out of this deficit; we should
                 // consider openning this up
                 // TODO: consider opening up other mockTypes to fill in the compositeKey
                 const validMocks = ["sequence", "random", "distribution"];
-                notCovered.forEach(key => {
+                notCovered.forEach((key) => {
                     const prop = record.META.property(key) || {};
                     const mock = prop.mockType;
                     if (!mock ||
@@ -90,7 +90,7 @@ export default function API(db, modelConstructor) {
                 config.cardinality = cardinality;
             }
             return MockApi;
-        }
+        },
     };
     return MockApi;
 }
