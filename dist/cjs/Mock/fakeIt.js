@@ -7,14 +7,14 @@ function getDistribution(...distribution) {
     const num = Math.floor(Math.random() * 100) + 1;
     let start = 1;
     let outcome;
-    const d = distribution.map(i => {
+    const d = distribution.map((i) => {
         const [percentage, value] = i;
         const end = start + percentage - 1;
         const val = { start, end, value };
         start = start + percentage;
         return val;
     });
-    d.forEach(i => {
+    d.forEach((i) => {
         if (num >= i.start && num <= i.end) {
             outcome = i.value;
             // console.log("set", num, `${start} => ${start + percentage}`);
@@ -22,7 +22,7 @@ function getDistribution(...distribution) {
     });
     if (!outcome) {
         throw new Error(`The mock distribution's random number [ ${num} ] fell outside the range of probability; make sure that your percentages add up to 100 [ ${distribution
-            .map(i => i[0])
+            .map((i) => i[0])
             .join(", ")} ]`);
     }
     return outcome;
@@ -52,7 +52,7 @@ function fakeIt(helper, type, ...rest) {
                 min: 1,
                 max: 100,
                 precision: 2,
-                variableCents: false
+                variableCents: false,
             });
             let cents;
             if (price.variableCents) {
@@ -109,7 +109,7 @@ function fakeIt(helper, type, ...rest) {
         case "coordinate":
             return {
                 latitude: Number(helper.faker.address.latitude()),
-                longitude: Number(helper.faker.address.longitude())
+                longitude: Number(helper.faker.address.longitude()),
             };
         /**
          * Adds a gender of "male", "female" or "other" but with more likelihood of
@@ -123,7 +123,7 @@ function fakeIt(helper, type, ...rest) {
                 "female",
                 "male",
                 "female",
-                "other"
+                "other",
             ]);
         case "age":
             return helper.faker.random.number({ min: 1, max: 99 });

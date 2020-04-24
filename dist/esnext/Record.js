@@ -7,7 +7,7 @@ import { pathJoin } from "./path";
 import { getModelMeta } from "./ModelMeta";
 import { writeAudit } from "./Audit";
 import { compareHashes, withoutMetaOrPrivate, capitalize } from "./util";
-import { createCompositeKey } from ".";
+import { createCompositeKey, List } from ".";
 import { findWatchers } from "./watchers/findWatchers";
 import { isHasManyRelationship } from "./verifications/isHasManyRelationship";
 import { NotHasManyRelationship, NotHasOneRelationship, FireModelError, FireModelProxyError } from "./errors";
@@ -125,9 +125,8 @@ export class Record extends FireModel {
             }
             r = Record.createWith(model, payload, options);
             if (!payload.id) {
-                payload.id = r.db.isMockDb
-                    ? fbKey()
-                    : await r.db.getPushKey(r.dbOffset);
+                const path = List.dbPath(model, payload);
+                payload.id = await r.db.getPushKey(path);
             }
             await r._initialize(payload, options);
             const defaultValues = r.META.properties.filter(i => i.defaultValue !== undefined);

@@ -1,3 +1,4 @@
+import { getMockHelper } from "abstracted-firebase";
 import { Record } from "..";
 import { getModelMeta } from "../ModelMeta";
 import mockValue from "./mockValue";
@@ -8,7 +9,7 @@ export default function mockProperties(db, config = { relationshipBehavior: "ign
         const props = meta.properties;
         const recProps = {};
         // set properties on the record with mocks
-        const mh = await (await import("firemock")).getMockHelper(db);
+        const mh = await getMockHelper(db);
         for (const prop of props) {
             const p = prop.property;
             recProps[p] = await mockValue(db, prop, mh);
@@ -17,7 +18,7 @@ export default function mockProperties(db, config = { relationshipBehavior: "ign
         const finalized = Object.assign(Object.assign({}, recProps), exceptions);
         // write to mock db and retain a reference to same model
         record = await Record.add(record.modelConstructor, finalized, {
-            silent: true
+            silent: true,
         });
         return record;
     };

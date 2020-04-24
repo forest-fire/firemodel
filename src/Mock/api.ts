@@ -2,7 +2,7 @@ import { IDictionary } from "common-types";
 import mockProperties from "./mockProperties";
 import addRelationships from "./addRelationships";
 import { Record } from "../Record";
-import { RealTimeDB } from "abstracted-firebase";
+import { RealTimeDB, FireMock } from "abstracted-firebase";
 import { IMockConfig, IMockResponse } from "./types";
 import { FireModelError } from "../errors";
 
@@ -11,7 +11,7 @@ let mockPrepared = false;
 export default function API<T>(db: RealTimeDB, modelConstructor: new () => T) {
   const config: IMockConfig = {
     relationshipBehavior: "ignore",
-    exceptionPassthrough: false
+    exceptionPassthrough: false,
   };
   const MockApi = {
     /**
@@ -27,7 +27,6 @@ export default function API<T>(db: RealTimeDB, modelConstructor: new () => T) {
       exceptions: Partial<T> = {}
     ): Promise<Array<IMockResponse<T>>> {
       if (!mockPrepared) {
-        const FireMock = (await import("firemock")).Mock;
         await FireMock.prepare();
         mockPrepared = true;
       }
@@ -37,22 +36,24 @@ export default function API<T>(db: RealTimeDB, modelConstructor: new () => T) {
 
       // create record; using any incoming exception to build the object.
       // this is primarily to form the "composite key" where it is needed
-      const record = Record.createWith(modelConstructor, exceptions as Partial<
-        T
-      >, { db: this.db });
+      const record = Record.createWith(
+        modelConstructor,
+        exceptions as Partial<T>,
+        { db: this.db }
+      );
 
       if (record.hasDynamicPath) {
         // which props -- required for compositeKey -- are not yet
         // set
         const notCovered = record.dynamicPathComponents.filter(
-          key => !Object.keys(exceptions).includes(key)
+          (key) => !Object.keys(exceptions).includes(key)
         );
         // for now we are stating that these two mock-types can
         // be used to dig us out of this deficit; we should
         // consider openning this up
         // TODO: consider opening up other mockTypes to fill in the compositeKey
         const validMocks = ["sequence", "random", "distribution"];
-        notCovered.forEach(key => {
+        notCovered.forEach((key) => {
           const prop: IDictionary =
             record.META.property(key as keyof T & string) || {};
           const mock = prop.mockType;
@@ -129,7 +130,7 @@ export default function API<T>(db: RealTimeDB, modelConstructor: new () => T) {
         config.cardinality = cardinality;
       }
       return MockApi;
-    }
+    },
   };
 
   return MockApi;

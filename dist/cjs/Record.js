@@ -130,9 +130,8 @@ class Record extends FireModel_1.FireModel {
             }
             r = Record.createWith(model, payload, options);
             if (!payload.id) {
-                payload.id = r.db.isMockDb
-                    ? firebase_key_1.key()
-                    : await r.db.getPushKey(r.dbOffset);
+                const path = _1.List.dbPath(model, payload);
+                payload.id = await r.db.getPushKey(path);
             }
             await r._initialize(payload, options);
             const defaultValues = r.META.properties.filter(i => i.defaultValue !== undefined);
