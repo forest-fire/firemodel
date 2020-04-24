@@ -1,2 +1,3 @@
 import NamedFakes from "./NamedFakes";
-export default function fakeIt<T = any>(helper: import("firemock").MockHelper, type: keyof typeof NamedFakes, ...rest: any[]): any;
+import { MockHelper } from "abstracted-firebase";
+export default function fakeIt<T = any>(helper: MockHelper, type: keyof typeof NamedFakes, ...rest: any[]): any;

@@ -1,5 +1,5 @@
 import { Model, IFmModelPropertyMeta } from "..";
-import { RealTimeDB } from "abstracted-firebase";
+import { RealTimeDB, MockHelper } from "abstracted-firebase";
 import fakeIt from "./fakeIt";
 import NamedFakes from "./NamedFakes";
 import PropertyNamePatterns from "./PropertyNamePatterns";
@@ -8,7 +8,7 @@ import { MockError } from "../errors";
 export default function mockValue<T extends Model>(
   db: RealTimeDB,
   propMeta: IFmModelPropertyMeta<T>,
-  mockHelper: import("firemock").MockHelper,
+  mockHelper: MockHelper,
   ...rest: any[]
 ) {
   mockHelper.context = propMeta;

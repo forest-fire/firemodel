@@ -39,19 +39,19 @@ fkRefs,
  */
 paths, options = {}) {
     // make sure all FK's are strings
-    const fks = fkRefs.map(fk => {
+    const fks = fkRefs.map((fk) => {
         return typeof fk === "object" ? createCompositeKeyString_1.createCompositeRef(fk) : fk;
     });
     const dispatchEvents = {
         set: [
             __1.FmEvents.RELATIONSHIP_SET_LOCALLY,
             __1.FmEvents.RELATIONSHIP_SET_CONFIRMATION,
-            __1.FmEvents.RELATIONSHIP_SET_ROLLBACK
+            __1.FmEvents.RELATIONSHIP_SET_ROLLBACK,
         ],
         clear: [
             __1.FmEvents.RELATIONSHIP_REMOVED_LOCALLY,
             __1.FmEvents.RELATIONSHIP_REMOVED_CONFIRMATION,
-            __1.FmEvents.RELATIONSHIP_REMOVED_ROLLBACK
+            __1.FmEvents.RELATIONSHIP_REMOVED_ROLLBACK,
         ],
         // update: [
         //   FMEvents.RELATIONSHIP_UPDATED_LOCALLY,
@@ -61,13 +61,13 @@ paths, options = {}) {
         add: [
             __1.FmEvents.RELATIONSHIP_ADDED_LOCALLY,
             __1.FmEvents.RELATIONSHIP_ADDED_CONFIRMATION,
-            __1.FmEvents.RELATIONSHIP_ADDED_ROLLBACK
+            __1.FmEvents.RELATIONSHIP_ADDED_ROLLBACK,
         ],
         remove: [
             __1.FmEvents.RELATIONSHIP_REMOVED_LOCALLY,
             __1.FmEvents.RELATIONSHIP_REMOVED_CONFIRMATION,
-            __1.FmEvents.RELATIONSHIP_REMOVED_ROLLBACK
-        ]
+            __1.FmEvents.RELATIONSHIP_REMOVED_ROLLBACK,
+        ],
     };
     try {
         const [localEvent, confirmEvent, rollbackEvent] = dispatchEvents[operation];
@@ -76,13 +76,9 @@ paths, options = {}) {
         const fkRecord = new Record_1.Record(fkConstructor());
         const fkMeta = ModelMeta_1.getModelMeta(fkRecord.data);
         const transactionId = "t-reln-" +
-            Math.random()
-                .toString(36)
-                .substr(2, 5) +
+            Math.random().toString(36).substr(2, 5) +
             "-" +
-            Math.random()
-                .toString(36)
-                .substr(2, 5);
+            Math.random().toString(36).substr(2, 5);
         const event = {
             key: rec.compositeKeyRef,
             operation,
@@ -97,7 +93,7 @@ paths, options = {}) {
             fromLocal: rec.localPath,
             toLocal: fkRecord.localPath,
             fromConstructor: rec.modelConstructor,
-            toConstructor: fkRecord.modelConstructor
+            toConstructor: fkRecord.modelConstructor,
         };
         const inverseProperty = rec.META.relationship(property).inverseProperty;
         if (inverseProperty) {
@@ -110,7 +106,7 @@ paths, options = {}) {
         catch (e) {
             await relnRollback(rec, event, rollbackEvent);
             throw new errors_1.FireModelProxyError(e, `Encountered an error executing a relationship operation between the "${event.from}" model and "${event.to}". The paths that were being modified were: ${event.paths
-                .map(i => i.path)
+                .map((i) => i.path)
                 .join("- \n")}\n A dispatch for a rollback event has been issued.`);
         }
     }
@@ -128,11 +124,12 @@ async function localRelnOp(rec, event, type) {
     try {
         // locally modify Record's values
         // const ids = extractFksFromPaths(rec, event.property, event.paths);
-        event.fks.map(fk => {
+        event.fks.map((fk) => {
             locallyUpdateFkOnRecord_1.locallyUpdateFkOnRecord(rec, fk, Object.assign(Object.assign({}, event), { type }));
         });
         // local optimistic dispatch
         rec.dispatch(Object.assign(Object.assign({}, event), { type }));
+        // TODO: replace with multiPathSet/transaction
         await rec.db.ref("/").update(event.paths.reduce((acc, curr) => {
             acc[curr.path] = curr.value;
             return acc;

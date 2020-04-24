@@ -2,23 +2,17 @@
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
-    return result;
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 const mockProperties_1 = __importDefault(require("./mockProperties"));
 const addRelationships_1 = __importDefault(require("./addRelationships"));
 const Record_1 = require("../Record");
+const abstracted_firebase_1 = require("abstracted-firebase");
 const errors_1 = require("../errors");
 let mockPrepared = false;
 function API(db, modelConstructor) {
     const config = {
         relationshipBehavior: "ignore",
-        exceptionPassthrough: false
+        exceptionPassthrough: false,
     };
     const MockApi = {
         /**
@@ -31,8 +25,7 @@ function API(db, modelConstructor) {
          */
         async generate(count, exceptions = {}) {
             if (!mockPrepared) {
-                const FireMock = (await Promise.resolve().then(() => __importStar(require("firemock")))).Mock;
-                await FireMock.prepare();
+                await abstracted_firebase_1.FireMock.prepare();
                 mockPrepared = true;
             }
             const props = mockProperties_1.default(db, config, exceptions);
@@ -43,13 +36,13 @@ function API(db, modelConstructor) {
             if (record.hasDynamicPath) {
                 // which props -- required for compositeKey -- are not yet
                 // set
-                const notCovered = record.dynamicPathComponents.filter(key => !Object.keys(exceptions).includes(key));
+                const notCovered = record.dynamicPathComponents.filter((key) => !Object.keys(exceptions).includes(key));
                 // for now we are stating that these two mock-types can
                 // be used to dig us out of this deficit; we should
                 // consider openning this up
                 // TODO: consider opening up other mockTypes to fill in the compositeKey
                 const validMocks = ["sequence", "random", "distribution"];
-                notCovered.forEach(key => {
+                notCovered.forEach((key) => {
                     const prop = record.META.property(key) || {};
                     const mock = prop.mockType;
                     if (!mock ||
@@ -102,7 +95,7 @@ function API(db, modelConstructor) {
                 config.cardinality = cardinality;
             }
             return MockApi;
-        }
+        },
     };
     return MockApi;
 }
