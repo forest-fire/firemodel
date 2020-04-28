@@ -1,12 +1,11 @@
 // tslint:disable:no-implicit-dependencies
-import * as chai from "chai";
+import { expect } from "chai";
 import { Record, List, Mock } from "../src";
 import { AuditLog } from "../src/models/index";
 import { DB } from "abstracted-admin";
 import { Person } from "./testing/AuditedPerson";
 import { FireModel } from "../src/FireModel";
 import { wait } from "common-types";
-const expect = chai.expect;
 
 describe("Auditing ->�", () => {
   let db: DB;
@@ -29,7 +28,7 @@ describe("Auditing ->�", () => {
     // console.log(JSON.stringify(audit, null, 2));
 
     expect(audit).to.have.lengthOf(5);
-    const actions = audit.map(i => i.action);
+    const actions = audit.map((i) => i.action);
 
     expect(actions.includes("added")).to.equal(true);
     expect(actions.includes("updated")).to.equal(true);
