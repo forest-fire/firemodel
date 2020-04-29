@@ -1,5 +1,5 @@
 // tslint:disable:no-implicit-dependencies
-import { Record, IFmWatchEvent } from "../src";
+import { Record, IFmWatchEvent, List, IFmLocalEvent, Watch } from "../src";
 import { DB } from "abstracted-admin";
 import * as chai from "chai";
 const expect = chai.expect;
@@ -9,6 +9,7 @@ import { FancyPerson } from "./testing/FancyPerson";
 import { FmEvents } from "../src/state-mgmt";
 import { Company } from "./testing/Company";
 import { Pay } from "./testing/Pay";
+import { PersonPay } from "./testing/dynamicPaths/PersonPay";
 import { extractFksFromPaths } from "../src/record/extractFksFromPaths";
 import { Car } from "./testing/Car";
 import OffsetCar from "./testing/dynamicPaths/Car";
@@ -288,20 +289,45 @@ describe("Relationship > ", () => {
       );
     }
   });
-  // it.skip("using addToRelationship() on a hasMany relationship with an inverse of hasOne", async () => {
-  //   const person = await Record.add(Person, {
-  //     name: "Bob",
-  //     age: 23
-  //   });
-  //   expect(person.id).to.exist.and.to.be.a("string");
-  //   const lastUpdated = person.data.lastUpdated;
-  //   const events: IFmRecordEvent[] = [];
-  //   Record.dispatch = (evt: IFmRecordEvent) => events.push(evt);
-  //   await person.addToRelationship("concerts", "12345");
-  //   expect((person.data.concerts as any)["12345"]).to.equal(true);
-  //   expect(events).to.have.lengthOf(2);
-  //   const eventTypes = new Set(events.map(e => e.type));
-  //   expect(eventTypes.has(FMEvents.RELATIONSHIP_ADDED)).to.equal(true);
-  //   expect(eventTypes.has(FMEvents.RELATIONSHIP_ADDED_LOCALLY)).to.equal(true);
-  // });
+
+  it.only("testing removing relationships with remove()", async () => {
+    const person = await Record.add(Person, {
+      id: "p1",
+      name: "Joe Bloggs",
+      age: 22,
+      gender: "male"
+    });
+
+    const events: Array<IFmLocalEvent<Person>> = [];
+    const cb = async (event: IFmLocalEvent<Person>) => {
+      events.push(event);
+    };
+    const pList = await Watch.list(PersonPay, { person: person.id })
+      .all()
+      .dispatch(cb)
+      .start();
+
+    const pay = await Record.add(PersonPay, {
+      amount: "2400.00",
+      person: person.id
+    });
+
+    const pay1 = await Record.add(PersonPay, {
+      amount: "2400.00",
+      person: person.id
+    });
+    console.log(pay.dbPath);
+    await pay.remove();
+
+    expect(events).to.have.lengthOf(10);
+    const eventTypes = new Set(events.map(e => e.type));
+    expect(eventTypes.has(FmEvents.RECORD_REMOVED_LOCALLY)).is.equal(true);
+    expect(eventTypes.has(FmEvents.RECORD_REMOVED_CONFIRMATION)).is.equal(true);
+
+    const payList = await List.all(PersonPay, { offsets: { person: person.id }});
+
+    expect(payList).to.have.lengthOf(1);
+    const ids = payList.map(p => p.id);
+    expect(ids.includes(pay.id)).to.equal(false);
+  });
 }).timeout(4000);
