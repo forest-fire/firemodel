@@ -1,4 +1,4 @@
-import { SerializedQuery } from "serialized-query";
+import { SerializedQuery } from "@forest-fire/serialized-query";
 import { Model } from "../models/Model";
 import { IWatchEventClassification, IReduxDispatch, IWatcherSource } from "..";
 import { epoch } from "common-types";

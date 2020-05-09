@@ -1,5 +1,5 @@
 import { RealTimeDB, getMockHelper } from "abstracted-firebase";
-import { AbstractedDatabase } from "abstracted-database";
+import { AbstractedDatabase } from "@forest-fire/abstracted-database";
 
 import { Model, Record } from "..";
 import { IDictionary } from "common-types";

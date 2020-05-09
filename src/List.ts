@@ -1,7 +1,11 @@
 import { arrayToHash } from "typed-conversions";
-import { AbstractedDatabase } from "abstracted-database";
+import { AbstractedDatabase } from "@forest-fire/abstracted-database";
 import { epochWithMilliseconds, IDictionary } from "common-types";
-import { SerializedQuery, IComparisonOperator } from "serialized-query";
+import {
+  SerializedQuery,
+  IComparisonOperator,
+  SerializedRealTimeQuery
+} from "@forest-fire/serialized-query";
 
 import { Model } from "./models/Model";
 import { Record } from "./Record";
@@ -134,7 +138,7 @@ export class List<T extends Model> extends FireModel<T> {
     model: new () => T,
     options: IListOptions<T> = {}
   ): Promise<List<T>> {
-    const query = new SerializedQuery<T>().orderByChild("lastUpdated");
+    const query = new SerializedRealTimeQuery<T>().orderByChild("lastUpdated");
     const list = await List.fromQuery<T>(model, query, options);
 
     return list;
@@ -153,7 +157,7 @@ export class List<T extends Model> extends FireModel<T> {
     howMany: number,
     options: IListOptions<T> = {}
   ): Promise<List<T>> {
-    const query = new SerializedQuery<T>()
+    const query = new SerializedRealTimeQuery<T>()
       .orderByChild("createdAt")
       .limitToLast(howMany);
     const list = await List.fromQuery(model, query, options);
@@ -177,7 +181,7 @@ export class List<T extends Model> extends FireModel<T> {
     offset: number = 0,
     options: IListOptions<T> = {}
   ): Promise<List<T>> {
-    const query = new SerializedQuery<T>()
+    const query = new SerializedRealTimeQuery<T>()
       .orderByChild("lastUpdated")
       .limitToFirst(howMany);
     const list = await List.fromQuery(model, query, options);
@@ -203,7 +207,7 @@ export class List<T extends Model> extends FireModel<T> {
       throw e;
     }
 
-    const query = new SerializedQuery<T>()
+    const query = new SerializedRealTimeQuery<T>()
       .orderByChild("lastUpdated")
       .startAt(since);
 
@@ -224,7 +228,7 @@ export class List<T extends Model> extends FireModel<T> {
     howMany: number,
     options: IListOptions<T> = {}
   ): Promise<List<T>> {
-    const query = new SerializedQuery<T>()
+    const query = new SerializedRealTimeQuery<T>()
       .orderByChild("lastUpdated")
       .limitToLast(howMany);
     const list = await List.fromQuery(model, query, options);
@@ -243,7 +247,7 @@ export class List<T extends Model> extends FireModel<T> {
     howMany: number,
     options: IListOptions<T> = {}
   ): Promise<List<T>> {
-    const query = new SerializedQuery<T>()
+    const query = new SerializedRealTimeQuery<T>()
       .orderByChild("createdAt")
       .limitToFirst(howMany);
     const list = await List.fromQuery(model, query, options);
@@ -314,7 +318,7 @@ export class List<T extends Model> extends FireModel<T> {
       val = value[1];
       operation = value[0];
     }
-    const query = new SerializedQuery<T>()
+    const query = new SerializedRealTimeQuery<T>()
       .orderByChild(property)
       .where(operation, val);
 

@@ -1,4 +1,4 @@
-import { AbstractedDatabase } from "abstracted-database";
+import { AbstractedDatabase } from "@forest-fire/abstracted-database";
 import { IDictionary } from "common-types";
 
 import mockProperties from "./mockProperties";
@@ -10,7 +10,10 @@ import { FireModelError } from "../errors";
 
 let mockPrepared = false;
 
-export default function API<T>(db: AbstractedDatabase, modelConstructor: new () => T) {
+export default function API<T>(
+  db: AbstractedDatabase,
+  modelConstructor: new () => T
+) {
   const config: IMockConfig = {
     relationshipBehavior: "ignore",
     exceptionPassthrough: false,

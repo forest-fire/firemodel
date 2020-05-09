@@ -1,4 +1,4 @@
-import { AbstractedDatabase } from "abstracted-database";
+import { AbstractedDatabase } from "@forest-fire/abstracted-database";
 
 import { Mock, Record, IFmModelRelationshipMeta } from "..";
 import { IMockConfig, IMockResponse } from "./types";

@@ -1,12 +1,12 @@
 import { AuditBase } from "./AuditBase";
-import { SerializedQuery } from "serialized-query";
+import { SerializedRealTimeQuery } from "@forest-fire/serialized-query";
 import { pathJoin } from "./path";
 import { Parallel } from "wait-in-parallel";
 export class AuditRecord extends AuditBase {
     constructor(modelKlass, id, options = {}) {
         super(modelKlass, options);
         this._recordId = id;
-        this._query = new SerializedQuery();
+        this._query = new SerializedRealTimeQuery();
     }
     /**
      * Queries the database for the first _x_ audit records [`howMany`] of

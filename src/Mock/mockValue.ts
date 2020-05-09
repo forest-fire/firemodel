@@ -1,4 +1,4 @@
-import { AbstractedDatabase } from "abstracted-database";
+import { AbstractedDatabase } from "@forest-fire/abstracted-database";
 
 import { Model, IFmModelPropertyMeta } from "..";
 import { RealTimeDB, MockHelper } from "abstracted-firebase";

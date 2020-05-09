@@ -1,4 +1,4 @@
-import { AbstractedDatabase } from "abstracted-database";
+import { AbstractedDatabase } from "@forest-fire/abstracted-database";
 import fakeIt from "./fakeIt";
 import NamedFakes from "./NamedFakes";
 import PropertyNamePatterns from "./PropertyNamePatterns";

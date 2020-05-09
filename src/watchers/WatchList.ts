@@ -3,7 +3,11 @@ import { Model } from "../models/Model";
 import { IListOptions, IFkReference, IPrimaryKey } from "../@types";
 import { List } from "../List";
 import { Record } from "../Record";
-import { SerializedQuery, IComparisonOperator } from "serialized-query";
+import {
+  SerializedQuery,
+  SerializedRealTimeQuery,
+  IComparisonOperator
+} from "@forest-fire/serialized-query";
 import { getAllPropertiesFromClassStructure } from "../util";
 import { epochWithMilliseconds } from "common-types";
 import { Watch } from "../index";
@@ -305,7 +309,7 @@ export class WatchList<T extends Model> extends WatchBase<T> {
     } else {
       val = value;
     }
-    this._query = new SerializedQuery<T>(this._query.path)
+    this._query = new SerializedRealTimeQuery<T>(this._query.path)
       .orderByChild(property)
       .where(operation, val);
     return this;
@@ -324,7 +328,7 @@ export class WatchList<T extends Model> extends WatchBase<T> {
         offsets: this._offsets
       });
 
-      this._query = new SerializedQuery<T>(lst.dbPath);
+      this._query = new SerializedRealTimeQuery<T>(lst.dbPath);
       this._modelName = lst.modelName;
       this._pluralName = lst.pluralName;
       this._localPath = lst.localPath;

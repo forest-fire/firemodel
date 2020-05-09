@@ -1,7 +1,7 @@
 import { epochWithMilliseconds } from "common-types";
 import { Model } from "./models/Model";
 import { AuditBase } from "./AuditBase";
-import { SerializedQuery } from "serialized-query";
+import { SerializedRealTimeQuery } from "@forest-fire/serialized-query";
 import { pathJoin } from "./path";
 import { Parallel } from "wait-in-parallel";
 import { IModelOptions, IAuditLogItem } from "./@types";
@@ -14,7 +14,7 @@ export class AuditRecord<T extends Model> extends AuditBase {
   ) {
     super(modelKlass, options);
     this._recordId = id;
-    this._query = new SerializedQuery();
+    this._query = new SerializedRealTimeQuery();
   }
 
   /**

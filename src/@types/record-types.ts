@@ -1,4 +1,4 @@
-import { AbstractedDatabase } from "abstracted-database";
+import { AbstractedDatabase } from "@forest-fire/abstracted-database";
 import { IDictionary, fk, pk, epoch } from "common-types";
 
 import { IFmHasId } from "./general";

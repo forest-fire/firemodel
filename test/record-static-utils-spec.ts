@@ -1,5 +1,4 @@
 // tslint:disable:no-implicit-dependencies
-import { DB } from "abstracted-admin";
 import { expect } from "chai";
 import { Record } from "../src";
 import DeepPerson, { IDeepName } from "./testing/dynamicPaths/DeepPerson";

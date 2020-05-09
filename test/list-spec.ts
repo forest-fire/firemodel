@@ -1,6 +1,6 @@
 // tslint:disable:no-implicit-dependencies
 import { Record, List, IFmWatchEvent } from "../src/index";
-import { DB, SerializedQuery } from "abstracted-admin";
+import { DB, RealTimeAdmin } from "universal-fire";
 import * as chai from "chai";
 import * as helpers from "./testing/helpers";
 const expect = chai.expect;
@@ -11,12 +11,12 @@ import { Mock } from "../src/Mock";
 import { FmEvents } from "../src/state-mgmt";
 import { Car } from "./testing/Car";
 import Company from "./testing/dynamicPaths/Company";
+import { SerializedRealTimeQuery } from "@forest-fire/serialized-query";
 
 describe("List class: ", () => {
-  let db: DB;
+  let db: RealTimeAdmin;
   beforeEach(async () => {
-    db = new DB({ mocking: true });
-    await db.waitForConnection();
+    db = await DB.connect(RealTimeAdmin, { mocking: true });
     FireModel.defaultDb = db;
   });
   it("can instantiate with new operator", () => {
@@ -91,7 +91,7 @@ describe("List class: ", () => {
       .pathPrefix("authenticated");
     db.mock.queueSchema("person", 25).generate();
 
-    const q = new SerializedQuery().limitToLast(5);
+    const q = new SerializedRealTimeQuery().limitToLast(5);
     const results = await List.fromQuery(Person, q, { db });
     expect(results.length).to.equal(5);
   });

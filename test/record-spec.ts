@@ -1,6 +1,6 @@
 // tslint:disable:no-implicit-dependencies
 import { Record, List, IFmWatchEvent, IFmLocalEvent } from "../src";
-import { DB } from "abstracted-admin";
+import { DB, RealTimeAdmin } from "universal-fire";
 import * as chai from "chai";
 const expect = chai.expect;
 import "reflect-metadata";
@@ -9,13 +9,11 @@ import { Person as Peeps } from "./testing/PersonAsPeeps";
 import { FireModel } from "../src/FireModel";
 import { FmEvents } from "../src/state-mgmt";
 import { Mock } from "../src/Mock";
-import { wait } from "common-types";
 
 describe("Record > ", () => {
-  let db: DB;
+  let db: RealTimeAdmin;
   beforeEach(async () => {
-    db = new DB({ mocking: true });
-    await db.waitForConnection();
+    db = await DB.connect(RealTimeAdmin, { mocking: true });
     FireModel.defaultDb = db;
     FireModel.dispatch = null;
   });

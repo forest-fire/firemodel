@@ -1,4 +1,4 @@
-import { SerializedQuery } from "serialized-query";
+import { SerializedQuery } from "@forest-fire/serialized-query";
 
 export interface IFmWatcherStartOptions {
   /**

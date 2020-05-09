@@ -1,5 +1,5 @@
-import { AbstractedDatabase } from "abstracted-database";
-import { SerializedQuery } from "serialized-query";
+import { AbstractedDatabase } from "@forest-fire/abstracted-database";
+import { SerializedQuery } from "@forest-fire/serialized-query";
 
 import { Model } from "./models/Model";
 import { FireModel } from "./FireModel";

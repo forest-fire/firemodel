@@ -1,10 +1,10 @@
 import { AuditBase } from "./AuditBase";
 import { pathJoin } from "./path";
-import { SerializedQuery } from "serialized-query";
+import { SerializedRealTimeQuery } from "@forest-fire/serialized-query";
 export class AuditList extends AuditBase {
     constructor(modelKlass, options = {}) {
         super(modelKlass, options);
-        this._query = new SerializedQuery(pathJoin(this.dbPath, "all"));
+        this._query = new SerializedRealTimeQuery(pathJoin(this.dbPath, "all"));
     }
     async first(howMany, offset = 0) {
         this._query = this._query.limitToFirst(howMany).startAt(offset);
