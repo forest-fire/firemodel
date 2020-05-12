@@ -1,4 +1,4 @@
-import { RealTimeDB, getMockHelper } from "abstracted-firebase";
+import { getMockHelper } from "@forest-fire/real-time-db";
 import { AbstractedDatabase } from "@forest-fire/abstracted-database";
 
 import { Model, Record } from "..";

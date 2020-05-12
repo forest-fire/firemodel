@@ -12,7 +12,7 @@ const DEFAULT_IF_NOT_FOUND = "__DO_NOT_USE__";
 function addTimestamps(obj) {
     const datetime = new Date().getTime();
     const output = {};
-    Object.keys(obj).forEach(i => {
+    Object.keys(obj).forEach((i) => {
         output[i] = Object.assign(Object.assign({}, obj[i]), { createdAt: datetime, lastUpdated: datetime });
     });
     return output;
@@ -253,8 +253,8 @@ class List extends FireModel_1.FireModel {
     static async ids(model, ...fks) {
         const promises = [];
         const results = [];
-        fks.forEach(fk => {
-            promises.push(Record_1.Record.get(model, fk).then(p => results.push(p.data)));
+        fks.forEach((fk) => {
+            promises.push(Record_1.Record.get(model, fk).then((p) => results.push(p.data)));
         });
         await Promise.all(promises);
         const obj = new List(model);
@@ -359,8 +359,8 @@ class List extends FireModel_1.FireModel {
                 const valid = this.META.isProperty(prop) ||
                     (this.META.isRelationship(prop) &&
                         this.META.relationship(prop).relType === "hasOne")
-                    ? this.map(i => i[prop])
-                    : this.map(i => Object.keys(i[prop]));
+                    ? this.map((i) => i[prop])
+                    : this.map((i) => Object.keys(i[prop]));
                 const e = new Error(`List<${this.modelName}>.findWhere(${prop}, ${value}) was not found in the List [ length: ${this.data.length} ]. \n\nValid values include: \n\n${valid.join("\t")}`);
                 e.name = "NotFound";
                 throw e;
@@ -400,7 +400,7 @@ class List extends FireModel_1.FireModel {
      * @param defaultIfNotFound the default value returned if the ID is not found in the list
      */
     findById(id, defaultIfNotFound = DEFAULT_IF_NOT_FOUND) {
-        const find = this.filter(f => f.id === id);
+        const find = this.filter((f) => f.id === id);
         if (find.length === 0) {
             if (defaultIfNotFound !== DEFAULT_IF_NOT_FOUND) {
                 return defaultIfNotFound;
@@ -422,7 +422,7 @@ class List extends FireModel_1.FireModel {
             }
         }
         const removed = await Record_1.Record.remove(this._modelConstructor, id, rec);
-        this._data = this.filter(f => f.id !== id).data;
+        this._data = this.filter((f) => f.id !== id).data;
     }
     async add(payload) {
         const newRecord = await Record_1.Record.add(this._modelConstructor, payload);
@@ -468,12 +468,15 @@ class List extends FireModel_1.FireModel {
         if (dbOffset.indexOf(":") === -1) {
             return dbOffset;
         }
+        const dynamicPathProps = Record_1.Record.dynamicPathProperties(this._modelConstructor);
         Object.keys(this._offsets || {}).forEach((prop) => {
-            const value = this._offsets[prop];
-            if (!["string", "number"].includes(typeof value)) {
-                throw new errors_1.FireModelError(`The dynamic dbOffest is using the property "${prop}" on ${this.modelName} as a part of the route path but that property must be either a string or a number and instead was a ${typeof prop}`, "record/not-allowed");
+            if (dynamicPathProps.includes(prop)) {
+                const value = this._offsets[prop];
+                if (!["string", "number"].includes(typeof value)) {
+                    throw new errors_1.FireModelError(`The dynamic dbOffset is using the property "${prop}" on ${this.modelName} as a part of the route path but that property must be either a string or a number and instead was a ${typeof value}`, "record/not-allowed");
+                }
+                dbOffset = dbOffset.replace(`:${prop}`, String(value));
             }
-            dbOffset = dbOffset.replace(`:${prop}`, String(value));
         });
         if (dbOffset.includes(":")) {
             throw new errors_1.FireModelError(`Attempt to get the dbPath of a List where the underlying model [ ${util_1.capitalize(this.modelName)} ] has dynamic path segments which were NOT supplied! The offsets provided were "${JSON.stringify(Object.keys(this._offsets || {}))}" but this leaves the following uncompleted dbOffset: ${dbOffset}`);

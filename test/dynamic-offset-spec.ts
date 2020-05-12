@@ -277,12 +277,6 @@ describe("LIST uses static offsets() with static API methods", () => {
     db.mock.updateDB({});
   });
 
-  it.skip("LIST.offsets() returns LIST API", async () => {
-    // const api = List.offsets({ geoCode: "1234" });
-    // expect(List).to.have.ownProperty("all");
-    // expect(List).to.have.ownProperty("where");
-  });
-
   it("List.all works with offsets", async () => {
     await Mock(DeepPerson).generate(3, { group: "test" });
     await Mock(DeepPerson).generate(5, { group: "test2" });
@@ -302,8 +296,8 @@ describe("LIST uses static offsets() with static API methods", () => {
     expect(people.length).to.equal(
       6,
       `There should have been 6 records but got ${
-        people.length
-      }. The id's returned were: ${people.map((i) => i.id)}.`
+      people.length
+      }. The id's returned were: ${people.map(i => i.id)}.`
     );
     expect(people.filter((i) => i.age === 45)).is.length(6);
   });

@@ -16,7 +16,6 @@ describe("Auditing ->�", () => {
   });
 
   it("Audit logs are written", async () => {
-    // @ts-ignore
     await Mock(Person, db).generate(1);
     const now = new Date().getTime();
     const people = await List.all(Person);

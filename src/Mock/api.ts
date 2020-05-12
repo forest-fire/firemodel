@@ -4,7 +4,7 @@ import { IDictionary } from "common-types";
 import mockProperties from "./mockProperties";
 import addRelationships from "./addRelationships";
 import { Record } from "../Record";
-import { RealTimeDB, FireMock } from "abstracted-firebase";
+import { Mock } from "firemock";
 import { IMockConfig, IMockResponse } from "./types";
 import { FireModelError } from "../errors";
 
@@ -32,7 +32,7 @@ export default function API<T>(
       exceptions: Partial<T> = {}
     ): Promise<Array<IMockResponse<T>>> {
       if (!mockPrepared) {
-        await FireMock.prepare();
+        await Mock.prepare();
         mockPrepared = true;
       }
 

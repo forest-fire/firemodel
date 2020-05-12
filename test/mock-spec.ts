@@ -125,7 +125,8 @@ describe("Mocking:", () => {
     companyIds.map((id) => people.findWhere("employer", id));
   });
 
-  it("using a specific config for createRelationshipLinks works as expected", async () => {
+  it("using a specific config for createRelationshipLinks works as expected", async function () {
+    this.timeout(15000);
     const numberOfFolks = 25;
     await Mock(FancyPerson, db)
       .followRelationshipLinks({
