@@ -50,7 +50,7 @@
   },
   "devDependencies": {
     "@firebase/auth-types": "^0.9.5",
-    "@forest-fire/types": "^0.42.0",
+    "@forest-fire/types": "^0.43.0",
     "@types/chai": "^4.2.9",
     "@types/faker": "^4.1.11",
     "@types/get-value": "^3.0.1",
@@ -75,7 +75,7 @@
     "do-devops": "^0.3.6",
     "fake-indexeddb": "^3.0.0",
     "faker": "^4.1.0",
-    "firemock": "^0.38.9",
+    "firemock": "^0.43.0",
     "js-yaml": "^3.13.1",
     "mocha": "^7.1.1",
     "prettier": "^2.0.5",
