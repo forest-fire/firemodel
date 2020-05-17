@@ -4,6 +4,7 @@ import { IPrimaryKey, IModelOptions } from "../@types";
 import { FireModelError } from "../errors";
 import { Record } from "..";
 import { SerializedQuery } from "@forest-fire/base-serializer";
+import { FireModel } from "../FireModel";
 
 export class WatchRecord<T extends Model> extends WatchBase<T> {
   public static record<T extends Model>(
@@ -31,7 +32,7 @@ export class WatchRecord<T extends Model> extends WatchBase<T> {
       pk,
       options.db ? { db: options.db } : {}
     );
-    o._query = SerializedQuery.create<T>(o._db, `${r.dbPath}`);
+    o._query = SerializedQuery.create<T>(options.db || FireModel.defaultDb, `${r.dbPath}`);
     o._modelConstructor = modelConstructor;
     o._modelName = r.modelName;
     o._localModelName = r.META.localModelName;
