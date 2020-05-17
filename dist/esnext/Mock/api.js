@@ -1,7 +1,7 @@
 import mockProperties from "./mockProperties";
 import addRelationships from "./addRelationships";
 import { Record } from "../Record";
-import { FireMock } from "abstracted-firebase";
+import { Mock } from "firemock";
 import { FireModelError } from "../errors";
 let mockPrepared = false;
 export default function API(db, modelConstructor) {
@@ -20,7 +20,7 @@ export default function API(db, modelConstructor) {
          */
         async generate(count, exceptions = {}) {
             if (!mockPrepared) {
-                await FireMock.prepare();
+                await Mock.prepare();
                 mockPrepared = true;
             }
             const props = mockProperties(db, config, exceptions);

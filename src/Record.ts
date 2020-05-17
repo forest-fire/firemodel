@@ -1,8 +1,9 @@
-//#region IMPORTS
-import { RealTimeDB } from "abstracted-firebase";
-import { Model } from "./models/Model";
+import { AbstractedDatabase } from "@forest-fire/abstracted-database";
+import copy from "fast-copy";
 import { IDictionary, Omit, Nullable, fk, pk, dotNotation } from "common-types";
 import { key as fbKey } from "firebase-key";
+
+import { Model } from "./models/Model";
 import { FireModel } from "./FireModel";
 import {
   IReduxDispatch,
@@ -10,7 +11,6 @@ import {
   IWatcherEventContext
 } from "./state-mgmt";
 import { buildDeepRelationshipLinks } from "./record/buildDeepRelationshipLinks";
-
 import {
   FmEvents,
   IFMEventName,
@@ -50,20 +50,8 @@ import { IFmPathValuePair, IFmRelationshipOptions } from "./@types";
 import { createCompositeKeyFromFkString } from "./record/createCompositeKeyFromFkString";
 import { RecordCrudFailure } from "./errors/record/DatabaseCrudFailure";
 import { IFmModelMeta } from "./decorators";
-import copy from "fast-copy";
 import { WatchDispatcher } from "./watchers/WatchDispatcher";
 import { UnwatchedLocalEvent } from "./state-mgmt/UnwatchedLocalEvent";
-
-//#endregion IMPORTS
-
-/**
- * a Model that doesn't require the ID tag (or the META tag which not a true
- * property of the model)
- * */
-export type ModelOptionalId<T extends Model> = Omit<T, "id" | "META"> & {
-  id?: string;
-  META?: IFmModelMeta;
-};
 
 export interface IWriteOperation {
   id: string;
@@ -78,7 +66,7 @@ export interface IWriteOperation {
 
 export class Record<T extends Model> extends FireModel<T> {
   //#region STATIC INTERFACE
-  public static set defaultDb(db: RealTimeDB) {
+  public static set defaultDb(db: AbstractedDatabase) {
     FireModel.defaultDb = db;
   }
   public static get defaultDb() {
@@ -172,7 +160,7 @@ export class Record<T extends Model> extends FireModel<T> {
    */
   public static async add<T extends Model>(
     model: (new () => T) | string,
-    payload: ModelOptionalId<T>,
+    payload: T,
     options: IRecordOptions = {}
   ) {
     let r: Record<T>;
@@ -1401,7 +1389,7 @@ export class Record<T extends Model> extends FireModel<T> {
 
     // Send CRUD to Firebase
     try {
-      if (this.db.isMockDb && options.silent) {
+      if (this.db.isMockDb && this.db.mock && options.silent) {
         this.db.mock.silenceEvents();
       }
       this._data.lastUpdated = new Date().getTime();
@@ -1507,7 +1495,7 @@ export class Record<T extends Model> extends FireModel<T> {
           }
         }
       }
-      if (this.db.isMockDb && options.silent) {
+      if (this.db.isMockDb && this.db.mock && options.silent) {
         this.db.mock.restoreEvents();
       }
     } catch (e) {

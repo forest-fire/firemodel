@@ -1,12 +1,13 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.AuditList = void 0;
 const AuditBase_1 = require("./AuditBase");
 const path_1 = require("./path");
-const serialized_query_1 = require("serialized-query");
+const base_serializer_1 = require("@forest-fire/base-serializer");
 class AuditList extends AuditBase_1.AuditBase {
     constructor(modelKlass, options = {}) {
         super(modelKlass, options);
-        this._query = new serialized_query_1.SerializedQuery(path_1.pathJoin(this.dbPath, "all"));
+        this._query = base_serializer_1.SerializedQuery.create(this.db, path_1.pathJoin(this.dbPath, "all"));
     }
     async first(howMany, offset = 0) {
         this._query = this._query.limitToFirst(howMany).startAt(offset);

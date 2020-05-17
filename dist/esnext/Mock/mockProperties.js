@@ -1,4 +1,4 @@
-import { getMockHelper } from "abstracted-firebase";
+import { getMockHelper } from "firemock";
 import { Record } from "..";
 import { getModelMeta } from "../ModelMeta";
 import mockValue from "./mockValue";

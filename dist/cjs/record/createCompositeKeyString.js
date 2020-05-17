@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.createCompositeRef = exports.createCompositeKeyRefFromRecord = void 0;
 const __1 = require("..");
 /**
  * Creates a string based composite key if the passed in record

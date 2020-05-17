@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.uniqueIndex = exports.index = exports.getDbIndexes = exports.indexesForModel = void 0;
 require("reflect-metadata");
 const reflector_1 = require("./reflector");
 const typed_conversions_1 = require("typed-conversions");

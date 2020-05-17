@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.FmEvents = void 0;
 /** Enumeration of all Firemodel Actions that will be fired */
 var FmEvents;
 (function (FmEvents) {

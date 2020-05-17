@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.WatchDispatcher = void 0;
 const state_mgmt_1 = require("../state-mgmt");
 const Record_1 = require("../Record");
 const watchInitialization_1 = require("./watchInitialization");

@@ -2,9 +2,10 @@
 import * as chai from "chai";
 const expect = chai.expect;
 import { IDictionary } from "common-types";
-import { DB } from "abstracted-client";
+import { DB, RealTimeClient } from "universal-fire";
 import { FireModel, Record } from "../src";
 import { Car } from "./testing/permissions/Car";
+import { AbstractedDatabase } from "@forest-fire/abstracted-database";
 const clientConfig = {
   apiKey: "AIzaSyDuimhtnMcV1zeTl4m1MphOgWnzS17QhBM",
   authDomain: "abstracted-admin.firebaseapp.com",
@@ -15,9 +16,10 @@ const clientConfig = {
 };
 
 describe("Validating client permissions with an anonymous user", () => {
-  let db: DB;
+  let db: RealTimeClient;
+
   before(async () => {
-    db = await DB.connect(clientConfig);
+    db = await DB.connect(RealTimeClient, clientConfig);
     FireModel.defaultDb = db;
   });
 

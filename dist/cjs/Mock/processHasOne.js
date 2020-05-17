@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.processHasOne = void 0;
 const Mock_1 = require("../Mock");
 async function processHasOne(source, rel, config, db) {
     const fkMock = Mock_1.Mock(rel.fkConstructor(), db);

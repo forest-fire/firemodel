@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.hasOne = exports.ownedBy = exports.belongsTo = void 0;
 const reflector_1 = require("./reflector");
 const relationship_store_1 = require("./model-meta/relationship-store");
 const DecoratorProblem_1 = require("../errors/decorators/DecoratorProblem");

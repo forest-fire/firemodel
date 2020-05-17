@@ -1,14 +1,15 @@
+import { AbstractedDatabase } from "@forest-fire/abstracted-database";
+import { IDictionary } from "common-types";
+
 import { Model } from "../models/Model";
-import { SerializedQuery, ISerializedQueryIdentity } from "serialized-query";
-import { FmModelConstructor, ICompositeKey, IRecordOptions } from "../@types";
+import { BaseSerializer } from "@forest-fire/serialized-query";
+import { FmModelConstructor, ICompositeKey } from "../@types";
 import { IWatchEventClassification, IFmWatcherStartOptions } from "./types";
 import { IReduxDispatch, IWatcherEventContext } from "../state-mgmt";
-import { RealTimeDB } from "abstracted-firebase";
 import { FireModel, FmEvents, IListOptions } from "../index";
 import { FireModelError, FireModelProxyError } from "../errors";
 import { WatchDispatcher } from "./WatchDispatcher";
 import { waitForInitialization } from "./watchInitialization";
-import { IDictionary } from "common-types";
 import { addToWatcherPool } from "./watcherPool";
 import { WatchRecord } from "./WatchRecord";
 import { List } from "../List";
@@ -17,11 +18,11 @@ import { List } from "../List";
  * The base class which both `WatchList` and `WatchRecord` derive.
  */
 export class WatchBase<T extends Model> {
-  protected _query: SerializedQuery<T>;
+  protected _query: BaseSerializer<T>;
   protected _modelConstructor: FmModelConstructor<T>;
   protected _eventType: IWatchEventClassification;
   protected _dispatcher: IReduxDispatch;
-  protected _db: RealTimeDB;
+  protected _db: AbstractedDatabase;
   protected _modelName: string;
   protected _localModelName: string;
   protected _pluralName: string;
@@ -172,7 +173,7 @@ export class WatchBase<T extends Model> {
   public toString() {
     return `Watching path "${this._query.path}" for "${
       this._eventType
-    }" event(s) [ hashcode: ${String(this._query.hashCode())} ]`;
+      }" event(s) [ hashcode: ${String(this._query.hashCode())} ]`;
   }
 
   /**
@@ -242,7 +243,7 @@ export class WatchBase<T extends Model> {
     return coreDispatch;
   }
 
-  protected get db(): RealTimeDB {
+  protected get db(): AbstractedDatabase {
     if (!this._db) {
       if (FireModel.defaultDb) {
         this._db = FireModel.defaultDb;

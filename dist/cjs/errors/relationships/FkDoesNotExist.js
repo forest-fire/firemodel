@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.FkDoesNotExist = void 0;
 const FireModelError_1 = require("../FireModelError");
 class FkDoesNotExist extends FireModelError_1.FireModelError {
     constructor(pk, property, fkId) {

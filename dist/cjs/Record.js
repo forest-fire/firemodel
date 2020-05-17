@@ -3,6 +3,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.Record = void 0;
+const fast_copy_1 = __importDefault(require("fast-copy"));
 const common_types_1 = require("common-types");
 const firebase_key_1 = require("firebase-key");
 const FireModel_1 = require("./FireModel");
@@ -21,7 +23,6 @@ const relationshipOperation_1 = require("./record/relationshipOperation");
 const createCompositeKeyString_1 = require("./record/createCompositeKeyString");
 const createCompositeKeyFromFkString_1 = require("./record/createCompositeKeyFromFkString");
 const DatabaseCrudFailure_1 = require("./errors/record/DatabaseCrudFailure");
-const fast_copy_1 = __importDefault(require("fast-copy"));
 const WatchDispatcher_1 = require("./watchers/WatchDispatcher");
 const UnwatchedLocalEvent_1 = require("./state-mgmt/UnwatchedLocalEvent");
 class Record extends FireModel_1.FireModel {
@@ -975,7 +976,7 @@ class Record extends FireModel_1.FireModel {
         }
         // Send CRUD to Firebase
         try {
-            if (this.db.isMockDb && options.silent) {
+            if (this.db.isMockDb && this.db.mock && options.silent) {
                 this.db.mock.silenceEvents();
             }
             this._data.lastUpdated = new Date().getTime();
@@ -1044,7 +1045,7 @@ class Record extends FireModel_1.FireModel {
                     }
                 }
             }
-            if (this.db.isMockDb && options.silent) {
+            if (this.db.isMockDb && this.db.mock && options.silent) {
                 this.db.mock.restoreEvents();
             }
         }

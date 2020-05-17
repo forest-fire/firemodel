@@ -10,7 +10,7 @@ import {
   FmEvents,
   IReduxAction,
 } from "../src";
-import { DB } from "abstracted-admin";
+import { DB, RealTimeAdmin } from "universal-fire";
 import * as chai from "chai";
 import { Mock } from "../src/Mock";
 import { Mock as FireMock } from "firemock";
@@ -29,10 +29,10 @@ export class SimplePerson extends Model {
 }
 
 describe("Mocking:", () => {
-  let db: DB;
-  let realDb: DB;
+  let db: RealTimeAdmin;
+  let realDb: RealTimeAdmin;
   before(async () => {
-    realDb = await DB.connect();
+    realDb = await DB.connect(RealTimeAdmin);
   });
   after(async () => {
     const fancy = Record.create(FancyPerson);
@@ -43,7 +43,7 @@ describe("Mocking:", () => {
     }
   });
   beforeEach(async () => {
-    db = await DB.connect({ mocking: true });
+    db = await DB.connect(RealTimeAdmin, { mocking: true });
     FireModel.defaultDb = db;
   });
 
@@ -125,7 +125,8 @@ describe("Mocking:", () => {
     companyIds.map((id) => people.findWhere("employer", id));
   });
 
-  it("using a specific config for createRelationshipLinks works as expected", async () => {
+  it("using a specific config for createRelationshipLinks works as expected", async function () {
+    this.timeout(15000);
     const numberOfFolks = 25;
     await Mock(FancyPerson, db)
       .followRelationshipLinks({

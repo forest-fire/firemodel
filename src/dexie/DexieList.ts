@@ -4,7 +4,7 @@ import Dexie, { IndexableType } from "dexie";
 import { IDexieModelMeta, IDexieListOptions } from "../@types/optional/dexie";
 import { DexieError } from "../errors";
 import { capitalize } from "../util";
-import { IComparisonOperator } from "serialized-query";
+import { IComparisonOperator } from "@forest-fire/serialized-query";
 import { epoch } from "common-types";
 import { PropType } from "../@types/index";
 

@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.Watch = void 0;
 const state_mgmt_1 = require("./state-mgmt");
 const FireModel_1 = require("./FireModel");
 const errors_1 = require("./errors");

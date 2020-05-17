@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.waitForInitialization = exports.hasInitialized = void 0;
 const common_types_1 = require("common-types");
 /**
  * indicates which watcherId's have returned their initial

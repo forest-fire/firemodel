@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.isConstructable = exports.modelConstructorLookup = exports.modelNameLookup = exports.modelRegistryLookup = exports.listRegisteredModels = exports.modelRegister = void 0;
 const FireModelError_1 = require("../../errors/FireModelError");
 const registeredModels = {};
 /**

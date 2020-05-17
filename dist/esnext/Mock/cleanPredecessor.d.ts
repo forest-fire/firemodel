@@ -1,2 +1,2 @@
-import { RealTimeDB } from "abstracted-firebase";
-export default function cleanPredecessor(db: RealTimeDB, predecessors: string[]): Promise<void>;
+import { AbstractedDatabase } from "@forest-fire/abstracted-database";
+export default function cleanPredecessor(db: AbstractedDatabase, predecessors: string[]): Promise<void>;

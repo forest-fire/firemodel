@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.VerboseError = void 0;
 let chalk;
 class VerboseError extends Error {
     constructor(err, ...args) {

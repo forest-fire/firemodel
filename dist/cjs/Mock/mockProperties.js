@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const abstracted_firebase_1 = require("abstracted-firebase");
+const firemock_1 = require("firemock");
 const __1 = require("..");
 const ModelMeta_1 = require("../ModelMeta");
 const mockValue_1 = __importDefault(require("./mockValue"));
@@ -14,7 +14,7 @@ function mockProperties(db, config = { relationshipBehavior: "ignore" }, excepti
         const props = meta.properties;
         const recProps = {};
         // set properties on the record with mocks
-        const mh = await abstracted_firebase_1.getMockHelper(db);
+        const mh = await firemock_1.getMockHelper(db);
         for (const prop of props) {
             const p = prop.property;
             recProps[p] = await mockValue_1.default(db, prop, mh);

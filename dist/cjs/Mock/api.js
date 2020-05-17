@@ -6,7 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const mockProperties_1 = __importDefault(require("./mockProperties"));
 const addRelationships_1 = __importDefault(require("./addRelationships"));
 const Record_1 = require("../Record");
-const abstracted_firebase_1 = require("abstracted-firebase");
+const firemock_1 = require("firemock");
 const errors_1 = require("../errors");
 let mockPrepared = false;
 function API(db, modelConstructor) {
@@ -25,7 +25,7 @@ function API(db, modelConstructor) {
          */
         async generate(count, exceptions = {}) {
             if (!mockPrepared) {
-                await abstracted_firebase_1.FireMock.prepare();
+                await firemock_1.Mock.prepare();
                 mockPrepared = true;
             }
             const props = mockProperties_1.default(db, config, exceptions);

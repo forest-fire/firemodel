@@ -1,4 +1,6 @@
-import { RealTimeDB, getMockHelper } from "abstracted-firebase";
+import { getMockHelper } from "firemock";
+import { AbstractedDatabase } from "@forest-fire/abstracted-database";
+
 import { Model, Record } from "..";
 import { IDictionary } from "common-types";
 import { getModelMeta } from "../ModelMeta";
@@ -7,7 +9,7 @@ import { IMockConfig } from "./types";
 
 /** adds mock values for all the properties on a given model */
 export default function mockProperties<T extends Model>(
-  db: RealTimeDB,
+  db: AbstractedDatabase,
   config: IMockConfig = { relationshipBehavior: "ignore" },
   exceptions: IDictionary
 ) {
