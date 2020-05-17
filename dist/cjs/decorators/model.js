@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.model = void 0;
 require("reflect-metadata");
 const decorator_1 = require("./decorator");
 const ModelMeta_1 = require("../ModelMeta");

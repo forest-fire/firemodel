@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.AuditList = void 0;
 const AuditBase_1 = require("./AuditBase");
 const path_1 = require("./path");
 const base_serializer_1 = require("@forest-fire/base-serializer");

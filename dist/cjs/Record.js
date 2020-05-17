@@ -3,6 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.Record = void 0;
 const fast_copy_1 = __importDefault(require("fast-copy"));
 const common_types_1 = require("common-types");
 const firebase_key_1 = require("firebase-key");

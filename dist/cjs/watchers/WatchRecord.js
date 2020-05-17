@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.WatchRecord = void 0;
 const WatchBase_1 = require("./WatchBase");
 const errors_1 = require("../errors");
 const __1 = require("..");

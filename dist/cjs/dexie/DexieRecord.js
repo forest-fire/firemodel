@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.DexieRecord = void 0;
 const firebase_key_1 = require("firebase-key");
 const errors_1 = require("../errors");
 const util_1 = require("../util");

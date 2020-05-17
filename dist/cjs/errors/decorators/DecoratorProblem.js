@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.DecoratorProblem = void 0;
 const FireModelError_1 = require("../FireModelError");
 class DecoratorProblem extends FireModelError_1.FireModelError {
     constructor(decorator, e, context) {

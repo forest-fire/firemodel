@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.List = void 0;
 const typed_conversions_1 = require("typed-conversions");
 const base_serializer_1 = require("@forest-fire/base-serializer");
 const Record_1 = require("./Record");

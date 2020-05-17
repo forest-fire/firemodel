@@ -9,26 +9,31 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 };
 import { model, property, index } from "../decorators/index";
 import { Model } from "../models/Model";
-let AuditLog = class AuditLog extends Model {
-};
-__decorate([
-    property, index,
-    __metadata("design:type", String)
-], AuditLog.prototype, "modelName", void 0);
-__decorate([
-    property, index,
-    __metadata("design:type", String)
-], AuditLog.prototype, "modelId", void 0);
-__decorate([
-    property,
-    __metadata("design:type", Array)
-], AuditLog.prototype, "changes", void 0);
-__decorate([
-    property,
-    __metadata("design:type", String)
-], AuditLog.prototype, "action", void 0);
-AuditLog = __decorate([
-    model({ dbOffset: "_auditing" })
-], AuditLog);
+let AuditLog = /** @class */ (() => {
+    let AuditLog = class AuditLog extends Model {
+    };
+    __decorate([
+        property,
+        index,
+        __metadata("design:type", String)
+    ], AuditLog.prototype, "modelName", void 0);
+    __decorate([
+        property,
+        index,
+        __metadata("design:type", String)
+    ], AuditLog.prototype, "modelId", void 0);
+    __decorate([
+        property,
+        __metadata("design:type", Array)
+    ], AuditLog.prototype, "changes", void 0);
+    __decorate([
+        property,
+        __metadata("design:type", String)
+    ], AuditLog.prototype, "action", void 0);
+    AuditLog = __decorate([
+        model({ dbOffset: "_auditing" })
+    ], AuditLog);
+    return AuditLog;
+})();
 export { AuditLog };
 //# sourceMappingURL=AuditLog.js.map
