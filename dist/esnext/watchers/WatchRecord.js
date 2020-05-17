@@ -1,7 +1,7 @@
 import { WatchBase } from "./WatchBase";
 import { FireModelError } from "../errors";
 import { Record } from "..";
-import { SerializedRealTimeQuery } from "@forest-fire/serialized-query";
+import { SerializedQuery } from "@forest-fire/base-serializer";
 export class WatchRecord extends WatchBase {
     static record(modelConstructor, pk, options = {}) {
         if (!pk) {
@@ -15,7 +15,7 @@ export class WatchRecord extends WatchBase {
         o._eventType = "value";
         o._watcherSource = "record";
         const r = Record.createWith(modelConstructor, pk, options.db ? { db: options.db } : {});
-        o._query = new SerializedRealTimeQuery(`${r.dbPath}`);
+        o._query = SerializedQuery.create(o._db, `${r.dbPath}`);
         o._modelConstructor = modelConstructor;
         o._modelName = r.modelName;
         o._localModelName = r.META.localModelName;

@@ -11,7 +11,7 @@ import { Mock } from "../src/Mock";
 import { FmEvents } from "../src/state-mgmt";
 import { Car } from "./testing/Car";
 import Company from "./testing/dynamicPaths/Company";
-import { SerializedRealTimeQuery } from "@forest-fire/serialized-query";
+import { SerializedQuery } from "@forest-fire/base-serializer";
 
 describe("List class: ", () => {
   let db: RealTimeAdmin;
@@ -91,7 +91,7 @@ describe("List class: ", () => {
       .pathPrefix("authenticated");
     db.mock.queueSchema("person", 25).generate();
 
-    const q = new SerializedRealTimeQuery().limitToLast(5);
+    const q = SerializedQuery.create(db).limitToLast(5);
     const results = await List.fromQuery(Person, q, { db });
     expect(results.length).to.equal(5);
   });

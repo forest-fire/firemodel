@@ -19,7 +19,7 @@ import { wait, IDictionary } from "common-types";
 import { WatchList } from "../src/watchers/WatchList";
 import { getWatcherPool } from "../src/watchers/watcherPool";
 import { DeeperPerson } from "./testing/dynamicPaths/DeeperPerson";
-import { SerializedRealTimeQuery } from "@forest-fire/serialized-query";
+import { BaseSerializer } from "@forest-fire/serialized-query";
 
 setupEnv();
 
@@ -163,7 +163,7 @@ describe("Watch →", () => {
     events.forEach(evt => {
       expect(evt.localPath).to.equal(
         `${person.META.localPrefix}/${person.META.localModelName ||
-          person.pluralName}`
+        person.pluralName}`
       );
     });
   });
@@ -262,8 +262,8 @@ describe("Watch.list(XXX).ids()", () => {
       expect(i.query)
         .to.be.an("array")
         .and.to.have.length(2);
-      expect((i.query as SerializedRealTimeQuery[])[0]).to.be.instanceOf(
-        SerializedRealTimeQuery
+      expect((i.query as BaseSerializer[])[0]).to.be.instanceOf(
+        BaseSerializer
       );
     });
 
@@ -322,8 +322,8 @@ describe("Watch.list(XXX).ids()", () => {
       expect(i.query)
         .to.be.an("array")
         .and.to.have.length(2);
-      expect((i.query as SerializedRealTimeQuery[])[0]).to.be.instanceOf(
-        SerializedRealTimeQuery
+      expect((i.query as BaseSerializer[])[0]).to.be.instanceOf(
+        BaseSerializer
       );
     });
   });

@@ -1,7 +1,7 @@
 import { WatchBase } from "./WatchBase";
 import { List } from "../List";
 import { Record } from "../Record";
-import { SerializedRealTimeQuery } from "@forest-fire/serialized-query";
+import { SerializedQuery } from "@forest-fire/base-serializer";
 import { getAllPropertiesFromClassStructure } from "../util";
 import { Watch } from "../index";
 import { FireModelError } from "../errors";
@@ -247,8 +247,10 @@ export class WatchList extends WatchBase {
         else {
             val = value;
         }
-        this._query = new SerializedRealTimeQuery(this._query.path)
+        this._query = SerializedQuery.create(this.db, this._query.path)
             .orderByChild(property)
+            // TODO: fix typing issue here.
+            // @ts-ignore
             .where(operation, val);
         return this;
     }
@@ -259,7 +261,7 @@ export class WatchList extends WatchBase {
         if (this._dynamicProperties.length === 0 ||
             Object.keys(this._offsets).length > 0) {
             const lst = List.create(this._modelConstructor, Object.assign(Object.assign({}, this._options), { offsets: this._offsets }));
-            this._query = new SerializedRealTimeQuery(lst.dbPath);
+            this._query = SerializedQuery.create(this.db, lst.dbPath);
             this._modelName = lst.modelName;
             this._pluralName = lst.pluralName;
             this._localPath = lst.localPath;

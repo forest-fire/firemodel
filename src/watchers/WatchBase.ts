@@ -2,7 +2,7 @@ import { AbstractedDatabase } from "@forest-fire/abstracted-database";
 import { IDictionary } from "common-types";
 
 import { Model } from "../models/Model";
-import { SerializedQuery } from "@forest-fire/serialized-query";
+import { BaseSerializer } from "@forest-fire/serialized-query";
 import { FmModelConstructor, ICompositeKey } from "../@types";
 import { IWatchEventClassification, IFmWatcherStartOptions } from "./types";
 import { IReduxDispatch, IWatcherEventContext } from "../state-mgmt";
@@ -18,7 +18,7 @@ import { List } from "../List";
  * The base class which both `WatchList` and `WatchRecord` derive.
  */
 export class WatchBase<T extends Model> {
-  protected _query: SerializedQuery<T>;
+  protected _query: BaseSerializer<T>;
   protected _modelConstructor: FmModelConstructor<T>;
   protected _eventType: IWatchEventClassification;
   protected _dispatcher: IReduxDispatch;
@@ -173,7 +173,7 @@ export class WatchBase<T extends Model> {
   public toString() {
     return `Watching path "${this._query.path}" for "${
       this._eventType
-    }" event(s) [ hashcode: ${String(this._query.hashCode())} ]`;
+      }" event(s) [ hashcode: ${String(this._query.hashCode())} ]`;
   }
 
   /**

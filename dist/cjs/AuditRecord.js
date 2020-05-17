@@ -1,14 +1,14 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const AuditBase_1 = require("./AuditBase");
-const serialized_query_1 = require("@forest-fire/serialized-query");
+const base_serializer_1 = require("@forest-fire/base-serializer");
 const path_1 = require("./path");
 const wait_in_parallel_1 = require("wait-in-parallel");
 class AuditRecord extends AuditBase_1.AuditBase {
     constructor(modelKlass, id, options = {}) {
         super(modelKlass, options);
         this._recordId = id;
-        this._query = new serialized_query_1.SerializedRealTimeQuery();
+        this._query = base_serializer_1.SerializedQuery.create(this.db);
     }
     /**
      * Queries the database for the first _x_ audit records [`howMany`] of

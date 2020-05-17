@@ -1,4 +1,4 @@
-import { getMockHelper } from "@forest-fire/real-time-db";
+import { getMockHelper } from "firemock";
 import { Record } from "..";
 import { getModelMeta } from "../ModelMeta";
 import mockValue from "./mockValue";

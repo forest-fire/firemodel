@@ -2,10 +2,10 @@ import { arrayToHash } from "typed-conversions";
 import { AbstractedDatabase } from "@forest-fire/abstracted-database";
 import { epochWithMilliseconds, IDictionary } from "common-types";
 import {
-  SerializedQuery,
+  BaseSerializer,
   IComparisonOperator,
-  SerializedRealTimeQuery
 } from "@forest-fire/serialized-query";
+import { SerializedQuery } from "@forest-fire/base-serializer"
 
 import { Model } from "./models/Model";
 import { Record } from "./Record";
@@ -111,7 +111,7 @@ export class List<T extends Model> extends FireModel<T> {
    */
   public static async fromQuery<T extends Model>(
     model: new () => T,
-    query: SerializedQuery<T>,
+    query: BaseSerializer<T>,
     options: IListOptions<T> = {}
   ): Promise<List<T>> {
     const list = List.create(model, options);
@@ -138,7 +138,7 @@ export class List<T extends Model> extends FireModel<T> {
     model: new () => T,
     options: IListOptions<T> = {}
   ): Promise<List<T>> {
-    const query = new SerializedRealTimeQuery<T>().orderByChild("lastUpdated");
+    const query = SerializedQuery.create<T>(this.defaultDb).orderByChild("lastUpdated");
     const list = await List.fromQuery<T>(model, query, options);
 
     return list;
@@ -157,7 +157,7 @@ export class List<T extends Model> extends FireModel<T> {
     howMany: number,
     options: IListOptions<T> = {}
   ): Promise<List<T>> {
-    const query = new SerializedRealTimeQuery<T>()
+    const query = SerializedQuery.create<T>(this.defaultDb)
       .orderByChild("createdAt")
       .limitToLast(howMany);
     const list = await List.fromQuery(model, query, options);
@@ -181,7 +181,7 @@ export class List<T extends Model> extends FireModel<T> {
     offset: number = 0,
     options: IListOptions<T> = {}
   ): Promise<List<T>> {
-    const query = new SerializedRealTimeQuery<T>()
+    const query = SerializedQuery.create<T>(this.defaultDb)
       .orderByChild("lastUpdated")
       .limitToFirst(howMany);
     const list = await List.fromQuery(model, query, options);
@@ -207,7 +207,7 @@ export class List<T extends Model> extends FireModel<T> {
       throw e;
     }
 
-    const query = new SerializedRealTimeQuery<T>()
+    const query = SerializedQuery.create<T>(this.defaultDb)
       .orderByChild("lastUpdated")
       .startAt(since);
 
@@ -228,7 +228,7 @@ export class List<T extends Model> extends FireModel<T> {
     howMany: number,
     options: IListOptions<T> = {}
   ): Promise<List<T>> {
-    const query = new SerializedRealTimeQuery<T>()
+    const query = SerializedQuery.create<T>(this.defaultDb)
       .orderByChild("lastUpdated")
       .limitToLast(howMany);
     const list = await List.fromQuery(model, query, options);
@@ -247,7 +247,7 @@ export class List<T extends Model> extends FireModel<T> {
     howMany: number,
     options: IListOptions<T> = {}
   ): Promise<List<T>> {
-    const query = new SerializedRealTimeQuery<T>()
+    const query = SerializedQuery.create<T>(this.defaultDb)
       .orderByChild("createdAt")
       .limitToFirst(howMany);
     const list = await List.fromQuery(model, query, options);
@@ -318,8 +318,10 @@ export class List<T extends Model> extends FireModel<T> {
       val = value[1];
       operation = value[0];
     }
-    const query = new SerializedRealTimeQuery<T>()
+    const query = SerializedQuery.create<T>(this.defaultDb)
       .orderByChild(property)
+      // @ts-ignore
+      // Not sure why there is a typing issue here.
       .where(operation, val);
 
     const list = await List.fromQuery(model, query, options);
@@ -483,8 +485,8 @@ export class List<T extends Model> extends FireModel<T> {
   ): Record<T> {
     const list =
       this.META.isProperty(prop) ||
-      (this.META.isRelationship(prop) &&
-        this.META.relationship(prop).relType === "hasOne")
+        (this.META.isRelationship(prop) &&
+          this.META.relationship(prop).relType === "hasOne")
         ? this.filterWhere(prop, value)
         : this.filterContains(prop, value);
 
@@ -496,15 +498,15 @@ export class List<T extends Model> extends FireModel<T> {
       } else {
         const valid =
           this.META.isProperty(prop) ||
-          (this.META.isRelationship(prop) &&
-            this.META.relationship(prop).relType === "hasOne")
+            (this.META.isRelationship(prop) &&
+              this.META.relationship(prop).relType === "hasOne")
             ? this.map((i) => i[prop])
             : this.map((i) => Object.keys(i[prop]));
         const e = new Error(
           `List<${
-            this.modelName
+          this.modelName
           }>.findWhere(${prop}, ${value}) was not found in the List [ length: ${
-            this.data.length
+          this.data.length
           } ]. \n\nValid values include: \n\n${valid.join("\t")}`
         );
         e.name = "NotFound";
@@ -616,7 +618,7 @@ export class List<T extends Model> extends FireModel<T> {
   /**
    * Loads data into the `List` object
    */
-  public async load(pathOrQuery: string | SerializedQuery<T>) {
+  public async load(pathOrQuery: string | BaseSerializer<T>) {
     if (!this.db) {
       const e = new Error(
         `The attempt to load data into a List requires that the DB property be initialized first!`
@@ -643,7 +645,7 @@ export class List<T extends Model> extends FireModel<T> {
         if (!["string", "number"].includes(typeof value)) {
           throw new FireModelError(
             `The dynamic dbOffset is using the property "${prop}" on ${
-              this.modelName
+            this.modelName
             } as a part of the route path but that property must be either a string or a number and instead was a ${typeof value}`,
             "record/not-allowed"
           );

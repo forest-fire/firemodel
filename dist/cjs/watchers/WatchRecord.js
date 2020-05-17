@@ -3,7 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const WatchBase_1 = require("./WatchBase");
 const errors_1 = require("../errors");
 const __1 = require("..");
-const serialized_query_1 = require("@forest-fire/serialized-query");
+const base_serializer_1 = require("@forest-fire/base-serializer");
 class WatchRecord extends WatchBase_1.WatchBase {
     static record(modelConstructor, pk, options = {}) {
         if (!pk) {
@@ -17,7 +17,7 @@ class WatchRecord extends WatchBase_1.WatchBase {
         o._eventType = "value";
         o._watcherSource = "record";
         const r = __1.Record.createWith(modelConstructor, pk, options.db ? { db: options.db } : {});
-        o._query = new serialized_query_1.SerializedRealTimeQuery(`${r.dbPath}`);
+        o._query = base_serializer_1.SerializedQuery.create(o._db, `${r.dbPath}`);
         o._modelConstructor = modelConstructor;
         o._modelName = r.modelName;
         o._localModelName = r.META.localModelName;

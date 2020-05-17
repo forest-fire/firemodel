@@ -1,4 +1,4 @@
-import { getMockHelper } from "@forest-fire/real-time-db";
+import { getMockHelper } from "firemock";
 import { AbstractedDatabase } from "@forest-fire/abstracted-database";
 
 import { Model, Record } from "..";

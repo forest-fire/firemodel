@@ -1,5 +1,5 @@
 import { arrayToHash } from "typed-conversions";
-import { SerializedRealTimeQuery } from "@forest-fire/serialized-query";
+import { SerializedQuery } from "@forest-fire/base-serializer";
 import { Record } from "./Record";
 import { FireModel } from "./FireModel";
 import { pathJoin } from "./path";
@@ -109,7 +109,7 @@ export class List extends FireModel {
      * @param options model options
      */
     static async all(model, options = {}) {
-        const query = new SerializedRealTimeQuery().orderByChild("lastUpdated");
+        const query = SerializedQuery.create(this.defaultDb).orderByChild("lastUpdated");
         const list = await List.fromQuery(model, query, options);
         return list;
     }
@@ -122,7 +122,7 @@ export class List extends FireModel {
      * @param options model options
      */
     static async first(model, howMany, options = {}) {
-        const query = new SerializedRealTimeQuery()
+        const query = SerializedQuery.create(this.defaultDb)
             .orderByChild("createdAt")
             .limitToLast(howMany);
         const list = await List.fromQuery(model, query, options);
@@ -139,7 +139,7 @@ export class List extends FireModel {
      * @param options
      */
     static async recent(model, howMany, offset = 0, options = {}) {
-        const query = new SerializedRealTimeQuery()
+        const query = SerializedQuery.create(this.defaultDb)
             .orderByChild("lastUpdated")
             .limitToFirst(howMany);
         const list = await List.fromQuery(model, query, options);
@@ -156,7 +156,7 @@ export class List extends FireModel {
             e.name = "NotAllowed";
             throw e;
         }
-        const query = new SerializedRealTimeQuery()
+        const query = SerializedQuery.create(this.defaultDb)
             .orderByChild("lastUpdated")
             .startAt(since);
         const list = await List.fromQuery(model, query, options);
@@ -170,7 +170,7 @@ export class List extends FireModel {
      * without any update for the longest.
      */
     static async inactive(model, howMany, options = {}) {
-        const query = new SerializedRealTimeQuery()
+        const query = SerializedQuery.create(this.defaultDb)
             .orderByChild("lastUpdated")
             .limitToLast(howMany);
         const list = await List.fromQuery(model, query, options);
@@ -183,7 +183,7 @@ export class List extends FireModel {
      * that the record was **created**.
      */
     static async last(model, howMany, options = {}) {
-        const query = new SerializedRealTimeQuery()
+        const query = SerializedQuery.create(this.defaultDb)
             .orderByChild("createdAt")
             .limitToFirst(howMany);
         const list = await List.fromQuery(model, query, options);
@@ -232,8 +232,10 @@ export class List extends FireModel {
             val = value[1];
             operation = value[0];
         }
-        const query = new SerializedRealTimeQuery()
+        const query = SerializedQuery.create(this.defaultDb)
             .orderByChild(property)
+            // @ts-ignore
+            // Not sure why there is a typing issue here.
             .where(operation, val);
         const list = await List.fromQuery(model, query, options);
         return list;

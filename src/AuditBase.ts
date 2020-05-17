@@ -1,5 +1,5 @@
 import { AbstractedDatabase } from "@forest-fire/abstracted-database";
-import { SerializedQuery } from "@forest-fire/serialized-query";
+import { BaseSerializer } from "@forest-fire/serialized-query";
 
 import { Model } from "./models/Model";
 import { FireModel } from "./FireModel";
@@ -11,7 +11,7 @@ export class AuditBase<T extends Model = Model> {
   protected _modelKlass: new () => T;
   protected _record: Record<T>;
   protected _db: AbstractedDatabase;
-  protected _query: SerializedQuery;
+  protected _query: BaseSerializer;
   // index searchs (future)
   protected _recordId: string;
   protected _property: string;
