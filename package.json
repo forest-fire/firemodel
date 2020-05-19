@@ -1,6 +1,6 @@
 {
   "name": "firemodel",
-  "version": "0.44.3",
+  "version": "0.44.4",
   "description": "Modeling, Access, and Mocking for Firebase Projects",
   "license": "MIT",
   "repository": "https://github.com/forest-fire/firemodel",
@@ -30,10 +30,10 @@
     "docs:build": "vuepress build docs"
   },
   "dependencies": {
-    "@forest-fire/abstracted-database": "^0.44.9",
-    "@forest-fire/base-serializer": "^0.44.9",
-    "@forest-fire/real-time-db": "^0.44.9",
-    "@forest-fire/serialized-query": "^0.44.9",
+    "@forest-fire/abstracted-database": "^0.44.10",
+    "@forest-fire/base-serializer": "^0.44.10",
+    "@forest-fire/real-time-db": "^0.44.11",
+    "@forest-fire/serialized-query": "^0.44.12",
     "common-types": "^1.14.3",
     "date-fns": "^2.14.0",
     "dexie": "^2.0.4",
@@ -47,7 +47,7 @@
     "reflect-metadata": "^0.1.13",
     "set-value": "^3.0.0",
     "typed-conversions": "^0.10.2",
-    "universal-fire": "^0.44.9",
+    "universal-fire": "^0.44.12",
     "wait-in-parallel": "^1.2.6"
   },
   "devDependencies": {
