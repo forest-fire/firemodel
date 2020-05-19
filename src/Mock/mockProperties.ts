@@ -5,12 +5,12 @@ import { Model, Record } from "..";
 import { IDictionary } from "common-types";
 import { getModelMeta } from "../ModelMeta";
 import mockValue from "./mockValue";
-import { IMockConfig } from "./types";
+import { IMockRelationshipConfig } from "./types";
 
 /** adds mock values for all the properties on a given model */
 export default function mockProperties<T extends Model>(
   db: AbstractedDatabase,
-  config: IMockConfig = { relationshipBehavior: "ignore" },
+  config: IMockRelationshipConfig = { relationshipBehavior: "ignore" },
   exceptions: IDictionary
 ) {
   return async (record: Record<T>): Promise<Record<T>> => {

@@ -9,7 +9,7 @@ export declare type RelationshipBehavior /** fk's are not poplated */ = "ignore"
 /** fk's are created and the records they point to are created */
  | "follow";
 export declare type DynamicPathBehavior = "signature" | "signature-exact" | "reflexive";
-export interface IMockConfig {
+export interface IMockRelationshipConfig {
     relationshipBehavior: RelationshipBehavior;
     dynamicPathBehavior?: DynamicPathBehavior;
     /** allow the exceptions stated in the Mock to be pass through to all FK's */

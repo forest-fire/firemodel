@@ -1,4 +1,4 @@
-import { Mock } from "..";
+import { Mock, } from "../index";
 export async function processHasMany(record, rel, config, db) {
     // by creating a mock we are giving any dynamic path segments
     // an opportunity to be mocked (this is best practice)
