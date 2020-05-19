@@ -8,7 +8,7 @@ export async function processHasOne(source, rel, config, db) {
         const predecessors = fkMockMeta.dbPath
             .replace(fkMockMeta.id, "")
             .split("/")
-            .filter(i => i);
+            .filter((i) => i);
         await db.remove(fkMockMeta.dbPath);
     }
     return fkMockMeta;

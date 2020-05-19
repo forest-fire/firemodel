@@ -2,13 +2,13 @@ import { AbstractedDatabase } from "@forest-fire/abstracted-database";
 
 import { Record } from "../Record";
 import { IFmModelRelationshipMeta } from "../decorators";
-import { IMockConfig, IMockResponse } from "./types";
+import { IMockRelationshipConfig, IMockResponse } from "./types";
 import { Mock } from "../Mock";
 
 export async function processHasOne<T>(
   source: Record<T>,
   rel: IFmModelRelationshipMeta<T>,
-  config: IMockConfig,
+  config: IMockRelationshipConfig,
   db: AbstractedDatabase
 ): Promise<IMockResponse<T>> {
   const fkMock = Mock(rel.fkConstructor(), db);
@@ -21,7 +21,7 @@ export async function processHasOne<T>(
     const predecessors = fkMockMeta.dbPath
       .replace(fkMockMeta.id, "")
       .split("/")
-      .filter(i => i);
+      .filter((i) => i);
 
     await db.remove(fkMockMeta.dbPath);
   }

@@ -42,9 +42,9 @@ function addRelationships(db, config, exceptions = {}) {
                 modelName: record.modelName,
                 pluralName: record.pluralName,
                 dbPath: record.dbPath,
-                localPath: record.localPath
+                localPath: record.localPath,
             },
-            ...relnResults
+            ...relnResults,
         ];
     };
 }

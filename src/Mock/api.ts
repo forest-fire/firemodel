@@ -5,7 +5,7 @@ import mockProperties from "./mockProperties";
 import addRelationships from "./addRelationships";
 import { Record } from "../Record";
 import { Mock } from "firemock";
-import { IMockConfig, IMockResponse } from "./types";
+import { IMockRelationshipConfig, IMockResponse } from "./types";
 import { FireModelError } from "../errors";
 
 let mockPrepared = false;
@@ -14,7 +14,7 @@ export default function API<T>(
   db: AbstractedDatabase,
   modelConstructor: new () => T
 ) {
-  const config: IMockConfig = {
+  const config: IMockRelationshipConfig = {
     relationshipBehavior: "ignore",
     exceptionPassthrough: false,
   };
@@ -68,11 +68,11 @@ export default function API<T>(
           ) {
             throw new FireModelError(
               `The mock for the "${
-              record.modelName
+                record.modelName
               }" model has dynamic segments and "${key}" was neither set as a fixed value in the exception parameter [ ${Object.keys(
                 exceptions || {}
               )} ] of generate() nor was the model constrained by a @mock type ${
-              mock ? `[ ${mock} ]` : ""
+                mock ? `[ ${mock} ]` : ""
               } which is deemed valid. Valid named mocks are ${JSON.stringify(
                 validMocks
               )}; all bespoke mocks are accepted as valid.`,

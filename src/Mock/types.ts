@@ -2,7 +2,7 @@ import { IDictionary } from "common-types";
 import { ICompositeKey } from "../@types/record-types";
 
 export type ICardinalityConfig<T> = {
-  [key in keyof T]: [number, number] | number | true
+  [key in keyof T]: [number, number] | number | true;
 };
 
 export type RelationshipBehavior /** fk's are not poplated */ =
@@ -13,7 +13,7 @@ export type RelationshipBehavior /** fk's are not poplated */ =
   | "follow";
 
 export type DynamicPathBehavior = "signature" | "signature-exact" | "reflexive";
-export interface IMockConfig {
+export interface IMockRelationshipConfig {
   relationshipBehavior: RelationshipBehavior;
   dynamicPathBehavior?: DynamicPathBehavior;
   /** allow the exceptions stated in the Mock to be pass through to all FK's */

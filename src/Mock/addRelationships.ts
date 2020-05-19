@@ -3,7 +3,7 @@ import { IDictionary } from "common-types";
 
 import { Model } from "../models/Model";
 import { Record } from "../Record";
-import { IMockConfig, IMockResponse } from "./types";
+import { IMockRelationshipConfig, IMockResponse } from "./types";
 import { processHasMany } from "./processHasMany";
 import { processHasOne } from "./processHasOne";
 
@@ -12,7 +12,7 @@ import { processHasOne } from "./processHasOne";
  */
 export default function addRelationships<T extends Model>(
   db: AbstractedDatabase,
-  config: IMockConfig,
+  config: IMockRelationshipConfig,
   exceptions: IDictionary = {}
 ) {
   return async (record: Record<T>): Promise<Array<IMockResponse<T>>> => {
@@ -54,9 +54,9 @@ export default function addRelationships<T extends Model>(
         modelName: record.modelName,
         pluralName: record.pluralName,
         dbPath: record.dbPath,
-        localPath: record.localPath
+        localPath: record.localPath,
       },
-      ...relnResults
+      ...relnResults,
     ];
   };
 }
