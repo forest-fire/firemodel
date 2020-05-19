@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.UnknownRelationshipProblem = void 0;
 const FireModelError_1 = require("../FireModelError");
 class UnknownRelationshipProblem extends FireModelError_1.FireModelError {
     constructor(err, rec, property, operation = "n/a", whileDoing) {

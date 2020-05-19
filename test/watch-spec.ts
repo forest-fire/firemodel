@@ -6,8 +6,7 @@ import {
   IFmLocalEvent,
   IReduxAction
 } from "../src";
-import { DB } from "abstracted-client";
-import { DB as Admin, SerializedQuery } from "abstracted-admin";
+import { DB, RealTimeClient, RealTimeAdmin } from "universal-fire";
 import { expect } from "chai";
 
 import { FireModel } from "../src/FireModel";
@@ -20,13 +19,14 @@ import { wait, IDictionary } from "common-types";
 import { WatchList } from "../src/watchers/WatchList";
 import { getWatcherPool } from "../src/watchers/watcherPool";
 import { DeeperPerson } from "./testing/dynamicPaths/DeeperPerson";
+import { BaseSerializer } from "@forest-fire/serialized-query";
 
 setupEnv();
 
 describe("Watch →", () => {
-  let realDB: Admin;
+  let realDB: RealTimeAdmin;
   before(async () => {
-    realDB = await Admin.connect();
+    realDB = await RealTimeAdmin.connect();
     FireModel.defaultDb = realDB;
   });
   afterEach(async () => {
@@ -34,7 +34,7 @@ describe("Watch →", () => {
   });
 
   it("Watching a Record gives back a hashCode which can be looked up", async () => {
-    FireModel.defaultDb = await DB.connect({ mocking: true });
+    FireModel.defaultDb = await DB.connect(RealTimeClient, { mocking: true });
     const { watcherId } = await Watch.record(Person, "12345")
       .dispatch(async () => "")
       .start();
@@ -144,7 +144,7 @@ describe("Watch →", () => {
   });
 
   it("Watching a List uses pluralName for localPath unless localModelName is set", async () => {
-    FireModel.defaultDb = await DB.connect({ mocking: true });
+    FireModel.defaultDb = await DB.connect(RealTimeClient, { mocking: true });
     Watch.reset();
     const personId = (await Mock(PersonWithLocalAndPrefix).generate(1)).pop()
       .id;
@@ -163,13 +163,13 @@ describe("Watch →", () => {
     events.forEach(evt => {
       expect(evt.localPath).to.equal(
         `${person.META.localPrefix}/${person.META.localModelName ||
-          person.pluralName}`
+        person.pluralName}`
       );
     });
   });
 
   it("Watching a Record uses localModelName for localPath", async () => {
-    FireModel.defaultDb = await DB.connect({ mocking: true });
+    FireModel.defaultDb = await DB.connect(RealTimeClient, { mocking: true });
     Watch.reset();
     const personId = (await Mock(PersonWithLocalAndPrefix).generate(1)).pop()
       .id;
@@ -211,7 +211,7 @@ describe("Watch.list(XXX).ids()", () => {
   it("Starting WatchList only has a single and appropriate entry in watcher pool", async () => {
     const wl = Watch.list(Person).ids("1234", "4567", "8989");
     FireModel.dispatch = () => undefined;
-    FireModel.defaultDb = await DB.connect({ mocking: true });
+    FireModel.defaultDb = await DB.connect(RealTimeClient, { mocking: true });
     const wId = await wl.start();
     const pool = getWatcherPool();
     expect(Object.keys(pool)).to.be.lengthOf(1);
@@ -221,7 +221,7 @@ describe("Watch.list(XXX).ids()", () => {
   });
 
   it('An event, when encountered, is correctly associated with the "list of records" watcher', async () => {
-    FireModel.defaultDb = await DB.connect({ mocking: true });
+    FireModel.defaultDb = await DB.connect(RealTimeClient, { mocking: true });
     const events: Array<IFmWatchEvent<Person>> = [];
     const cb = async (event: IFmWatchEvent<Person>) => {
       events.push(event);
@@ -262,8 +262,8 @@ describe("Watch.list(XXX).ids()", () => {
       expect(i.query)
         .to.be.an("array")
         .and.to.have.length(2);
-      expect((i.query as SerializedQuery[])[0]).to.be.instanceOf(
-        SerializedQuery
+      expect((i.query as BaseSerializer[])[0]).to.be.instanceOf(
+        BaseSerializer
       );
     });
 
@@ -273,7 +273,7 @@ describe("Watch.list(XXX).ids()", () => {
   });
 
   it("The Watch.list(xyz).ids(...) works when the model has a composite key", async () => {
-    FireModel.defaultDb = await DB.connect({
+    FireModel.defaultDb = await DB.connect(RealTimeClient, {
       mocking: true
     });
     const events: Array<IFmWatchEvent<Person>> = [];
@@ -322,8 +322,8 @@ describe("Watch.list(XXX).ids()", () => {
       expect(i.query)
         .to.be.an("array")
         .and.to.have.length(2);
-      expect((i.query as SerializedQuery[])[0]).to.be.instanceOf(
-        SerializedQuery
+      expect((i.query as BaseSerializer[])[0]).to.be.instanceOf(
+        BaseSerializer
       );
     });
   });

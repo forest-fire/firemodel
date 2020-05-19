@@ -3,7 +3,11 @@ import { Model } from "../models/Model";
 import { IListOptions, IFkReference, IPrimaryKey } from "../@types";
 import { List } from "../List";
 import { Record } from "../Record";
-import { SerializedQuery, IComparisonOperator } from "serialized-query";
+import {
+  BaseSerializer,
+  IComparisonOperator
+} from "@forest-fire/serialized-query";
+import { SerializedQuery } from "@forest-fire/base-serializer";
 import { getAllPropertiesFromClassStructure } from "../util";
 import { epochWithMilliseconds } from "common-types";
 import { Watch } from "../index";
@@ -89,9 +93,9 @@ export class WatchList<T extends Model> extends WatchBase<T> {
       this._underlyingRecordWatchers.push(
         this._options.offsets
           ? Watch.record<T>(this._modelConstructor, {
-              ...(typeof id === "string" ? { id } : id),
-              ...this._options.offsets
-            })
+            ...(typeof id === "string" ? { id } : id),
+            ...this._options.offsets
+          })
           : Watch.record<T>(this._modelConstructor, id)
       );
     }
@@ -264,7 +268,7 @@ export class WatchList<T extends Model> extends WatchBase<T> {
    *
    * @param query
    */
-  public fromQuery(inputQuery: SerializedQuery<T>): WatchList<T> {
+  public fromQuery(inputQuery: BaseSerializer<T>): WatchList<T> {
     this._query = inputQuery;
 
     return this;
@@ -305,8 +309,10 @@ export class WatchList<T extends Model> extends WatchBase<T> {
     } else {
       val = value;
     }
-    this._query = new SerializedQuery<T>(this._query.path)
+    this._query = SerializedQuery.create<T>(this.db, this._query.path)
       .orderByChild(property)
+      // TODO: fix typing issue here.
+      // @ts-ignore
       .where(operation, val);
     return this;
   }
@@ -324,7 +330,7 @@ export class WatchList<T extends Model> extends WatchBase<T> {
         offsets: this._offsets
       });
 
-      this._query = new SerializedQuery<T>(lst.dbPath);
+      this._query = SerializedQuery.create<T>(this.db, lst.dbPath);
       this._modelName = lst.modelName;
       this._pluralName = lst.pluralName;
       this._localPath = lst.localPath;

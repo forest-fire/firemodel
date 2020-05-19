@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.getProperties = exports.getModelProperty = exports.addPropertyToModelMeta = exports.propertiesByModel = exports.isProperty = void 0;
 const typed_conversions_1 = require("typed-conversions");
 function isProperty(modelKlass) {
     return (prop) => {

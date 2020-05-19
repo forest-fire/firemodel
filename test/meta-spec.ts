@@ -1,6 +1,6 @@
 // tslint:disable:no-implicit-dependencies
+import { DB, RealTimeAdmin } from "universal-fire";
 import { Record } from "../src";
-import { DB } from "abstracted-admin";
 import * as chai from "chai";
 import { Klass } from "./testing/klass";
 import { Person } from "./testing/Person";
@@ -110,7 +110,7 @@ describe("relationship decorators: ", () => {
   });
   it("@relationships show up on Model", async () => {
     const PersonRecord = Record.create(Person, {
-      db: new DB({ mocking: true })
+      db: await DB.connect(RealTimeAdmin, { mocking: true })
     });
 
     expect(PersonRecord.META.relationships.map(p => p.property)).to.include(
@@ -164,7 +164,7 @@ describe("relationship decorators: ", () => {
 
   it("@properties show up on Model", async () => {
     const PersonRecord = Record.create(Person, {
-      db: new DB({ mocking: true })
+      db: await DB.connect(RealTimeAdmin, { mocking: true })
     });
     expect(PersonRecord.META.properties.map(p => p.property)).to.include(
       "name"

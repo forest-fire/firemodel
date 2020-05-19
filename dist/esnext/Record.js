@@ -1,3 +1,4 @@
+import copy from "fast-copy";
 import { dotNotation } from "common-types";
 import { key as fbKey } from "firebase-key";
 import { FireModel } from "./FireModel";
@@ -16,7 +17,6 @@ import { relationshipOperation } from "./record/relationshipOperation";
 import { createCompositeKeyRefFromRecord } from "./record/createCompositeKeyString";
 import { createCompositeKeyFromFkString } from "./record/createCompositeKeyFromFkString";
 import { RecordCrudFailure } from "./errors/record/DatabaseCrudFailure";
-import copy from "fast-copy";
 import { WatchDispatcher } from "./watchers/WatchDispatcher";
 import { UnwatchedLocalEvent } from "./state-mgmt/UnwatchedLocalEvent";
 export class Record extends FireModel {
@@ -970,7 +970,7 @@ export class Record extends FireModel {
         }
         // Send CRUD to Firebase
         try {
-            if (this.db.isMockDb && options.silent) {
+            if (this.db.isMockDb && this.db.mock && options.silent) {
                 this.db.mock.silenceEvents();
             }
             this._data.lastUpdated = new Date().getTime();
@@ -1039,7 +1039,7 @@ export class Record extends FireModel {
                     }
                 }
             }
-            if (this.db.isMockDb && options.silent) {
+            if (this.db.isMockDb && this.db.mock && options.silent) {
                 this.db.mock.restoreEvents();
             }
         }

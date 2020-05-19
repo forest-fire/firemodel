@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.NotHasManyRelationship = void 0;
 const FireModelError_1 = require("../FireModelError");
 class NotHasManyRelationship extends FireModelError_1.FireModelError {
     constructor(rec, property, method) {

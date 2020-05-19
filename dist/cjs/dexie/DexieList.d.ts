@@ -2,7 +2,7 @@ import { Model } from "../models/Model";
 import { IModelConstructor } from "..";
 import Dexie from "dexie";
 import { IDexieModelMeta, IDexieListOptions } from "../@types/optional/dexie";
-import { IComparisonOperator } from "serialized-query";
+import { IComparisonOperator } from "@forest-fire/serialized-query";
 import { epoch } from "common-types";
 import { PropType } from "../@types/index";
 /**

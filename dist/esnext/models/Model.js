@@ -11,22 +11,29 @@ import { property } from "../decorators/constraints";
 import { mock } from "../decorators/mock";
 import { model } from "../decorators/model";
 import { index } from "../decorators/indexing";
-let Model = class Model {
-};
-__decorate([
-    property,
-    __metadata("design:type", String)
-], Model.prototype, "id", void 0);
-__decorate([
-    property, mock("dateRecentMiliseconds"), index,
-    __metadata("design:type", Number)
-], Model.prototype, "lastUpdated", void 0);
-__decorate([
-    property, mock("datePastMiliseconds"), index,
-    __metadata("design:type", Number)
-], Model.prototype, "createdAt", void 0);
-Model = __decorate([
-    model()
-], Model);
+let Model = /** @class */ (() => {
+    let Model = class Model {
+    };
+    __decorate([
+        property,
+        __metadata("design:type", String)
+    ], Model.prototype, "id", void 0);
+    __decorate([
+        property,
+        mock("dateRecentMiliseconds"),
+        index,
+        __metadata("design:type", Number)
+    ], Model.prototype, "lastUpdated", void 0);
+    __decorate([
+        property,
+        mock("datePastMiliseconds"),
+        index,
+        __metadata("design:type", Number)
+    ], Model.prototype, "createdAt", void 0);
+    Model = __decorate([
+        model()
+    ], Model);
+    return Model;
+})();
 export { Model };
 //# sourceMappingURL=Model.js.map

@@ -1,7 +1,7 @@
+import { AbstractedDatabase } from "@forest-fire/abstracted-database";
 import { IDictionary, fk, pk, epoch } from "common-types";
+
 import { IFmHasId } from "./general";
-import { Model } from "../models/Model";
-import { RealTimeDB } from "abstracted-firebase";
 
 export type IIdWithDynamicPrefix = IDictionary<number | string> & {
   id: string;
@@ -37,7 +37,7 @@ export interface IFmBuildRelationshipOptions {
 }
 
 export interface IRecordOptions {
-  db?: RealTimeDB;
+  db?: AbstractedDatabase;
   logging?: any;
   id?: string;
   /** if you're working off of a mocking database, there are situations where adding a record silently (aka., not triggering any listener events) is desirable and should be allowed */

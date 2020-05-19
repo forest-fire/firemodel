@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.RecordCrudFailure = void 0;
 const FireModelError_1 = require("../FireModelError");
 const util_1 = require("../../util");
 class RecordCrudFailure extends FireModelError_1.FireModelError {

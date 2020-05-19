@@ -1,14 +1,14 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.List = void 0;
+const typed_conversions_1 = require("typed-conversions");
+const base_serializer_1 = require("@forest-fire/base-serializer");
 const Record_1 = require("./Record");
-const serialized_query_1 = require("serialized-query");
 const FireModel_1 = require("./FireModel");
 const path_1 = require("./path");
 const ModelMeta_1 = require("./ModelMeta");
 const errors_1 = require("./errors");
 const util_1 = require("./util");
-const typed_conversions_1 = require("typed-conversions");
-//#endregion
 const DEFAULT_IF_NOT_FOUND = "__DO_NOT_USE__";
 function addTimestamps(obj) {
     const datetime = new Date().getTime();
@@ -112,7 +112,7 @@ class List extends FireModel_1.FireModel {
      * @param options model options
      */
     static async all(model, options = {}) {
-        const query = new serialized_query_1.SerializedQuery().orderByChild("lastUpdated");
+        const query = base_serializer_1.SerializedQuery.create(this.defaultDb).orderByChild("lastUpdated");
         const list = await List.fromQuery(model, query, options);
         return list;
     }
@@ -125,7 +125,7 @@ class List extends FireModel_1.FireModel {
      * @param options model options
      */
     static async first(model, howMany, options = {}) {
-        const query = new serialized_query_1.SerializedQuery()
+        const query = base_serializer_1.SerializedQuery.create(this.defaultDb)
             .orderByChild("createdAt")
             .limitToLast(howMany);
         const list = await List.fromQuery(model, query, options);
@@ -142,7 +142,7 @@ class List extends FireModel_1.FireModel {
      * @param options
      */
     static async recent(model, howMany, offset = 0, options = {}) {
-        const query = new serialized_query_1.SerializedQuery()
+        const query = base_serializer_1.SerializedQuery.create(this.defaultDb)
             .orderByChild("lastUpdated")
             .limitToFirst(howMany);
         const list = await List.fromQuery(model, query, options);
@@ -159,7 +159,7 @@ class List extends FireModel_1.FireModel {
             e.name = "NotAllowed";
             throw e;
         }
-        const query = new serialized_query_1.SerializedQuery()
+        const query = base_serializer_1.SerializedQuery.create(this.defaultDb)
             .orderByChild("lastUpdated")
             .startAt(since);
         const list = await List.fromQuery(model, query, options);
@@ -173,7 +173,7 @@ class List extends FireModel_1.FireModel {
      * without any update for the longest.
      */
     static async inactive(model, howMany, options = {}) {
-        const query = new serialized_query_1.SerializedQuery()
+        const query = base_serializer_1.SerializedQuery.create(this.defaultDb)
             .orderByChild("lastUpdated")
             .limitToLast(howMany);
         const list = await List.fromQuery(model, query, options);
@@ -186,7 +186,7 @@ class List extends FireModel_1.FireModel {
      * that the record was **created**.
      */
     static async last(model, howMany, options = {}) {
-        const query = new serialized_query_1.SerializedQuery()
+        const query = base_serializer_1.SerializedQuery.create(this.defaultDb)
             .orderByChild("createdAt")
             .limitToFirst(howMany);
         const list = await List.fromQuery(model, query, options);
@@ -235,8 +235,10 @@ class List extends FireModel_1.FireModel {
             val = value[1];
             operation = value[0];
         }
-        const query = new serialized_query_1.SerializedQuery()
+        const query = base_serializer_1.SerializedQuery.create(this.defaultDb)
             .orderByChild(property)
+            // @ts-ignore
+            // Not sure why there is a typing issue here.
             .where(operation, val);
         const list = await List.fromQuery(model, query, options);
         return list;

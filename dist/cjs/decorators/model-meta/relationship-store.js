@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.getRelationships = exports.getModelRelationship = exports.isRelationship = exports.addRelationshipToModelMeta = exports.relationshipsByModel = void 0;
 const typed_conversions_1 = require("typed-conversions");
 exports.relationshipsByModel = {};
 /** allows the addition of meta information to be added to a model's relationships */

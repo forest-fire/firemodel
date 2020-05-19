@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.RelationshipCardinality = exports.RelationshipPolicy = void 0;
 var RelationshipPolicy;
 (function (RelationshipPolicy) {
     RelationshipPolicy["keys"] = "keys";

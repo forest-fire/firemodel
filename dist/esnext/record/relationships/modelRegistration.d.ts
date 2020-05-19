@@ -22,7 +22,7 @@ export declare type IModelSubclass<T extends Model> = T;
  * that occur when you try to pass in class constructors which depend
  * on one another.
  */
-export declare const modelNameLookup: (name: string) => () => IModelConstructor<any>;
+export declare const modelNameLookup: (name: string) => () => IModelConstructor;
 /**
  * When you are defining a _relationship_ between `Model`'s it sometimes
  * useful to just pass in the constructor to the other `Model`. This is in
@@ -31,5 +31,5 @@ export declare const modelNameLookup: (name: string) => () => IModelConstructor<
  * The advantage here is that the external model does not need to be
  * "registered" separately whereas with a string name it would have to be.
  */
-export declare const modelConstructorLookup: <T extends Model>(constructor: IModelConstructor<T> | IFnToModelConstructor<T>) => () => IModelConstructor<any>;
+export declare const modelConstructorLookup: <T extends Model>(constructor: IModelConstructor<T> | IFnToModelConstructor<T>) => () => IModelConstructor;
 export declare function isConstructable(fn: IModelConstructor | IFnToModelConstructor): boolean;

@@ -1,11 +1,12 @@
-import { Model } from "../models/Model";
+import { AbstractedDatabase } from "@forest-fire/abstracted-database";
 import { IDictionary, datetime } from "common-types";
-import { RealTimeDB } from "abstracted-firebase";
+
+import { Model } from "../models/Model";
 
 export type FmModelConstructor<T extends Model> = new () => T;
 export interface IModelOptions {
   logger?: ILogger;
-  db?: import("abstracted-firebase").RealTimeDB;
+  db?: AbstractedDatabase;
 }
 
 /**
@@ -19,7 +20,7 @@ export interface IModelOptions {
  */
 export interface IListOptions<T> extends IModelOptions {
   offsets?: Partial<T>;
-  db?: RealTimeDB;
+  db?: AbstractedDatabase;
 }
 
 export interface IMetaData {

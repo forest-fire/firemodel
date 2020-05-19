@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.IncorrectReciprocalInverse = void 0;
 const FireModelError_1 = require("../FireModelError");
 const Record_1 = require("../../Record");
 const MissingReciprocalInverse_1 = require("./MissingReciprocalInverse");

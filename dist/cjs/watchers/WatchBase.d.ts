@@ -1,21 +1,21 @@
+import { AbstractedDatabase } from "@forest-fire/abstracted-database";
+import { IDictionary } from "common-types";
 import { Model } from "../models/Model";
-import { SerializedQuery } from "serialized-query";
+import { BaseSerializer } from "@forest-fire/serialized-query";
 import { FmModelConstructor, ICompositeKey } from "../@types";
 import { IWatchEventClassification, IFmWatcherStartOptions } from "./types";
 import { IReduxDispatch, IWatcherEventContext } from "../state-mgmt";
-import { RealTimeDB } from "abstracted-firebase";
 import { IListOptions } from "../index";
-import { IDictionary } from "common-types";
 import { WatchRecord } from "./WatchRecord";
 /**
  * The base class which both `WatchList` and `WatchRecord` derive.
  */
 export declare class WatchBase<T extends Model> {
-    protected _query: SerializedQuery<T>;
+    protected _query: BaseSerializer<T>;
     protected _modelConstructor: FmModelConstructor<T>;
     protected _eventType: IWatchEventClassification;
     protected _dispatcher: IReduxDispatch;
-    protected _db: RealTimeDB;
+    protected _db: AbstractedDatabase;
     protected _modelName: string;
     protected _localModelName: string;
     protected _pluralName: string;
@@ -65,5 +65,5 @@ export declare class WatchBase<T extends Model> {
      */
     buildWatcherItem(name?: string): IWatcherEventContext<T>;
     protected getCoreDispatch(): IReduxDispatch<import("..").IReduxAction, any>;
-    protected get db(): RealTimeDB;
+    protected get db(): AbstractedDatabase;
 }

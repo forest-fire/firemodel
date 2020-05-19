@@ -3,6 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.Mock = void 0;
 const FireModel_1 = require("./FireModel");
 const api_1 = __importDefault(require("./Mock/api"));
 const errors_1 = require("./errors");

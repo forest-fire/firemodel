@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.writeAudit = void 0;
 const FireModel_1 = require("./FireModel");
 const index_1 = require("./index");
 const Record_1 = require("./Record");

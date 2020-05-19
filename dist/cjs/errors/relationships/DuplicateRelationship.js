@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.DuplicateRelationship = void 0;
 const FireModelError_1 = require("../FireModelError");
 class DuplicateRelationship extends FireModelError_1.FireModelError {
     constructor(pk, property, fkId) {

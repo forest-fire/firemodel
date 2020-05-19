@@ -1,9 +1,10 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.WatchList = void 0;
 const WatchBase_1 = require("./WatchBase");
 const List_1 = require("../List");
 const Record_1 = require("../Record");
-const serialized_query_1 = require("serialized-query");
+const base_serializer_1 = require("@forest-fire/base-serializer");
 const util_1 = require("../util");
 const index_1 = require("../index");
 const errors_1 = require("../errors");
@@ -249,8 +250,10 @@ class WatchList extends WatchBase_1.WatchBase {
         else {
             val = value;
         }
-        this._query = new serialized_query_1.SerializedQuery(this._query.path)
+        this._query = base_serializer_1.SerializedQuery.create(this.db, this._query.path)
             .orderByChild(property)
+            // TODO: fix typing issue here.
+            // @ts-ignore
             .where(operation, val);
         return this;
     }
@@ -261,7 +264,7 @@ class WatchList extends WatchBase_1.WatchBase {
         if (this._dynamicProperties.length === 0 ||
             Object.keys(this._offsets).length > 0) {
             const lst = List_1.List.create(this._modelConstructor, Object.assign(Object.assign({}, this._options), { offsets: this._offsets }));
-            this._query = new serialized_query_1.SerializedQuery(lst.dbPath);
+            this._query = base_serializer_1.SerializedQuery.create(this.db, lst.dbPath);
             this._modelName = lst.modelName;
             this._pluralName = lst.pluralName;
             this._localPath = lst.localPath;

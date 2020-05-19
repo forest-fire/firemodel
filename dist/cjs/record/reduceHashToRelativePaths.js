@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.discoverRootPath = void 0;
 const errors_1 = require("../errors");
 function discoverRootPath(results) {
     try {

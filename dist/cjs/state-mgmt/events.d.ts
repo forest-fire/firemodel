@@ -1,8 +1,8 @@
 import { Model } from "../models/Model";
 import { FmEvents, IFmLocalEvent } from "./index";
 import { IWatcherEventContext } from "../state-mgmt";
-declare type IValueBasedWatchEvent = import("abstracted-firebase").IValueBasedWatchEvent;
-declare type IPathBasedWatchEvent = import("abstracted-firebase").IPathBasedWatchEvent;
+declare type IValueBasedWatchEvent = import("@forest-fire/real-time-db").IValueBasedWatchEvent;
+declare type IPathBasedWatchEvent = import("@forest-fire/real-time-db").IPathBasedWatchEvent;
 import { ICompositeKey } from "../@types";
 import { IFmLocalRecordEvent, IFmLocalRelationshipEvent } from "./IFmLocalEvent";
 import { IDictionary } from "common-types";

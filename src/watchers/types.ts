@@ -1,5 +1,3 @@
-import { SerializedQuery } from "serialized-query";
-
 export interface IFmWatcherStartOptions {
   /**
    * optionally provide a callback to be called when

@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.DynamicPropertiesNotReady = void 0;
 const FireModelError_1 = require("./FireModelError");
 class DynamicPropertiesNotReady extends FireModelError_1.FireModelError {
     constructor(rec, message) {

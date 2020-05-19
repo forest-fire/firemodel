@@ -1,7 +1,7 @@
 import NamedFakes from "../Mock/NamedFakes";
 import { Model } from "../models/Model";
 import { IFnToModelConstructor } from "../record/relationships/modelRegistration";
-import { MockHelper } from "abstracted-firebase";
+import { MockHelper } from "firemock";
 
 export type FmRelationshipType = "hasMany" | "hasOne";
 /**

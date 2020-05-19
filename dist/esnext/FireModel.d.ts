@@ -1,12 +1,13 @@
+import { AbstractedDatabase } from "@forest-fire/abstracted-database";
 import { Model } from "./models/Model";
 declare type Record<T> = import("./Record").Record<T>;
 import { IDictionary } from "common-types";
 import { IReduxDispatch } from "./state-mgmt";
-import { RealTimeDB, IFirebaseConfig, IFirebaseAdminConfig } from "abstracted-firebase";
+import { IClientConfig, IAdminConfig } from "@forest-fire/types";
 import { IFmModelMeta, IFmModelPropertyMeta, IFmModelRelationshipMeta } from "./decorators/types";
 import { IFmChangedProperties } from "./@types";
 export declare class FireModel<T extends Model> {
-    static get defaultDb(): RealTimeDB;
+    static get defaultDb(): AbstractedDatabase;
     /**
      * Any FireModel transaction needs to connect to the database
      * via a passed-in reference to "abstracted-client" or "abstracted-admin"
@@ -15,7 +16,7 @@ export declare class FireModel<T extends Model> {
      * "default" database to use should a given transaction not state a DB
      * connection explicitly.
      */
-    static set defaultDb(db: RealTimeDB);
+    static set defaultDb(db: AbstractedDatabase);
     /**
      * All Watchers and write-based transactions in FireModel offer a way to
      * call out to a "dispatch" function. This can be done on a per-transaction
@@ -55,7 +56,7 @@ export declare class FireModel<T extends Model> {
     static get isDefaultDispatch(): boolean;
     get dispatchIsActive(): boolean;
     /** the connected real-time database */
-    get db(): RealTimeDB;
+    get db(): AbstractedDatabase;
     get pushKeys(): string[];
     static auditLogs: string;
     /**
@@ -76,9 +77,9 @@ export declare class FireModel<T extends Model> {
      * databases) but the vast majority of projects only have ONE firebase
      * database so this just makes the whole process much easier.
      */
-    static connect<T extends RealTimeDB>(RTDB: {
-        connect: (options: Partial<IFirebaseAdminConfig> & IFirebaseConfig) => T;
-    }, options: Partial<IFirebaseAdminConfig> & IFirebaseConfig): Promise<T>;
+    static connect<T extends AbstractedDatabase>(RTDB: {
+        connect: (options: Partial<IAdminConfig> & IClientConfig) => T;
+    }, options: Partial<IAdminConfig> & IClientConfig): Promise<T>;
     static register<T extends Model = Model>(model: new () => T): void;
     static listRegisteredModels(): string[];
     static lookupModel(name: string): new () => any;
@@ -90,7 +91,7 @@ export declare class FireModel<T extends Model> {
     /** the data structure/model that this class operates around */
     protected _model: T;
     protected _modelConstructor: new () => T;
-    protected _db: RealTimeDB;
+    protected _db: AbstractedDatabase;
     protected _getPaths(rec: Record<T>, deltas: IFmChangedProperties<T>): IDictionary;
 }
 export interface IMultiPathUpdates {
