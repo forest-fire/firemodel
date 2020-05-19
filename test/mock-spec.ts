@@ -32,7 +32,7 @@ describe("Mocking:", () => {
   let db: RealTimeAdmin;
   let realDb: RealTimeAdmin;
   before(async () => {
-    realDb = await DB.connect(RealTimeAdmin);
+    realDb = await DB.connect(RealTimeAdmin, { mocking: true });
   });
   after(async () => {
     const fancy = Record.create(FancyPerson);
