@@ -1,11 +1,11 @@
-import { AbstractedDatabase } from "@forest-fire/abstracted-database";
+import type { AbstractedDatabase } from "@forest-fire/abstracted-database";
 
 import { Model } from "./models/Model";
 import {
   IReduxDispatch,
   IWatcherEventContext,
   FmEvents,
-  IFmWatcherStopped
+  IFmWatcherStopped,
 } from "./state-mgmt";
 import { FireModel } from "./FireModel";
 import { IModelOptions } from "./@types/general";
@@ -15,7 +15,7 @@ import {
   getWatcherPool,
   clearWatcherPool,
   removeFromWatcherPool,
-  getWatcherPoolList
+  getWatcherPoolList,
 } from "./watchers/watcherPool";
 import { WatchList } from "./watchers/WatchList";
 import { WatchRecord } from "./watchers/WatchRecord";
@@ -88,7 +88,7 @@ export class Watch<T extends Model = Model> {
    */
   public static findByName(name: string) {
     const pool = getWatcherPool();
-    return Object.keys(pool).find(i => pool[i].watcherName === name);
+    return Object.keys(pool).find((i) => pool[i].watcherName === name);
   }
 
   /**
@@ -123,7 +123,7 @@ export class Watch<T extends Model = Model> {
         clearWatcherPool();
         dispatch({
           type: FmEvents.WATCHER_STOPPED_ALL,
-          stopped: keysAndPaths
+          stopped: keysAndPaths,
         });
       }
     } else {
@@ -138,10 +138,10 @@ export class Watch<T extends Model = Model> {
       registry.dispatch({
         type: FmEvents.WATCHER_STOPPED,
         watcherId: hashCode,
-        remaining: getWatcherPoolList().map(i => ({
+        remaining: getWatcherPoolList().map((i) => ({
           id: i.watcherId,
-          name: i.watcherName
-        }))
+          name: i.watcherName,
+        })),
       } as IFmWatcherStopped);
       removeFromWatcherPool(hashCode);
     }

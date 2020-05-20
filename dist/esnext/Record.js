@@ -3,15 +3,15 @@ import { dotNotation } from "common-types";
 import { key as fbKey } from "firebase-key";
 import { FireModel } from "./FireModel";
 import { buildDeepRelationshipLinks } from "./record/buildDeepRelationshipLinks";
-import { FmEvents } from "./state-mgmt/index";
+import { FmEvents, } from "./state-mgmt/index";
 import { pathJoin } from "./path";
 import { getModelMeta } from "./ModelMeta";
 import { writeAudit } from "./Audit";
 import { compareHashes, withoutMetaOrPrivate, capitalize } from "./util";
-import { createCompositeKey, List } from ".";
+import { createCompositeKey, List, } from ".";
 import { findWatchers } from "./watchers/findWatchers";
 import { isHasManyRelationship } from "./verifications/isHasManyRelationship";
-import { NotHasManyRelationship, NotHasOneRelationship, FireModelError, FireModelProxyError } from "./errors";
+import { NotHasManyRelationship, NotHasOneRelationship, FireModelError, FireModelProxyError, } from "./errors";
 import { buildRelationshipPaths } from "./record/relationships/buildRelationshipPaths";
 import { relationshipOperation } from "./record/relationshipOperation";
 import { createCompositeKeyRefFromRecord } from "./record/createCompositeKeyString";
@@ -95,7 +95,7 @@ export class Record extends FireModel {
             throw new FireModelError("You used the static Record.local() method but passed nothing into the 'values' property! If you just want to skip this error then you can set the options to { ignoreEmptyValues: true } or just use the Record.create() method.", `firemodel/record::local`);
         }
         if (values) {
-            const defaultValues = rec.META.properties.filter(i => i.defaultValue !== undefined);
+            const defaultValues = rec.META.properties.filter((i) => i.defaultValue !== undefined);
             // also include "default values"
             defaultValues.forEach((i) => {
                 if (rec.get(i.property) === undefined) {
@@ -129,7 +129,7 @@ export class Record extends FireModel {
                 payload.id = await r.db.getPushKey(path);
             }
             await r._initialize(payload, options);
-            const defaultValues = r.META.properties.filter(i => i.defaultValue !== undefined);
+            const defaultValues = r.META.properties.filter((i) => i.defaultValue !== undefined);
             defaultValues.forEach((i) => {
                 if (r.get(i.property) === undefined) {
                     r.set(i.property, i.defaultValue, true);
@@ -332,7 +332,7 @@ export class Record extends FireModel {
         const compositeKey = Record.compositeKey(model, object);
         const nonIdKeys = Object.keys(compositeKey).reduce((agg, prop) => prop === "id" ? agg : agg.concat({ prop, value: compositeKey[prop] }), []);
         return `${compositeKey.id}::${nonIdKeys
-            .map(tuple => `${tuple.prop}:${tuple.value}`)
+            .map((tuple) => `${tuple.prop}:${tuple.value}`)
             .join("::")}`;
     }
     /**
@@ -372,7 +372,7 @@ export class Record extends FireModel {
         return [
             this._injectDynamicPathProperties(this.dbOffset),
             this.pluralName,
-            this.data.id
+            this.data.id,
         ].join("/");
     }
     /**
@@ -445,7 +445,7 @@ export class Record extends FireModel {
      */
     get localPath() {
         let prefix = this.localPrefix;
-        this.localDynamicComponents.forEach(prop => {
+        this.localDynamicComponents.forEach((prop) => {
             // TODO: another example of impossible typing coming off of a get()
             prefix = prefix.replace(`:${prop}`, this.get(prop));
         });
@@ -513,7 +513,7 @@ export class Record extends FireModel {
             : await this.db.getPushKey(pathJoin(this.dbPath, property));
         await this.db.update(pathJoin(this.dbPath, property), {
             [pathJoin(this.dbPath, property, key)]: value,
-            [pathJoin(this.dbPath, "lastUpdated")]: new Date().getTime()
+            [pathJoin(this.dbPath, "lastUpdated")]: new Date().getTime(),
         });
         // set firemodel state locally
         const currentState = this.get(property) || {};
@@ -593,7 +593,7 @@ export class Record extends FireModel {
         const lastUpdated = new Date().getTime();
         const changed = {
             [prop]: value,
-            lastUpdated
+            lastUpdated,
         };
         // locally change Record values
         this.META.isDirty = true;
@@ -601,7 +601,7 @@ export class Record extends FireModel {
         // dispatch
         if (!silent) {
             await this._localCrudOperation("update" /* update */, rollback, {
-                silent
+                silent,
             });
             this.META.isDirty = false;
         }
@@ -677,13 +677,13 @@ export class Record extends FireModel {
         fkRefs = Array.isArray(fkRefs) ? fkRefs : [fkRefs];
         let paths = [];
         const now = new Date().getTime();
-        fkRefs.map(ref => {
+        fkRefs.map((ref) => {
             paths = [
                 ...buildRelationshipPaths(this, property, ref, {
                     now,
-                    altHasManyValue
+                    altHasManyValue,
                 }),
-                ...paths
+                ...paths,
             ];
         });
         await relationshipOperation(this, "add", property, fkRefs, paths, options);
@@ -703,13 +703,13 @@ export class Record extends FireModel {
         fkRefs = Array.isArray(fkRefs) ? fkRefs : [fkRefs];
         let paths = [];
         const now = new Date().getTime();
-        fkRefs.map(ref => {
+        fkRefs.map((ref) => {
             paths = [
                 ...buildRelationshipPaths(this, property, ref, {
                     now,
-                    operation: "remove"
+                    operation: "remove",
                 }),
-                ...paths
+                ...paths,
             ];
         });
         await relationshipOperation(this, "remove", property, fkRefs, paths, options);
@@ -734,13 +734,13 @@ export class Record extends FireModel {
                 : [];
         let paths = [];
         const now = new Date().getTime();
-        fkRefs.map(ref => {
+        fkRefs.map((ref) => {
             paths = [
                 ...buildRelationshipPaths(this, property, ref, {
                     now,
-                    operation: "remove"
+                    operation: "remove",
                 }),
-                ...paths
+                ...paths,
             ];
         });
         await relationshipOperation(this, "clear", property, fkRefs, paths, options);
@@ -783,7 +783,7 @@ export class Record extends FireModel {
             key: this.id,
             compositeKey: this.compositeKey,
             localPath: this.localPath,
-            data: this.data.toString()
+            data: this.data.toString(),
         };
     }
     //#endregion
@@ -797,17 +797,17 @@ export class Record extends FireModel {
      */
     async _initialize(data, options = {}) {
         if (data) {
-            Object.keys(data).map(key => {
+            Object.keys(data).map((key) => {
                 this._data[key] = data[key];
             });
         }
         const relationships = getModelMeta(this).relationships;
         const hasOneRels = (relationships || [])
-            .filter(r => r.relType === "hasOne")
-            .map(r => r.property);
+            .filter((r) => r.relType === "hasOne")
+            .map((r) => r.property);
         const hasManyRels = (relationships || [])
-            .filter(r => r.relType === "hasMany")
-            .map(r => r.property);
+            .filter((r) => r.relType === "hasMany")
+            .map((r) => r.property);
         const promises = [];
         /**
          * Sets hasMany to default `{}` if nothing was set.
@@ -846,28 +846,28 @@ export class Record extends FireModel {
             if (this.META.audit) {
                 const deltas = compareHashes(currentValue, priorValue);
                 const auditLogEntries = [];
-                const added = deltas.added.forEach(a => auditLogEntries.push({
+                const added = deltas.added.forEach((a) => auditLogEntries.push({
                     action: "added",
                     property: a,
                     before: null,
-                    after: currentValue[a]
+                    after: currentValue[a],
                 }));
-                deltas.changed.forEach(c => auditLogEntries.push({
+                deltas.changed.forEach((c) => auditLogEntries.push({
                     action: "updated",
                     property: c,
                     before: priorValue[c],
-                    after: currentValue[c]
+                    after: currentValue[c],
                 }));
-                const removed = deltas.removed.forEach(r => auditLogEntries.push({
+                const removed = deltas.removed.forEach((r) => auditLogEntries.push({
                     action: "removed",
                     property: r,
                     before: priorValue[r],
-                    after: null
+                    after: null,
                 }));
                 const pastTense = {
                     add: "added",
                     update: "updated",
-                    remove: "removed"
+                    remove: "removed",
                 };
                 await writeAudit(this, pastTense[action], auditLogEntries, { db: this.db });
             }
@@ -907,29 +907,25 @@ export class Record extends FireModel {
     async _localCrudOperation(crudAction, priorValue, options = {}) {
         options = Object.assign({ silent: false, silentAcceptance: false }, options);
         const transactionId = "t-" +
-            Math.random()
-                .toString(36)
-                .substr(2, 5) +
+            Math.random().toString(36).substr(2, 5) +
             "-" +
-            Math.random()
-                .toString(36)
-                .substr(2, 5);
+            Math.random().toString(36).substr(2, 5);
         const lookup = {
             add: [
                 FmEvents.RECORD_ADDED_LOCALLY,
                 FmEvents.RECORD_ADDED_CONFIRMATION,
-                FmEvents.RECORD_ADDED_ROLLBACK
+                FmEvents.RECORD_ADDED_ROLLBACK,
             ],
             update: [
                 FmEvents.RECORD_CHANGED_LOCALLY,
                 FmEvents.RECORD_CHANGED_CONFIRMATION,
-                FmEvents.RECORD_CHANGED_ROLLBACK
+                FmEvents.RECORD_CHANGED_ROLLBACK,
             ],
             remove: [
                 FmEvents.RECORD_REMOVED_LOCALLY,
                 FmEvents.RECORD_REMOVED_CONFIRMATION,
-                FmEvents.RECORD_REMOVED_ROLLBACK
-            ]
+                FmEvents.RECORD_REMOVED_ROLLBACK,
+            ],
         };
         const [actionTypeStart, actionTypeEnd, actionTypeFailure] = lookup[crudAction];
         this.isDirty = true;
@@ -944,7 +940,7 @@ export class Record extends FireModel {
             eventType: "local",
             key: this.id,
             value: withoutMetaOrPrivate(this.data),
-            priorValue
+            priorValue,
         };
         if (crudAction === "update") {
             event.priorValue = priorValue;
@@ -1069,7 +1065,7 @@ export class Record extends FireModel {
      * looks for ":name" property references within the dbOffset or localPrefix and expands them
      */
     _injectDynamicPathProperties(path, forProp = "dbOffset") {
-        this.dynamicPathComponents.forEach(prop => {
+        this.dynamicPathComponents.forEach((prop) => {
             const value = this.data[prop];
             if (value ? false : true) {
                 throw new FireModelError(`You can not ask for the ${forProp} on a model like "${this.modelName}" which has a dynamic property of "${prop}" before setting that property [ data: ${JSON.stringify(this.data)} ].`, "record/not-ready");
@@ -1089,7 +1085,7 @@ export class Record extends FireModel {
             ? createCompositeKeyFromFkString(id, this.modelConstructor)
             : id;
         // load composite key into props so the dbPath() will evaluate
-        Object.keys(keys).map(key => {
+        Object.keys(keys).map((key) => {
             // TODO: fix up typing
             this._data[key] = keys[key];
         });
@@ -1137,7 +1133,7 @@ export class Record extends FireModel {
                 return agg;
             }
         }, [])
-            .filter(prop => this.META.relationship(prop).inverseProperty);
+            .filter((prop) => this.META.relationship(prop).inverseProperty);
         const promises = [];
         try {
             for (const prop of relationshipsTouched) {
@@ -1147,7 +1143,7 @@ export class Record extends FireModel {
                     promises.push(this.associate(prop, this.get(prop)));
                 }
                 if (meta.relType === "hasMany") {
-                    Object.keys(this.get(prop)).forEach(fkRef => promises.push(this.associate(prop, fkRef)));
+                    Object.keys(this.get(prop)).forEach((fkRef) => promises.push(this.associate(prop, fkRef)));
                 }
             }
             await Promise.all(promises);

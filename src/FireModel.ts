@@ -1,26 +1,26 @@
-import { AbstractedDatabase } from "@forest-fire/abstracted-database";
+import type { AbstractedDatabase } from "@forest-fire/abstracted-database";
 
 import { Model } from "./models/Model";
 type Record<T> = import("./Record").Record<T>;
 import { IDictionary, pathJoin } from "common-types";
 import { IReduxDispatch } from "./state-mgmt";
 import { getModelMeta } from "./ModelMeta";
-import { IClientConfig, IAdminConfig } from "@forest-fire/types";
+import type { IClientConfig, IAdminConfig } from "@forest-fire/types";
 import {
   IFmModelMeta,
   IFmModelPropertyMeta,
-  IFmModelRelationshipMeta
+  IFmModelRelationshipMeta,
 } from "./decorators/types";
 import { IFmChangedProperties } from "./@types";
 import {
   modelRegister,
   listRegisteredModels,
-  modelRegistryLookup
+  modelRegistryLookup,
 } from "./record/relationships/modelRegistration";
 
 // tslint:disable-next-line:no-var-requires
 const pluralize = require("pluralize");
-const defaultDispatch: IReduxDispatch<any, any> = async context => "";
+const defaultDispatch: IReduxDispatch<any, any> = async (context) => "";
 
 const registeredModules: IDictionary<new () => any> = {};
 

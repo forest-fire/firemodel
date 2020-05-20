@@ -8,11 +8,12 @@ var __createBinding = (this && this.__createBinding) || (Object.create ? (functi
 }));
 var __exportStar = (this && this.__exportStar) || function(m, exports) {
     for (var p in m) if (p !== "default" && !exports.hasOwnProperty(p)) __createBinding(exports, m, p);
-}
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-__exportStar(require("./record-types"), exports);
-__exportStar(require("./general"), exports);
-__exportStar(require("./relationships"), exports);
-__exportStar(require("./firemodel-types"), exports);
 __exportStar(require("./audit-types"), exports);
+__exportStar(require("./firemodel-types"), exports);
+__exportStar(require("./general"), exports);
+__exportStar(require("./record-types"), exports);
+__exportStar(require("./relationships"), exports);
+__exportStar(require("./optional/dexie"), exports);
 //# sourceMappingURL=index.js.map

@@ -1,6 +1,6 @@
-import { AbstractedDatabase } from "@forest-fire/abstracted-database";
+import type { AbstractedDatabase } from "@forest-fire/abstracted-database";
 import { epochWithMilliseconds, IDictionary } from "common-types";
-import { BaseSerializer, IComparisonOperator } from "@forest-fire/serialized-query";
+import type { BaseSerializer, IComparisonOperator } from "@forest-fire/serialized-query";
 import { Model } from "./models/Model";
 import { Record } from "./Record";
 import { FireModel } from "./FireModel";

@@ -8,7 +8,7 @@ var __createBinding = (this && this.__createBinding) || (Object.create ? (functi
 }));
 var __exportStar = (this && this.__exportStar) || function(m, exports) {
     for (var p in m) if (p !== "default" && !exports.hasOwnProperty(p)) __createBinding(exports, m, p);
-}
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 var hasMany_1 = require("./hasMany");
 Object.defineProperty(exports, "hasMany", { enumerable: true, get: function () { return hasMany_1.hasMany; } });
