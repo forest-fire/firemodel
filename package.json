@@ -30,10 +30,10 @@
     "docs:build": "vuepress build docs"
   },
   "dependencies": {
-    "@forest-fire/abstracted-database": "^0.44.10",
-    "@forest-fire/base-serializer": "^0.44.10",
-    "@forest-fire/real-time-db": "^0.44.11",
-    "@forest-fire/serialized-query": "^0.44.12",
+    "@forest-fire/abstracted-database": "^0.44.13",
+    "@forest-fire/base-serializer": "^0.44.13",
+    "@forest-fire/real-time-db": "^0.44.13",
+    "@forest-fire/serialized-query": "^0.44.13",
     "common-types": "^1.14.3",
     "date-fns": "^2.14.0",
     "dexie": "^2.0.4",
@@ -47,7 +47,7 @@
     "reflect-metadata": "^0.1.13",
     "set-value": "^3.0.0",
     "typed-conversions": "^0.10.2",
-    "universal-fire": "^0.44.12",
+    "universal-fire": "^0.44.13",
     "wait-in-parallel": "^1.2.6"
   },
   "devDependencies": {
