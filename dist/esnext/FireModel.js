@@ -1,6 +1,6 @@
 import { pathJoin } from "common-types";
 import { getModelMeta } from "./ModelMeta";
-import { modelRegister, listRegisteredModels, modelRegistryLookup } from "./record/relationships/modelRegistration";
+import { modelRegister, listRegisteredModels, modelRegistryLookup, } from "./record/relationships/modelRegistration";
 // tslint:disable-next-line:no-var-requires
 const pluralize = require("pluralize");
 const defaultDispatch = async (context) => "";

@@ -1,7 +1,7 @@
-import { FmEvents } from "./state-mgmt";
+import { FmEvents, } from "./state-mgmt";
 import { FireModel } from "./FireModel";
 import { FireModelError } from "./errors";
-import { getWatcherPool, clearWatcherPool, removeFromWatcherPool, getWatcherPoolList } from "./watchers/watcherPool";
+import { getWatcherPool, clearWatcherPool, removeFromWatcherPool, getWatcherPoolList, } from "./watchers/watcherPool";
 import { WatchList } from "./watchers/WatchList";
 import { WatchRecord } from "./watchers/WatchRecord";
 import { firstKey } from "./util";
@@ -63,7 +63,7 @@ export class Watch {
      */
     static findByName(name) {
         const pool = getWatcherPool();
-        return Object.keys(pool).find(i => pool[i].watcherName === name);
+        return Object.keys(pool).find((i) => pool[i].watcherName === name);
     }
     /**
      * stops watching either a specific watcher or ALL if no hash code is provided
@@ -88,7 +88,7 @@ export class Watch {
                 clearWatcherPool();
                 dispatch({
                     type: FmEvents.WATCHER_STOPPED_ALL,
-                    stopped: keysAndPaths
+                    stopped: keysAndPaths,
                 });
             }
         }
@@ -101,10 +101,10 @@ export class Watch {
             registry.dispatch({
                 type: FmEvents.WATCHER_STOPPED,
                 watcherId: hashCode,
-                remaining: getWatcherPoolList().map(i => ({
+                remaining: getWatcherPoolList().map((i) => ({
                     id: i.watcherId,
-                    name: i.watcherName
-                }))
+                    name: i.watcherName,
+                })),
             });
             removeFromWatcherPool(hashCode);
         }

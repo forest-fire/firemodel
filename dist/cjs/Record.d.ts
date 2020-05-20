@@ -1,4 +1,4 @@
-import { AbstractedDatabase } from "@forest-fire/abstracted-database";
+import type { AbstractedDatabase } from "@forest-fire/abstracted-database";
 import { IDictionary, Nullable, fk, pk } from "common-types";
 import { Model } from "./models/Model";
 import { FireModel } from "./FireModel";

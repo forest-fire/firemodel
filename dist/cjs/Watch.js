@@ -66,7 +66,7 @@ class Watch {
      */
     static findByName(name) {
         const pool = watcherPool_1.getWatcherPool();
-        return Object.keys(pool).find(i => pool[i].watcherName === name);
+        return Object.keys(pool).find((i) => pool[i].watcherName === name);
     }
     /**
      * stops watching either a specific watcher or ALL if no hash code is provided
@@ -91,7 +91,7 @@ class Watch {
                 watcherPool_1.clearWatcherPool();
                 dispatch({
                     type: state_mgmt_1.FmEvents.WATCHER_STOPPED_ALL,
-                    stopped: keysAndPaths
+                    stopped: keysAndPaths,
                 });
             }
         }
@@ -104,10 +104,10 @@ class Watch {
             registry.dispatch({
                 type: state_mgmt_1.FmEvents.WATCHER_STOPPED,
                 watcherId: hashCode,
-                remaining: watcherPool_1.getWatcherPoolList().map(i => ({
+                remaining: watcherPool_1.getWatcherPoolList().map((i) => ({
                     id: i.watcherId,
-                    name: i.watcherName
-                }))
+                    name: i.watcherName,
+                })),
             });
             watcherPool_1.removeFromWatcherPool(hashCode);
         }

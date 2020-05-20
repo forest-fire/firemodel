@@ -1,4 +1,4 @@
-import { AbstractedDatabase } from "@forest-fire/abstracted-database";
+import type { AbstractedDatabase } from "@forest-fire/abstracted-database";
 import { Model } from "./models/Model";
 import { IReduxDispatch, IWatcherEventContext } from "./state-mgmt";
 import { IModelOptions } from "./@types/general";
