@@ -94,9 +94,10 @@ export class Watch {
         }
         else {
             const registry = getWatcherPool()[hashCode];
-            db.unWatch(registry.eventFamily === "child"
+            const events = registry.eventFamily === "child"
                 ? "value"
-                : ["child_added", "child_changed", "child_moved", "child_removed"], registry.dispatch);
+                : ["child_added", "child_changed", "child_moved", "child_removed"];
+            db.unWatch(events, registry.dispatch);
             // tslint:disable-next-line: no-object-literal-type-assertion
             registry.dispatch({
                 type: FmEvents.WATCHER_STOPPED,

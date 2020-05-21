@@ -1,7 +1,7 @@
 import { WatchBase } from "./WatchBase";
 import { FireModelError } from "../errors";
 import { Record } from "..";
-import { SerializedQuery } from "@forest-fire/base-serializer";
+import { SerializedQuery } from "universal-fire";
 import { FireModel } from "../FireModel";
 export class WatchRecord extends WatchBase {
     static record(modelConstructor, pk, options = {}) {

@@ -1,7 +1,7 @@
 import { WatchBase } from "./WatchBase";
 import { List } from "../List";
 import { Record } from "../Record";
-import { SerializedQuery } from "@forest-fire/base-serializer";
+import { SerializedQuery } from "universal-fire";
 import { getAllPropertiesFromClassStructure } from "../util";
 import { Watch } from "../index";
 import { FireModelError } from "../errors";

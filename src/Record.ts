@@ -49,8 +49,7 @@ import { createCompositeKeyFromFkString } from "./record/createCompositeKeyFromF
 import { RecordCrudFailure } from "./errors/record/DatabaseCrudFailure";
 import { WatchDispatcher } from "./watchers/WatchDispatcher";
 import { UnwatchedLocalEvent } from "./state-mgmt/UnwatchedLocalEvent";
-// import { IAbstractedDatabase } from "universal-fire";
-import { AbstractedDatabase } from "@forest-fire/abstracted-database";
+import { IAbstractedDatabase } from "universal-fire";
 
 export interface IWriteOperation {
   id: string;
@@ -65,7 +64,7 @@ export interface IWriteOperation {
 
 export class Record<T extends Model> extends FireModel<T> {
   //#region STATIC INTERFACE
-  public static set defaultDb(db: AbstractedDatabase) {
+  public static set defaultDb(db: IAbstractedDatabase) {
     FireModel.defaultDb = db;
   }
   public static get defaultDb() {

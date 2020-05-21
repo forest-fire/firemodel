@@ -5,14 +5,13 @@ import {
   Record,
   IFmModelRelationshipMeta,
 } from "../index";
-// import { IAbstractedDatabase } from "universal-fire";
-import { AbstractedDatabase } from "@forest-fire/abstracted-database";
+import { IAbstractedDatabase } from "universal-fire";
 
 export async function processHasMany<T>(
   record: Record<T>,
   rel: IFmModelRelationshipMeta<T>,
   config: IMockRelationshipConfig,
-  db: AbstractedDatabase
+  db: IAbstractedDatabase
 ): Promise<IMockResponse<T>> {
   // by creating a mock we are giving any dynamic path segments
   // an opportunity to be mocked (this is best practice)

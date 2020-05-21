@@ -1,7 +1,6 @@
 // tslint:disable:no-implicit-dependencies
 import { Record, IFmWatchEvent } from "../src";
-// import { DB, SDK, IAbstractedDatabase } from "universal-fire";
-import { RealTimeAdmin } from "@forest-fire/real-time-admin";
+import { RealTimeAdmin, IRealTimeAdmin } from "universal-fire";
 import * as chai from "chai";
 const expect = chai.expect;
 import { Person } from "./testing/Person";
@@ -33,9 +32,9 @@ const hasOnePaths = (id: string, now: number) => [
 ];
 
 describe("Relationship > ", () => {
-  let db: RealTimeAdmin;
+  let db: IRealTimeAdmin;
   beforeEach(async () => {
-    db = await RealTimeAdmin.connect({ mocking: true });
+    db = await RealTimeAdmin({ mocking: true });
     FireModel.defaultDb = db;
   });
 

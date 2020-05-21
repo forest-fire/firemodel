@@ -7,8 +7,7 @@ import {
   IFmLocalEvent,
   IReduxAction,
 } from "../src";
-// import { DB, SDK, IAbstractedDatabase } from "universal-fire";
-import { RealTimeAdmin } from "@forest-fire/real-time-admin";
+import { RealTimeAdmin, IRealTimeAdmin } from "universal-fire";
 import * as chai from "chai";
 const expect = chai.expect;
 import "reflect-metadata";
@@ -21,9 +20,9 @@ import { FancyPerson } from "./testing/FancyPerson";
 helpers.setupEnv();
 
 describe("Tests using REAL db =>�", () => {
-  let db: RealTimeAdmin;
+  let db: IRealTimeAdmin;
   before(async () => {
-    db = await RealTimeAdmin.connect({ mocking: true });
+    db = await RealTimeAdmin({ mocking: true });
     FireModel.defaultDb = db;
   });
   after(async () => {

@@ -59,7 +59,7 @@ export declare class DexieDb {
      */
     get dexieTables(): {
         name: string;
-        schema: Dexie.TableSchema;
+        schema: import("dexie").TableSchema;
     }[];
     /** simple dictionary of Dixie model defn's for indexation */
     private _models;

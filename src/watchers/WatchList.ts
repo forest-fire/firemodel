@@ -1,13 +1,13 @@
 import { WatchBase } from "./WatchBase";
 import { Model } from "../models/Model";
-import { IListOptions, IFkReference, IPrimaryKey } from "../@types";
+import { IListOptions, IPrimaryKey } from "../@types";
 import { List } from "../List";
 import { Record } from "../Record";
 import {
   BaseSerializer,
-  IComparisonOperator
+  IComparisonOperator,
 } from "@forest-fire/serialized-query";
-import { SerializedQuery } from "@forest-fire/base-serializer";
+import { SerializedQuery } from "universal-fire";
 import { getAllPropertiesFromClassStructure } from "../util";
 import { epochWithMilliseconds } from "common-types";
 import { Watch } from "../index";
@@ -93,9 +93,9 @@ export class WatchList<T extends Model> extends WatchBase<T> {
       this._underlyingRecordWatchers.push(
         this._options.offsets
           ? Watch.record<T>(this._modelConstructor, {
-            ...(typeof id === "string" ? { id } : id),
-            ...this._options.offsets
-          })
+              ...(typeof id === "string" ? { id } : id),
+              ...this._options.offsets,
+            })
           : Watch.record<T>(this._modelConstructor, id)
       );
     }
@@ -327,7 +327,7 @@ export class WatchList<T extends Model> extends WatchBase<T> {
     ) {
       const lst = List.create(this._modelConstructor, {
         ...this._options,
-        offsets: this._offsets
+        offsets: this._offsets,
       });
 
       this._query = SerializedQuery.create<T>(this.db, lst.dbPath);

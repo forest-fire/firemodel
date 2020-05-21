@@ -6,14 +6,14 @@ import { FireModel } from "./FireModel";
 import { IReduxDispatch } from "./state-mgmt/index";
 import { IListOptions } from "./@types/general";
 import { IPrimaryKey } from "./@types";
-import { AbstractedDatabase } from "@forest-fire/abstracted-database";
+import { IAbstractedDatabase } from "universal-fire";
 export declare class List<T extends Model> extends FireModel<T> {
     /**
      * Sets the default database to be used by all FireModel classes
      * unless explicitly told otherwise
      */
-    static set defaultDb(db: AbstractedDatabase);
-    static get defaultDb(): AbstractedDatabase;
+    static set defaultDb(db: IAbstractedDatabase);
+    static get defaultDb(): IAbstractedDatabase;
     /**
      * Set
      *
