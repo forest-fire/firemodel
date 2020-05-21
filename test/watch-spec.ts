@@ -7,6 +7,7 @@ import {
   IReduxAction,
 } from "../src";
 // import { DB, SDK, IAbstractedDatabase } from "universal-fire";
+import { RealTimeAdmin } from "@forest-fire/real-time-admin";
 import { expect } from "chai";
 
 import { FireModel } from "../src/FireModel";
@@ -24,9 +25,9 @@ import { BaseSerializer } from "@forest-fire/serialized-query";
 setupEnv();
 
 describe("Watch →", () => {
-  let realDB: IAbstractedDatabase;
+  let realDB: RealTimeAdmin;
   before(async () => {
-    realDB = await DB.connect(SDK.FirestoreAdmin);
+    realDB = await RealTimeAdmin.connect();
     FireModel.defaultDb = realDB;
   });
   afterEach(async () => {
@@ -34,7 +35,7 @@ describe("Watch →", () => {
   });
 
   it("Watching a Record gives back a hashCode which can be looked up", async () => {
-    FireModel.defaultDb = await DB.connect(SDK.RealTimeClient, {
+    FireModel.defaultDb = await RealTimeAdmin.connect({
       mocking: true,
     });
     const { watcherId } = await Watch.record(Person, "12345")
@@ -143,7 +144,7 @@ describe("Watch →", () => {
   });
 
   it("Watching a List uses pluralName for localPath unless localModelName is set", async () => {
-    FireModel.defaultDb = await DB.connect(SDK.RealTimeClient, {
+    FireModel.defaultDb = await RealTimeAdmin.connect({
       mocking: true,
     });
     Watch.reset();
@@ -169,7 +170,7 @@ describe("Watch →", () => {
   });
 
   it("Watching a Record uses localModelName for localPath", async () => {
-    FireModel.defaultDb = await DB.connect(SDK.RealTimeClient, {
+    FireModel.defaultDb = await RealTimeAdmin.connect({
       mocking: true,
     });
     Watch.reset();
@@ -213,7 +214,7 @@ describe("Watch.list(XXX).ids()", () => {
   it("Starting WatchList only has a single and appropriate entry in watcher pool", async () => {
     const wl = Watch.list(Person).ids("1234", "4567", "8989");
     FireModel.dispatch = () => undefined;
-    FireModel.defaultDb = await DB.connect(SDK.RealTimeClient, {
+    FireModel.defaultDb = await RealTimeAdmin.connect({
       mocking: true,
     });
     const wId = await wl.start();
@@ -225,7 +226,7 @@ describe("Watch.list(XXX).ids()", () => {
   });
 
   it('An event, when encountered, is correctly associated with the "list of records" watcher', async () => {
-    FireModel.defaultDb = await DB.connect(SDK.RealTimeClient, {
+    FireModel.defaultDb = await RealTimeAdmin.connect({
       mocking: true,
     });
     const events: Array<IFmWatchEvent<Person>> = [];
@@ -275,7 +276,7 @@ describe("Watch.list(XXX).ids()", () => {
   });
 
   it("The Watch.list(xyz).ids(...) works when the model has a composite key", async () => {
-    FireModel.defaultDb = await DB.connect(SDK.RealTimeClient, {
+    FireModel.defaultDb = await RealTimeAdmin.connect({
       mocking: true,
     });
     const events: Array<IFmWatchEvent<Person>> = [];

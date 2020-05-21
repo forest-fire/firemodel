@@ -3,6 +3,7 @@ import * as chai from "chai";
 const expect = chai.expect;
 import { IDictionary } from "common-types";
 // import { DB, SDK, IAbstractedDatabase } from "universal-fire";
+import { RealTimeClient } from "@forest-fire/real-time-client";
 import { FireModel, Record } from "../src";
 import { Car } from "./testing/permissions/Car";
 const clientConfig = {
@@ -15,10 +16,10 @@ const clientConfig = {
 };
 
 describe("Validating client permissions with an anonymous user", () => {
-  let db: IAbstractedDatabase;
+  let db: RealTimeClient;
 
   before(async () => {
-    db = await DB.connect(SDK.RealTimeClient, clientConfig);
+    db = await RealTimeClient.connect(clientConfig);
     FireModel.defaultDb = db;
   });
 

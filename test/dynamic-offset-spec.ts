@@ -1,5 +1,6 @@
 // tslint:disable:no-implicit-dependencies
 // import { DB, SDK, IAbstractedDatabase } from "universal-fire";
+import { RealTimeAdmin } from "@forest-fire/real-time-admin";
 import * as chai from "chai";
 import {
   Record,
@@ -21,9 +22,9 @@ import { IDictionary } from "common-types";
 const expect = chai.expect;
 
 describe("Dynamic offsets reflected in path", () => {
-  let db: IAbstractedDatabase;
+  let db: RealTimeAdmin;
   beforeEach(async () => {
-    db = await DB.connect(SDK.RealTimeAdmin, { mocking: true });
+    db = await RealTimeAdmin.connect({ mocking: true });
     FireModel.defaultDb = db;
   });
 
@@ -95,10 +96,10 @@ describe("Dynamic offsets reflected in path", () => {
 
 describe("Dynamic offsets work with relationships", () => {
   let person: Record<DeepPerson>;
-  let db: IAbstractedDatabase;
+  let db: RealTimeAdmin;
   let hobbies: List<Hobby>;
   beforeEach(async () => {
-    db = await DB.connect(SDK.RealTimeAdmin, { mocking: true });
+    db = await RealTimeAdmin.connect({ mocking: true });
 
     FireModel.defaultDb = db;
     person = await Record.add(DeepPerson, {
@@ -270,9 +271,9 @@ describe("Dynamic offsets work with relationships", () => {
 });
 
 describe("LIST uses static offsets() with static API methods", () => {
-  let db: IAbstractedDatabase;
+  let db: RealTimeAdmin;
   before(async () => {
-    db = await DB.connect(SDK.RealTimeAdmin, { mocking: true });
+    db = await RealTimeAdmin.connect({ mocking: true });
     FireModel.defaultDb = db;
     db.mock.updateDB({});
   });
@@ -304,9 +305,9 @@ describe("LIST uses static offsets() with static API methods", () => {
 });
 
 describe("MOCK uses dynamic dbOffsets", () => {
-  let db: IAbstractedDatabase;
+  let db: RealTimeAdmin;
   beforeEach(async () => {
-    db = await DB.connect(SDK.RealTimeAdmin, { mocking: true });
+    db = await RealTimeAdmin.connect({ mocking: true });
     FireModel.defaultDb = db;
   });
 
@@ -407,7 +408,7 @@ describe("MOCK uses dynamic dbOffsets", () => {
 
 describe("WATCHers work with dynamic dbOffsets", () => {
   beforeEach(async () => {
-    FireModel.defaultDb = await DB.connect(SDK.RealTimeAdmin, {
+    FireModel.defaultDb = await RealTimeAdmin.connect({
       mocking: true,
     });
   });

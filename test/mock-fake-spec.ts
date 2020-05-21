@@ -3,6 +3,7 @@ import fakeIt from "../src/Mock/fakeIt";
 import { Mock as FireMock, MockHelper } from "firemock";
 import { expect } from "chai";
 // import { DB, SDK } from "universal-fire";
+import { RealTimeAdmin } from "@forest-fire/real-time-admin";
 import { Mock, FireModel, List } from "../src";
 import { Product } from "./testing/Product";
 
@@ -141,7 +142,7 @@ describe("Test parameterized mock built-in fakes", () => {
     }
 
     // Now let's do the test in a more "real world" situation
-    FireModel.defaultDb = await DB.connect(SDK.RealTimeAdmin, {
+    FireModel.defaultDb = await RealTimeAdmin.connect({
       mocking: true,
     });
     await Mock(Product).generate(10);

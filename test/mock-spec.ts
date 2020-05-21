@@ -11,6 +11,7 @@ import {
   IReduxAction,
 } from "../src";
 // import { DB, SDK, IAbstractedDatabase } from "universal-fire";
+import { RealTimeAdmin } from "@forest-fire/real-time-admin";
 import * as chai from "chai";
 import { Mock } from "../src/Mock";
 import { Mock as FireMock } from "firemock";
@@ -29,10 +30,10 @@ export class SimplePerson extends Model {
 }
 
 describe("Mocking:", () => {
-  let db: IAbstractedDatabase;
-  let realDb: IAbstractedDatabase;
+  let db: RealTimeAdmin;
+  let realDb: RealTimeAdmin;
   before(async () => {
-    realDb = await DB.connect(SDK.RealTimeAdmin, { mocking: true });
+    realDb = await RealTimeAdmin.connect({ mocking: true });
   });
   after(async () => {
     const fancy = Record.create(FancyPerson);
@@ -43,7 +44,7 @@ describe("Mocking:", () => {
     }
   });
   beforeEach(async () => {
-    db = await DB.connect(SDK.RealTimeAdmin, { mocking: true });
+    db = await RealTimeAdmin.connect({ mocking: true });
     FireModel.defaultDb = db;
   });
 

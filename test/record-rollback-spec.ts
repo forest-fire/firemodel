@@ -2,11 +2,12 @@
 import { expect } from "chai";
 import { FireModel } from "../src/FireModel";
 // import { DB, SDK, IAbstractedDatabase } from "universal-fire";
+import { RealTimeAdmin } from "@forest-fire/real-time-admin";
 
 describe("Rolling back a record => ", () => {
-  let db: IAbstractedDatabase;
+  let db: RealTimeAdmin;
   beforeEach(async () => {
-    db = await DB.connect(SDK.RealTimeClient, { mocking: true });
+    db = await RealTimeAdmin.connect({ mocking: true });
     FireModel.defaultDb = db;
   });
 

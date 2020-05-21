@@ -1,5 +1,6 @@
 // tslint:disable:no-implicit-dependencies
 // import { DB, SDK } from "universal-fire";
+import { RealTimeAdmin } from "@forest-fire/real-time-admin";
 import { Record } from "../src";
 import * as chai from "chai";
 import { Klass } from "./testing/klass";
@@ -110,7 +111,7 @@ describe("relationship decorators: ", () => {
   });
   it("@relationships show up on Model", async () => {
     const PersonRecord = Record.create(Person, {
-      db: await DB.connect(SDK.RealTimeAdmin, { mocking: true }),
+      db: await RealTimeAdmin.connect({ mocking: true }),
     });
 
     expect(PersonRecord.META.relationships.map((p) => p.property)).to.include(
@@ -164,7 +165,7 @@ describe("relationship decorators: ", () => {
 
   it("@properties show up on Model", async () => {
     const PersonRecord = Record.create(Person, {
-      db: await DB.connect(SDK.RealTimeAdmin, { mocking: true }),
+      db: await RealTimeAdmin.connect({ mocking: true }),
     });
     expect(PersonRecord.META.properties.map((p) => p.property)).to.include(
       "name"
