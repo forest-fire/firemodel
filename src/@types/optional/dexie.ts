@@ -1,8 +1,6 @@
 import { IDictionary } from "common-types";
 import { IFmModelMeta } from "../../decorators";
-import Dexie from "dexie";
-import { IModelConstructor } from "../../record/relationships/modelRegistration";
-import { Model } from "../../models/Model";
+import Dexie, { Transaction } from "dexie";
 
 export interface IDexiePriorVersion {
   /**
@@ -10,7 +8,7 @@ export interface IDexiePriorVersion {
    */
   models: IDictionary<string>;
   /** If there is a schema change then  */
-  upgrade?: (tx: Dexie.Transaction) => Dexie.Collection<any, any>;
+  upgrade?: (collection: Transaction) => Dexie.Collection<any, any>;
 }
 
 /**
