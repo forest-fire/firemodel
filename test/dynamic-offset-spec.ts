@@ -407,7 +407,7 @@ describe("MOCK uses dynamic dbOffsets", () => {
 
 describe("WATCHers work with dynamic dbOffsets", () => {
   beforeEach(async () => {
-    FireModel.defaultDb = await RealTimeAdmin.connect({
+    FireModel.defaultDb = await RealTimeAdmin({
       mocking: true,
     });
   });

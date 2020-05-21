@@ -30,9 +30,9 @@ export class SimplePerson extends Model {
 
 describe("Mocking:", () => {
   let db: IRealTimeAdmin;
-  let realDb: RealTimeAdmin;
+  let realDb: IRealTimeAdmin;
   before(async () => {
-    realdb = await RealTimeAdmin({ mocking: true });
+    realDb = await RealTimeAdmin({ mocking: true });
   });
   after(async () => {
     const fancy = Record.create(FancyPerson);
