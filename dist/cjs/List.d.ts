@@ -1,4 +1,3 @@
-import type { AbstractedDatabase } from "@forest-fire/abstracted-database";
 import { epochWithMilliseconds, IDictionary } from "common-types";
 import type { BaseSerializer, IComparisonOperator } from "@forest-fire/serialized-query";
 import { Model } from "./models/Model";
@@ -7,6 +6,7 @@ import { FireModel } from "./FireModel";
 import { IReduxDispatch } from "./state-mgmt/index";
 import { IListOptions } from "./@types/general";
 import { IPrimaryKey } from "./@types";
+import { AbstractedDatabase } from "@forest-fire/abstracted-database";
 export declare class List<T extends Model> extends FireModel<T> {
     /**
      * Sets the default database to be used by all FireModel classes

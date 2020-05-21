@@ -1,5 +1,3 @@
-import type { AbstractedDatabase } from "@forest-fire/abstracted-database";
-
 import { Model } from "./models/Model";
 type Record<T> = import("./Record").Record<T>;
 import { IDictionary, pathJoin } from "common-types";
@@ -17,6 +15,8 @@ import {
   listRegisteredModels,
   modelRegistryLookup,
 } from "./record/relationships/modelRegistration";
+// import { IAbstractedDatabase } from "universal-fire";
+import { AbstractedDatabase } from "@forest-fire/abstracted-database";
 
 // tslint:disable-next-line:no-var-requires
 const pluralize = require("pluralize");

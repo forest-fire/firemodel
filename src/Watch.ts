@@ -1,5 +1,3 @@
-import type { AbstractedDatabase } from "@forest-fire/abstracted-database";
-
 import { Model } from "./models/Model";
 import {
   IReduxDispatch,
@@ -20,6 +18,8 @@ import {
 import { WatchList } from "./watchers/WatchList";
 import { WatchRecord } from "./watchers/WatchRecord";
 import { firstKey } from "./util";
+// import { IAbstractedDatabase } from "universal-fire";
+import { AbstractedDatabase } from "@forest-fire/abstracted-database";
 
 /**
  * A static library for interacting with _watchers_. It

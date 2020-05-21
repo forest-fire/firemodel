@@ -1,4 +1,3 @@
-import { AbstractedDatabase } from "@forest-fire/abstracted-database";
 import { IDictionary } from "common-types";
 
 import mockProperties from "./mockProperties";
@@ -7,6 +6,8 @@ import { Record } from "../Record";
 import { Mock } from "firemock";
 import { IMockRelationshipConfig, IMockResponse } from "./types";
 import { FireModelError } from "../errors";
+// import { IAbstractedDatabase } from "universal-fire";
+import { AbstractedDatabase } from "@forest-fire/abstracted-database";
 
 let mockPrepared = false;
 

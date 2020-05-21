@@ -1,4 +1,3 @@
-import type { AbstractedDatabase } from "@forest-fire/abstracted-database";
 import { Model } from "./models/Model";
 declare type Record<T> = import("./Record").Record<T>;
 import { IDictionary } from "common-types";
@@ -6,6 +5,7 @@ import { IReduxDispatch } from "./state-mgmt";
 import type { IClientConfig, IAdminConfig } from "@forest-fire/types";
 import { IFmModelMeta, IFmModelPropertyMeta, IFmModelRelationshipMeta } from "./decorators/types";
 import { IFmChangedProperties } from "./@types";
+import { AbstractedDatabase } from "@forest-fire/abstracted-database";
 export declare class FireModel<T extends Model> {
     static get defaultDb(): AbstractedDatabase;
     /**

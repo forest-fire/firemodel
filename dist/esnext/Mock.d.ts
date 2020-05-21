@@ -1,5 +1,5 @@
-import { AbstractedDatabase } from "@forest-fire/abstracted-database";
 import { Model } from "./models/Model";
+import { AbstractedDatabase } from "@forest-fire/abstracted-database";
 /**
  * Provides a _Model_ aware means of mocking your data.
  *

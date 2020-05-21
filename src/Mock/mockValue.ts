@@ -1,10 +1,10 @@
+// import { IAbstractedDatabase } from "universal-fire";
 import { AbstractedDatabase } from "@forest-fire/abstracted-database";
-
-import { Model, IFmModelPropertyMeta } from "..";
 import { MockHelper } from "firemock";
 import fakeIt from "./fakeIt";
 import NamedFakes from "./NamedFakes";
 import PropertyNamePatterns from "./PropertyNamePatterns";
+import { Model, IFmModelPropertyMeta } from "..";
 
 export default function mockValue<T extends Model>(
   db: AbstractedDatabase,
@@ -20,10 +20,10 @@ export default function mockValue<T extends Model>(
     return typeof mockType === "function"
       ? mockType(mockHelper)
       : fakeIt(
-        mockHelper,
-        mockType as keyof typeof NamedFakes,
-        ...(mockParameters || [])
-      );
+          mockHelper,
+          mockType as keyof typeof NamedFakes,
+          ...(mockParameters || [])
+        );
   } else {
     // MOCK is undefined
     const fakedMockType = (Object.keys(NamedFakes).includes(propMeta.property)

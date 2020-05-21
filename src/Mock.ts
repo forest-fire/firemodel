@@ -1,10 +1,10 @@
-import { AbstractedDatabase } from "@forest-fire/abstracted-database";
-
 import { Model } from "./models/Model";
 import { Record } from "./Record";
 import { FireModel } from "./FireModel";
 import API from "./Mock/api";
 import { FireModelError } from "./errors";
+// import { IAbstractedDatabase } from "universal-fire";
+import { AbstractedDatabase } from "@forest-fire/abstracted-database";
 
 function defaultCardinality<T>(r: Record<T>) {
   return r.META.relationships.reduce((prev, curr) => {

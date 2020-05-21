@@ -1,4 +1,3 @@
-import { AbstractedDatabase } from "@forest-fire/abstracted-database";
 import { IDictionary } from "common-types";
 import { Model } from "../models/Model";
 import { BaseSerializer } from "@forest-fire/serialized-query";
@@ -7,6 +6,7 @@ import { IWatchEventClassification, IFmWatcherStartOptions } from "./types";
 import { IReduxDispatch, IWatcherEventContext } from "../state-mgmt";
 import { IListOptions } from "../index";
 import { WatchRecord } from "./WatchRecord";
+import { AbstractedDatabase } from "@forest-fire/abstracted-database";
 /**
  * The base class which both `WatchList` and `WatchRecord` derive.
  */

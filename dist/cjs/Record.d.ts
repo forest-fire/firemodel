@@ -1,4 +1,3 @@
-import type { AbstractedDatabase } from "@forest-fire/abstracted-database";
 import { IDictionary, Nullable, fk, pk } from "common-types";
 import { Model } from "./models/Model";
 import { FireModel } from "./FireModel";
@@ -7,6 +6,7 @@ import { IFMEventName, IFmCrudOperations, IFmDispatchOptions } from "./state-mgm
 import { IFkReference, ICompositeKey, IRecordOptions } from "./@types/record-types";
 import { IFmRelationshipOptionsForHasMany } from ".";
 import { IFmRelationshipOptions } from "./@types";
+import { AbstractedDatabase } from "@forest-fire/abstracted-database";
 export interface IWriteOperation {
     id: string;
     type: "set" | "pushKey" | "update";

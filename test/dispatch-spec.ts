@@ -6,7 +6,8 @@ import { PersonWithLocal } from "./testing/PersonWithLocal";
 import { PersonWithLocalAndPrefix } from "./testing/PersonWithLocalAndPrefix";
 import { IMultiPathUpdates, FireModel } from "../src/FireModel";
 import { FmEvents } from "../src/state-mgmt";
-import { DB, RealTimeAdmin } from "universal-fire";
+// import { DB, SDK, IAbstractedDatabase } from "universal-fire";
+import { RealTimeAdmin } from "@forest-fire/real-time-admin";
 import { wait } from "./testing/helpers";
 import { IVuexDispatch, VeuxWrapper } from "../src/state-mgmt/VuexWrapper";
 import { compareHashes, withoutMetaOrPrivate } from "../src/util";
@@ -15,7 +16,7 @@ const expect = chai.expect;
 describe("Dispatch →", () => {
   let db: RealTimeAdmin;
   beforeEach(async () => {
-    db = await DB.connect(RealTimeAdmin, { mocking: true });
+    db = await RealTimeAdmin.connect({ mocking: true });
     Record.defaultDb = db;
     Record.dispatch = null;
   });
@@ -23,17 +24,17 @@ describe("Dispatch →", () => {
   it("_getPaths() decomposes the changes into an array of discrete update paths", async () => {
     const person = await Record.add(Person, {
       name: "Bob",
-      gender: "male"
+      gender: "male",
     });
 
     const p2 = await Record.createWith(Person, {
       id: person.id,
       name: "Bob Marley",
       age: 55,
-      gender: null
+      gender: null,
     });
     const validProperties = person.META.properties.map(
-      i => i.property
+      (i) => i.property
     ) as Array<keyof Person & string>;
 
     const deltas = compareHashes(p2.data, person.data, validProperties);
@@ -63,7 +64,7 @@ describe("Dispatch →", () => {
   it("set() immediately changes value on Record", async () => {
     const person = await Record.add(Person, {
       name: "Jane",
-      age: 18
+      age: 18,
     });
 
     person.set("name", "Carol");
@@ -77,7 +78,7 @@ describe("Dispatch →", () => {
     const events: Array<IFmWatchEvent<Person>> = [];
     const person = await Record.add(Person, {
       name: "Jane",
-      age: 18
+      age: 18,
     });
     Record.dispatch = async (e: IFmWatchEvent<Person>) => events.push(e);
 
@@ -109,14 +110,14 @@ describe("Dispatch →", () => {
     };
     const person = await Record.add(Person, {
       name: "Jane",
-      age: 18
+      age: 18,
     });
     Record.dispatch = VeuxWrapper(vueDispatch);
     await person.update({
-      age: 12
+      age: 12,
     });
     await person.update({
-      age: 25
+      age: 25,
     });
     expect(events).to.have.lengthOf(4);
     expect(types.size).to.equal(2);
@@ -131,14 +132,16 @@ describe("Dispatch →", () => {
     };
     const person = await Record.add(Person, {
       name: "Jane",
-      age: 18
+      age: 18,
     });
     Record.dispatch = VeuxWrapper(vueDispatch);
     await person.update({
-      age: 12
+      age: 12,
     });
 
-    events.forEach(event => expect(event.localPath).to.equal(event.modelName));
+    events.forEach((event) =>
+      expect(event.localPath).to.equal(event.modelName)
+    );
   });
 
   it("When @model decorator and setting localModelName we can override the localPath", async () => {
@@ -153,14 +156,14 @@ describe("Dispatch →", () => {
     };
     const person = await Record.add(PersonWithLocal, {
       name: "Jane",
-      age: 18
+      age: 18,
     });
     Record.dispatch = VeuxWrapper(vueDispatch);
     await person.update({
-      age: 12
+      age: 12,
     });
 
-    events.forEach(event =>
+    events.forEach((event) =>
       expect(
         event.localPath,
         `The localPath [ ${event.localPath} ] should equal the model's localModelName [ ${person.META.localModelName}`
@@ -177,14 +180,14 @@ describe("Dispatch →", () => {
     };
     const person = await Record.add(PersonWithLocalAndPrefix, {
       name: "Jane",
-      age: 18
+      age: 18,
     });
     Record.dispatch = VeuxWrapper(vueDispatch);
     await person.update({
-      age: 12
+      age: 12,
     });
     console.log(events);
 
-    events.forEach(event => expect(event.watcherSource).to.equal("unknown"));
+    events.forEach((event) => expect(event.watcherSource).to.equal("unknown"));
   });
 });

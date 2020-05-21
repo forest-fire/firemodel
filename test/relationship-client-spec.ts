@@ -1,6 +1,7 @@
 // tslint:disable:no-implicit-dependencies
 import { Record, IFmWatchEvent, IFmLocalRelationshipEvent } from "../src";
-import { DB, RealTimeClient } from "universal-fire";
+// import { DB, SDK, IAbstractedDatabase } from "universal-fire";
+import { RealTimeAdmin } from "@forest-fire/real-time-admin";
 import * as chai from "chai";
 const expect = chai.expect;
 import "reflect-metadata";
@@ -13,16 +14,16 @@ import { Company } from "./testing/Company";
 const addFatherAndChildren = async () => {
   const bob = await Record.add(FancyPerson, {
     name: "Bob",
-    age: 23
+    age: 23,
   });
 
   const chrissy = await Record.add(FancyPerson, {
     name: "Chrissy",
-    age: 18
+    age: 18,
   });
   const father = await Record.add(FancyPerson, {
     name: "Pops",
-    age: 46
+    age: 46,
   });
   const events: IFmWatchEvent[] = [];
   Record.dispatch = async (evt: IFmWatchEvent) => events.push(evt);
@@ -32,14 +33,14 @@ const addFatherAndChildren = async () => {
     fatherId: father.id,
     bobId: bob.id,
     chrissyId: chrissy.id,
-    events
+    events,
   };
 };
 
 describe("Relationship > ", () => {
-  let db: RealTimeClient;
+  let db: RealTimeAdmin;
   beforeEach(async () => {
-    db = await DB.connect(RealTimeClient, { mocking: true });
+    db = await RealTimeAdmin.connect({ mocking: true });
     FireModel.defaultDb = db;
     FireModel.dispatch = null;
   });
@@ -47,7 +48,7 @@ describe("Relationship > ", () => {
   it("can instantiate a model which has circular relationships", async () => {
     const person = await Record.add(FancyPerson, {
       name: "Bob",
-      age: 23
+      age: 23,
     });
     expect(typeof person).to.equal("object");
     expect(person.data.age).to.equal(23);
@@ -56,7 +57,7 @@ describe("Relationship > ", () => {
   it("using addToRelationship() to relationship with inverse (M:1)", async () => {
     const person = await Record.add(FancyPerson, {
       name: "Bob",
-      age: 23
+      age: 23,
     });
     expect(person.id).to.exist.and.to.be.a("string");
     const lastUpdated = person.data.lastUpdated;
@@ -69,19 +70,19 @@ describe("Relationship > ", () => {
     expect((person.data.cars as any)["car12345"]).to.equal(true);
     expect(events).to.have.lengthOf(2);
 
-    const eventTypes = new Set(events.map(e => e.type));
+    const eventTypes = new Set(events.map((e) => e.type));
     expect(eventTypes.has(FmEvents.RELATIONSHIP_ADDED_LOCALLY)).to.equal(true);
     expect(eventTypes.has(FmEvents.RELATIONSHIP_ADDED_CONFIRMATION)).to.equal(
       true
     );
     const localEvent = events.find(
-      i => i.type === FmEvents.RELATIONSHIP_ADDED_LOCALLY
+      (i) => i.type === FmEvents.RELATIONSHIP_ADDED_LOCALLY
     );
 
     expect(localEvent.paths).to.have.lengthOf(4);
-    const paths = localEvent.paths.map(i => i.path);
-    expect(paths.filter(i => i.includes("car-offset"))).to.have.lengthOf(2);
-    expect(paths.filter(i => i.includes("fancyPeople"))).to.have.lengthOf(2);
+    const paths = localEvent.paths.map((i) => i.path);
+    expect(paths.filter((i) => i.includes("car-offset"))).to.have.lengthOf(2);
+    expect(paths.filter((i) => i.includes("fancyPeople"))).to.have.lengthOf(2);
 
     expect(paths).to.include("car-offset/cars/car12345/lastUpdated");
     expect(paths).to.include("car-offset/cars/car12345/owner");
@@ -93,11 +94,11 @@ describe("Relationship > ", () => {
   it("using addToRelationship() to relationship with inverse (M:M)", async () => {
     const bob = await Record.add(FancyPerson, {
       name: "Bob",
-      age: 23
+      age: 23,
     });
     const father = await Record.add(FancyPerson, {
       name: "Pops",
-      age: 46
+      age: 46,
     });
     const events: IFmLocalRelationshipEvent[] = [];
     Record.dispatch = async (evt: IFmLocalRelationshipEvent) =>
@@ -106,7 +107,7 @@ describe("Relationship > ", () => {
     // local person record is updated
     expect(bob.data.parents[father.id]).to.equal(true);
     const localEvent = events.find(
-      i => i.type === FmEvents.RELATIONSHIP_ADDED_LOCALLY
+      (i) => i.type === FmEvents.RELATIONSHIP_ADDED_LOCALLY
     );
     // client event paths are numerically correct
     expect(localEvent.paths).to.have.lengthOf(4);
@@ -139,7 +140,7 @@ describe("Relationship > ", () => {
   it("using addToRelationship() on a hasOne prop throws error", async () => {
     const bob = await Record.add(FancyPerson, {
       name: "Bob",
-      age: 23
+      age: 23,
     });
     try {
       await bob.addToRelationship("employer", "4567");
@@ -153,11 +154,11 @@ describe("Relationship > ", () => {
     let bob = await Record.add(FancyPerson, {
       id: "bobs-yur-uncle",
       name: "Bob",
-      age: 23
+      age: 23,
     });
     const abc = await Record.add(Company, {
       id: "e8899",
-      name: "ABC Inc"
+      name: "ABC Inc",
     });
     const dbWasUpdated = bob.setRelationship("employer", "e8899");
     // locally changed immediately
@@ -175,7 +176,7 @@ describe("Relationship > ", () => {
   it("using clearRelationship() on an hasOne prop sets relationship", async () => {
     const bob = await Record.add(FancyPerson, {
       name: "Bob",
-      age: 23
+      age: 23,
     });
     await bob.setRelationship("employer", "e8899");
     expect(bob.get("employer")).to.equal("e8899");

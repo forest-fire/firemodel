@@ -48,7 +48,7 @@ export class WatchBase {
             if (this._eventType === "value") {
                 if (this._watcherSource === "list-of-records") {
                     // Watch all "ids" added to the list of records
-                    this._underlyingRecordWatchers.forEach(r => {
+                    this._underlyingRecordWatchers.forEach((r) => {
                         this.db.watch(r._query, ["value"], dispatch);
                     });
                 }
@@ -65,7 +65,7 @@ export class WatchBase {
                         modelConstructor: this._modelConstructor,
                         key: this._query.path.split("/").pop(),
                         value: payload.data,
-                        offsets: this._options.offsets || {}
+                        offsets: this._options.offsets || {},
                     });
                 }
                 this.db.watch(this._query, ["child_added", "child_changed", "child_moved", "child_removed"], dispatch);
@@ -76,7 +76,7 @@ export class WatchBase {
             (this._dispatcher || FireModel.dispatch)({
                 type: FmEvents.WATCHER_FAILED,
                 errorMessage: e.message,
-                errorCode: e.code || e.name || "firemodel/watcher-failed"
+                errorCode: e.code || e.name || "firemodel/watcher-failed",
             });
             throw e;
         }
@@ -127,11 +127,11 @@ export class WatchBase {
         const watcherName = name || `${watcherId}`;
         const eventFamily = this._watcherSource === "list" ? "child" : "value";
         const watcherPaths = this._watcherSource === "list-of-records"
-            ? this._underlyingRecordWatchers.map(i => i._query.path)
+            ? this._underlyingRecordWatchers.map((i) => i._query.path)
             : [this._query.path];
         // TODO: fix this bullshit typing; should be: SerializedQuery<T> | Array<SerializedQuery<T>>
         const query = this._watcherSource === "list-of-records"
-            ? this._underlyingRecordWatchers.map(i => i._query)
+            ? this._underlyingRecordWatchers.map((i) => i._query)
             : this._query;
         const watchContext = {
             watcherId,
@@ -150,7 +150,7 @@ export class WatchBase {
             watcherPaths,
             // TODO: Fix this typing ... the error is nonsensical atm
             watcherSource: this._watcherSource,
-            createdAt: new Date().getTime()
+            createdAt: new Date().getTime(),
         };
         return watchContext;
     }

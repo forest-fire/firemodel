@@ -2,24 +2,24 @@
 import * as chai from "chai";
 const expect = chai.expect;
 import { IDictionary } from "common-types";
-import { DB, RealTimeClient } from "universal-fire";
+// import { DB, SDK, IAbstractedDatabase } from "universal-fire";
+import { RealTimeClient } from "@forest-fire/real-time-client";
 import { FireModel, Record } from "../src";
 import { Car } from "./testing/permissions/Car";
-import { AbstractedDatabase } from "@forest-fire/abstracted-database";
 const clientConfig = {
   apiKey: "AIzaSyDuimhtnMcV1zeTl4m1MphOgWnzS17QhBM",
   authDomain: "abstracted-admin.firebaseapp.com",
   databaseURL: "https://abstracted-admin.firebaseio.com",
   projectId: "abstracted-admin",
   storageBucket: "abstracted-admin.appspot.com",
-  messagingSenderId: "547394508788"
+  messagingSenderId: "547394508788",
 };
 
 describe("Validating client permissions with an anonymous user", () => {
   let db: RealTimeClient;
 
   before(async () => {
-    db = await DB.connect(RealTimeClient, clientConfig);
+    db = await RealTimeClient.connect(clientConfig);
     FireModel.defaultDb = db;
   });
 
@@ -35,7 +35,7 @@ describe("Validating client permissions with an anonymous user", () => {
         id: "1234",
         description: "one great car",
         model: "Chevy",
-        cost: 10000
+        cost: 10000,
       });
     } catch (e) {
       console.log(e);

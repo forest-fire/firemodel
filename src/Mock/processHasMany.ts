@@ -1,4 +1,3 @@
-import { AbstractedDatabase } from "@forest-fire/abstracted-database";
 import {
   IMockRelationshipConfig,
   IMockResponse,
@@ -6,6 +5,8 @@ import {
   Record,
   IFmModelRelationshipMeta,
 } from "../index";
+// import { IAbstractedDatabase } from "universal-fire";
+import { AbstractedDatabase } from "@forest-fire/abstracted-database";
 
 export async function processHasMany<T>(
   record: Record<T>,

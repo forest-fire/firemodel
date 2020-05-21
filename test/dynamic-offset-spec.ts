@@ -1,5 +1,6 @@
 // tslint:disable:no-implicit-dependencies
-import { DB, RealTimeAdmin } from "universal-fire";
+// import { DB, SDK, IAbstractedDatabase } from "universal-fire";
+import { RealTimeAdmin } from "@forest-fire/real-time-admin";
 import * as chai from "chai";
 import {
   Record,
@@ -23,7 +24,7 @@ const expect = chai.expect;
 describe("Dynamic offsets reflected in path", () => {
   let db: RealTimeAdmin;
   beforeEach(async () => {
-    db = await DB.connect(RealTimeAdmin, { mocking: true });
+    db = await RealTimeAdmin.connect({ mocking: true });
     FireModel.defaultDb = db;
   });
 
@@ -98,7 +99,7 @@ describe("Dynamic offsets work with relationships", () => {
   let db: RealTimeAdmin;
   let hobbies: List<Hobby>;
   beforeEach(async () => {
-    db = await DB.connect(RealTimeAdmin, { mocking: true });
+    db = await RealTimeAdmin.connect({ mocking: true });
 
     FireModel.defaultDb = db;
     person = await Record.add(DeepPerson, {
@@ -272,7 +273,7 @@ describe("Dynamic offsets work with relationships", () => {
 describe("LIST uses static offsets() with static API methods", () => {
   let db: RealTimeAdmin;
   before(async () => {
-    db = await DB.connect(RealTimeAdmin, { mocking: true });
+    db = await RealTimeAdmin.connect({ mocking: true });
     FireModel.defaultDb = db;
     db.mock.updateDB({});
   });
@@ -296,8 +297,8 @@ describe("LIST uses static offsets() with static API methods", () => {
     expect(people.length).to.equal(
       6,
       `There should have been 6 records but got ${
-      people.length
-      }. The id's returned were: ${people.map(i => i.id)}.`
+        people.length
+      }. The id's returned were: ${people.map((i) => i.id)}.`
     );
     expect(people.filter((i) => i.age === 45)).is.length(6);
   });
@@ -306,7 +307,7 @@ describe("LIST uses static offsets() with static API methods", () => {
 describe("MOCK uses dynamic dbOffsets", () => {
   let db: RealTimeAdmin;
   beforeEach(async () => {
-    db = await DB.connect(RealTimeAdmin, { mocking: true });
+    db = await RealTimeAdmin.connect({ mocking: true });
     FireModel.defaultDb = db;
   });
 
@@ -407,7 +408,9 @@ describe("MOCK uses dynamic dbOffsets", () => {
 
 describe("WATCHers work with dynamic dbOffsets", () => {
   beforeEach(async () => {
-    FireModel.defaultDb = await DB.connect(RealTimeAdmin, { mocking: true });
+    FireModel.defaultDb = await RealTimeAdmin.connect({
+      mocking: true,
+    });
   });
 
   afterEach(async () => {

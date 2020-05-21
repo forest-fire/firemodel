@@ -1,9 +1,9 @@
-import { AbstractedDatabase } from "@forest-fire/abstracted-database";
-
 import { Record } from "../Record";
 import { IFmModelRelationshipMeta } from "../decorators";
 import { IMockRelationshipConfig, IMockResponse } from "./types";
 import { Mock } from "../Mock";
+// import { IAbstractedDatabase } from "universal-fire";
+import { AbstractedDatabase } from "@forest-fire/abstracted-database";
 
 export async function processHasOne<T>(
   source: Record<T>,

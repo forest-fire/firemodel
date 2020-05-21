@@ -126,8 +126,9 @@ export async function localRelnOp(rec, event, type) {
         });
         // local optimistic dispatch
         rec.dispatch(Object.assign(Object.assign({}, event), { type }));
+        const ref = rec.db.ref("/");
         // TODO: replace with multiPathSet/transaction
-        await rec.db.ref("/").update(event.paths.reduce((acc, curr) => {
+        await ref.update(event.paths.reduce((acc, curr) => {
             acc[curr.path] = curr.value;
             return acc;
         }, {}));

@@ -2,7 +2,8 @@
 import { expect } from "chai";
 import { Record, List, Mock } from "../src";
 import { AuditLog } from "../src/models/index";
-import { DB, RealTimeAdmin } from "universal-fire";
+// import { DB, SDK, IAbstractedDatabase } from "universal-fire";
+import { RealTimeAdmin } from "@forest-fire/real-time-admin";
 import { Person } from "./testing/AuditedPerson";
 import { FireModel } from "../src/FireModel";
 import { wait } from "common-types";
@@ -11,7 +12,7 @@ describe("Auditing ->�", () => {
   let db: RealTimeAdmin;
 
   beforeEach(async () => {
-    db = await DB.connect(RealTimeAdmin, { mocking: true });
+    db = await RealTimeAdmin.connect({ mocking: true });
     FireModel.defaultDb = db;
   });
 

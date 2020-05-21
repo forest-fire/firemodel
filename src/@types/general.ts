@@ -1,7 +1,8 @@
-import { AbstractedDatabase } from "@forest-fire/abstracted-database";
 import { IDictionary, datetime } from "common-types";
 
 import { Model } from "../models/Model";
+// import { IAbstractedDatabase } from "universal-fire";
+import { AbstractedDatabase } from "@forest-fire/abstracted-database";
 
 export type FmModelConstructor<T extends Model> = new () => T;
 export interface IModelOptions {
@@ -64,11 +65,11 @@ export interface IRelationship {
 export enum RelationshipPolicy {
   keys = "keys",
   lazy = "lazy",
-  inline = "inline"
+  inline = "inline",
 }
 export enum RelationshipCardinality {
   hasMany = "hasMany",
-  belongsTo = "belongsTo"
+  belongsTo = "belongsTo",
 }
 
 /**

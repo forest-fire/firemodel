@@ -1,6 +1,6 @@
-import { AbstractedDatabase } from "@forest-fire/abstracted-database";
 import { IDictionary, fk, pk, epoch } from "common-types";
 import { IFmHasId } from "../private";
+import { AbstractedDatabase } from "@forest-fire/abstracted-database";
 export declare type IIdWithDynamicPrefix = IDictionary<number | string> & {
     id: string;
 };

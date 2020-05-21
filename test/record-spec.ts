@@ -1,6 +1,7 @@
 // tslint:disable:no-implicit-dependencies
 import { Record, List, IFmWatchEvent, IFmLocalEvent } from "../src";
-import { DB, RealTimeAdmin } from "universal-fire";
+// import { DB, SDK, IAbstractedDatabase } from "universal-fire";
+import { RealTimeAdmin } from "@forest-fire/real-time-admin";
 import * as chai from "chai";
 const expect = chai.expect;
 import "reflect-metadata";
@@ -13,7 +14,7 @@ import { Mock } from "../src/Mock";
 describe("Record > ", () => {
   let db: RealTimeAdmin;
   beforeEach(async () => {
-    db = await DB.connect(RealTimeAdmin, { mocking: true });
+    db = await RealTimeAdmin.connect({ mocking: true });
     FireModel.defaultDb = db;
     FireModel.dispatch = null;
   });
@@ -26,7 +27,7 @@ describe("Record > ", () => {
   it("Record's add() factory adds record to database", async () => {
     const r = await Record.add(Person, {
       name: "Bob Marley",
-      age: 40
+      age: 40,
     });
     expect(r).to.be.instanceof(Record);
     expect(r.get("name")).to.equal("Bob Marley");
@@ -44,10 +45,10 @@ describe("Record > ", () => {
       events.push(payload);
     const r = await Record.add(Person, {
       name: "Bob",
-      age: 40
+      age: 40,
     });
     expect(events).to.have.lengthOf(2);
-    const eventTypes = new Set(events.map(e => e.type));
+    const eventTypes = new Set(events.map((e) => e.type));
     expect(eventTypes.has(FmEvents.RECORD_ADDED_CONFIRMATION)).to.equal(true);
     expect(eventTypes.has(FmEvents.RECORD_ADDED_LOCALLY)).to.equal(true);
   });
@@ -55,7 +56,7 @@ describe("Record > ", () => {
   it("Record's load() populates state, does not add to db", async () => {
     const r = Record.createWith(Person, {
       name: "Bob",
-      age: 40
+      age: 40,
     });
     expect(r).to.be.instanceof(Record);
     expect(r.get("name")).to.equal("Bob");
@@ -65,7 +66,7 @@ describe("Record > ", () => {
   it("Once an ID is set it can not be reset", async () => {
     const r = await Record.add(Person, {
       name: "Bob",
-      age: 40
+      age: 40,
     });
     const id = r.id;
     try {
@@ -81,7 +82,7 @@ describe("Record > ", () => {
   it("using pushKey sets state locally immediately", async () => {
     db.set<Person>("/authenticated/people/1234", {
       name: "Bart Simpson",
-      age: 10
+      age: 10,
     });
     const bart = await Record.get(Person, "1234", { db });
     const k1 = await bart.pushKey("tags", "doh!");
@@ -104,7 +105,7 @@ describe("Record > ", () => {
       name: "Bart Simpson",
       age: 10,
       lastUpdated: now,
-      createdAt: now
+      createdAt: now,
     });
     const bart = await Record.get(Person, "1234", { db });
     const backThen = bart.data.createdAt;
@@ -123,7 +124,7 @@ describe("Record > ", () => {
       name: "Roger Rabbit",
       age: 3,
       tags: { 123: "cartoon" },
-      company: "disney"
+      company: "disney",
     });
     const roger = await Record.get(Person, "8888");
     expect(roger).to.be.an.instanceOf(Record);
@@ -139,12 +140,12 @@ describe("Record > ", () => {
       name: "Roger Rabbit",
       age: 3,
       company: "disney",
-      lastUpdated: 12345
+      lastUpdated: 12345,
     });
     const roger = await Record.get(Person, "8888");
     await roger.update({
       tags: { "456": "something else" },
-      scratchpad: { foo: "bar" }
+      scratchpad: { foo: "bar" },
     });
 
     // IMMEDIATE CHANGE on RECORD
@@ -162,7 +163,7 @@ describe("Record > ", () => {
       name: "Roger Rabbit",
       age: 3,
       company: "disney",
-      lastUpdated: 12345
+      lastUpdated: 12345,
     });
     const roger = await Record.get(Person, "8888");
     const events: IFmWatchEvent[] = [];
@@ -170,10 +171,10 @@ describe("Record > ", () => {
     expect(roger.dispatchIsActive).to.equal(true);
     await roger.update({
       name: "Roger Rabbit, III",
-      age: 4
+      age: 4,
     });
     await roger.update({
-      age: 13
+      age: 13,
     });
     FireModel.dispatch = null;
     expect(events).to.have.lengthOf(4);
@@ -205,14 +206,14 @@ describe("Record > ", () => {
     await person.remove();
 
     expect(events).to.have.lengthOf(2);
-    const eventTypes = new Set(events.map(e => e.type));
+    const eventTypes = new Set(events.map((e) => e.type));
     expect(eventTypes.has(FmEvents.RECORD_REMOVED_LOCALLY)).is.equal(true);
     expect(eventTypes.has(FmEvents.RECORD_REMOVED_CONFIRMATION)).is.equal(true);
 
     const peeps2 = await List.all(Person);
 
     expect(peeps2).to.have.lengthOf(9);
-    const ids = peeps2.map(p => p.id);
+    const ids = peeps2.map((p) => p.id);
     expect(ids.includes(id)).to.equal(false);
   }).timeout(3000);
 
@@ -226,13 +227,13 @@ describe("Record > ", () => {
     const removed = await Record.remove(Person, id);
     expect(removed.id).to.equal(id);
     expect(events).to.have.lengthOf(2);
-    const eventTypes = new Set(events.map(e => e.type));
+    const eventTypes = new Set(events.map((e) => e.type));
     expect(eventTypes.has(FmEvents.RECORD_REMOVED_LOCALLY)).is.equal(true);
     expect(eventTypes.has(FmEvents.RECORD_REMOVED_ROLLBACK)).is.equal(true);
 
     const peeps2 = await List.all(Person);
     expect(peeps2).to.have.lengthOf(9);
-    const ids = peeps2.map(p => p.id);
+    const ids = peeps2.map((p) => p.id);
     expect(ids.includes(id)).to.equal(false);
   }).timeout(3000);
 

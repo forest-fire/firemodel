@@ -1,5 +1,6 @@
 // tslint:disable:no-implicit-dependencies
-import { DB, RealTimeAdmin } from "universal-fire";
+// import { DB, SDK } from "universal-fire";
+import { RealTimeAdmin } from "@forest-fire/real-time-admin";
 import { Record } from "../src";
 import * as chai from "chai";
 import { Klass } from "./testing/klass";
@@ -99,7 +100,7 @@ describe("relationship decorators: ", () => {
 
   it("@relationships show up on Schema's relationships array", async () => {
     const person = new Person();
-    const ids = person.META.relationships.map(r => r.property);
+    const ids = person.META.relationships.map((r) => r.property);
 
     expect(ids).to.include("father");
     expect(ids).to.include("mother");
@@ -110,20 +111,20 @@ describe("relationship decorators: ", () => {
   });
   it("@relationships show up on Model", async () => {
     const PersonRecord = Record.create(Person, {
-      db: await DB.connect(RealTimeAdmin, { mocking: true })
+      db: await RealTimeAdmin.connect({ mocking: true }),
     });
 
-    expect(PersonRecord.META.relationships.map(p => p.property)).to.include(
+    expect(PersonRecord.META.relationships.map((p) => p.property)).to.include(
       "father"
     );
-    expect(PersonRecord.META.relationships.map(p => p.property)).to.include(
+    expect(PersonRecord.META.relationships.map((p) => p.property)).to.include(
       "children"
     );
   });
 
   it("@properties show up on Schema's properties array", async () => {
     const person = new Person();
-    const props = person.META.properties.map(r => r.property);
+    const props = person.META.properties.map((r) => r.property);
 
     // positive tests
     expect(props).to.include("name");
@@ -137,7 +138,7 @@ describe("relationship decorators: ", () => {
 
   it("@relationships represent all relationships in a model", async () => {
     const person = new Person();
-    const props = person.META.relationships.map(r => r.property);
+    const props = person.META.relationships.map((r) => r.property);
     console.log(props);
 
     expect(props).to.include("mother");
@@ -146,7 +147,7 @@ describe("relationship decorators: ", () => {
     expect(props).to.include("company");
     expect(props).to.include("pays");
 
-    person.META.relationships.map(p => {
+    person.META.relationships.map((p) => {
       if (p.relType === "hasOne") {
         expect(p.type).to.equal("String");
       }
@@ -156,7 +157,7 @@ describe("relationship decorators: ", () => {
     });
 
     const mother = person.META.relationships.filter(
-      i => i.property === "mother"
+      (i) => i.property === "mother"
     )[0];
 
     expect(mother.inverseProperty).to.equal("children");
@@ -164,12 +165,12 @@ describe("relationship decorators: ", () => {
 
   it("@properties show up on Model", async () => {
     const PersonRecord = Record.create(Person, {
-      db: await DB.connect(RealTimeAdmin, { mocking: true })
+      db: await RealTimeAdmin.connect({ mocking: true }),
     });
-    expect(PersonRecord.META.properties.map(p => p.property)).to.include(
+    expect(PersonRecord.META.properties.map((p) => p.property)).to.include(
       "name"
     );
-    expect(PersonRecord.META.properties.map(p => p.property)).to.include(
+    expect(PersonRecord.META.properties.map((p) => p.property)).to.include(
       "lastUpdated"
     );
   });

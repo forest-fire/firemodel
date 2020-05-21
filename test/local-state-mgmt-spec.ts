@@ -1,7 +1,8 @@
 // tslint:disable:no-implicit-dependencies
 import * as chai from "chai";
 const expect = chai.expect;
-import { DB, RealTimeAdmin } from "universal-fire";
+// import { DB, SDK, IAbstractedDatabase } from "universal-fire";
+import { RealTimeAdmin } from "@forest-fire/real-time-admin";
 import { FireModel, Record, List, pathJoin } from "../src";
 import { Person } from "./testing/localStateMgmt/Person";
 import { DynamicPerson } from "./testing/localStateMgmt/DynamicPerson";
@@ -10,7 +11,7 @@ import { PostfixPerson } from "./testing/localStateMgmt/PostfixPerson";
 describe("Client state management", () => {
   let db: RealTimeAdmin;
   before(async () => {
-    db = await DB.connect(RealTimeAdmin, { mocking: true });
+    db = await RealTimeAdmin.connect({ mocking: true });
     FireModel.defaultDb = db;
   });
 

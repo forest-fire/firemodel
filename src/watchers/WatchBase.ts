@@ -1,4 +1,3 @@
-import { AbstractedDatabase } from "@forest-fire/abstracted-database";
 import { IDictionary } from "common-types";
 
 import { Model } from "../models/Model";
@@ -13,6 +12,8 @@ import { waitForInitialization } from "./watchInitialization";
 import { addToWatcherPool } from "./watcherPool";
 import { WatchRecord } from "./WatchRecord";
 import { List } from "../List";
+// import { IAbstractedDatabase } from "universal-fire";
+import { AbstractedDatabase } from "@forest-fire/abstracted-database";
 
 /**
  * The base class which both `WatchList` and `WatchRecord` derive.
@@ -93,7 +94,7 @@ export class WatchBase<T extends Model> {
       if (this._eventType === "value") {
         if (this._watcherSource === "list-of-records") {
           // Watch all "ids" added to the list of records
-          this._underlyingRecordWatchers.forEach(r => {
+          this._underlyingRecordWatchers.forEach((r) => {
             this.db.watch(r._query, ["value"], dispatch);
           });
         } else {
@@ -113,7 +114,7 @@ export class WatchBase<T extends Model> {
             modelConstructor: this._modelConstructor,
             key: this._query.path.split("/").pop(),
             value: payload.data,
-            offsets: this._options.offsets || {}
+            offsets: this._options.offsets || {},
           });
         }
 
@@ -128,7 +129,7 @@ export class WatchBase<T extends Model> {
       (this._dispatcher || FireModel.dispatch)({
         type: FmEvents.WATCHER_FAILED,
         errorMessage: e.message,
-        errorCode: e.code || e.name || "firemodel/watcher-failed"
+        errorCode: e.code || e.name || "firemodel/watcher-failed",
       });
       throw e;
     }
@@ -138,7 +139,7 @@ export class WatchBase<T extends Model> {
       // dispatch "starting"; no need to wait for promise
       (this._dispatcher || FireModel.dispatch)({
         type: FmEvents.WATCHER_STARTING,
-        ...watcherItem
+        ...watcherItem,
       });
 
       await waitForInitialization(watcherItem);
@@ -146,7 +147,7 @@ export class WatchBase<T extends Model> {
 
       await (this._dispatcher || FireModel.dispatch)({
         type: FmEvents.WATCHER_STARTED,
-        ...watcherItem
+        ...watcherItem,
       });
 
       return watcherItem;
@@ -173,7 +174,7 @@ export class WatchBase<T extends Model> {
   public toString() {
     return `Watching path "${this._query.path}" for "${
       this._eventType
-      }" event(s) [ hashcode: ${String(this._query.hashCode())} ]`;
+    }" event(s) [ hashcode: ${String(this._query.hashCode())} ]`;
   }
 
   /**
@@ -198,12 +199,12 @@ export class WatchBase<T extends Model> {
       this._watcherSource === "list" ? "child" : "value";
     const watcherPaths =
       this._watcherSource === "list-of-records"
-        ? this._underlyingRecordWatchers.map(i => i._query.path)
+        ? this._underlyingRecordWatchers.map((i) => i._query.path)
         : [this._query.path];
     // TODO: fix this bullshit typing; should be: SerializedQuery<T> | Array<SerializedQuery<T>>
     const query: any =
       this._watcherSource === "list-of-records"
-        ? this._underlyingRecordWatchers.map(i => i._query)
+        ? this._underlyingRecordWatchers.map((i) => i._query)
         : this._query;
 
     const watchContext: IWatcherEventContext<T> = {
@@ -223,7 +224,7 @@ export class WatchBase<T extends Model> {
       watcherPaths,
       // TODO: Fix this typing ... the error is nonsensical atm
       watcherSource: this._watcherSource as any,
-      createdAt: new Date().getTime()
+      createdAt: new Date().getTime(),
     };
 
     return watchContext;
