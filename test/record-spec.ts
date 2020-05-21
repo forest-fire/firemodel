@@ -1,6 +1,6 @@
 // tslint:disable:no-implicit-dependencies
 import { Record, List, IFmWatchEvent, IFmLocalEvent } from "../src";
-import { DB, SDK } from "universal-fire";
+import { DB, SDK, IAbstractedDatabase } from "universal-fire";
 import * as chai from "chai";
 const expect = chai.expect;
 import "reflect-metadata";
@@ -11,7 +11,7 @@ import { FmEvents } from "../src/state-mgmt";
 import { Mock } from "../src/Mock";
 
 describe("Record > ", () => {
-  let db: ISdkClient;
+  let db: IAbstractedDatabase;
   beforeEach(async () => {
     db = await DB.connect(SDK.RealTimeAdmin, { mocking: true });
     FireModel.defaultDb = db;

@@ -6,14 +6,14 @@ import { PersonWithLocal } from "./testing/PersonWithLocal";
 import { PersonWithLocalAndPrefix } from "./testing/PersonWithLocalAndPrefix";
 import { IMultiPathUpdates, FireModel } from "../src/FireModel";
 import { FmEvents } from "../src/state-mgmt";
-import { DB, SDK } from "universal-fire";
+import { DB, SDK, IAbstractedDatabase } from "universal-fire";
 import { wait } from "./testing/helpers";
 import { IVuexDispatch, VeuxWrapper } from "../src/state-mgmt/VuexWrapper";
 import { compareHashes, withoutMetaOrPrivate } from "../src/util";
 const expect = chai.expect;
 
 describe("Dispatch →", () => {
-  let db: ISdkClient;
+  let db: IAbstractedDatabase;
   beforeEach(async () => {
     db = await DB.connect(SDK.RealTimeAdmin, { mocking: true });
     Record.defaultDb = db;

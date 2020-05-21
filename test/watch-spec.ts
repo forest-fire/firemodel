@@ -6,7 +6,7 @@ import {
   IFmLocalEvent,
   IReduxAction,
 } from "../src";
-import { DB, SDK } from "universal-fire";
+import { DB, SDK, IAbstractedDatabase } from "universal-fire";
 import { expect } from "chai";
 
 import { FireModel } from "../src/FireModel";
@@ -24,9 +24,9 @@ import { BaseSerializer } from "@forest-fire/serialized-query";
 setupEnv();
 
 describe("Watch →", () => {
-  let realdb: ISdkClient;
+  let realDB: IAbstractedDatabase;
   before(async () => {
-    realDB = await RealTimeAdmin.connect();
+    realDB = await DB.connect(SDK.FirestoreAdmin);
     FireModel.defaultDb = realDB;
   });
   afterEach(async () => {

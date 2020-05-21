@@ -1,6 +1,6 @@
 // tslint:disable:no-implicit-dependencies
 import { Record, List, IFmWatchEvent } from "../src/index";
-import { DB, SDK } from "universal-fire";
+import { DB, SDK, IAbstractedDatabase } from "universal-fire";
 import * as chai from "chai";
 import * as helpers from "./testing/helpers";
 const expect = chai.expect;
@@ -14,7 +14,7 @@ import Company from "./testing/dynamicPaths/Company";
 import { SerializedQuery } from "@forest-fire/base-serializer";
 
 describe("List class: ", () => {
-  let db: ISdkClient;
+  let db: IAbstractedDatabase;
   beforeEach(async () => {
     db = await DB.connect(SDK.RealTimeAdmin, { mocking: true });
     FireModel.defaultDb = db;
@@ -68,7 +68,7 @@ describe("List class: ", () => {
 
   it("can instantiate with all() method", async () => {
     db.mock
-      .addSchema("person", (h) => () => ({
+      .addSchema("person", (h: any) => () => ({
         name: h.faker.name.firstName(),
         age: h.faker.random.number({ min: 1, max: 50 }),
       }))
@@ -84,7 +84,7 @@ describe("List class: ", () => {
 
   it("can instantiate with from() method", async () => {
     db.mock
-      .addSchema("person", (h) => () => ({
+      .addSchema("person", (h: any) => () => ({
         name: h.faker.name.firstName(),
         age: h.faker.random.number({ min: 1, max: 50 }),
       }))
@@ -98,7 +98,7 @@ describe("List class: ", () => {
 
   it("can instantiate with a where() method", async () => {
     db.mock
-      .addSchema("person", (h) => () => ({
+      .addSchema("person", (h: any) => () => ({
         name: h.faker.name.firstName(),
         age: h.faker.random.number({ min: 1, max: 50 }),
       }))
@@ -139,7 +139,7 @@ describe("List class: ", () => {
 
   it("can instantiate with recent(), and inactive() methods", async () => {
     db.mock
-      .addSchema<Person>("person", (h) => () => ({
+      .addSchema<Person>("person", (h: any) => () => ({
         name: h.faker.name.firstName(),
         age: h.faker.random.number({ min: 1, max: 50 }),
         createdAt: h.faker.date.past().valueOf(),
@@ -160,7 +160,7 @@ describe("List class: ", () => {
   it("can instantiate with since() returns correct results", async () => {
     const timestamp = new Date().getTime();
     db.mock
-      .addSchema<Person>("person", (h) => () => ({
+      .addSchema<Person>("person", (h: any) => () => ({
         name: h.faker.name.firstName(),
         age: h.faker.random.number({ min: 1, max: 49 }),
         createdAt: h.faker.date.past().valueOf(),
@@ -181,7 +181,7 @@ describe("List class: ", () => {
 
   it("an instantiated List can call get() with a valid ID and get a Record", async () => {
     db.mock
-      .addSchema<Person>("person", (h) => () => ({
+      .addSchema<Person>("person", (h: any) => () => ({
         name: h.faker.name.firstName(),
         age: h.faker.random.number({ min: 1, max: 50 }),
         createdAt: h.faker.date.past().valueOf(),
@@ -200,7 +200,7 @@ describe("List class: ", () => {
 
   it("an instantiated List can call getData() with a valid ID and get a Model", async () => {
     db.mock
-      .addSchema<Person>("person", (h) => () => ({
+      .addSchema<Person>("person", (h: any) => () => ({
         name: h.faker.name.firstName(),
         age: h.faker.random.number({ min: 1, max: 50 }),
         createdAt: h.faker.date.past().valueOf(),
@@ -218,7 +218,7 @@ describe("List class: ", () => {
 
   it("an instantiated List calling get() with an invalid ID throws an error", async () => {
     db.mock
-      .addSchema<Person>("person", (h) => () => ({
+      .addSchema<Person>("person", (h: any) => () => ({
         name: h.faker.name.firstName(),
         age: h.faker.random.number({ min: 1, max: 50 }),
         createdAt: h.faker.date.past().valueOf(),
@@ -237,7 +237,7 @@ describe("List class: ", () => {
 
   it("an instantiated List calling get() with an invalid ID and default value returnes the default value", async () => {
     db.mock
-      .addSchema<Person>("person", (h) => () => ({
+      .addSchema<Person>("person", (h: any) => () => ({
         name: h.faker.name.firstName(),
         age: h.faker.random.number({ min: 1, max: 50 }),
         createdAt: h.faker.date.past().valueOf(),
@@ -257,7 +257,7 @@ describe("List class: ", () => {
   });
   it("an instantiated List calling getData() with an invalid ID and default value returnes the default value", async () => {
     db.mock
-      .addSchema<Person>("person", (h) => () => ({
+      .addSchema<Person>("person", (h: any) => () => ({
         name: h.faker.name.firstName(),
         age: h.faker.random.number({ min: 1, max: 50 }),
         createdAt: h.faker.date.past().valueOf(),
@@ -278,7 +278,7 @@ describe("List class: ", () => {
 
   it("an instantiated List calling findData() with a valid ID returnes the default value", async () => {
     db.mock
-      .addSchema<Person>("person", (h) => () => ({
+      .addSchema<Person>("person", (h: any) => () => ({
         name: h.faker.name.firstName(),
         age: h.faker.random.number({ min: 1, max: 50 }),
         createdAt: h.faker.date.past().valueOf(),
@@ -299,7 +299,7 @@ describe("List class: ", () => {
 
   it("using findWhere() returns a record when property/value is found", async () => {
     db.mock
-      .addSchema<Person>("person", (h) => () => ({
+      .addSchema<Person>("person", (h: any) => () => ({
         name: h.faker.name.firstName(),
         age: h.faker.random.number({ min: 1, max: 50 }),
         createdAt: h.faker.date.past().valueOf(),
@@ -318,7 +318,7 @@ describe("List class: ", () => {
 
   it("using findWhere() returns appropriately when record not found", async () => {
     db.mock
-      .addSchema<Person>("person", (h) => () => ({
+      .addSchema<Person>("person", (h: any) => () => ({
         name: h.faker.name.firstName(),
         age: h.faker.random.number({ min: 1, max: 50 }),
         createdAt: h.faker.date.past().valueOf(),
@@ -337,7 +337,7 @@ describe("List class: ", () => {
 
   it("using find() returns a record when passed in filter finds record", async () => {
     db.mock
-      .addSchema<Person>("person", (h) => () => ({
+      .addSchema<Person>("person", (h: any) => () => ({
         name: h.faker.name.firstName(),
         age: h.faker.random.number({ min: 1, max: 50 }),
         createdAt: h.faker.date.past().valueOf(),

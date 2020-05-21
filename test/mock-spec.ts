@@ -10,7 +10,7 @@ import {
   FmEvents,
   IReduxAction,
 } from "../src";
-import { DB, SDK } from "universal-fire";
+import { DB, SDK, IAbstractedDatabase } from "universal-fire";
 import * as chai from "chai";
 import { Mock } from "../src/Mock";
 import { Mock as FireMock } from "firemock";
@@ -29,8 +29,8 @@ export class SimplePerson extends Model {
 }
 
 describe("Mocking:", () => {
-  let db: ISdkClient;
-  let realdb: ISdkClient;
+  let db: IAbstractedDatabase;
+  let realDb: IAbstractedDatabase;
   before(async () => {
     realDb = await DB.connect(SDK.RealTimeAdmin, { mocking: true });
   });

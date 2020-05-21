@@ -1,6 +1,6 @@
 // tslint:disable:no-implicit-dependencies
 import { Record, IFmWatchEvent, IFmLocalRelationshipEvent } from "../src";
-import { DB, SDK } from "universal-fire";
+import { DB, SDK, IAbstractedDatabase } from "universal-fire";
 import * as chai from "chai";
 const expect = chai.expect;
 import "reflect-metadata";
@@ -37,7 +37,7 @@ const addFatherAndChildren = async () => {
 };
 
 describe("Relationship > ", () => {
-  let db: ISdkClient;
+  let db: IAbstractedDatabase;
   beforeEach(async () => {
     db = await DB.connect(SDK.RealTimeClient, { mocking: true });
     FireModel.defaultDb = db;

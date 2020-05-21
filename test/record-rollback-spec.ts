@@ -1,10 +1,10 @@
 // tslint:disable:no-implicit-dependencies
 import { expect } from "chai";
 import { FireModel } from "../src/FireModel";
-import { DB, SDK } from "universal-fire";
+import { DB, SDK, IAbstractedDatabase } from "universal-fire";
 
 describe("Rolling back a record => ", () => {
-  let db: ISdkClient;
+  let db: IAbstractedDatabase;
   beforeEach(async () => {
     db = await DB.connect(SDK.RealTimeClient, { mocking: true });
     FireModel.defaultDb = db;
