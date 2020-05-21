@@ -4,9 +4,9 @@ import {
   Mock,
   IFmWatchEvent,
   IFmLocalEvent,
-  IReduxAction
+  IReduxAction,
 } from "../src";
-import { DB, RealTimeClient, RealTimeAdmin } from "universal-fire";
+import { DB, SDK } from "universal-fire";
 import { expect } from "chai";
 
 import { FireModel } from "../src/FireModel";
@@ -24,7 +24,7 @@ import { BaseSerializer } from "@forest-fire/serialized-query";
 setupEnv();
 
 describe("Watch →", () => {
-  let realDB: RealTimeAdmin;
+  let realdb: ISdkClient;
   before(async () => {
     realDB = await RealTimeAdmin.connect();
     FireModel.defaultDb = realDB;
@@ -34,7 +34,9 @@ describe("Watch →", () => {
   });
 
   it("Watching a Record gives back a hashCode which can be looked up", async () => {
-    FireModel.defaultDb = await DB.connect(RealTimeClient, { mocking: true });
+    FireModel.defaultDb = await DB.connect(SDK.RealTimeClient, {
+      mocking: true,
+    });
     const { watcherId } = await Watch.record(Person, "12345")
       .dispatch(async () => "")
       .start();
@@ -66,13 +68,13 @@ describe("Watch →", () => {
 
     await FireModel.defaultDb.set("/authenticated/people/1234", {
       name: "Bob",
-      age: 15
+      age: 15,
     });
     await FireModel.defaultDb.update("/authenticated/people/1234", {
-      age: 23
+      age: 23,
     });
 
-    const eventTypes = new Set(events.map(e => e.type));
+    const eventTypes = new Set(events.map((e) => e.type));
     console.log(eventTypes);
     expect(eventTypes.has(FmEvents.RECORD_CHANGED)).to.equal(true);
     expect(eventTypes.has(FmEvents.RECORD_REMOVED_LOCALLY)).to.equal(true);
@@ -88,24 +90,21 @@ describe("Watch →", () => {
       events.push(event);
     };
     await realDB.remove("/authenticated/people");
-    Watch.list(Person)
-      .all()
-      .dispatch(cb)
-      .start();
+    Watch.list(Person).all().dispatch(cb).start();
     await Record.add(Person, {
       id: "1234",
       name: "Richard",
-      age: 44
+      age: 44,
     });
     await Record.add(Person, {
       id: "4567",
       name: "Carrie",
-      age: 33
+      age: 33,
     });
 
     await wait(500);
     // Initial response is to bring in all records
-    let eventTypes = new Set(events.map(e => e.type));
+    let eventTypes = new Set(events.map((e) => e.type));
 
     expect(eventTypes.has(FmEvents.WATCHER_STARTING));
     expect(eventTypes.has(FmEvents.WATCHER_STARTED));
@@ -113,13 +112,13 @@ describe("Watch →", () => {
     // Now we'll do some more CRUD activities
     await FireModel.defaultDb.set("/authenticated/people/1234", {
       name: "Bob",
-      age: 15
+      age: 15,
     });
     await FireModel.defaultDb.remove("/authenticated/people/1234");
     await FireModel.defaultDb.update("/authenticated/people/4567", {
-      age: 88
+      age: 88,
     });
-    eventTypes = new Set(events.map(e => e.type));
+    eventTypes = new Set(events.map((e) => e.type));
     expect(eventTypes.has(FmEvents.RECORD_CHANGED)).to.equal(true);
     expect(eventTypes.has(FmEvents.RECORD_REMOVED)).to.equal(true);
     expect(eventTypes.has(FmEvents.RECORD_ADDED)).to.equal(true);
@@ -144,58 +143,61 @@ describe("Watch →", () => {
   });
 
   it("Watching a List uses pluralName for localPath unless localModelName is set", async () => {
-    FireModel.defaultDb = await DB.connect(RealTimeClient, { mocking: true });
+    FireModel.defaultDb = await DB.connect(SDK.RealTimeClient, {
+      mocking: true,
+    });
     Watch.reset();
     const personId = (await Mock(PersonWithLocalAndPrefix).generate(1)).pop()
       .id;
     const person = await Record.get(PersonWithLocalAndPrefix, personId);
 
     const events: IDictionary[] = [];
-    FireModel.dispatch = async evt => {
+    FireModel.dispatch = async (evt) => {
       events.push(evt);
     };
-    await Watch.list(PersonWithLocalAndPrefix)
-      .all()
-      .start();
+    await Watch.list(PersonWithLocalAndPrefix).all().start();
     await Record.add(PersonWithLocalAndPrefix, person.data);
     console.log(events);
 
-    events.forEach(evt => {
+    events.forEach((evt) => {
       expect(evt.localPath).to.equal(
-        `${person.META.localPrefix}/${person.META.localModelName ||
-        person.pluralName}`
+        `${person.META.localPrefix}/${
+          person.META.localModelName || person.pluralName
+        }`
       );
     });
   });
 
   it("Watching a Record uses localModelName for localPath", async () => {
-    FireModel.defaultDb = await DB.connect(RealTimeClient, { mocking: true });
+    FireModel.defaultDb = await DB.connect(SDK.RealTimeClient, {
+      mocking: true,
+    });
     Watch.reset();
     const personId = (await Mock(PersonWithLocalAndPrefix).generate(1)).pop()
       .id;
     const person = await Record.get(PersonWithLocalAndPrefix, personId);
     const events: IDictionary[] = [];
-    FireModel.dispatch = async evt => {
+    FireModel.dispatch = async (evt) => {
       events.push(evt);
     };
     await Watch.record(PersonWithLocalAndPrefix, personId).start();
     await Record.add(PersonWithLocalAndPrefix, person.data);
-    events.forEach(evt => {
+    events.forEach((evt) => {
       expect(evt.localPath).to.equal(
         `${person.META.localPrefix}/${person.META.localModelName}`
       );
     });
 
-    const eventTypes = Array.from(new Set(events.map(e => e.type)));
+    const eventTypes = Array.from(new Set(events.map((e) => e.type)));
 
     const expectedTypes = [
       FmEvents.RECORD_ADDED_LOCALLY,
       FmEvents.RECORD_ADDED_CONFIRMATION,
       FmEvents.WATCHER_STARTING,
       FmEvents.WATCHER_STARTED,
-      FmEvents.RECORD_CHANGED // Record Listeners can't distinguish between ADD and UPDATE
+      FmEvents.RECORD_CHANGED, // Record Listeners can't distinguish between ADD and UPDATE
     ];
-    expectedTypes.forEach(e => {
+    expectedTypes.forEach((e) => {
       expect(eventTypes).to.include(e);
     });
   });
@@ -211,7 +213,9 @@ describe("Watch.list(XXX).ids()", () => {
   it("Starting WatchList only has a single and appropriate entry in watcher pool", async () => {
     const wl = Watch.list(Person).ids("1234", "4567", "8989");
     FireModel.dispatch = () => undefined;
-    FireModel.defaultDb = await DB.connect(RealTimeClient, { mocking: true });
+    FireModel.defaultDb = await DB.connect(SDK.RealTimeClient, {
+      mocking: true,
+    });
     const wId = await wl.start();
     const pool = getWatcherPool();
     expect(Object.keys(pool)).to.be.lengthOf(1);
@@ -221,7 +225,9 @@ describe("Watch.list(XXX).ids()", () => {
   });
 
   it('An event, when encountered, is correctly associated with the "list of records" watcher', async () => {
-    FireModel.defaultDb = await DB.connect(RealTimeClient, { mocking: true });
+    FireModel.defaultDb = await DB.connect(SDK.RealTimeClient, {
+      mocking: true,
+    });
     const events: Array<IFmWatchEvent<Person>> = [];
     const cb = async (event: IFmWatchEvent<Person>) => {
       events.push(event);
@@ -234,37 +240,33 @@ describe("Watch.list(XXX).ids()", () => {
     await Record.add(Person, {
       id: "1234",
       name: "Peggy Sue",
-      age: 14
+      age: 14,
     });
     await Record.add(Person, {
       id: "4567",
       name: "Johnny Rotten",
-      age: 65
+      age: 65,
     });
     await Record.add(Person, {
       id: "who-cares",
       name: "John Smith",
-      age: 35
+      age: 35,
     });
 
     const recordsChanged = events.filter(
-      e => e.type === FmEvents.RECORD_CHANGED
+      (e) => e.type === FmEvents.RECORD_CHANGED
     );
-    const recordIdsChanged = recordsChanged.map(i => i.key);
+    const recordIdsChanged = recordsChanged.map((i) => i.key);
 
     // two events when the watcher is turned on;
     // two more when change takes place on a watched path
     expect(recordsChanged).lengthOf(4);
 
-    recordsChanged.forEach(i => {
+    recordsChanged.forEach((i) => {
       expect(i.watcherSource).to.equal("list-of-records");
       expect(i.dbPath).to.be.a("string");
-      expect(i.query)
-        .to.be.an("array")
-        .and.to.have.length(2);
-      expect((i.query as BaseSerializer[])[0]).to.be.instanceOf(
-        BaseSerializer
-      );
+      expect(i.query).to.be.an("array").and.to.have.length(2);
+      expect((i.query as BaseSerializer[])[0]).to.be.instanceOf(BaseSerializer);
     });
 
     expect(recordIdsChanged).includes("1234");
@@ -273,8 +275,8 @@ describe("Watch.list(XXX).ids()", () => {
   });
 
   it("The Watch.list(xyz).ids(...) works when the model has a composite key", async () => {
-    FireModel.defaultDb = await DB.connect(RealTimeClient, {
-      mocking: true
+    FireModel.defaultDb = await DB.connect(SDK.RealTimeClient, {
+      mocking: true,
     });
     const events: Array<IFmWatchEvent<Person>> = [];
     const cb = async (event: IFmWatchEvent<Person>) => {
@@ -296,9 +298,9 @@ describe("Watch.list(XXX).ids()", () => {
       subGroup: "foo",
       name: {
         first: "bob",
-        last: "marley"
+        last: "marley",
       },
-      age: 65
+      age: 65,
     });
 
     await Record.add(DeeperPerson, {
@@ -307,24 +309,20 @@ describe("Watch.list(XXX).ids()", () => {
       subGroup: "bar",
       name: {
         first: "chris",
-        last: "christy"
+        last: "christy",
       },
-      age: 55
+      age: 55,
     });
 
     const recordsChanged = events.filter(
-      e => e.type === FmEvents.RECORD_CHANGED
+      (e) => e.type === FmEvents.RECORD_CHANGED
     );
 
-    recordsChanged.forEach(i => {
+    recordsChanged.forEach((i) => {
       expect(i.watcherSource).to.equal("list-of-records");
       expect(i.dbPath).to.be.a("string");
-      expect(i.query)
-        .to.be.an("array")
-        .and.to.have.length(2);
-      expect((i.query as BaseSerializer[])[0]).to.be.instanceOf(
-        BaseSerializer
-      );
+      expect(i.query).to.be.an("array").and.to.have.length(2);
+      expect((i.query as BaseSerializer[])[0]).to.be.instanceOf(BaseSerializer);
     });
   });
 });

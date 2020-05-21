@@ -1,4 +1,3 @@
-import type { AbstractedDatabase } from "@forest-fire/abstracted-database";
 import type { BaseSerializer } from "@forest-fire/serialized-query";
 
 import { Model } from "./models/Model";
@@ -6,17 +5,18 @@ import { FireModel } from "./FireModel";
 import { Record } from "./Record";
 import { pathJoin } from "./path";
 import { IModelOptions } from "./private";
+import { IAbstractedDatabase } from "universal-fire";
 
 export class AuditBase<T extends Model = Model> {
   protected _modelKlass: new () => T;
   protected _record: Record<T>;
-  protected _db: AbstractedDatabase;
+  protected _db: IAbstractedDatabase;
   protected _query: BaseSerializer;
   // index searchs (future)
   protected _recordId: string;
   protected _property: string;
 
-  protected get db(): AbstractedDatabase {
+  protected get db(): IAbstractedDatabase {
     return this._db;
   }
 

@@ -1,4 +1,4 @@
-import { AbstractedDatabase } from "@forest-fire/abstracted-database";
-import { Model, IFmModelPropertyMeta } from "..";
+import { IAbstractedDatabase } from "universal-fire";
 import { MockHelper } from "firemock";
-export default function mockValue<T extends Model>(db: AbstractedDatabase, propMeta: IFmModelPropertyMeta<T>, mockHelper: MockHelper, ...rest: any[]): any;
+import { Model, IFmModelPropertyMeta } from "..";
+export default function mockValue<T extends Model>(db: IAbstractedDatabase, propMeta: IFmModelPropertyMeta<T>, mockHelper: MockHelper, ...rest: any[]): any;

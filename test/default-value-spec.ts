@@ -1,19 +1,19 @@
 // tslint:disable:no-implicit-dependencies
 import { Record, FireModel, Mock, List } from "../src";
-import { DB, RealTimeAdmin } from "universal-fire";
+import { DB, SDK } from "universal-fire";
 import * as chai from "chai";
 import { Person } from "./testing/default-values/Person";
 const expect = chai.expect;
 
 describe("defaultValue() → ", () => {
   before(async () => {
-    const db = await DB.connect(RealTimeAdmin, { mocking: true });
+    const db = await DB.connect(SDK.RealTimeAdmin, { mocking: true });
     FireModel.defaultDb = db;
   });
 
   it("defaultValue is used when not set with add()", async () => {
     const p = await Record.add(Person, {
-      age: 34
+      age: 34,
     });
     expect(p.data.age).is.equal(34);
     expect(p.data.currentDeliveryAddress).is.equal("home");
@@ -23,7 +23,7 @@ describe("defaultValue() → ", () => {
   it("defaultValue is ignored when not set with add()", async () => {
     const p = await Record.add(Person, {
       age: 34,
-      priorDeliveryAddress: "foo"
+      priorDeliveryAddress: "foo",
     });
     expect(p.data.age).is.equal(34);
     expect(p.data.currentDeliveryAddress).is.equal("home");
@@ -34,7 +34,7 @@ describe("defaultValue() → ", () => {
   it.skip("mocking ignores defaultValue", async () => {
     await Mock(Person).generate(10);
     const people = await List.all(Person);
-    people.map(person => {
+    people.map((person) => {
       expect(person.currentDeliveryAddress).to.equal("work");
       expect(person.priorDeliveryAddress).to.equal("home");
     });

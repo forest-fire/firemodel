@@ -2,7 +2,7 @@
 import fakeIt from "../src/Mock/fakeIt";
 import { Mock as FireMock, MockHelper } from "firemock";
 import { expect } from "chai";
-import { DB, RealTimeAdmin } from "universal-fire";
+import { DB, SDK } from "universal-fire";
 import { Mock, FireModel, List } from "../src";
 import { Product } from "./testing/Product";
 
@@ -16,9 +16,7 @@ describe("Test parameterized mock built-in fakes", () => {
   it("number min/max works", () => {
     for (let i = 0; i < 100; i++) {
       const val = fakeIt(helper, "number", { min: 1, max: 10 });
-      expect(val)
-        .to.be.greaterThan(0)
-        .and.lessThan(11);
+      expect(val).to.be.greaterThan(0).and.lessThan(11);
       expect(val).to.equal(Math.floor(val));
     }
   });
@@ -26,9 +24,7 @@ describe("Test parameterized mock built-in fakes", () => {
   it("number min/max works with negatives", () => {
     for (let i = 0; i < 100; i++) {
       const val = fakeIt(helper, "number", { min: -10, max: 0 });
-      expect(val)
-        .to.be.greaterThan(-11)
-        .and.lessThan(1);
+      expect(val).to.be.greaterThan(-11).and.lessThan(1);
       expect(val).to.equal(Math.floor(val));
     }
   });
@@ -46,7 +42,7 @@ describe("Test parameterized mock built-in fakes", () => {
       const val = fakeIt(helper, "number", {
         min: 1,
         max: 10,
-        precision: 0.01
+        precision: 0.01,
       });
 
       const rightOfDecimal = String(val).replace(/.*\./, "");
@@ -59,9 +55,7 @@ describe("Test parameterized mock built-in fakes", () => {
       const amt = Number(val.replace("$", "").replace(".00", ""));
       expect(val).to.be.a("string");
       expect(val.slice(0, 1)).to.equal("$");
-      expect(amt)
-        .to.be.greaterThan(0)
-        .and.lessThan(101);
+      expect(amt).to.be.greaterThan(0).and.lessThan(101);
     }
   });
 
@@ -85,13 +79,13 @@ describe("Test parameterized mock built-in fakes", () => {
     const totals = {
       zeros: 0,
       nines: 0,
-      others: 0
+      others: 0,
     };
     for (let i = 0; i < 1000; i++) {
       const val = fakeIt(helper, "price", {
         min: 1,
         max: 100,
-        variableCents: true
+        variableCents: true,
       });
       const cents = val.replace(/.*\./, "");
       expect(cents).to.have.lengthOf(2);
@@ -138,26 +132,22 @@ describe("Test parameterized mock built-in fakes", () => {
   it("number mocks can set a max and min value which will be respected", async () => {
     for (let i = 0; i < 100; i++) {
       const response = fakeIt(helper, "number", { min: 1, max: 25 });
-      expect(response)
-        .to.be.greaterThan(0)
-        .and.lessThan(26);
+      expect(response).to.be.greaterThan(0).and.lessThan(26);
     }
 
     for (let i = 0; i < 100; i++) {
       const response = fakeIt(helper, "number", { min: 50, max: 99 });
-      expect(response)
-        .to.be.greaterThan(49)
-        .and.lessThan(100);
+      expect(response).to.be.greaterThan(49).and.lessThan(100);
     }
 
     // Now let's do the test in a more "real world" situation
-    FireModel.defaultDb = await DB.connect(RealTimeAdmin, { mocking: true });
+    FireModel.defaultDb = await DB.connect(SDK.RealTimeAdmin, {
+      mocking: true,
+    });
     await Mock(Product).generate(10);
     const people = await List.all(Product);
-    people.forEach(p => {
-      expect(p.minCost)
-        .to.be.greaterThan(9)
-        .and.lessThan(101);
+    people.forEach((p) => {
+      expect(p.minCost).to.be.greaterThan(9).and.lessThan(101);
     });
   });
 });

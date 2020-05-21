@@ -1,6 +1,6 @@
 // tslint:disable:no-implicit-dependencies
 import { Record, List, IFmWatchEvent } from "../src/index";
-import { DB, RealTimeAdmin } from "universal-fire";
+import { DB, SDK } from "universal-fire";
 import * as chai from "chai";
 import * as helpers from "./testing/helpers";
 const expect = chai.expect;
@@ -14,9 +14,9 @@ import Company from "./testing/dynamicPaths/Company";
 import { SerializedQuery } from "@forest-fire/base-serializer";
 
 describe("List class: ", () => {
-  let db: RealTimeAdmin;
+  let db: ISdkClient;
   beforeEach(async () => {
-    db = await DB.connect(RealTimeAdmin, { mocking: true });
+    db = await DB.connect(SDK.RealTimeAdmin, { mocking: true });
     FireModel.defaultDb = db;
   });
   it("can instantiate with new operator", () => {
@@ -49,28 +49,28 @@ describe("List class: ", () => {
     const list = await List.set(Person, {
       joe: {
         name: "Joe",
-        age: 14
+        age: 14,
       },
       roger: {
         age: 22,
-        name: "Roger"
-      }
+        name: "Roger",
+      },
     });
 
     expect(list).to.have.lengthOf(2);
-    expect(list.map(i => i.name)).to.include("Joe");
-    expect(list.map(i => i.name)).to.include("Roger");
-    expect(list.map(i => i.age)).to.include(14);
-    expect(list.map(i => i.age)).to.include(22);
+    expect(list.map((i) => i.name)).to.include("Joe");
+    expect(list.map((i) => i.name)).to.include("Roger");
+    expect(list.map((i) => i.age)).to.include(14);
+    expect(list.map((i) => i.age)).to.include(22);
     expect(list.data[0].createdAt).is.a("number");
     expect(list.data[1].createdAt).is.a("number");
   });
 
   it("can instantiate with all() method", async () => {
     db.mock
-      .addSchema("person", h => () => ({
+      .addSchema("person", (h) => () => ({
         name: h.faker.name.firstName(),
-        age: h.faker.random.number({ min: 1, max: 50 })
+        age: h.faker.random.number({ min: 1, max: 50 }),
       }))
       .pathPrefix("authenticated");
     db.mock.queueSchema("person", 25).generate();
@@ -84,9 +84,9 @@ describe("List class: ", () => {
 
   it("can instantiate with from() method", async () => {
     db.mock
-      .addSchema("person", h => () => ({
+      .addSchema("person", (h) => () => ({
         name: h.faker.name.firstName(),
-        age: h.faker.random.number({ min: 1, max: 50 })
+        age: h.faker.random.number({ min: 1, max: 50 }),
       }))
       .pathPrefix("authenticated");
     db.mock.queueSchema("person", 25).generate();
@@ -98,9 +98,9 @@ describe("List class: ", () => {
 
   it("can instantiate with a where() method", async () => {
     db.mock
-      .addSchema("person", h => () => ({
+      .addSchema("person", (h) => () => ({
         name: h.faker.name.firstName(),
-        age: h.faker.random.number({ min: 1, max: 50 })
+        age: h.faker.random.number({ min: 1, max: 50 }),
       }))
       .pathPrefix("authenticated");
     db.mock
@@ -119,11 +119,11 @@ describe("List class: ", () => {
 
   it("can instantiate with first() and last() methods", async () => {
     db.mock
-      .addSchema<Person>("person", h => () => ({
+      .addSchema<Person>("person", (h) => () => ({
         name: h.faker.name.firstName(),
         age: h.faker.random.number({ min: 1, max: 50 }),
         createdAt: h.faker.date.past().valueOf(),
-        lastUpdated: h.faker.date.recent().valueOf()
+        lastUpdated: h.faker.date.recent().valueOf(),
       }))
       .pathPrefix("authenticated");
     db.mock.queueSchema("person", 30).generate();
@@ -139,11 +139,11 @@ describe("List class: ", () => {
 
   it("can instantiate with recent(), and inactive() methods", async () => {
     db.mock
-      .addSchema<Person>("person", h => () => ({
+      .addSchema<Person>("person", (h) => () => ({
         name: h.faker.name.firstName(),
         age: h.faker.random.number({ min: 1, max: 50 }),
         createdAt: h.faker.date.past().valueOf(),
-        lastUpdated: h.faker.date.recent().valueOf()
+        lastUpdated: h.faker.date.recent().valueOf(),
       }))
       .pathPrefix("authenticated");
     db.mock.queueSchema("person", 30).generate();
@@ -160,11 +160,11 @@ describe("List class: ", () => {
   it("can instantiate with since() returns correct results", async () => {
     const timestamp = new Date().getTime();
     db.mock
-      .addSchema<Person>("person", h => () => ({
+      .addSchema<Person>("person", (h) => () => ({
         name: h.faker.name.firstName(),
         age: h.faker.random.number({ min: 1, max: 49 }),
         createdAt: h.faker.date.past().valueOf(),
-        lastUpdated: timestamp
+        lastUpdated: timestamp,
       }))
       .pathPrefix("authenticated");
     db.mock
@@ -181,11 +181,11 @@ describe("List class: ", () => {
 
   it("an instantiated List can call get() with a valid ID and get a Record", async () => {
     db.mock
-      .addSchema<Person>("person", h => () => ({
+      .addSchema<Person>("person", (h) => () => ({
         name: h.faker.name.firstName(),
         age: h.faker.random.number({ min: 1, max: 50 }),
         createdAt: h.faker.date.past().valueOf(),
-        lastUpdated: h.faker.date.recent().valueOf()
+        lastUpdated: h.faker.date.recent().valueOf(),
       }))
       .pathPrefix("authenticated");
     db.mock.queueSchema("person", 30).generate();
@@ -200,11 +200,11 @@ describe("List class: ", () => {
 
   it("an instantiated List can call getData() with a valid ID and get a Model", async () => {
     db.mock
-      .addSchema<Person>("person", h => () => ({
+      .addSchema<Person>("person", (h) => () => ({
         name: h.faker.name.firstName(),
         age: h.faker.random.number({ min: 1, max: 50 }),
         createdAt: h.faker.date.past().valueOf(),
-        lastUpdated: h.faker.date.recent().valueOf()
+        lastUpdated: h.faker.date.recent().valueOf(),
       }))
       .pathPrefix("authenticated");
     db.mock.queueSchema("person", 30).generate();
@@ -218,11 +218,11 @@ describe("List class: ", () => {
 
   it("an instantiated List calling get() with an invalid ID throws an error", async () => {
     db.mock
-      .addSchema<Person>("person", h => () => ({
+      .addSchema<Person>("person", (h) => () => ({
         name: h.faker.name.firstName(),
         age: h.faker.random.number({ min: 1, max: 50 }),
         createdAt: h.faker.date.past().valueOf(),
-        lastUpdated: h.faker.date.recent().valueOf()
+        lastUpdated: h.faker.date.recent().valueOf(),
       }))
       .pathPrefix("authenticated");
     db.mock.queueSchema("person", 30).generate();
@@ -237,11 +237,11 @@ describe("List class: ", () => {
 
   it("an instantiated List calling get() with an invalid ID and default value returnes the default value", async () => {
     db.mock
-      .addSchema<Person>("person", h => () => ({
+      .addSchema<Person>("person", (h) => () => ({
         name: h.faker.name.firstName(),
         age: h.faker.random.number({ min: 1, max: 50 }),
         createdAt: h.faker.date.past().valueOf(),
-        lastUpdated: h.faker.date.recent().valueOf()
+        lastUpdated: h.faker.date.recent().valueOf(),
       }))
       .pathPrefix("authenticated");
     db.mock.queueSchema("person", 30).generate();
@@ -257,11 +257,11 @@ describe("List class: ", () => {
   });
   it("an instantiated List calling getData() with an invalid ID and default value returnes the default value", async () => {
     db.mock
-      .addSchema<Person>("person", h => () => ({
+      .addSchema<Person>("person", (h) => () => ({
         name: h.faker.name.firstName(),
         age: h.faker.random.number({ min: 1, max: 50 }),
         createdAt: h.faker.date.past().valueOf(),
-        lastUpdated: h.faker.date.recent().valueOf()
+        lastUpdated: h.faker.date.recent().valueOf(),
       }))
       .pathPrefix("authenticated");
     db.mock.queueSchema("person", 30).generate();
@@ -278,11 +278,11 @@ describe("List class: ", () => {
 
   it("an instantiated List calling findData() with a valid ID returnes the default value", async () => {
     db.mock
-      .addSchema<Person>("person", h => () => ({
+      .addSchema<Person>("person", (h) => () => ({
         name: h.faker.name.firstName(),
         age: h.faker.random.number({ min: 1, max: 50 }),
         createdAt: h.faker.date.past().valueOf(),
-        lastUpdated: h.faker.date.recent().valueOf()
+        lastUpdated: h.faker.date.recent().valueOf(),
       }))
       .pathPrefix("authenticated");
     db.mock.queueSchema("person", 30).generate();
@@ -299,11 +299,11 @@ describe("List class: ", () => {
 
   it("using findWhere() returns a record when property/value is found", async () => {
     db.mock
-      .addSchema<Person>("person", h => () => ({
+      .addSchema<Person>("person", (h) => () => ({
         name: h.faker.name.firstName(),
         age: h.faker.random.number({ min: 1, max: 50 }),
         createdAt: h.faker.date.past().valueOf(),
-        lastUpdated: h.faker.date.recent().valueOf()
+        lastUpdated: h.faker.date.recent().valueOf(),
       }))
       .pathPrefix("authenticated");
     db.mock.queueSchema("person", 30);
@@ -318,11 +318,11 @@ describe("List class: ", () => {
 
   it("using findWhere() returns appropriately when record not found", async () => {
     db.mock
-      .addSchema<Person>("person", h => () => ({
+      .addSchema<Person>("person", (h) => () => ({
         name: h.faker.name.firstName(),
         age: h.faker.random.number({ min: 1, max: 50 }),
         createdAt: h.faker.date.past().valueOf(),
-        lastUpdated: h.faker.date.recent().valueOf()
+        lastUpdated: h.faker.date.recent().valueOf(),
       }))
       .pathPrefix("authenticated");
     db.mock.queueSchema("person", 3, { age: 12 }).generate();
@@ -337,11 +337,11 @@ describe("List class: ", () => {
 
   it("using find() returns a record when passed in filter finds record", async () => {
     db.mock
-      .addSchema<Person>("person", h => () => ({
+      .addSchema<Person>("person", (h) => () => ({
         name: h.faker.name.firstName(),
         age: h.faker.random.number({ min: 1, max: 50 }),
         createdAt: h.faker.date.past().valueOf(),
-        lastUpdated: h.faker.date.recent().valueOf()
+        lastUpdated: h.faker.date.recent().valueOf(),
       }))
       .pathPrefix("authenticated");
     db.mock.queueSchema("person", 30);
@@ -350,7 +350,7 @@ describe("List class: ", () => {
 
     const people = await List.all(Person);
 
-    people.map(person => {
+    people.map((person) => {
       expect(person.id).to.be.a("string");
       expect(person.age).to.be.a("number");
       const foundById = people.findWhere("id", person.id);
@@ -366,14 +366,14 @@ describe("List class: ", () => {
     const id = peeps.data[1].id;
     const removed = await peeps.removeById(id);
     expect(peeps).to.have.lengthOf(9);
-    const eventTypes = new Set(events.map(e => e.type));
+    const eventTypes = new Set(events.map((e) => e.type));
 
     expect(eventTypes).to.contain(FmEvents.RECORD_REMOVED_CONFIRMATION);
     expect(eventTypes).to.contain(FmEvents.RECORD_REMOVED_LOCALLY);
 
     const peeps2 = await List.all(Person);
     expect(peeps2).to.have.length(9);
-    const ids = new Set(peeps2.map(p => p.id));
+    const ids = new Set(peeps2.map((p) => p.id));
     expect(ids.has(id)).to.equal(false);
   });
 
@@ -385,13 +385,13 @@ describe("List class: ", () => {
     expect(peeps).to.have.lengthOf(10);
     const newRec = await peeps.add({
       name: "Christy Brinkley",
-      age: 50
+      age: 50,
     });
     expect(peeps).to.have.lengthOf(11);
-    const ids = new Set(peeps.map(p => p.id));
+    const ids = new Set(peeps.map((p) => p.id));
     expect(ids.has(newRec.id)).to.equal(true);
 
-    const eventTypes = events.map(e => e.type);
+    const eventTypes = events.map((e) => e.type);
     expect(eventTypes).to.contain(FmEvents.RECORD_ADDED_CONFIRMATION);
     expect(eventTypes).to.contain(FmEvents.RECORD_ADDED_LOCALLY);
   });

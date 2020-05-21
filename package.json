@@ -30,10 +30,12 @@
     "docs:build": "vuepress build docs"
   },
   "dependencies": {
-    "@forest-fire/abstracted-database": "^0.44.13",
-    "@forest-fire/base-serializer": "^0.44.13",
-    "@forest-fire/real-time-db": "^0.44.13",
-    "@forest-fire/serialized-query": "^0.44.13",
+    "@forest-fire/abstracted-database": "^0.47.0",
+    "@forest-fire/base-serializer": "^0.47.0",
+    "@forest-fire/real-time-db": "^0.47.0",
+    "@forest-fire/serialized-query": "^0.47.0",
+    "@forest-fire/types": "^0.47.0",
+    "universal-fire": "^0.47.0",
     "common-types": "^1.14.3",
     "date-fns": "^2.14.0",
     "dexie": "^2.0.4",
@@ -47,11 +49,9 @@
     "reflect-metadata": "^0.1.13",
     "set-value": "^3.0.0",
     "typed-conversions": "^0.10.2",
-    "universal-fire": "^0.44.13",
     "wait-in-parallel": "^1.2.6"
   },
   "devDependencies": {
-    "@forest-fire/types": "^0.44.6",
     "@types/chai": "^4.2.9",
     "@types/faker": "^4.1.12",
     "@types/get-value": "^3.0.1",
@@ -82,7 +82,7 @@
     "ts-node": "^8.10.1",
     "tslint": "^6.1.2",
     "tslint-config-prettier": "^1.18.0",
-    "typescript": "^3.9.2",
+    "typescript": "^3.9.3",
     "vue-property-decorator": "^8.4.2",
     "vuepress": "^1.5.0",
     "vuepress-plugin-autometa": "^0.1.13"

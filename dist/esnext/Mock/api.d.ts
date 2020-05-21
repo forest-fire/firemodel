@@ -1,7 +1,7 @@
-import { AbstractedDatabase } from "@forest-fire/abstracted-database";
 import { IDictionary } from "common-types";
 import { IMockResponse } from "./types";
-export default function API<T>(db: AbstractedDatabase, modelConstructor: new () => T): {
+import { IAbstractedDatabase } from "universal-fire";
+export default function API<T>(db: IAbstractedDatabase, modelConstructor: new () => T): {
     /**
      * generate
      *

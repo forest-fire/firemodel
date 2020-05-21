@@ -1,6 +1,6 @@
 // tslint:disable:no-implicit-dependencies
 import { Record, IFmWatchEvent } from "../src";
-import { DB, RealTimeAdmin } from "universal-fire";
+import { DB, SDK } from "universal-fire";
 import * as chai from "chai";
 const expect = chai.expect;
 import { Person } from "./testing/Person";
@@ -21,20 +21,20 @@ const hasManyPaths = (id: string, now: number) => [
   { path: `/authenticated/people/${id}/children/janet`, value: true },
   { path: `/authenticated/people/${id}/children/bob`, value: true },
   { path: `/authenticated/people/${id}/lastUpdated`, value: now },
-  { path: `/authenticated/people/abc/lastUpdated`, value: now }
+  { path: `/authenticated/people/abc/lastUpdated`, value: now },
 ];
 
 const hasOnePaths = (id: string, now: number) => [
   { path: `/authenticated/people/${id}/company`, value: "microsoft" },
   { path: `/authenticated/people/${id}/lastUpdated`, value: now },
   { path: `/authenticated/companies/microsoft/employees/${id}`, value: true },
-  { path: `/authenticated/companies/microsoft/lastUpdated`, value: now }
+  { path: `/authenticated/companies/microsoft/lastUpdated`, value: now },
 ];
 
 describe("Relationship > ", () => {
-  let db: RealTimeAdmin;
+  let db: ISdkClient;
   beforeEach(async () => {
-    db = await DB.connect(RealTimeAdmin, { mocking: true, mockData: {} });
+    db = await DB.connect(SDK.RealTimeAdmin, { mocking: true, mockData: {} });
     FireModel.defaultDb = db;
   });
 
@@ -47,12 +47,8 @@ describe("Relationship > ", () => {
     const extractedHasMany = extractFksFromPaths(person, "children", hasMany);
     const extractedHasOne = extractFksFromPaths(person, "company", hasOne);
 
-    expect(extractedHasMany)
-      .to.be.an("array")
-      .and.have.lengthOf(2);
-    expect(extractedHasOne)
-      .to.be.an("array")
-      .and.to.have.lengthOf(1);
+    expect(extractedHasMany).to.be.an("array").and.have.lengthOf(2);
+    expect(extractedHasOne).to.be.an("array").and.to.have.lengthOf(1);
 
     expect(extractedHasMany).to.include("janet");
     expect(extractedHasMany).to.include("bob");
@@ -64,7 +60,7 @@ describe("Relationship > ", () => {
 
     const paths = buildRelationshipPaths(person, "children", "abcdef");
 
-    expect(paths.map(i => i.path)).to.include(
+    expect(paths.map((i) => i.path)).to.include(
       pathJoin(person.dbPath, "children", "abcdef")
     );
   });
@@ -73,17 +69,17 @@ describe("Relationship > ", () => {
     const person = Record.createWith(Person, { id: "joe", name: "joe" });
     const company = Record.createWith(Company, {
       id: "microsoft",
-      name: "Microsquish"
+      name: "Microsquish",
     });
     const paths = buildRelationshipPaths(person, "company", "microsoft");
-    expect(paths.map(i => i.path)).to.include(
+    expect(paths.map((i) => i.path)).to.include(
       pathJoin(person.dbPath, "company")
     );
     const pathWithFkRef = paths
-      .filter(p => p.path.includes(pathJoin(person.dbPath, "company")))
+      .filter((p) => p.path.includes(pathJoin(person.dbPath, "company")))
       .pop();
     const pathWithInverseRef = paths
-      .filter(p => p.path.includes(pathJoin(company.dbPath, "employees")))
+      .filter((p) => p.path.includes(pathJoin(company.dbPath, "employees")))
       .pop();
 
     expect(pathWithFkRef.value).to.equal("microsoft");
@@ -123,7 +119,7 @@ describe("Relationship > ", () => {
     const father = Record.createWith(Person, { id: "abcdef", name: "poppy" });
     const paths = buildRelationshipPaths(person, "father", "abcdef");
 
-    expect(paths.map(i => i.path)).to.include(
+    expect(paths.map((i) => i.path)).to.include(
       pathJoin(father.dbPath, "children", person.id)
     );
   });
@@ -136,15 +132,15 @@ describe("Relationship > ", () => {
     const person = Record.createWith(FancyPerson, {
       id: "fancy-bob",
       name: "Bob",
-      age: 23
+      age: 23,
     });
     const car = Record.createWith(Car, "12345");
     const paths = buildRelationshipPaths(person, "cars", "12345");
     const personFkToCars = pathJoin(person.dbPath, "cars", "12345");
     const carToOwner = pathJoin(car.dbPath, "owner");
 
-    expect(paths.map(p => p.path)).to.include(personFkToCars);
-    expect(paths.map(p => p.path)).to.include(carToOwner);
+    expect(paths.map((p) => p.path)).to.include(personFkToCars);
+    expect(paths.map((p) => p.path)).to.include(carToOwner);
   });
 
   it("build paths 1:M (with dynamic offset)", async () => {
@@ -155,14 +151,14 @@ describe("Relationship > ", () => {
     const personFkToCars = pathJoin(person.dbPath, "cars", carId);
     const carToOwner = pathJoin(car.dbPath, "owners", person.compositeKeyRef);
 
-    expect(paths.map(p => p.path)).to.include(personFkToCars);
-    expect(paths.map(p => p.path)).to.include(carToOwner);
+    expect(paths.map((p) => p.path)).to.include(personFkToCars);
+    expect(paths.map((p) => p.path)).to.include(carToOwner);
   });
 
   it("using addToRelationship() on a hasMany (M:1) relationship updates DB and sends events", async () => {
     const person = await Record.add(FancyPerson, {
       name: "Bob",
-      age: 23
+      age: 23,
     });
     expect(person.id).to.exist.and.to.be.a("string");
     const lastUpdated = person.data.lastUpdated;
@@ -170,7 +166,7 @@ describe("Relationship > ", () => {
     Record.dispatch = async (evt: IFmWatchEvent) => events.push(evt);
     await person.addToRelationship("cars", "12345");
 
-    const eventTypes = Array.from(new Set(events.map(e => e.type)));
+    const eventTypes = Array.from(new Set(events.map((e) => e.type)));
     expect(eventTypes).includes(FmEvents.RELATIONSHIP_ADDED_LOCALLY);
     expect(eventTypes).includes(FmEvents.RELATIONSHIP_ADDED_CONFIRMATION);
 
@@ -184,17 +180,17 @@ describe("Relationship > ", () => {
   it("using addToRelationship in a M:M relationship", async () => {
     const company = await Record.add(Company, {
       name: "Acme Inc",
-      founded: "1992"
+      founded: "1992",
     });
 
     const person = await Record.add(Person, {
       name: "Joe Bloggs",
       age: 22,
-      gender: "male"
+      gender: "male",
     });
 
     const pay = await Record.add(Pay, {
-      amount: "2400.00"
+      amount: "2400.00",
     });
 
     await company.addToRelationship("employees", person.id);
@@ -206,23 +202,23 @@ describe("Relationship > ", () => {
   it("testing adding relationships with associate", async () => {
     const company = await Record.add(Company, {
       name: "Acme Inc",
-      founded: "1992"
+      founded: "1992",
     });
 
     const person = await Record.add(Person, {
       name: "Joe Bloggs",
       age: 22,
-      gender: "male"
+      gender: "male",
     });
 
     const person2 = await Record.add(Person, {
       name: "Jane Bloggs",
       age: 24,
-      gender: "female"
+      gender: "female",
     });
 
     const pay = await Record.add(Pay, {
-      amount: "2400.00"
+      amount: "2400.00",
     });
 
     await company.associate("employees", person.id);
@@ -236,25 +232,25 @@ describe("Relationship > ", () => {
   it("testing removing relationships with disassociate()", async () => {
     const company = await Record.add(Company, {
       name: "Acme Inc",
-      founded: "1992"
+      founded: "1992",
     });
 
     const person = await Record.add(Person, {
       id: "p1",
       name: "Joe Bloggs",
       age: 22,
-      gender: "male"
+      gender: "male",
     });
 
     const person2 = await Record.add(Person, {
       id: "p2",
       name: "Jane Bloggs",
       age: 24,
-      gender: "female"
+      gender: "female",
     });
 
     const pay = await Record.add(Pay, {
-      amount: "2400.00"
+      amount: "2400.00",
     });
 
     await person.associate("pays", pay.id);
@@ -270,13 +266,13 @@ describe("Relationship > ", () => {
   it("testing it should throw an error when incorrect refs is passed in with associate", async () => {
     const company = await Record.add(Company, {
       name: "Acme Inc",
-      founded: "1992"
+      founded: "1992",
     });
 
     const person = await Record.add(Person, {
       name: "Joe Bloggs",
       age: 22,
-      gender: "male"
+      gender: "male",
     });
 
     try {

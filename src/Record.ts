@@ -1,8 +1,6 @@
-import type { AbstractedDatabase } from "@forest-fire/abstracted-database";
 import copy from "fast-copy";
 import { IDictionary, Omit, Nullable, fk, pk, dotNotation } from "common-types";
 import { key as fbKey } from "firebase-key";
-
 import { Model } from "./models/Model";
 import { FireModel } from "./FireModel";
 import {
@@ -49,9 +47,9 @@ import { createCompositeKeyRefFromRecord } from "./record/createCompositeKeyStri
 import { IFmPathValuePair, IFmRelationshipOptions } from "./@types";
 import { createCompositeKeyFromFkString } from "./record/createCompositeKeyFromFkString";
 import { RecordCrudFailure } from "./errors/record/DatabaseCrudFailure";
-import { IFmModelMeta } from "./decorators";
 import { WatchDispatcher } from "./watchers/WatchDispatcher";
 import { UnwatchedLocalEvent } from "./state-mgmt/UnwatchedLocalEvent";
+import { IAbstractedDatabase } from "universal-fire";
 
 export interface IWriteOperation {
   id: string;
@@ -66,7 +64,7 @@ export interface IWriteOperation {
 
 export class Record<T extends Model> extends FireModel<T> {
   //#region STATIC INTERFACE
-  public static set defaultDb(db: AbstractedDatabase) {
+  public static set defaultDb(db: IAbstractedDatabase) {
     FireModel.defaultDb = db;
   }
   public static get defaultDb() {

@@ -1,15 +1,14 @@
-import { AbstractedDatabase } from "@forest-fire/abstracted-database";
-
 import { Record } from "../Record";
 import { IFmModelRelationshipMeta } from "../decorators";
 import { IMockRelationshipConfig, IMockResponse } from "./types";
 import { Mock } from "../Mock";
+import { IAbstractedDatabase } from "universal-fire";
 
 export async function processHasOne<T>(
   source: Record<T>,
   rel: IFmModelRelationshipMeta<T>,
   config: IMockRelationshipConfig,
-  db: AbstractedDatabase
+  db: IAbstractedDatabase
 ): Promise<IMockResponse<T>> {
   const fkMock = Mock(rel.fkConstructor(), db);
   const fkMockMeta = (await fkMock.generate(1)).pop();
