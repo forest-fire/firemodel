@@ -1,6 +1,6 @@
 // tslint:disable:no-implicit-dependencies
 import { Record, List, IFmWatchEvent } from "../src/index";
-import { DB, SDK, IAbstractedDatabase } from "universal-fire";
+// import { DB, SDK, IAbstractedDatabase } from "universal-fire";
 import * as chai from "chai";
 import * as helpers from "./testing/helpers";
 const expect = chai.expect;

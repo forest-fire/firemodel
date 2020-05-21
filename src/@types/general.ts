@@ -1,12 +1,13 @@
 import { IDictionary, datetime } from "common-types";
 
 import { Model } from "../models/Model";
-import { IAbstractedDatabase } from "universal-fire";
+// import { IAbstractedDatabase } from "universal-fire";
+import { AbstractedDatabase } from "@forest-fire/abstracted-database";
 
 export type FmModelConstructor<T extends Model> = new () => T;
 export interface IModelOptions {
   logger?: ILogger;
-  db?: IAbstractedDatabase;
+  db?: AbstractedDatabase;
 }
 
 /**
@@ -20,7 +21,7 @@ export interface IModelOptions {
  */
 export interface IListOptions<T> extends IModelOptions {
   offsets?: Partial<T>;
-  db?: IAbstractedDatabase;
+  db?: AbstractedDatabase;
 }
 
 export interface IMetaData {

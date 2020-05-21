@@ -10,7 +10,7 @@ import {
   FmEvents,
   IReduxAction,
 } from "../src";
-import { DB, SDK, IAbstractedDatabase } from "universal-fire";
+// import { DB, SDK, IAbstractedDatabase } from "universal-fire";
 import * as chai from "chai";
 import { Mock } from "../src/Mock";
 import { Mock as FireMock } from "firemock";

@@ -2,7 +2,7 @@
 import { expect } from "chai";
 import { Record, List, Mock } from "../src";
 import { AuditLog } from "../src/models/index";
-import { DB, SDK, IAbstractedDatabase } from "universal-fire";
+// import { DB, SDK, IAbstractedDatabase } from "universal-fire";
 import { Person } from "./testing/AuditedPerson";
 import { FireModel } from "../src/FireModel";
 import { wait } from "common-types";

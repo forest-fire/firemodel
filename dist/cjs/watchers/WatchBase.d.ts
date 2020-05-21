@@ -6,7 +6,7 @@ import { IWatchEventClassification, IFmWatcherStartOptions } from "./types";
 import { IReduxDispatch, IWatcherEventContext } from "../state-mgmt";
 import { IListOptions } from "../index";
 import { WatchRecord } from "./WatchRecord";
-import { IAbstractedDatabase } from "universal-fire";
+import { AbstractedDatabase } from "@forest-fire/abstracted-database";
 /**
  * The base class which both `WatchList` and `WatchRecord` derive.
  */
@@ -15,7 +15,7 @@ export declare class WatchBase<T extends Model> {
     protected _modelConstructor: FmModelConstructor<T>;
     protected _eventType: IWatchEventClassification;
     protected _dispatcher: IReduxDispatch;
-    protected _db: IAbstractedDatabase;
+    protected _db: AbstractedDatabase;
     protected _modelName: string;
     protected _localModelName: string;
     protected _pluralName: string;
@@ -65,5 +65,5 @@ export declare class WatchBase<T extends Model> {
      */
     buildWatcherItem(name?: string): IWatcherEventContext<T>;
     protected getCoreDispatch(): IReduxDispatch<import("..").IReduxAction, any>;
-    protected get db(): IAbstractedDatabase;
+    protected get db(): AbstractedDatabase;
 }

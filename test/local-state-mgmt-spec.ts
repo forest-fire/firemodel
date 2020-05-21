@@ -1,7 +1,7 @@
 // tslint:disable:no-implicit-dependencies
 import * as chai from "chai";
 const expect = chai.expect;
-import { DB, SDK, IAbstractedDatabase } from "universal-fire";
+// import { DB, SDK, IAbstractedDatabase } from "universal-fire";
 import { FireModel, Record, List, pathJoin } from "../src";
 import { Person } from "./testing/localStateMgmt/Person";
 import { DynamicPerson } from "./testing/localStateMgmt/DynamicPerson";

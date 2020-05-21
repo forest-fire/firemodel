@@ -1,7 +1,8 @@
 import { IDictionary, fk, pk, epoch } from "common-types";
 
 import { IFmHasId } from "../private";
-import { IAbstractedDatabase } from "universal-fire";
+// import { IAbstractedDatabase } from "universal-fire";
+import { AbstractedDatabase } from "@forest-fire/abstracted-database";
 
 export type IIdWithDynamicPrefix = IDictionary<number | string> & {
   id: string;
@@ -37,7 +38,7 @@ export interface IFmBuildRelationshipOptions {
 }
 
 export interface IRecordOptions {
-  db?: IAbstractedDatabase;
+  db?: AbstractedDatabase;
   logging?: any;
   id?: string;
   /** if you're working off of a mocking database, there are situations where adding a record silently (aka., not triggering any listener events) is desirable and should be allowed */

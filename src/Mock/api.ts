@@ -6,12 +6,13 @@ import { Record } from "../Record";
 import { Mock } from "firemock";
 import { IMockRelationshipConfig, IMockResponse } from "./types";
 import { FireModelError } from "../errors";
-import { IAbstractedDatabase } from "universal-fire";
+// import { IAbstractedDatabase } from "universal-fire";
+import { AbstractedDatabase } from "@forest-fire/abstracted-database";
 
 let mockPrepared = false;
 
 export default function API<T>(
-  db: IAbstractedDatabase,
+  db: AbstractedDatabase,
   modelConstructor: new () => T
 ) {
   const config: IMockRelationshipConfig = {

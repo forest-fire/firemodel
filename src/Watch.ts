@@ -18,7 +18,8 @@ import {
 import { WatchList } from "./watchers/WatchList";
 import { WatchRecord } from "./watchers/WatchRecord";
 import { firstKey } from "./util";
-import { IAbstractedDatabase } from "universal-fire";
+// import { IAbstractedDatabase } from "universal-fire";
+import { AbstractedDatabase } from "@forest-fire/abstracted-database";
 
 /**
  * A static library for interacting with _watchers_. It
@@ -30,7 +31,7 @@ export class Watch<T extends Model = Model> {
    * Sets the default database for all Firemodel
    * classes such as `FireModel`, `Record`, and `List`
    */
-  public static set defaultDb(db: IAbstractedDatabase) {
+  public static set defaultDb(db: AbstractedDatabase) {
     FireModel.defaultDb = db;
   }
 
@@ -93,7 +94,7 @@ export class Watch<T extends Model = Model> {
   /**
    * stops watching either a specific watcher or ALL if no hash code is provided
    */
-  public static stop(hashCode?: string, oneOffDB?: IAbstractedDatabase) {
+  public static stop(hashCode?: string, oneOffDB?: AbstractedDatabase) {
     const codes = new Set(Object.keys(getWatcherPool()));
     const db = oneOffDB || FireModel.defaultDb;
     if (!db) {

@@ -1,2 +1,2 @@
-import { IAbstractedDatabase } from "universal-fire";
-export default function cleanPredecessor(db: IAbstractedDatabase, predecessors: string[]): Promise<void>;
+import { AbstractedDatabase } from "@forest-fire/abstracted-database";
+export default function cleanPredecessor(db: AbstractedDatabase, predecessors: string[]): Promise<void>;

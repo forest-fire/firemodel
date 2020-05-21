@@ -2,7 +2,7 @@
 import * as chai from "chai";
 const expect = chai.expect;
 import { IDictionary } from "common-types";
-import { DB, SDK, IAbstractedDatabase } from "universal-fire";
+// import { DB, SDK, IAbstractedDatabase } from "universal-fire";
 import { FireModel, Record } from "../src";
 import { Car } from "./testing/permissions/Car";
 const clientConfig = {

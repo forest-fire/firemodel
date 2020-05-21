@@ -5,11 +5,12 @@ import { IDictionary } from "common-types";
 import { getModelMeta } from "../ModelMeta";
 import mockValue from "./mockValue";
 import { IMockRelationshipConfig } from "./types";
-import { IAbstractedDatabase } from "universal-fire";
+// import { IAbstractedDatabase } from "universal-fire";
+import { AbstractedDatabase } from "@forest-fire/abstracted-database";
 
 /** adds mock values for all the properties on a given model */
 export default function mockProperties<T extends Model>(
-  db: IAbstractedDatabase,
+  db: AbstractedDatabase,
   config: IMockRelationshipConfig = { relationshipBehavior: "ignore" },
   exceptions: IDictionary
 ) {

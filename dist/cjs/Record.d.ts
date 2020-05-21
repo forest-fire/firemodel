@@ -6,7 +6,7 @@ import { IFMEventName, IFmCrudOperations, IFmDispatchOptions } from "./state-mgm
 import { IFkReference, ICompositeKey, IRecordOptions } from "./@types/record-types";
 import { IFmRelationshipOptionsForHasMany } from ".";
 import { IFmRelationshipOptions } from "./@types";
-import { IAbstractedDatabase } from "universal-fire";
+import { AbstractedDatabase } from "@forest-fire/abstracted-database";
 export interface IWriteOperation {
     id: string;
     type: "set" | "pushKey" | "update";
@@ -19,8 +19,8 @@ export interface IWriteOperation {
 }
 export declare class Record<T extends Model> extends FireModel<T> {
     protected options: IRecordOptions;
-    static set defaultDb(db: IAbstractedDatabase);
-    static get defaultDb(): IAbstractedDatabase;
+    static set defaultDb(db: AbstractedDatabase);
+    static get defaultDb(): AbstractedDatabase;
     static set dispatch(fn: IReduxDispatch);
     /**
      * **dynamicPathProperties**

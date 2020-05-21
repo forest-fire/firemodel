@@ -1,8 +1,9 @@
 import { IDictionary } from "common-types";
-import { IAbstractedDatabase } from "universal-fire";
+// import { IAbstractedDatabase } from "universal-fire";
+import { AbstractedDatabase } from "@forest-fire/abstracted-database";
 
 export default async function cleanPredecessor(
-  db: IAbstractedDatabase,
+  db: AbstractedDatabase,
   predecessors: string[]
 ) {
   let empty = false;

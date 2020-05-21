@@ -1,6 +1,6 @@
 // tslint:disable:no-implicit-dependencies
 import { Record, FireModel, Mock, List } from "../src";
-import { DB, SDK } from "universal-fire";
+// import { DB, SDK } from "universal-fire";
 import * as chai from "chai";
 import { Person } from "./testing/default-values/Person";
 const expect = chai.expect;

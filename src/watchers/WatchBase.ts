@@ -12,7 +12,8 @@ import { waitForInitialization } from "./watchInitialization";
 import { addToWatcherPool } from "./watcherPool";
 import { WatchRecord } from "./WatchRecord";
 import { List } from "../List";
-import { IAbstractedDatabase } from "universal-fire";
+// import { IAbstractedDatabase } from "universal-fire";
+import { AbstractedDatabase } from "@forest-fire/abstracted-database";
 
 /**
  * The base class which both `WatchList` and `WatchRecord` derive.
@@ -22,7 +23,7 @@ export class WatchBase<T extends Model> {
   protected _modelConstructor: FmModelConstructor<T>;
   protected _eventType: IWatchEventClassification;
   protected _dispatcher: IReduxDispatch;
-  protected _db: IAbstractedDatabase;
+  protected _db: AbstractedDatabase;
   protected _modelName: string;
   protected _localModelName: string;
   protected _pluralName: string;
@@ -243,7 +244,7 @@ export class WatchBase<T extends Model> {
     return coreDispatch;
   }
 
-  protected get db(): IAbstractedDatabase {
+  protected get db(): AbstractedDatabase {
     if (!this._db) {
       if (FireModel.defaultDb) {
         this._db = FireModel.defaultDb;

@@ -6,7 +6,7 @@ import { PersonWithLocal } from "./testing/PersonWithLocal";
 import { PersonWithLocalAndPrefix } from "./testing/PersonWithLocalAndPrefix";
 import { IMultiPathUpdates, FireModel } from "../src/FireModel";
 import { FmEvents } from "../src/state-mgmt";
-import { DB, SDK, IAbstractedDatabase } from "universal-fire";
+// import { DB, SDK, IAbstractedDatabase } from "universal-fire";
 import { wait } from "./testing/helpers";
 import { IVuexDispatch, VeuxWrapper } from "../src/state-mgmt/VuexWrapper";
 import { compareHashes, withoutMetaOrPrivate } from "../src/util";

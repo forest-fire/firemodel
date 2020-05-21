@@ -3,7 +3,8 @@ import { Record } from "./Record";
 import { FireModel } from "./FireModel";
 import API from "./Mock/api";
 import { FireModelError } from "./errors";
-import { IAbstractedDatabase } from "universal-fire";
+// import { IAbstractedDatabase } from "universal-fire";
+import { AbstractedDatabase } from "@forest-fire/abstracted-database";
 
 function defaultCardinality<T>(r: Record<T>) {
   return r.META.relationships.reduce((prev, curr) => {
@@ -19,7 +20,7 @@ function defaultCardinality<T>(r: Record<T>) {
  */
 export function Mock<T extends Model>(
   modelConstructor: new () => T,
-  db?: IAbstractedDatabase
+  db?: AbstractedDatabase
 ) {
   if (!db) {
     if (FireModel.defaultDb) {

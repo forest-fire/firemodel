@@ -5,18 +5,19 @@ import { FireModel } from "./FireModel";
 import { Record } from "./Record";
 import { pathJoin } from "./path";
 import { IModelOptions } from "./private";
-import { IAbstractedDatabase } from "universal-fire";
+// import { IAbstractedDatabase } from "universal-fire";
+import { AbstractedDatabase } from "@forest-fire/abstracted-database";
 
 export class AuditBase<T extends Model = Model> {
   protected _modelKlass: new () => T;
   protected _record: Record<T>;
-  protected _db: IAbstractedDatabase;
+  protected _db: AbstractedDatabase;
   protected _query: BaseSerializer;
   // index searchs (future)
   protected _recordId: string;
   protected _property: string;
 
-  protected get db(): IAbstractedDatabase {
+  protected get db(): AbstractedDatabase {
     return this._db;
   }
 

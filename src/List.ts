@@ -17,7 +17,8 @@ import { IListOptions } from "./@types/general";
 import { FireModelError } from "./errors";
 import { capitalize } from "./util";
 import { ICompositeKey, IPrimaryKey } from "./@types";
-import { IAbstractedDatabase } from "universal-fire";
+// import { IAbstractedDatabase } from "universal-fire";
+import { AbstractedDatabase } from "@forest-fire/abstracted-database";
 
 const DEFAULT_IF_NOT_FOUND = "__DO_NOT_USE__";
 
@@ -41,7 +42,7 @@ export class List<T extends Model> extends FireModel<T> {
    * Sets the default database to be used by all FireModel classes
    * unless explicitly told otherwise
    */
-  public static set defaultDb(db: IAbstractedDatabase) {
+  public static set defaultDb(db: AbstractedDatabase) {
     FireModel.defaultDb = db;
   }
 

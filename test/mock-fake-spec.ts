@@ -2,7 +2,7 @@
 import fakeIt from "../src/Mock/fakeIt";
 import { Mock as FireMock, MockHelper } from "firemock";
 import { expect } from "chai";
-import { DB, SDK } from "universal-fire";
+// import { DB, SDK } from "universal-fire";
 import { Mock, FireModel, List } from "../src";
 import { Product } from "./testing/Product";
 

@@ -1,5 +1,5 @@
 // tslint:disable:no-implicit-dependencies
-import { DB, SDK } from "universal-fire";
+// import { DB, SDK } from "universal-fire";
 import { Record } from "../src";
 import * as chai from "chai";
 import { Klass } from "./testing/klass";
