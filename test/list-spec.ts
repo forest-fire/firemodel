@@ -1,7 +1,6 @@
 // tslint:disable:no-implicit-dependencies
 import { Record, List, IFmWatchEvent } from "../src/index";
-// import { DB, SDK, IAbstractedDatabase } from "universal-fire";
-import { RealTimeAdmin } from "@forest-fire/real-time-admin";
+import { RealTimeAdmin } from "universal-fire";
 import * as chai from "chai";
 import * as helpers from "./testing/helpers";
 const expect = chai.expect;
@@ -15,9 +14,9 @@ import Company from "./testing/dynamicPaths/Company";
 import { SerializedQuery } from "@forest-fire/base-serializer";
 
 describe("List class: ", () => {
-  let db: RealTimeAdmin;
+  let db: IRealTimeAdmin;
   beforeEach(async () => {
-    db = await RealTimeAdmin.connect({ mocking: true });
+    db = await RealTimeAdmin({ mocking: true });
     FireModel.defaultDb = db;
   });
   it("can instantiate with new operator", () => {

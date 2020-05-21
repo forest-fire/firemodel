@@ -8,7 +8,7 @@ const expect = chai.expect;
 
 describe("defaultValue() → ", () => {
   before(async () => {
-    const db = await RealTimeAdmin.connect({ mocking: true });
+    const db = await RealTimeAdmin({ mocking: true });
     FireModel.defaultDb = db;
   });
 

@@ -1,5 +1,4 @@
-// import { IAbstractedDatabase } from "universal-fire";
-import { AbstractedDatabase } from "@forest-fire/abstracted-database";
+import { IAbstractedDatabase } from "universal-fire";
 import { MockHelper } from "firemock";
 import fakeIt from "./fakeIt";
 import NamedFakes from "./NamedFakes";
@@ -7,7 +6,7 @@ import PropertyNamePatterns from "./PropertyNamePatterns";
 import { Model, IFmModelPropertyMeta } from "..";
 
 export default function mockValue<T extends Model>(
-  db: AbstractedDatabase,
+  db: IAbstractedDatabase,
   propMeta: IFmModelPropertyMeta<T>,
   mockHelper: MockHelper,
   ...rest: any[]

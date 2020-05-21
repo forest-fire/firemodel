@@ -4,7 +4,7 @@ import { IModelOptions } from "./@types/general";
 import { IPrimaryKey } from "./@types/record-types";
 import { WatchList } from "./watchers/WatchList";
 import { WatchRecord } from "./watchers/WatchRecord";
-import { AbstractedDatabase } from "@forest-fire/abstracted-database";
+import { IAbstractedDatabase } from "universal-fire";
 /**
  * A static library for interacting with _watchers_. It
  * provides the entry point into the watcher API and then
@@ -15,7 +15,7 @@ export declare class Watch<T extends Model = Model> {
      * Sets the default database for all Firemodel
      * classes such as `FireModel`, `Record`, and `List`
      */
-    static set defaultDb(db: AbstractedDatabase);
+    static set defaultDb(db: IAbstractedDatabase);
     /**
      * Sets the default dispatch for all Firemodel
      * classes such as `FireModel`, `Record`, and `List`
@@ -45,7 +45,7 @@ export declare class Watch<T extends Model = Model> {
     /**
      * stops watching either a specific watcher or ALL if no hash code is provided
      */
-    static stop(hashCode?: string, oneOffDB?: AbstractedDatabase): void;
+    static stop(hashCode?: string, oneOffDB?: IAbstractedDatabase): void;
     /**
      * Configures the watcher to be a `value` watcher on Firebase
      * which is only concerned with changes to a singular Record.

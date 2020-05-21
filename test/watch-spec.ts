@@ -6,8 +6,7 @@ import {
   IFmLocalEvent,
   IReduxAction,
 } from "../src";
-// import { DB, SDK, IAbstractedDatabase } from "universal-fire";
-import { RealTimeAdmin } from "@forest-fire/real-time-admin";
+import { RealTimeAdmin } from "universal-fire";
 import { expect } from "chai";
 
 import { FireModel } from "../src/FireModel";

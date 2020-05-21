@@ -6,17 +6,16 @@ import { PersonWithLocal } from "./testing/PersonWithLocal";
 import { PersonWithLocalAndPrefix } from "./testing/PersonWithLocalAndPrefix";
 import { IMultiPathUpdates, FireModel } from "../src/FireModel";
 import { FmEvents } from "../src/state-mgmt";
-// import { DB, SDK, IAbstractedDatabase } from "universal-fire";
-import { RealTimeAdmin } from "@forest-fire/real-time-admin";
+import { RealTimeAdmin, IRealTimeAdmin } from "universal-fire";
 import { wait } from "./testing/helpers";
 import { IVuexDispatch, VeuxWrapper } from "../src/state-mgmt/VuexWrapper";
 import { compareHashes, withoutMetaOrPrivate } from "../src/util";
 const expect = chai.expect;
 
 describe("Dispatch →", () => {
-  let db: RealTimeAdmin;
+  let db: IRealTimeAdmin;
   beforeEach(async () => {
-    db = await RealTimeAdmin.connect({ mocking: true });
+    db = await RealTimeAdmin({ mocking: true });
     Record.defaultDb = db;
     Record.dispatch = null;
   });

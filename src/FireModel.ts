@@ -15,8 +15,7 @@ import {
   listRegisteredModels,
   modelRegistryLookup,
 } from "./record/relationships/modelRegistration";
-// import { IAbstractedDatabase } from "universal-fire";
-import { AbstractedDatabase } from "@forest-fire/abstracted-database";
+import { IAbstractedDatabase } from "universal-fire";
 
 // tslint:disable-next-line:no-var-requires
 const pluralize = require("pluralize");
@@ -37,7 +36,7 @@ export class FireModel<T extends Model> {
    * "default" database to use should a given transaction not state a DB
    * connection explicitly.
    */
-  public static set defaultDb(db: AbstractedDatabase) {
+  public static set defaultDb(db: IAbstractedDatabase) {
     this._defaultDb = db;
   }
 
@@ -132,7 +131,7 @@ export class FireModel<T extends Model> {
   }
 
   /** the connected real-time database */
-  public get db(): AbstractedDatabase {
+  public get db(): IAbstractedDatabase {
     if (!this._db) {
       this._db = FireModel.defaultDb;
     }
@@ -171,7 +170,7 @@ const db = await FireModel.connect(DB, options);
    * databases) but the vast majority of projects only have ONE firebase
    * database so this just makes the whole process much easier.
    */
-  public static async connect<T extends AbstractedDatabase>(
+  public static async connect<T extends IAbstractedDatabase>(
     RTDB: {
       connect: (options: Partial<IAdminConfig> & IClientConfig) => T;
     },
@@ -200,7 +199,7 @@ const db = await FireModel.connect(DB, options);
     // TODO: implement this!
     return false;
   }
-  private static _defaultDb: AbstractedDatabase;
+  private static _defaultDb: IAbstractedDatabase;
   private static _dispatchActive: boolean = false;
   /** the dispatch function used to interact with frontend frameworks */
   private static _dispatch: IReduxDispatch = defaultDispatch;
@@ -212,7 +211,7 @@ const db = await FireModel.connect(DB, options);
   /** the data structure/model that this class operates around */
   protected _model: T;
   protected _modelConstructor: new () => T;
-  protected _db: AbstractedDatabase;
+  protected _db: IAbstractedDatabase;
 
   //#endregion
 

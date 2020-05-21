@@ -4,7 +4,7 @@ exports.WatchRecord = void 0;
 const WatchBase_1 = require("./WatchBase");
 const errors_1 = require("../errors");
 const __1 = require("..");
-const base_serializer_1 = require("@forest-fire/base-serializer");
+const universal_fire_1 = require("universal-fire");
 const FireModel_1 = require("../FireModel");
 class WatchRecord extends WatchBase_1.WatchBase {
     static record(modelConstructor, pk, options = {}) {
@@ -19,7 +19,7 @@ class WatchRecord extends WatchBase_1.WatchBase {
         o._eventType = "value";
         o._watcherSource = "record";
         const r = __1.Record.createWith(modelConstructor, pk, options.db ? { db: options.db } : {});
-        o._query = base_serializer_1.SerializedQuery.create(options.db || FireModel_1.FireModel.defaultDb, `${r.dbPath}`);
+        o._query = universal_fire_1.SerializedQuery.create(options.db || FireModel_1.FireModel.defaultDb, `${r.dbPath}`);
         o._modelConstructor = modelConstructor;
         o._modelName = r.modelName;
         o._localModelName = r.META.localModelName;

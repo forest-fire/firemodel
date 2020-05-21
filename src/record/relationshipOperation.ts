@@ -15,7 +15,6 @@ import { IFmLocalRelationshipEvent } from "../state-mgmt";
 import { createCompositeRef } from "./createCompositeKeyString";
 import { capitalize } from "../util";
 import { FireModelProxyError } from "../errors";
-import { IRtdbReference } from "@forest-fire/types";
 
 /**
  * **relationshipOperation**
@@ -157,7 +156,7 @@ export async function localRelnOp<F extends Model, T extends Model>(
     });
     // local optimistic dispatch
     rec.dispatch({ ...event, type });
-    const ref = rec.db.ref("/") as IRtdbReference;
+    const ref = rec.db.ref("/");
     // TODO: replace with multiPathSet/transaction
     await ref.update(
       event.paths.reduce((acc: IDictionary, curr) => {

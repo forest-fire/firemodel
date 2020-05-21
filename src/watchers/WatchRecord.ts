@@ -3,7 +3,7 @@ import { WatchBase } from "./WatchBase";
 import { IPrimaryKey, IModelOptions } from "../@types";
 import { FireModelError } from "../errors";
 import { Record } from "..";
-import { SerializedQuery } from "@forest-fire/base-serializer";
+import { SerializedQuery } from "universal-fire";
 import { FireModel } from "../FireModel";
 
 export class WatchRecord<T extends Model> extends WatchBase<T> {
@@ -32,7 +32,10 @@ export class WatchRecord<T extends Model> extends WatchBase<T> {
       pk,
       options.db ? { db: options.db } : {}
     );
-    o._query = SerializedQuery.create<T>(options.db || FireModel.defaultDb, `${r.dbPath}`);
+    o._query = SerializedQuery.create<T>(
+      options.db || FireModel.defaultDb,
+      `${r.dbPath}`
+    );
     o._modelConstructor = modelConstructor;
     o._modelName = r.modelName;
     o._localModelName = r.META.localModelName;
