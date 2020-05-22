@@ -2,12 +2,11 @@ import { IModelConstructor, Record, IFmModelMeta, ICompositeKey } from "..";
 import { FireModelError, DexieError } from "../errors";
 import { Model } from "../models/Model";
 import { IDictionary, pk } from "common-types";
-import Dexie from "dexie";
-import { IDexiePriorVersion, IDexieModelMeta } from "../@types/optional/dexie";
+import Dexie, { Table, TableSchema } from "dexie";
 import { DexieRecord } from "./DexieRecord";
 import { DexieList } from "./DexieList";
 import { capitalize } from "../util";
-import { IPrimaryKey } from "../@types";
+import { IPrimaryKey, IDexiePriorVersion, IDexieModelMeta } from "../private";
 
 /**
  * Provides a simple API to convert to/work with **Dexie** models
@@ -47,36 +46,37 @@ export class DexieDb {
         (r.hasDynamicPath ? [] : ["id"])
           .concat(
             (r.META.dbIndexes || [])
-              .filter(i => i.isUniqueIndex)
-              .map(i => i.property)
+              .filter((i) => i.isUniqueIndex)
+              .map((i) => i.property)
           )
-          .forEach(i => dexieModel.push(`&${i}`));
+          .forEach((i) => dexieModel.push(`&${i}`));
 
         // NON-UNIQUE Indexes
         const indexes = []
           .concat(
             (r.META.dbIndexes || [])
-              .filter(i => i.isIndex && !i.isUniqueIndex)
-              .map(i => i.property)
+              .filter((i) => i.isIndex && !i.isUniqueIndex)
+              .map((i) => i.property)
           )
           // include dynamic props (if they're not explicitly marked as indexes)
           .concat(
             r.hasDynamicPath
               ? r.dynamicPathComponents.filter(
-                  i => !r.META.dbIndexes.map(idx => idx.property).includes(i)
+                  (i) =>
+                    !r.META.dbIndexes.map((idx) => idx.property).includes(i)
                 )
               : []
           )
-          .forEach(i => dexieModel.push(i));
+          .forEach((i) => dexieModel.push(i));
 
         // MULTI-LEVEL Indexes
         const multiEntryIndex = []
           .concat(
             r.META.dbIndexes
-              .filter(i => i.isMultiEntryIndex)
-              .map(i => i.property)
+              .filter((i) => i.isMultiEntryIndex)
+              .map((i) => i.property)
           )
-          .forEach(i => dexieModel.push(`*${i}`));
+          .forEach((i) => dexieModel.push(`*${i}`));
 
         agg[r.pluralName] = dexieModel.join(",").trim();
 
@@ -160,7 +160,10 @@ export class DexieDb {
    * if Dexie has _not_ yet connected to the DB.
    */
   public get dexieTables() {
-    return this.db.tables.map(t => ({ name: t.name, schema: t.schema }));
+    return this.db.tables.map((t) => ({
+      name: t.name,
+      schema: t.schema as TableSchema,
+    }));
   }
 
   /** simple dictionary of Dixie model defn's for indexation */
@@ -197,7 +200,7 @@ export class DexieDb {
       this._status = "ready";
     });
 
-    models.forEach(m => {
+    models.forEach((m) => {
       const r = Record.create(m);
       this._constructors[r.pluralName] = m;
       this._meta[r.pluralName] = {
@@ -205,7 +208,7 @@ export class DexieDb {
         modelName: r.modelName,
         hasDynamicPath: r.hasDynamicPath,
         dynamicPathComponents: r.dynamicPathComponents,
-        pluralName: r.pluralName
+        pluralName: r.pluralName,
       };
       this._singularToPlural[r.modelName] = r.pluralName;
     });

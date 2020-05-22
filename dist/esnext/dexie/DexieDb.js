@@ -37,7 +37,7 @@ export class DexieDb {
         this._db.on("ready", () => {
             this._status = "ready";
         });
-        models.forEach(m => {
+        models.forEach((m) => {
             const r = Record.create(m);
             this._constructors[r.pluralName] = m;
             this._meta[r.pluralName] = Object.assign(Object.assign({}, r.META), { modelName: r.modelName, hasDynamicPath: r.hasDynamicPath, dynamicPathComponents: r.dynamicPathComponents, pluralName: r.pluralName });
@@ -66,25 +66,25 @@ export class DexieDb {
             // UNIQUE Indexes
             (r.hasDynamicPath ? [] : ["id"])
                 .concat((r.META.dbIndexes || [])
-                .filter(i => i.isUniqueIndex)
-                .map(i => i.property))
-                .forEach(i => dexieModel.push(`&${i}`));
+                .filter((i) => i.isUniqueIndex)
+                .map((i) => i.property))
+                .forEach((i) => dexieModel.push(`&${i}`));
             // NON-UNIQUE Indexes
             const indexes = []
                 .concat((r.META.dbIndexes || [])
-                .filter(i => i.isIndex && !i.isUniqueIndex)
-                .map(i => i.property))
+                .filter((i) => i.isIndex && !i.isUniqueIndex)
+                .map((i) => i.property))
                 // include dynamic props (if they're not explicitly marked as indexes)
                 .concat(r.hasDynamicPath
-                ? r.dynamicPathComponents.filter(i => !r.META.dbIndexes.map(idx => idx.property).includes(i))
+                ? r.dynamicPathComponents.filter((i) => !r.META.dbIndexes.map((idx) => idx.property).includes(i))
                 : [])
-                .forEach(i => dexieModel.push(i));
+                .forEach((i) => dexieModel.push(i));
             // MULTI-LEVEL Indexes
             const multiEntryIndex = []
                 .concat(r.META.dbIndexes
-                .filter(i => i.isMultiEntryIndex)
-                .map(i => i.property))
-                .forEach(i => dexieModel.push(`*${i}`));
+                .filter((i) => i.isMultiEntryIndex)
+                .map((i) => i.property))
+                .forEach((i) => dexieModel.push(`*${i}`));
             agg[r.pluralName] = dexieModel.join(",").trim();
             return agg;
         }, {});
@@ -150,7 +150,10 @@ export class DexieDb {
      * if Dexie has _not_ yet connected to the DB.
      */
     get dexieTables() {
-        return this.db.tables.map(t => ({ name: t.name, schema: t.schema }));
+        return this.db.tables.map((t) => ({
+            name: t.name,
+            schema: t.schema,
+        }));
     }
     /**
      * Allows the addition of prior versions of the database. This sits on top
