@@ -23,7 +23,7 @@ class DexieRecord {
      * but becomes a `CompositeKey` if the model has a dynamic path.
      */
     async get(pk) {
-        return this.table.get(pk).catch(e => {
+        return this.table.get(pk).catch((e) => {
             throw new errors_1.DexieError(`DexieRecord: problem getting record ${JSON.stringify(pk)} of model ${util_1.capitalize(this.meta.modelName)}: ${e.message}`, `dexie/${e.code || e.name || "get"}`);
         });
     }
@@ -35,7 +35,7 @@ class DexieRecord {
      */
     async add(record) {
         if (this.meta.hasDynamicPath) {
-            if (!this.meta.dynamicPathComponents.every(i => record[i])) {
+            if (!this.meta.dynamicPathComponents.every((i) => record[i])) {
                 throw new errors_1.DexieError(`The model ${util_1.capitalize(this.meta.modelName)} is based on a dynamic path [ ${this.meta.dynamicPathComponents.join(", ")} ] and every part of this path is therefore a required field but the record hash passed in did not define values for all these properties. The properties which WERE pass in included: ${Object.keys(record).join(", ")}`, "dexie/missing-property");
             }
         }
@@ -45,7 +45,9 @@ class DexieRecord {
         const now = new Date().getTime();
         record.createdAt = now;
         record.lastUpdated = now;
-        const pk = await this.table.add(record).catch(e => {
+        const pk = await this.table
+            .add(record)
+            .catch((e) => {
             throw new errors_1.DexieError(`DexieRecord: Problem adding record to ${util_1.capitalize(this.meta.modelName)}: ${e.message}`, `dexie/${e.code || e.name || "add"}`);
         });
         return this.get(pk);
@@ -56,7 +58,9 @@ class DexieRecord {
     async update(pk, updateHash) {
         const now = new Date().getTime();
         updateHash.lastUpdated = now;
-        const result = await this.table.update(pk, updateHash).catch(e => {
+        const result = await this.table
+            .update(pk, updateHash)
+            .catch((e) => {
             throw new errors_1.DexieError(`DexieRecord: Problem updating ${util_1.capitalize(this.meta.modelName)}.${typeof pk === "string" ? pk : pk.id}: ${e.message}`, `dexie/${e.code || e.name || "update"}`);
         });
         if (result === 0) {
@@ -67,7 +71,7 @@ class DexieRecord {
         }
     }
     async remove(id) {
-        return this.table.delete(id).catch(e => {
+        return this.table.delete(id).catch((e) => {
             throw new errors_1.DexieError(`Problem removing record ${JSON.stringify(id)} from the ${util_1.capitalize(this.meta.modelName)}: ${e.message}`, `dexie/${e.code || e.name || "remove"}`);
         });
     }

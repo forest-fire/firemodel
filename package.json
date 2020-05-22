@@ -1,6 +1,6 @@
 {
   "name": "firemodel",
-  "version": "0.48.2",
+  "version": "0.48.3",
   "description": "Modeling, Access, and Mocking for Firebase Projects",
   "license": "MIT",
   "repository": "https://github.com/forest-fire/firemodel",
@@ -27,7 +27,12 @@
     "package": "./node_modules/.bin/ts-node ./scripts/package.ts ",
     "cli": "./node_modules/.bin/ts-node cli/index.ts --",
     "docs": "vuepress dev docs",
-    "docs:build": "vuepress build docs"
+    "docs:build": "vuepress build docs",
+    "circular": "yarn madge src/**/*.ts --circular",
+    "watch": "run-p watch:es watch:cjs",
+    "watch:es": "tsc -w -P tsconfig.esnext.json",
+    "watch:cjs": "tsc -w -P tsconfig.cjs.json",
+    "watch:autoindex": "do autoindex"
   },
   "dependencies": {
     "@forest-fire/real-time-db": "^0.48.11",
@@ -72,7 +77,9 @@
     "fake-indexeddb": "^3.0.0",
     "faker": "^4.1.0",
     "js-yaml": "^3.13.1",
+    "madge": "^3.9.0",
     "mocha": "^7.1.1",
+    "npm-run-all": "^4.1.5",
     "prettier": "^2.0.5",
     "rimraf": "^3.0.0",
     "test-console": "^1.1.0",

@@ -1,6 +1,6 @@
 import { IModelConstructor } from "../index";
 import { IPrimaryKey } from "../@types";
-import { Dexie } from "dexie";
+import { Table } from "dexie";
 import { Model } from "../models/Model";
 import { IDexieModelMeta } from "../@types/optional/dexie";
 /**
@@ -12,7 +12,7 @@ export declare class DexieRecord<T extends Model> {
     private modelConstructor;
     private table;
     private meta;
-    constructor(modelConstructor: IModelConstructor<T>, table: Dexie.Table<any, any>, meta: IDexieModelMeta);
+    constructor(modelConstructor: IModelConstructor<T>, table: Table<any, any>, meta: IDexieModelMeta);
     /**
      * Gets a specific record from the **IndexDB**; if record is not found the
      * `dexie/record-not-found` error is thrown.
