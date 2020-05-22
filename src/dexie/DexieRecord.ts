@@ -1,11 +1,12 @@
 import { IModelConstructor } from "../index";
 import { IPrimaryKey } from "../@types";
-import { Dexie } from "dexie";
+import { Dexie, Table } from "dexie";
 import { Model } from "../models/Model";
 import { key as fbKey } from "firebase-key";
 import { IDexieModelMeta } from "../@types/optional/dexie";
 import { DexieError } from "../errors";
 import { capitalize } from "../util";
+import { IDictionary } from "common-types";
 
 /**
  * Provides a simple API to do CRUD operations
@@ -15,7 +16,7 @@ import { capitalize } from "../util";
 export class DexieRecord<T extends Model> {
   constructor(
     private modelConstructor: IModelConstructor<T>,
-    private table: Dexie.Table<any, any>,
+    private table: Table<any, any>,
     private meta: IDexieModelMeta
   ) {}
 
@@ -27,7 +28,7 @@ export class DexieRecord<T extends Model> {
    * but becomes a `CompositeKey` if the model has a dynamic path.
    */
   async get(pk: IPrimaryKey<T>): Promise<T> {
-    return this.table.get(pk).catch(e => {
+    return this.table.get(pk).catch((e: IDictionary) => {
       throw new DexieError(
         `DexieRecord: problem getting record ${JSON.stringify(
           pk
@@ -45,7 +46,7 @@ export class DexieRecord<T extends Model> {
    */
   async add(record: Partial<T>) {
     if (this.meta.hasDynamicPath) {
-      if (!this.meta.dynamicPathComponents.every(i => record[i as keyof T])) {
+      if (!this.meta.dynamicPathComponents.every((i) => record[i as keyof T])) {
         throw new DexieError(
           `The model ${capitalize(
             this.meta.modelName
@@ -64,14 +65,16 @@ export class DexieRecord<T extends Model> {
     const now = new Date().getTime();
     record.createdAt = now;
     record.lastUpdated = now;
-    const pk: IPrimaryKey<T> = await this.table.add(record as T).catch(e => {
-      throw new DexieError(
-        `DexieRecord: Problem adding record to ${capitalize(
-          this.meta.modelName
-        )}: ${e.message}`,
-        `dexie/${e.code || e.name || "add"}`
-      );
-    });
+    const pk: IPrimaryKey<T> = await this.table
+      .add(record as T)
+      .catch((e: IDictionary) => {
+        throw new DexieError(
+          `DexieRecord: Problem adding record to ${capitalize(
+            this.meta.modelName
+          )}: ${e.message}`,
+          `dexie/${e.code || e.name || "add"}`
+        );
+      });
     return this.get(pk);
   }
 
@@ -82,14 +85,16 @@ export class DexieRecord<T extends Model> {
     const now = new Date().getTime();
     updateHash.lastUpdated = now;
 
-    const result = await this.table.update(pk, updateHash).catch(e => {
-      throw new DexieError(
-        `DexieRecord: Problem updating ${capitalize(this.meta.modelName)}.${
-          typeof pk === "string" ? pk : pk.id
-        }: ${e.message}`,
-        `dexie/${e.code || e.name || "update"}`
-      );
-    });
+    const result = await this.table
+      .update(pk, updateHash)
+      .catch((e: IDictionary) => {
+        throw new DexieError(
+          `DexieRecord: Problem updating ${capitalize(this.meta.modelName)}.${
+            typeof pk === "string" ? pk : pk.id
+          }: ${e.message}`,
+          `dexie/${e.code || e.name || "update"}`
+        );
+      });
 
     if (result === 0) {
       throw new DexieError(
@@ -111,7 +116,7 @@ export class DexieRecord<T extends Model> {
   }
 
   async remove(id: IPrimaryKey<T>) {
-    return this.table.delete(id).catch(e => {
+    return this.table.delete(id).catch((e: IDictionary) => {
       throw new DexieError(
         `Problem removing record ${JSON.stringify(id)} from the ${capitalize(
           this.meta.modelName
