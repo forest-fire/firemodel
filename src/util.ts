@@ -1,16 +1,18 @@
 import { IDictionary } from "common-types";
-import { Model } from "./models/Model";
 import { hashToArray } from "typed-conversions";
-import { propertiesByModel } from "./decorators/model-meta/property-store";
 import equal from "fast-deep-equal";
-import { IFmChangedProperties, IAuditChange } from "./@types";
-import { getModelMeta } from "./ModelMeta";
+import {
+  IFmChangedProperties,
+  IAuditChange,
+  propertiesByModel,
+  Model,
+} from "@/private";
 
 export function normalized(...args: string[]) {
   return args
-    .filter(a => a)
-    .map(a => a.replace(/$[\.\/]/, "").replace(/[\.\/]^/, ""))
-    .map(a => a.replace(/\./g, "/"));
+    .filter((a) => a)
+    .map((a) => a.replace(/$[\.\/]/, "").replace(/[\.\/]^/, ""))
+    .map((a) => a.replace(/\./g, "/"));
 }
 
 export function slashNotation(...args: string[]) {
@@ -46,7 +48,7 @@ export function updateToAuditChanges<T = any>(
         before,
         after,
         property: curr,
-        action: propertyAction
+        action: propertyAction,
       };
       prev.push(payload);
       return prev;
@@ -73,7 +75,7 @@ export function compareHashes<T extends Model>(
   const results: IFmChangedProperties<T> = {
     added: [],
     changed: [],
-    removed: []
+    removed: [],
   };
 
   from = from ? from : {};
@@ -82,19 +84,19 @@ export function compareHashes<T extends Model>(
   let keys: Array<keyof T & string> = Array.from(
     new Set<keyof T & string>([
       ...(Object.keys(from) as Array<keyof T & string>),
-      ...Object.keys(to)
+      ...Object.keys(to),
     ] as Array<keyof T & string>)
   )
     // META should never be part of comparison
-    .filter(i => i !== "META")
+    .filter((i) => i !== "META")
     // neither should private properties indicated by underscore
-    .filter(i => i.slice(0, 1) !== "_");
+    .filter((i) => i.slice(0, 1) !== "_");
 
   if (modelProps) {
-    keys = keys.filter(i => modelProps.includes(i));
+    keys = keys.filter((i) => modelProps.includes(i));
   }
 
-  keys.forEach(i => {
+  keys.forEach((i) => {
     if (!to[i]) {
       results.added.push(i);
     } else if (from[i] === null) {
@@ -123,7 +125,7 @@ export function getAllPropertiesFromClassStructure<T extends Model>(model: T) {
     parent = Object.getPrototypeOf(subClass.constructor);
   }
 
-  return properties.map(p => p.property);
+  return properties.map((p) => p.property);
 }
 
 export function withoutMetaOrPrivate<T extends Model>(model: T) {

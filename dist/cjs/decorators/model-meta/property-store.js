@@ -24,7 +24,7 @@ function getModelProperty(model) {
     const className = model.constructor.name;
     const propsForModel = getProperties(model);
     return (prop) => {
-        return propsForModel.find(value => {
+        return propsForModel.find((value) => {
             return value.property === prop;
         });
     };

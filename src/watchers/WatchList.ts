@@ -1,17 +1,21 @@
-import { WatchBase } from "./WatchBase";
-import { Model } from "../models/Model";
-import { IListOptions, IPrimaryKey } from "../@types";
-import { List } from "../List";
-import { Record } from "../Record";
 import {
   BaseSerializer,
   IComparisonOperator,
 } from "@forest-fire/serialized-query";
 import { SerializedQuery } from "universal-fire";
-import { getAllPropertiesFromClassStructure } from "../util";
 import { epochWithMilliseconds } from "common-types";
-import { Watch } from "../index";
-import { FireModelError } from "../errors";
+
+import {
+  IListOptions,
+  IPrimaryKey,
+  Record,
+  List,
+  Model,
+  WatchBase,
+  getAllPropertiesFromClassStructure,
+  Watch,
+  FireModelError,
+} from "@/private";
 
 export class WatchList<T extends Model> extends WatchBase<T> {
   public static list<T extends Model>(

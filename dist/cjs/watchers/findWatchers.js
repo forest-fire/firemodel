@@ -1,8 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.findWatchers = void 0;
-const Watch_1 = require("../Watch");
 const typed_conversions_1 = require("typed-conversions");
+const private_1 = require("@/private");
 /**
  * **findWatchers**
  *
@@ -18,14 +18,14 @@ dbPath) {
     const inspectListofRecords = (watcher) => {
         const paths = watcher.watcherPaths;
         let found = false;
-        paths.forEach(p => {
+        paths.forEach((p) => {
             if (dbPath.includes(p)) {
                 found = true;
             }
         });
         return found;
     };
-    return typed_conversions_1.hashToArray(Watch_1.Watch.inventory).filter(i => i.watcherSource === "list-of-records"
+    return typed_conversions_1.hashToArray(private_1.Watch.inventory).filter((i) => i.watcherSource === "list-of-records"
         ? /** handles the "list-of-records" use case */
             inspectListofRecords(i)
         : /** handles the standard use case */

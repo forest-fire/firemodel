@@ -2,8 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.FireModel = void 0;
 const common_types_1 = require("common-types");
-const ModelMeta_1 = require("./ModelMeta");
-const modelRegistration_1 = require("./record/relationships/modelRegistration");
+const private_1 = require("@/private");
 // tslint:disable-next-line:no-var-requires
 const pluralize = require("pluralize");
 const defaultDispatch = async (context) => "";
@@ -73,14 +72,14 @@ let FireModel = /** @class */ (() => {
             return "dbPath was not overwritten!";
         }
         get META() {
-            return ModelMeta_1.getModelMeta(this._model);
+            return private_1.getModelMeta(this._model);
         }
         /**
          * A list of all the properties -- and those properties
          * meta information -- contained on the given model
          */
         get properties() {
-            const meta = ModelMeta_1.getModelMeta(this._model);
+            const meta = private_1.getModelMeta(this._model);
             return meta.properties;
         }
         /**
@@ -88,7 +87,7 @@ let FireModel = /** @class */ (() => {
          * meta information -- contained on the given model
          */
         get relationships() {
-            const meta = ModelMeta_1.getModelMeta(this._model);
+            const meta = private_1.getModelMeta(this._model);
             return meta.relationships;
         }
         get dispatch() {
@@ -139,13 +138,13 @@ let FireModel = /** @class */ (() => {
             return db;
         }
         static register(model) {
-            modelRegistration_1.modelRegister(model);
+            private_1.modelRegister(model);
         }
         static listRegisteredModels() {
-            return modelRegistration_1.listRegisteredModels();
+            return private_1.listRegisteredModels();
         }
         static lookupModel(name) {
-            return modelRegistration_1.modelRegistryLookup(name);
+            return private_1.modelRegistryLookup(name);
         }
         //#region STATIC INTERFACE
         static isBeingWatched(path) {
@@ -167,7 +166,7 @@ let FireModel = /** @class */ (() => {
                 agg[common_types_1.pathJoin(this.dbPath, curr)] = rec.get(curr);
                 return agg;
             }, {});
-            return Object.assign(Object.assign(Object.assign({}, added), removed), updated);
+            return { ...added, ...removed, ...updated };
         }
     }
     FireModel.auditLogs = "/auditing";

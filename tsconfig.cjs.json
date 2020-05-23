@@ -1,20 +1,10 @@
 {
+  "extends": "./tsconfig.json",
   "compilerOptions": {
-    "declaration": true,
-    "module": "commonjs",
-    "target": "es2017",
-    "lib": ["es2017", "esnext.asynciterable", "es2015.reflect", "DOM"],
-    "moduleResolution": "node",
-    "sourceMap": true,
-    "noImplicitAny": true,
-    "experimentalDecorators": true,
-    "emitDecoratorMetadata": true,
-    "outDir": "./dist/cjs",
-    "removeComments": false,
-    "typeRoots": ["./node_modules/@types"],
-    "esModuleInterop": true,
-    "allowSyntheticDefaultImports": true
+    "noEmit": false,
+    "module": "CommonJS",
+    "outDir": "dist/cjs",
+    "declaration": false
   },
-  "include": ["src/**/*"],
-  "exclude": ["node_modules/**/*"]
+  "exclude": ["test"]
 }

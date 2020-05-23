@@ -1,16 +1,18 @@
+import "./testing/fake-indexeddb";
+
+import { carData, peopleData } from "./dexie-test-data";
+
+import { Car } from "./testing/Car";
+import DeepPerson from "./testing/dynamicPaths/DeepPerson";
+import { DexieDb } from "../src/FireDexie/DexieDb";
 // tslint:disable: no-implicit-dependencies
 // tslint:disable: no-submodule-imports
 import { expect } from "chai";
-import { DexieDb } from "../src/dexie/DexieDb";
-import { Car } from "./testing/Car";
-import DeepPerson from "./testing/dynamicPaths/DeepPerson";
-
-import "./testing/fake-indexeddb";
-import indexedDB from "fake-indexeddb";
 import fdbKeyRange from "fake-indexeddb/lib/FDBKeyRange";
+import indexedDB from "fake-indexeddb";
+
 DexieDb.indexedDB(indexedDB, fdbKeyRange);
 
-import { carData, peopleData } from "./dexie-test-data";
 
 describe("Dexie Table API", () => {
   let db: DexieDb;
@@ -28,18 +30,16 @@ describe("Dexie Table API", () => {
     const response = await db
       .table(Car)
       .bulkPut(carData)
-      .catch(e => {
+      .catch((e) => {
         throw new Error(`Couldn't execute bulkAdd():  ${e.message}`);
       });
 
     const lastCar = carData.slice(-1).pop();
-    expect(response)
-      .is.a("string")
-      .and.equals(lastCar.id);
+    expect(response).is.a("string").and.equals(lastCar.id);
 
     const all = await db.table(Car).toArray();
     expect(all).to.have.lengthOf(carData.length);
-    expect(all.map(i => i.id)).to.include(carData[0].id);
+    expect(all.map((i) => i.id)).to.include(carData[0].id);
   });
 
   it("invalid data passed into bulkAdd() returns error", async () => {
@@ -58,7 +58,7 @@ describe("Dexie Table API", () => {
     await tbl.bulkPut(peopleData);
     const response = await tbl.toArray();
     expect(response).to.have.lengthOf(peopleData.length);
-    const ids = response.map(i => i.id);
+    const ids = response.map((i) => i.id);
     expect(ids).includes(peopleData[0].id);
     expect(ids).includes(peopleData[1].id);
   });

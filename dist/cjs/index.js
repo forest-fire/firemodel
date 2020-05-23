@@ -1,4 +1,5 @@
 "use strict";
+// #autoindex:named
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
     Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
@@ -10,28 +11,31 @@ var __exportStar = (this && this.__exportStar) || function(m, exports) {
     for (var p in m) if (p !== "default" && !exports.hasOwnProperty(p)) __createBinding(exports, m, p);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-__exportStar(require("./decorators/index"), exports);
-var index_1 = require("./models/index");
-Object.defineProperty(exports, "Model", { enumerable: true, get: function () { return index_1.Model; } });
-Object.defineProperty(exports, "AuditLog", { enumerable: true, get: function () { return index_1.AuditLog; } });
+//#region autoindexed files
+// indexed at: 5th May, 2020, 03:53 PM ( GMT-7 )
+__exportStar(require("./Audit"), exports);
+__exportStar(require("./AuditBase"), exports);
+__exportStar(require("./AuditList"), exports);
+__exportStar(require("./AuditRecord"), exports);
+__exportStar(require("./FireModel"), exports);
+__exportStar(require("./List"), exports);
+__exportStar(require("./Mock"), exports);
+__exportStar(require("./ModelMeta"), exports);
 __exportStar(require("./Record"), exports);
-__exportStar(require("./record/relationships/modelRegistration"), exports);
-var List_1 = require("./List");
-Object.defineProperty(exports, "List", { enumerable: true, get: function () { return List_1.List; } });
-var Mock_1 = require("./Mock");
-Object.defineProperty(exports, "Mock", { enumerable: true, get: function () { return Mock_1.Mock; } });
-var FireModel_1 = require("./FireModel");
-Object.defineProperty(exports, "FireModel", { enumerable: true, get: function () { return FireModel_1.FireModel; } });
-var Watch_1 = require("./Watch");
-Object.defineProperty(exports, "Watch", { enumerable: true, get: function () { return Watch_1.Watch; } });
-__exportStar(require("./watchers/types"), exports);
-__exportStar(require("./state-mgmt/index"), exports);
+__exportStar(require("./VerboseError"), exports);
+__exportStar(require("./Watch"), exports);
+__exportStar(require("./path"), exports);
+__exportStar(require("./private"), exports);
+__exportStar(require("./util"), exports);
 __exportStar(require("./@types/index"), exports);
-var path_1 = require("./path");
-Object.defineProperty(exports, "pathJoin", { enumerable: true, get: function () { return path_1.pathJoin; } });
-__exportStar(require("./Mock/types"), exports);
-var firebase_key_1 = require("firebase-key");
-Object.defineProperty(exports, "fbKey", { enumerable: true, get: function () { return firebase_key_1.key; } });
-__exportStar(require("./record/createCompositeKey"), exports);
-__exportStar(require("./dexie/index"), exports);
+__exportStar(require("./FireDexie/index"), exports);
+__exportStar(require("./Mock/index"), exports);
+__exportStar(require("./decorators/index"), exports);
+__exportStar(require("./errors/index"), exports);
+__exportStar(require("./models/index"), exports);
+__exportStar(require("./record/index"), exports);
+__exportStar(require("./state-mgmt/index"), exports);
+__exportStar(require("./verifications/index"), exports);
+__exportStar(require("./watchers/index"), exports);
+//#endregion
 //# sourceMappingURL=index.js.map

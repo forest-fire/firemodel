@@ -1,55 +1,50 @@
+import { IAbstractedDatabase } from "universal-fire";
 import copy from "fast-copy";
 import { IDictionary, Omit, Nullable, fk, pk, dotNotation } from "common-types";
 import { key as fbKey } from "firebase-key";
-import { Model } from "./models/Model";
-import { FireModel } from "./FireModel";
-import {
-  IReduxDispatch,
-  IFmLocalRecordEvent,
-  IWatcherEventContext,
-} from "./state-mgmt";
-import { buildDeepRelationshipLinks } from "./record/buildDeepRelationshipLinks";
-import {
-  FmEvents,
-  IFMEventName,
-  IFmCrudOperations,
-  IFmDispatchOptions,
-} from "./state-mgmt/index";
-import { pathJoin } from "./path";
-import { getModelMeta } from "./ModelMeta";
-import { writeAudit } from "./Audit";
-import { compareHashes, withoutMetaOrPrivate, capitalize } from "./util";
+
 import {
   IFkReference,
   ICompositeKey,
   IRecordOptions,
-} from "./@types/record-types";
-
-import {
+  compareHashes,
   IFmModelPropertyMeta,
   IFmRelationshipOptionsForHasMany,
   createCompositeKey,
   IAuditChange,
   IAuditOperations,
   List,
-} from ".";
-import { findWatchers } from "./watchers/findWatchers";
-import { isHasManyRelationship } from "./verifications/isHasManyRelationship";
-import {
+  withoutMetaOrPrivate,
+  capitalize,
+  FmEvents,
+  pathJoin,
+  getModelMeta,
+  writeAudit,
+  IFMEventName,
+  IFmCrudOperations,
+  IFmDispatchOptions,
+  buildDeepRelationshipLinks,
+  IReduxDispatch,
+  IFmLocalRecordEvent,
+  IWatcherEventContext,
+  FireModel,
+  findWatchers,
+  Model,
+  isHasManyRelationship,
   NotHasManyRelationship,
   NotHasOneRelationship,
   FireModelError,
   FireModelProxyError,
-} from "./errors";
-import { buildRelationshipPaths } from "./record/relationships/buildRelationshipPaths";
-import { relationshipOperation } from "./record/relationshipOperation";
-import { createCompositeKeyRefFromRecord } from "./record/createCompositeKeyString";
-import { IFmPathValuePair, IFmRelationshipOptions } from "./@types";
-import { createCompositeKeyFromFkString } from "./record/createCompositeKeyFromFkString";
-import { RecordCrudFailure } from "./errors/record/DatabaseCrudFailure";
-import { WatchDispatcher } from "./watchers/WatchDispatcher";
-import { UnwatchedLocalEvent } from "./state-mgmt/UnwatchedLocalEvent";
-import { IAbstractedDatabase } from "universal-fire";
+  buildRelationshipPaths,
+  relationshipOperation,
+  createCompositeKeyRefFromRecord,
+  IFmPathValuePair,
+  IFmRelationshipOptions,
+  createCompositeKeyFromFkString,
+  RecordCrudFailure,
+  WatchDispatcher,
+  UnwatchedLocalEvent,
+} from "@/private";
 
 export interface IWriteOperation {
   id: string;

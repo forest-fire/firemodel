@@ -1,13 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Watch = void 0;
-const state_mgmt_1 = require("./state-mgmt");
-const FireModel_1 = require("./FireModel");
-const errors_1 = require("./errors");
-const watcherPool_1 = require("./watchers/watcherPool");
-const WatchList_1 = require("./watchers/WatchList");
-const WatchRecord_1 = require("./watchers/WatchRecord");
-const util_1 = require("./util");
+const private_1 = require("@/private");
 /**
  * A static library for interacting with _watchers_. It
  * provides the entry point into the watcher API and then
@@ -19,20 +13,20 @@ class Watch {
      * classes such as `FireModel`, `Record`, and `List`
      */
     static set defaultDb(db) {
-        FireModel_1.FireModel.defaultDb = db;
+        private_1.FireModel.defaultDb = db;
     }
     /**
      * Sets the default dispatch for all Firemodel
      * classes such as `FireModel`, `Record`, and `List`
      */
     static set dispatch(d) {
-        FireModel_1.FireModel.dispatch = d;
+        private_1.FireModel.dispatch = d;
     }
     /**
      * returns a full list of all watchers
      */
     static get inventory() {
-        return watcherPool_1.getWatcherPool();
+        return private_1.getWatcherPool();
     }
     static toJSON() {
         return Watch.inventory;
@@ -46,71 +40,71 @@ class Watch {
      * @param hashCode the unique hashcode given for each watcher
      */
     static lookup(hashCode) {
-        const codes = new Set(Object.keys(watcherPool_1.getWatcherPool()));
+        const codes = new Set(Object.keys(private_1.getWatcherPool()));
         if (!codes.has(hashCode)) {
             const e = new Error(`You looked up an invalid watcher hashcode [${hashCode}].`);
             e.name = "FireModel::InvalidHashcode";
             throw e;
         }
-        return watcherPool_1.getWatcherPool()[hashCode];
+        return private_1.getWatcherPool()[hashCode];
     }
     static get watchCount() {
-        return Object.keys(watcherPool_1.getWatcherPool()).length;
+        return Object.keys(private_1.getWatcherPool()).length;
     }
     static reset() {
-        watcherPool_1.clearWatcherPool();
+        private_1.clearWatcherPool();
     }
     /**
      * Finds the watcher by a given name and returns the ID of the
      * first match
      */
     static findByName(name) {
-        const pool = watcherPool_1.getWatcherPool();
+        const pool = private_1.getWatcherPool();
         return Object.keys(pool).find((i) => pool[i].watcherName === name);
     }
     /**
      * stops watching either a specific watcher or ALL if no hash code is provided
      */
     static stop(hashCode, oneOffDB) {
-        const codes = new Set(Object.keys(watcherPool_1.getWatcherPool()));
-        const db = oneOffDB || FireModel_1.FireModel.defaultDb;
+        const codes = new Set(Object.keys(private_1.getWatcherPool()));
+        const db = oneOffDB || private_1.FireModel.defaultDb;
         if (!db) {
-            throw new errors_1.FireModelError(`There is no established way to connect to the database; either set the default DB or pass the DB in as the second parameter to Watch.stop()!`, `firemodel/no-database`);
+            throw new private_1.FireModelError(`There is no established way to connect to the database; either set the default DB or pass the DB in as the second parameter to Watch.stop()!`, `firemodel/no-database`);
         }
         if (hashCode && !codes.has(hashCode)) {
-            const e = new errors_1.FireModelError(`The hashcode passed into the stop() method [ ${hashCode} ] is not actively being watched!`);
+            const e = new private_1.FireModelError(`The hashcode passed into the stop() method [ ${hashCode} ] is not actively being watched!`);
             e.name = "firemodel/missing-hashcode";
             throw e;
         }
         if (!hashCode) {
-            const pool = watcherPool_1.getWatcherPool();
+            const pool = private_1.getWatcherPool();
             if (Object.keys(pool).length > 0) {
-                const keysAndPaths = Object.keys(pool).reduce((agg, key) => (Object.assign(Object.assign({}, agg), { [key]: pool[key].watcherPaths })), {});
-                const dispatch = pool[util_1.firstKey(pool)].dispatch;
+                const keysAndPaths = Object.keys(pool).reduce((agg, key) => ({ ...agg, [key]: pool[key].watcherPaths }), {});
+                const dispatch = pool[private_1.firstKey(pool)].dispatch;
                 db.unWatch();
-                watcherPool_1.clearWatcherPool();
+                private_1.clearWatcherPool();
                 dispatch({
-                    type: state_mgmt_1.FmEvents.WATCHER_STOPPED_ALL,
+                    type: private_1.FmEvents.WATCHER_STOPPED_ALL,
                     stopped: keysAndPaths,
                 });
             }
         }
         else {
-            const registry = watcherPool_1.getWatcherPool()[hashCode];
+            const registry = private_1.getWatcherPool()[hashCode];
             const events = registry.eventFamily === "child"
                 ? "value"
                 : ["child_added", "child_changed", "child_moved", "child_removed"];
             db.unWatch(events, registry.dispatch);
             // tslint:disable-next-line: no-object-literal-type-assertion
             registry.dispatch({
-                type: state_mgmt_1.FmEvents.WATCHER_STOPPED,
+                type: private_1.FmEvents.WATCHER_STOPPED,
                 watcherId: hashCode,
-                remaining: watcherPool_1.getWatcherPoolList().map((i) => ({
+                remaining: private_1.getWatcherPoolList().map((i) => ({
                     id: i.watcherId,
                     name: i.watcherName,
                 })),
             });
-            watcherPool_1.removeFromWatcherPool(hashCode);
+            private_1.removeFromWatcherPool(hashCode);
         }
     }
     /**
@@ -123,7 +117,7 @@ class Watch {
      * key.
      */
     static record(modelConstructor, pk, options = {}) {
-        return WatchRecord_1.WatchRecord.record(modelConstructor, pk, options);
+        return private_1.WatchRecord.record(modelConstructor, pk, options);
     }
     static list(
     /**
@@ -134,7 +128,7 @@ class Watch {
      * optionally state the _dynamic path_ properties which offset the **dbPath**
      */
     offsets) {
-        return WatchList_1.WatchList.list(modelConstructor, { offsets });
+        return private_1.WatchList.list(modelConstructor, { offsets });
     }
 }
 exports.Watch = Watch;

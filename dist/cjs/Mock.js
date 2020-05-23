@@ -4,12 +4,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Mock = void 0;
-const FireModel_1 = require("./FireModel");
 const api_1 = __importDefault(require("./Mock/api"));
-const errors_1 = require("./errors");
+const private_1 = require("@/private");
 function defaultCardinality(r) {
     return r.META.relationships.reduce((prev, curr) => {
-        prev = Object.assign(Object.assign({}, prev), { [curr.property]: true });
+        prev = { ...prev, [curr.property]: true };
     }, {});
 }
 /**
@@ -20,11 +19,11 @@ function defaultCardinality(r) {
  */
 function Mock(modelConstructor, db) {
     if (!db) {
-        if (FireModel_1.FireModel.defaultDb) {
-            db = FireModel_1.FireModel.defaultDb;
+        if (private_1.FireModel.defaultDb) {
+            db = private_1.FireModel.defaultDb;
         }
         else {
-            throw new errors_1.FireModelError(`You must either explicitly add a database on call to Mock() or ensure that the default database for Firemodel is set!`, "mock/no-database");
+            throw new private_1.FireModelError(`You must either explicitly add a database on call to Mock() or ensure that the default database for Firemodel is set!`, "mock/no-database");
         }
     }
     if (!db.isMockDb) {

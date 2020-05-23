@@ -1,4 +1,5 @@
 "use strict";
+// #autoindex:named
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
     Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
@@ -10,20 +11,30 @@ var __exportStar = (this && this.__exportStar) || function(m, exports) {
     for (var p in m) if (p !== "default" && !exports.hasOwnProperty(p)) __createBinding(exports, m, p);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-var hasMany_1 = require("./hasMany");
-Object.defineProperty(exports, "hasMany", { enumerable: true, get: function () { return hasMany_1.hasMany; } });
-var hasOne_1 = require("./hasOne");
-Object.defineProperty(exports, "belongsTo", { enumerable: true, get: function () { return hasOne_1.belongsTo; } });
-Object.defineProperty(exports, "hasOne", { enumerable: true, get: function () { return hasOne_1.hasOne; } });
-Object.defineProperty(exports, "ownedBy", { enumerable: true, get: function () { return hasOne_1.ownedBy; } });
-var indexing_1 = require("./indexing");
-Object.defineProperty(exports, "index", { enumerable: true, get: function () { return indexing_1.index; } });
-Object.defineProperty(exports, "uniqueIndex", { enumerable: true, get: function () { return indexing_1.uniqueIndex; } });
-__exportStar(require("./constraints"), exports);
-__exportStar(require("./model"), exports);
-__exportStar(require("./types"), exports);
-__exportStar(require("./defaultValue"), exports);
+// export { hasMany, IFmHasMany, IFmHasMany as fks } from "./hasMany";
+// export { belongsTo, hasOne, ownedBy } from "./hasOne";
+// export { index, uniqueIndex } from "./indexing";
+// export * from "./constraints";
+// export * from "./model";
+// export * from "./types";
+// export * from "./defaultValue";
+// export * from "./OneWay";
+// export * from "./mock";
+// export * from "./encrypt";
+//#region autoindexed files
+// indexed at: 5th May, 2020, 03:53 PM ( GMT-7 )
 __exportStar(require("./OneWay"), exports);
-__exportStar(require("./mock"), exports);
+__exportStar(require("./constraints"), exports);
+__exportStar(require("./decorator"), exports);
+__exportStar(require("./defaultValue"), exports);
 __exportStar(require("./encrypt"), exports);
+__exportStar(require("./hasMany"), exports);
+__exportStar(require("./hasOne"), exports);
+__exportStar(require("./indexing"), exports);
+__exportStar(require("./mock"), exports);
+__exportStar(require("./model"), exports);
+__exportStar(require("./reflector"), exports);
+__exportStar(require("./types"), exports);
+__exportStar(require("./model-meta/index"), exports);
+//#endregion
 //# sourceMappingURL=index.js.map

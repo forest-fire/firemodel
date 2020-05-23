@@ -1,15 +1,17 @@
 import "reflect-metadata";
 import { IDictionary } from "common-types";
-import { propertyReflector } from "./reflector";
-import NamedFakes from "../Mock/NamedFakes";
-import { propertiesByModel } from "./model-meta/property-store";
-import { IFmModelPropertyMeta, FmMockType } from "./types";
+
+import {
+  IFmModelPropertyMeta,
+  propertiesByModel,
+  propertyReflector,
+} from "@/private";
 
 export function constrainedProperty(options: IDictionary = {}) {
   return propertyReflector<IFmModelPropertyMeta>(
     {
       ...options,
-      ...{ isRelationship: false, isProperty: true }
+      ...{ isRelationship: false, isProperty: true },
     },
     propertiesByModel
   );
@@ -54,7 +56,7 @@ export function length(value: number) {
 export const property = propertyReflector(
   {
     isRelationship: false,
-    isProperty: true
+    isProperty: true,
   },
   propertiesByModel
 );

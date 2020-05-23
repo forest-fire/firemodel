@@ -1,5 +1,5 @@
+import { IAbstractedDatabase } from "universal-fire";
 import { arrayToHash } from "typed-conversions";
-
 import { epochWithMilliseconds, IDictionary } from "common-types";
 import type {
   BaseSerializer,
@@ -7,17 +7,18 @@ import type {
 } from "@forest-fire/serialized-query";
 import { SerializedQuery } from "@forest-fire/base-serializer";
 
-import { Model } from "./models/Model";
-import { Record } from "./Record";
-import { FireModel } from "./FireModel";
-import { IReduxDispatch } from "./state-mgmt/index";
-import { pathJoin } from "./path";
-import { getModelMeta } from "./ModelMeta";
-import { IListOptions } from "./@types/general";
-import { FireModelError } from "./errors";
-import { capitalize } from "./util";
-import { ICompositeKey, IPrimaryKey } from "./@types";
-import { IAbstractedDatabase } from "universal-fire";
+import {
+  IListOptions,
+  IPrimaryKey,
+  Model,
+  Record,
+  FireModel,
+  IReduxDispatch,
+  pathJoin,
+  getModelMeta,
+  FireModelError,
+  capitalize,
+} from "@/private";
 
 const DEFAULT_IF_NOT_FOUND = "__DO_NOT_USE__";
 

@@ -19,7 +19,8 @@ function locallyUpdateFkOnRecord(rec, fkId, event) {
         case "add":
             rec._data[event.property] =
                 relnType === "hasMany"
-                    ? Object.assign(Object.assign({}, rec.data[event.property]), { [fkId]: true }) : fkId;
+                    ? { ...rec.data[event.property], ...{ [fkId]: true } }
+                    : fkId;
             return;
         case "remove":
             if (relnType === "hasMany") {

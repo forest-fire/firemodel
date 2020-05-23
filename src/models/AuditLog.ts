@@ -1,6 +1,11 @@
-import { model, property, index } from "../decorators/index";
-import { Model } from "../models/Model";
-import { IAuditOperations, IAuditChange } from "../@types/audit-types";
+import {
+  IAuditOperations,
+  IAuditChange,
+  Model,
+  model,
+  property,
+  index,
+} from "@/private";
 
 @model({ dbOffset: "_auditing" })
 export class AuditLog extends Model {

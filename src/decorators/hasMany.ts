@@ -1,17 +1,16 @@
 import { IDictionary, Omit } from "common-types";
-import { propertyReflector } from "./reflector";
-import { relationshipsByModel } from "./model-meta/relationship-store";
-import {
-  IFmModelRelationshipMeta,
-  IFmRelationshipDirectionality
-} from "./types";
-import { DecoratorProblem } from "../errors/decorators/DecoratorProblem";
+
 import {
   modelNameLookup,
   modelConstructorLookup,
+  propertyReflector,
+  relationshipsByModel,
   IModelConstructor,
-  IFnToModelConstructor
-} from "../record/relationships/modelRegistration";
+  IFnToModelConstructor,
+  DecoratorProblem,
+  IFmModelRelationshipMeta,
+  IFmRelationshipDirectionality,
+} from "@/private";
 
 export type IFmHasMany<T = true> = IDictionary<T>;
 
@@ -46,7 +45,7 @@ export function hasMany(
       isProperty: false,
       relType: "hasMany",
       directionality,
-      fkConstructor
+      fkConstructor,
     };
     if (inverseProperty) {
       payload.inverseProperty = inverseProperty;

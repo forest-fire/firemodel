@@ -1,15 +1,15 @@
+import "./testing/fake-indexeddb";
+
+import { Car } from "./testing/Car";
+import DeepPerson from "./testing/dynamicPaths/DeepPerson";
+import { DeeperPerson } from "./testing/dynamicPaths/DeeperPerson";
+import { DexieDb } from "../src/FireDexie/DexieDb";
+import { Person } from "./testing/Person";
 // tslint:disable: no-implicit-dependencies
 // tslint:disable: no-submodule-imports
 import { expect } from "chai";
-import { DexieDb } from "../src/dexie/DexieDb";
-import { Car } from "./testing/Car";
-import { Person } from "./testing/Person";
-import { DeeperPerson } from "./testing/dynamicPaths/DeeperPerson";
-
-import "./testing/fake-indexeddb";
-import indexedDB from "fake-indexeddb";
 import fdbKeyRange from "fake-indexeddb/lib/FDBKeyRange";
-import DeepPerson from "./testing/dynamicPaths/DeepPerson";
+import indexedDB from "fake-indexeddb";
 
 DexieDb.indexedDB(indexedDB, fdbKeyRange);
 
@@ -20,7 +20,7 @@ const cars = [
     cost: 23000,
     modelYear: 2018,
     lastUpdated: 231231,
-    createAt: 8980
+    createAt: 8980,
   },
   {
     id: "456",
@@ -28,7 +28,7 @@ const cars = [
     cost: 46000,
     modelYear: 2016,
     lastUpdated: 231232,
-    createAt: 8981
+    createAt: 8981,
   },
   {
     id: "789",
@@ -36,8 +36,8 @@ const cars = [
     cost: 50000,
     modelYear: 2019,
     lastUpdated: 231233,
-    createAt: 8982
-  }
+    createAt: 8982,
+  },
 ];
 
 describe("DexieModel => ", () => {
@@ -116,11 +116,11 @@ describe("DexieModel => ", () => {
     expect(fancyCars.schema.primKey.keyPath).to.equal("id");
 
     let uniqueIndexes = fancyCars.schema.indexes
-      .filter(i => i.unique)
-      .map(i => i.name);
+      .filter((i) => i.unique)
+      .map((i) => i.name);
     let nonUniqueIndexes = fancyCars.schema.indexes
-      .filter(i => !i.unique)
-      .map(i => i.name);
+      .filter((i) => !i.unique)
+      .map((i) => i.name);
 
     expect(nonUniqueIndexes)
       .and.to.include("lastUpdated")
@@ -134,11 +134,11 @@ describe("DexieModel => ", () => {
       .and.include("group");
 
     uniqueIndexes = people.schema.indexes
-      .filter(i => i.unique)
-      .map(i => i.name);
+      .filter((i) => i.unique)
+      .map((i) => i.name);
     nonUniqueIndexes = people.schema.indexes
-      .filter(i => !i.unique)
-      .map(i => i.name);
+      .filter((i) => !i.unique)
+      .map((i) => i.name);
 
     expect(nonUniqueIndexes)
       .to.include("lastUpdated")
@@ -152,20 +152,20 @@ describe("DexieModel => ", () => {
     if (db.isOpen()) {
       db.close();
     }
-    await db.open().catch(e => {
+    await db.open().catch((e) => {
       console.log(e);
     });
 
     const t = db.table(Car);
-    await t.bulkPut(cars).catch(e => {
+    await t.bulkPut(cars).catch((e) => {
       throw new Error(e);
     });
-    const car: Car = await t.get("123").catch(e => {
+    const car: Car = await t.get("123").catch((e) => {
       throw new Error(e);
     });
 
     expect(car).to.be.an.instanceOf(Car);
-    const expected = cars.find(i => i.id === "123");
+    const expected = cars.find((i) => i.id === "123");
     expect(car.modelYear).to.equal(expected.modelYear);
   });
 });

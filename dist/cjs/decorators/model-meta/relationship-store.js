@@ -22,7 +22,7 @@ function getModelRelationship(model) {
     const relnsForModel = getRelationships(model);
     const className = model.constructor.name;
     return (prop) => {
-        return relnsForModel.find(value => {
+        return relnsForModel.find((value) => {
             return value.property === prop;
         });
     };

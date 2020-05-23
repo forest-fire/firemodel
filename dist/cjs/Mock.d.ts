@@ -7,7 +7,7 @@ import { IAbstractedDatabase } from "universal-fire";
  * @param db optionally state the DB connection; will use **Firemodel**'s default DB otherwise
  */
 export declare function Mock<T extends Model>(modelConstructor: new () => T, db?: IAbstractedDatabase): {
-    generate(count: number, exceptions?: Partial<T>): Promise<import(".").IMockResponse<T>[]>;
+    generate(count: number, exceptions?: Partial<T>): Promise<import("./Mock").IMockResponse<T>[]>;
     createRelationshipLinks(cardinality?: import("common-types").IDictionary<number | true | [number, number]>): any;
     dynamicPathBehavior(options: string): any;
     overridesPassThrough(): any;

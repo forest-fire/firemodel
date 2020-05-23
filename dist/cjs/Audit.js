@@ -1,10 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.writeAudit = void 0;
-const FireModel_1 = require("./FireModel");
-const index_1 = require("./index");
-const Record_1 = require("./Record");
-const util_1 = require("./util");
+const private_1 = require("@/private");
 /**
  * writeAudit
  *
@@ -17,12 +14,12 @@ const util_1 = require("./util");
  * @param options
  */
 async function writeAudit(record, action, changes, options = {}) {
-    const db = options.db || FireModel_1.FireModel.defaultDb;
-    await Record_1.Record.add(index_1.AuditLog, {
-        modelName: util_1.capitalize(record.modelName),
+    const db = options.db || private_1.FireModel.defaultDb;
+    await private_1.Record.add(private_1.AuditLog, {
+        modelName: private_1.capitalize(record.modelName),
         modelId: record.id,
         action,
-        changes
+        changes,
     }, { db });
 }
 exports.writeAudit = writeAudit;

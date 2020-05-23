@@ -1,6 +1,8 @@
-import { propertyReflector } from "./reflector";
-import { IFmModelPropertyMeta, FmMockType } from ".";
-import { propertiesByModel } from "./model-meta/property-store";
+import {
+  propertiesByModel,
+  IFmModelPropertyMeta,
+  propertyReflector,
+} from "@/private";
 
 // TODO: make the defaultValue typed
 /**

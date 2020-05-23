@@ -1,13 +1,12 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AuditList = void 0;
-const AuditBase_1 = require("./AuditBase");
-const path_1 = require("./path");
 const base_serializer_1 = require("@forest-fire/base-serializer");
-class AuditList extends AuditBase_1.AuditBase {
+const private_1 = require("@/private");
+class AuditList extends private_1.AuditBase {
     constructor(modelKlass, options = {}) {
         super(modelKlass, options);
-        this._query = base_serializer_1.SerializedQuery.create(this.db, path_1.pathJoin(this.dbPath, "all"));
+        this._query = base_serializer_1.SerializedQuery.create(this.db, private_1.pathJoin(this.dbPath, "all"));
     }
     async first(howMany, offset = 0) {
         this._query = this._query.limitToFirst(howMany).startAt(offset);
@@ -30,10 +29,7 @@ class AuditList extends AuditBase_1.AuditBase {
         return log || [];
     }
     async between(from, to) {
-        this._query = this._query
-            .orderByChild("createdAt")
-            .startAt(from)
-            .endAt(to);
+        this._query = this._query.orderByChild("createdAt").startAt(from).endAt(to);
         const log = await this.db.getList(this._query);
         return log || [];
     }

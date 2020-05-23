@@ -1,14 +1,14 @@
-import { FmEvents, IFmCrudOperations } from "./index";
-// tslint:disable-next-line: no-implicit-dependencies
 import { EventType } from "@firebase/database-types";
-import { IMultiPathUpdates } from "../FireModel";
-import { Model } from "../models/Model";
+import { fk, pk } from "common-types";
+
 import {
   IFmRelationshipOperation,
   IFmPathValuePair,
-  IFkReference
-} from "../@types";
-import { fk, pk } from "common-types";
+  FmEvents,
+  IFmCrudOperations,
+  Model,
+  IMultiPathUpdates,
+} from "@/private";
 
 /**
  * All local events should provide the following meta

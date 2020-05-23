@@ -1,12 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.WatchBase = void 0;
-const index_1 = require("../index");
-const errors_1 = require("../errors");
-const WatchDispatcher_1 = require("./WatchDispatcher");
-const watchInitialization_1 = require("./watchInitialization");
-const watcherPool_1 = require("./watcherPool");
-const List_1 = require("../List");
+const private_1 = require("@/private");
 /**
  * The base class which both `WatchList` and `WatchRecord` derive.
  */
@@ -34,7 +29,7 @@ class WatchBase {
                 : String(this._query.hashCode());
         }
         catch (e) {
-            throw new errors_1.FireModelProxyError(e, `An error occured trying to start a watcher. The source was "${this._watcherSource}" and had a query of: ${this._query}\n\nThe underlying error was: ${e.message}`, "watcher/not-allowed");
+            throw new private_1.FireModelProxyError(e, `An error occured trying to start a watcher. The source was "${this._watcherSource}" and had a query of: ${this._query}\n\nThe underlying error was: ${e.message}`, "watcher/not-allowed");
         }
         const watcherId = watchIdPrefix + "-" + watchHashCode;
         this._watcherName = options.name || `${watcherId}`;
@@ -43,9 +38,9 @@ class WatchBase {
         // The dispatcher will now have all the context it needs to publish events
         // in a consistent fashion; this dispatch function will be used both by
         // both locally originated events AND server based events.
-        const dispatch = WatchDispatcher_1.WatchDispatcher(watcherItem.dispatch)(watcherItem);
+        const dispatch = private_1.WatchDispatcher(watcherItem.dispatch)(watcherItem);
         if (!this.db) {
-            throw new errors_1.FireModelError(`Attempt to start a watcher before the database connection has been established!`);
+            throw new private_1.FireModelError(`Attempt to start a watcher before the database connection has been established!`);
         }
         try {
             if (this._eventType === "value") {
@@ -61,9 +56,9 @@ class WatchBase {
             }
             else {
                 if (options.largePayload) {
-                    const payload = await List_1.List.fromQuery(this._modelConstructor, this._query, { offsets: this._options.offsets || {} });
+                    const payload = await private_1.List.fromQuery(this._modelConstructor, this._query, { offsets: this._options.offsets || {} });
                     await dispatch({
-                        type: index_1.FmEvents.WATCHER_SYNC,
+                        type: private_1.FmEvents.WATCHER_SYNC,
                         kind: "watcher",
                         modelConstructor: this._modelConstructor,
                         key: this._query.path.split("/").pop(),
@@ -76,24 +71,30 @@ class WatchBase {
         }
         catch (e) {
             console.log(`Problem starting watcher [${watcherId}]: `, e);
-            (this._dispatcher || index_1.FireModel.dispatch)({
-                type: index_1.FmEvents.WATCHER_FAILED,
+            (this._dispatcher || private_1.FireModel.dispatch)({
+                type: private_1.FmEvents.WATCHER_FAILED,
                 errorMessage: e.message,
                 errorCode: e.code || e.name || "firemodel/watcher-failed",
             });
             throw e;
         }
         try {
-            watcherPool_1.addToWatcherPool(watcherItem);
+            private_1.addToWatcherPool(watcherItem);
             // dispatch "starting"; no need to wait for promise
-            (this._dispatcher || index_1.FireModel.dispatch)(Object.assign({ type: index_1.FmEvents.WATCHER_STARTING }, watcherItem));
-            await watchInitialization_1.waitForInitialization(watcherItem);
+            (this._dispatcher || private_1.FireModel.dispatch)({
+                type: private_1.FmEvents.WATCHER_STARTING,
+                ...watcherItem,
+            });
+            await private_1.waitForInitialization(watcherItem);
             // console.log("watcher initialized", watcherItem);
-            await (this._dispatcher || index_1.FireModel.dispatch)(Object.assign({ type: index_1.FmEvents.WATCHER_STARTED }, watcherItem));
+            await (this._dispatcher || private_1.FireModel.dispatch)({
+                type: private_1.FmEvents.WATCHER_STARTED,
+                ...watcherItem,
+            });
             return watcherItem;
         }
         catch (e) {
-            throw new errors_1.FireModelError(`The watcher "${watcherId}" failed to initialize`, "firemodel/watcher-initialization");
+            throw new private_1.FireModelError(`The watcher "${watcherId}" failed to initialize`, "firemodel/watcher-initialization");
         }
     }
     /**
@@ -160,16 +161,16 @@ class WatchBase {
     getCoreDispatch() {
         // Use the bespoke dispatcher for this class if it's available;
         // if not then fall back to the default Firemodel dispatch
-        const coreDispatch = this._dispatcher || index_1.FireModel.dispatch;
+        const coreDispatch = this._dispatcher || private_1.FireModel.dispatch;
         if (coreDispatch.name === "defaultDispatch") {
-            throw new errors_1.FireModelError(`Attempt to start a ${this._watcherSource} watcher on "${this._query.path}" but no dispatcher has been assigned. Make sure to explicitly set the dispatch function or use "FireModel.dispatch = xxx" to setup a default dispatch function.`, `firemodel/invalid-dispatch`);
+            throw new private_1.FireModelError(`Attempt to start a ${this._watcherSource} watcher on "${this._query.path}" but no dispatcher has been assigned. Make sure to explicitly set the dispatch function or use "FireModel.dispatch = xxx" to setup a default dispatch function.`, `firemodel/invalid-dispatch`);
         }
         return coreDispatch;
     }
     get db() {
         if (!this._db) {
-            if (index_1.FireModel.defaultDb) {
-                this._db = index_1.FireModel.defaultDb;
+            if (private_1.FireModel.defaultDb) {
+                this._db = private_1.FireModel.defaultDb;
             }
         }
         return this._db;

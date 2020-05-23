@@ -10,13 +10,16 @@ var __exportStar = (this && this.__exportStar) || function(m, exports) {
     for (var p in m) if (p !== "default" && !exports.hasOwnProperty(p)) __createBinding(exports, m, p);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-__exportStar(require("./actions"), exports);
-__exportStar(require("./redux"), exports);
-__exportStar(require("./VuexWrapper"), exports);
-__exportStar(require("./events"), exports);
-__exportStar(require("./IWatcherEventContext"), exports);
+// #autoindex:named
+//#region autoindexed files
+// indexed at: 5th May, 2020, 03:53 PM ( GMT-7 )
 __exportStar(require("./IFmLocalEvent"), exports);
-function promoteStringToFMEvents(k) {
-    return k;
-}
+__exportStar(require("./IWatcherEventContext"), exports);
+__exportStar(require("./UnwatchedLocalEvent"), exports);
+__exportStar(require("./VuexWrapper"), exports);
+__exportStar(require("./actions"), exports);
+__exportStar(require("./events"), exports);
+__exportStar(require("./redux"), exports);
+__exportStar(require("./state-mgmt-types"), exports);
+//#endregion
 //# sourceMappingURL=index.js.map

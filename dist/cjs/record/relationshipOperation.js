@@ -126,10 +126,10 @@ async function localRelnOp(rec, event, type) {
         // locally modify Record's values
         // const ids = extractFksFromPaths(rec, event.property, event.paths);
         event.fks.map((fk) => {
-            locallyUpdateFkOnRecord_1.locallyUpdateFkOnRecord(rec, fk, Object.assign(Object.assign({}, event), { type }));
+            locallyUpdateFkOnRecord_1.locallyUpdateFkOnRecord(rec, fk, { ...event, type });
         });
         // local optimistic dispatch
-        rec.dispatch(Object.assign(Object.assign({}, event), { type }));
+        rec.dispatch({ ...event, type });
         const ref = rec.db.ref("/");
         // TODO: replace with multiPathSet/transaction
         await ref.update(event.paths.reduce((acc, curr) => {
@@ -143,7 +143,7 @@ async function localRelnOp(rec, event, type) {
 }
 exports.localRelnOp = localRelnOp;
 async function relnConfirmation(rec, event, type) {
-    rec.dispatch(Object.assign(Object.assign({}, event), { type }));
+    rec.dispatch({ ...event, type });
 }
 exports.relnConfirmation = relnConfirmation;
 async function relnRollback(rec, event, type) {
@@ -153,7 +153,7 @@ async function relnRollback(rec, event, type) {
      * front end framework will need to know as it probably
      * adjusted _optimistically_
      */
-    rec.dispatch(Object.assign(Object.assign({}, event), { type }));
+    rec.dispatch({ ...event, type });
 }
 exports.relnRollback = relnRollback;
 //# sourceMappingURL=relationshipOperation.js.map

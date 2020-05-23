@@ -1,8 +1,12 @@
-import { BaseSerializer } from "@forest-fire/serialized-query";
-import { Model } from "../models/Model";
-import { IWatchEventClassification, IReduxDispatch, IWatcherSource } from "..";
 import { epoch } from "common-types";
-import { IFmRecordMeta } from "./events";
+import { BaseSerializer } from "@forest-fire/serialized-query";
+import {
+  IWatchEventClassification,
+  IFmRecordMeta,
+  IReduxDispatch,
+  IWatcherSource,
+  Model,
+} from "@/private";
 
 export interface IWatcherEventContextBase<T extends Model = Model>
   extends IFmRecordMeta<T> {

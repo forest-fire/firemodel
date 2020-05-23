@@ -10,31 +10,28 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Model = void 0;
-const constraints_1 = require("../decorators/constraints");
-const mock_1 = require("../decorators/mock");
-const model_1 = require("../decorators/model");
-const indexing_1 = require("../decorators/indexing");
+const private_1 = require("@/private");
 let Model = /** @class */ (() => {
     let Model = class Model {
     };
     __decorate([
-        constraints_1.property,
+        private_1.property,
         __metadata("design:type", String)
     ], Model.prototype, "id", void 0);
     __decorate([
-        constraints_1.property,
-        mock_1.mock("dateRecentMiliseconds"),
-        indexing_1.index,
+        private_1.property,
+        private_1.mock("dateRecentMiliseconds"),
+        private_1.index,
         __metadata("design:type", Number)
     ], Model.prototype, "lastUpdated", void 0);
     __decorate([
-        constraints_1.property,
-        mock_1.mock("datePastMiliseconds"),
-        indexing_1.index,
+        private_1.property,
+        private_1.mock("datePastMiliseconds"),
+        private_1.index,
         __metadata("design:type", Number)
     ], Model.prototype, "createdAt", void 0);
     Model = __decorate([
-        model_1.model()
+        private_1.model()
     ], Model);
     return Model;
 })();

@@ -10,31 +10,30 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AuditLog = void 0;
-const index_1 = require("../decorators/index");
-const Model_1 = require("../models/Model");
+const private_1 = require("@/private");
 let AuditLog = /** @class */ (() => {
-    let AuditLog = class AuditLog extends Model_1.Model {
+    let AuditLog = class AuditLog extends private_1.Model {
     };
     __decorate([
-        index_1.property,
-        index_1.index,
+        private_1.property,
+        private_1.index,
         __metadata("design:type", String)
     ], AuditLog.prototype, "modelName", void 0);
     __decorate([
-        index_1.property,
-        index_1.index,
+        private_1.property,
+        private_1.index,
         __metadata("design:type", String)
     ], AuditLog.prototype, "modelId", void 0);
     __decorate([
-        index_1.property,
+        private_1.property,
         __metadata("design:type", Array)
     ], AuditLog.prototype, "changes", void 0);
     __decorate([
-        index_1.property,
+        private_1.property,
         __metadata("design:type", String)
     ], AuditLog.prototype, "action", void 0);
     AuditLog = __decorate([
-        index_1.model({ dbOffset: "_auditing" })
+        private_1.model({ dbOffset: "_auditing" })
     ], AuditLog);
     return AuditLog;
 })();

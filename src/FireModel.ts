@@ -1,21 +1,20 @@
-import { Model } from "./models/Model";
-type Record<T> = import("./Record").Record<T>;
+import { IAbstractedDatabase } from "universal-fire";
 import { IDictionary, pathJoin } from "common-types";
-import { IReduxDispatch } from "./state-mgmt";
-import { getModelMeta } from "./ModelMeta";
 import type { IClientConfig, IAdminConfig } from "@forest-fire/types";
+
 import {
+  IFmChangedProperties,
   IFmModelMeta,
   IFmModelPropertyMeta,
   IFmModelRelationshipMeta,
-} from "./decorators/types";
-import { IFmChangedProperties } from "./@types";
-import {
+  IReduxDispatch,
+  Model,
+  Record,
   modelRegister,
+  getModelMeta,
   listRegisteredModels,
   modelRegistryLookup,
-} from "./record/relationships/modelRegistration";
-import { IAbstractedDatabase } from "universal-fire";
+} from "@/private";
 
 // tslint:disable-next-line:no-var-requires
 const pluralize = require("pluralize");

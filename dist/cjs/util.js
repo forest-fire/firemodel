@@ -5,13 +5,13 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.stripLeadingSlash = exports.lowercase = exports.capitalize = exports.withoutMetaOrPrivate = exports.getAllPropertiesFromClassStructure = exports.compareHashes = exports.updateToAuditChanges = exports.dotNotation = exports.firstKey = exports.slashNotation = exports.normalized = void 0;
 const typed_conversions_1 = require("typed-conversions");
-const property_store_1 = require("./decorators/model-meta/property-store");
 const fast_deep_equal_1 = __importDefault(require("fast-deep-equal"));
+const private_1 = require("@/private");
 function normalized(...args) {
     return args
-        .filter(a => a)
-        .map(a => a.replace(/$[\.\/]/, "").replace(/[\.\/]^/, ""))
-        .map(a => a.replace(/\./g, "/"));
+        .filter((a) => a)
+        .map((a) => a.replace(/$[\.\/]/, "").replace(/[\.\/]^/, ""))
+        .map((a) => a.replace(/\./g, "/"));
 }
 exports.normalized = normalized;
 function slashNotation(...args) {
@@ -37,7 +37,7 @@ function updateToAuditChanges(changed, prior) {
             before,
             after,
             property: curr,
-            action: propertyAction
+            action: propertyAction,
         };
         prev.push(payload);
         return prev;
@@ -53,22 +53,22 @@ modelProps) {
     const results = {
         added: [],
         changed: [],
-        removed: []
+        removed: [],
     };
     from = from ? from : {};
     to = to ? to : {};
     let keys = Array.from(new Set([
         ...Object.keys(from),
-        ...Object.keys(to)
+        ...Object.keys(to),
     ]))
         // META should never be part of comparison
-        .filter(i => i !== "META")
+        .filter((i) => i !== "META")
         // neither should private properties indicated by underscore
-        .filter(i => i.slice(0, 1) !== "_");
+        .filter((i) => i.slice(0, 1) !== "_");
     if (modelProps) {
-        keys = keys.filter(i => modelProps.includes(i));
+        keys = keys.filter((i) => modelProps.includes(i));
     }
-    keys.forEach(i => {
+    keys.forEach((i) => {
         if (!to[i]) {
             results.added.push(i);
         }
@@ -84,20 +84,20 @@ modelProps) {
 exports.compareHashes = compareHashes;
 function getAllPropertiesFromClassStructure(model) {
     const modelName = model.constructor.name;
-    const properties = typed_conversions_1.hashToArray(property_store_1.propertiesByModel[modelName], "property") || [];
+    const properties = typed_conversions_1.hashToArray(private_1.propertiesByModel[modelName], "property") || [];
     let parent = Object.getPrototypeOf(model.constructor);
     while (parent.name) {
         const subClass = new parent();
         const subClassName = subClass.constructor.name;
-        properties.push(...typed_conversions_1.hashToArray(property_store_1.propertiesByModel[subClassName], "property"));
+        properties.push(...typed_conversions_1.hashToArray(private_1.propertiesByModel[subClassName], "property"));
         parent = Object.getPrototypeOf(subClass.constructor);
     }
-    return properties.map(p => p.property);
+    return properties.map((p) => p.property);
 }
 exports.getAllPropertiesFromClassStructure = getAllPropertiesFromClassStructure;
 function withoutMetaOrPrivate(model) {
     if (model && model.META) {
-        model = Object.assign({}, model);
+        model = { ...model };
         delete model.META;
     }
     if (model) {

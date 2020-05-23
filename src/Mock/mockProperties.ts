@@ -1,11 +1,14 @@
-import { getMockHelper } from "firemock";
-
-import { Model, Record } from "..";
-import { IDictionary } from "common-types";
-import { getModelMeta } from "../ModelMeta";
-import mockValue from "./mockValue";
-import { IMockRelationshipConfig } from "./types";
 import { IAbstractedDatabase } from "universal-fire";
+import { getMockHelper } from "firemock";
+import { IDictionary } from "common-types";
+
+import mockValue from "./mockValue";
+import {
+  IMockRelationshipConfig,
+  getModelMeta,
+  Model,
+  Record,
+} from "@/private";
 
 /** adds mock values for all the properties on a given model */
 export default function mockProperties<T extends Model>(

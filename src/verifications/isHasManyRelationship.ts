@@ -1,5 +1,4 @@
-import { Model } from "../models/Model";
-import { Record } from "../Record";
+import { Record, Model } from "@/private";
 
 export function isHasManyRelationship<T extends Model>(
   rec: Record<T>,

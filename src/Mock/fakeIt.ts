@@ -1,7 +1,6 @@
 import NamedFakes from "./NamedFakes";
-import { fbKey } from "../index";
 import { IDictionary } from "common-types";
-import { format, parseISO } from "date-fns";
+import { format } from "date-fns";
 import { MockHelper } from "firemock";
 
 const sequence: IDictionary<number> = {};
@@ -262,7 +261,7 @@ export default function fakeIt<T = any>(
       const [width, height, imgType] = rest;
       return `https://placeimg.com/${width}/${height}/${
         imgType ? imgType : "all"
-        }`;
+      }`;
     case "placeHolder":
       const [size, backgroundColor, textColor] = rest;
       let url = `https://via.placeholder.com/${size}`;

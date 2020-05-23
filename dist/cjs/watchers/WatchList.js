@@ -1,14 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.WatchList = void 0;
-const WatchBase_1 = require("./WatchBase");
-const List_1 = require("../List");
-const Record_1 = require("../Record");
 const universal_fire_1 = require("universal-fire");
-const util_1 = require("../util");
-const index_1 = require("../index");
-const errors_1 = require("../errors");
-class WatchList extends WatchBase_1.WatchBase {
+const private_1 = require("@/private");
+class WatchList extends private_1.WatchBase {
     constructor() {
         super(...arguments);
         this._offsets = {};
@@ -34,10 +29,10 @@ class WatchList extends WatchBase_1.WatchBase {
         if (options.offsets) {
             this._offsets = options.offsets;
         }
-        const lst = List_1.List.create(modelConstructor, options);
+        const lst = private_1.List.create(modelConstructor, options);
         this._modelConstructor = modelConstructor;
-        this._classProperties = util_1.getAllPropertiesFromClassStructure(new this._modelConstructor());
-        this._dynamicProperties = Record_1.Record.dynamicPathProperties(modelConstructor);
+        this._classProperties = private_1.getAllPropertiesFromClassStructure(new this._modelConstructor());
+        this._dynamicProperties = private_1.Record.dynamicPathProperties(modelConstructor);
         this.setPathDependantProperties();
         return this;
     }
@@ -47,7 +42,7 @@ class WatchList extends WatchBase_1.WatchBase {
      */
     offsets(offsetDict) {
         this._offsets = offsetDict;
-        const lst = List_1.List.create(this._modelConstructor, this._options);
+        const lst = private_1.List.create(this._modelConstructor, this._options);
         this.setPathDependantProperties();
         return this;
     }
@@ -68,12 +63,15 @@ class WatchList extends WatchBase_1.WatchBase {
      */
     ids(...ids) {
         if (ids.length === 0) {
-            throw new errors_1.FireModelError(`You attempted to setup a watcher list on a given set of ID's of "${this._modelName}" but the list of ID's was empty!`, "firemodel/not-ready");
+            throw new private_1.FireModelError(`You attempted to setup a watcher list on a given set of ID's of "${this._modelName}" but the list of ID's was empty!`, "firemodel/not-ready");
         }
         for (const id of ids) {
             this._underlyingRecordWatchers.push(this._options.offsets
-                ? index_1.Watch.record(this._modelConstructor, Object.assign(Object.assign({}, (typeof id === "string" ? { id } : id)), this._options.offsets))
-                : index_1.Watch.record(this._modelConstructor, id));
+                ? private_1.Watch.record(this._modelConstructor, {
+                    ...(typeof id === "string" ? { id } : id),
+                    ...this._options.offsets,
+                })
+                : private_1.Watch.record(this._modelConstructor, id));
         }
         this._watcherSource = "list-of-records";
         this._eventType = "value";
@@ -263,7 +261,10 @@ class WatchList extends WatchBase_1.WatchBase {
     setPathDependantProperties() {
         if (this._dynamicProperties.length === 0 ||
             Object.keys(this._offsets).length > 0) {
-            const lst = List_1.List.create(this._modelConstructor, Object.assign(Object.assign({}, this._options), { offsets: this._offsets }));
+            const lst = private_1.List.create(this._modelConstructor, {
+                ...this._options,
+                offsets: this._offsets,
+            });
             this._query = universal_fire_1.SerializedQuery.create(this.db, lst.dbPath);
             this._modelName = lst.modelName;
             this._pluralName = lst.pluralName;

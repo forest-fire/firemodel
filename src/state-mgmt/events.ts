@@ -1,14 +1,15 @@
-import { Model } from "../models/Model";
-import { FmEvents, IFmLocalEvent } from "./index";
-import { IWatcherEventContext } from "../state-mgmt";
 // TODO: look at way to abstract so we can move away from this
 type IValueBasedWatchEvent = import("@forest-fire/real-time-db").IValueBasedWatchEvent;
 type IPathBasedWatchEvent = import("@forest-fire/real-time-db").IPathBasedWatchEvent;
-import { ICompositeKey } from "../@types";
 import {
+  FmEvents,
+  IFmLocalEvent,
+  ICompositeKey,
+  IWatcherEventContext,
   IFmLocalRecordEvent,
   IFmLocalRelationshipEvent,
-} from "./IFmLocalEvent";
+  Model,
+} from "@/private";
 import { IDictionary } from "common-types";
 
 export type IFmEventType =

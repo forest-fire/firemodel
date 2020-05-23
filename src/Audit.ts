@@ -1,8 +1,12 @@
-import { FireModel } from "./FireModel";
-import { IAuditOperations, IAuditChange, AuditLog } from "./index";
-import { IModelOptions } from "./@types";
-import { Record } from "./Record";
-import { capitalize } from "./util";
+import {
+  IModelOptions,
+  IAuditOperations,
+  IAuditChange,
+  AuditLog,
+  FireModel,
+  Record,
+  capitalize,
+} from "@/private";
 
 /**
  * writeAudit
@@ -28,7 +32,7 @@ export async function writeAudit<T>(
       modelName: capitalize(record.modelName),
       modelId: record.id,
       action,
-      changes
+      changes,
     },
     { db }
   );

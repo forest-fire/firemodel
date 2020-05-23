@@ -22,7 +22,7 @@ export declare function UnwatchedLocalEvent<T>(rec: Record<T>, event: IFmLocalEv
     key: string;
     transactionId: string;
     eventType: "value" | "child_added" | "child_changed" | "child_moved" | "child_removed" | "local";
-    paths?: import("../FireModel").IMultiPathUpdates[];
+    paths?: import("..").IMultiPathUpdates[];
     errorCode?: string | number;
     errorMessage?: string;
 } | {

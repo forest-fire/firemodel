@@ -7,20 +7,25 @@
   "author": "Ken Snyder <ken@ken.net>",
   "keywords": [
     "typescript",
-    "firebase"
+    "firebase",
+    "universal-fire"
   ],
   "files": [
     "dist"
   ],
   "main": "dist/cjs/index.js",
-  "module": "dist/esnext/index.js",
-  "typings": "dist/cjs/index.d.ts",
+  "module": "dist/es/index.js",
+  "types": "dist/es/index.d.ts",
+  "sideEffects": false,
   "scripts": {
     "clean": "rimraf lib;",
     "clean:nuclear": "rimraf lib dist node_modules && yarn cache clean && rm yarn.lock && yarn && yarn upgrade",
     "lint": "./node_modules/.bin/tslint --force --format verbose \"src/**/*.ts\"",
-    "build": "yarn tslint src/**/*.ts && yarn tsc -P tsconfig.esnext.json && yarn tsc -P tsconfig.cjs.json",
-    "build:nuclear": "yarn clean:nuclear && yarn build",
+    "build": "run-p build:cjs build:es",
+    "build:cjs": "tsc -P tsconfig.cjs.json",
+    "build:es": "tsc -P tsconfig.esnext.json",
+    "build:nuclear": "run-s clean:nuclear build",
+    "autoindex": "do autoindex",
     "test": "./node_modules/.bin/ts-node ./scripts/test.ts ",
     "deploy": "yarn build:nuclear && yarn test && yarn publish",
     "publish": "yarn build",
@@ -35,22 +40,23 @@
     "watch:autoindex": "do autoindex"
   },
   "dependencies": {
-    "@forest-fire/real-time-db": "^0.48.11",
-    "@forest-fire/serialized-query": "^0.48.11",
+    "@forest-fire/real-time-db": "^0.48.13",
+    "@forest-fire/serialized-query": "^0.48.13",
     "common-types": "^1.14.3",
     "date-fns": "^2.14.0",
     "dexie": "^3.0.1",
     "fast-copy": "2.0.5",
     "fast-deep-equal": "^3.1.1",
     "firebase-key": "^2.0.2",
-    "firemock": "^0.48.5",
+    "firemock": "^0.48.13",
     "get-value": "^3.0.1",
     "lodash.first": "^3.0.0",
+    "module-alias": "^2.2.2",
     "pluralize": "^8.0.0",
     "reflect-metadata": "^0.1.13",
     "set-value": "^3.0.0",
     "typed-conversions": "^0.10.2",
-    "universal-fire": "^0.48.11",
+    "universal-fire": "^0.48.13",
     "wait-in-parallel": "^1.2.6"
   },
   "devDependencies": {

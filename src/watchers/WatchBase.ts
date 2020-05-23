@@ -1,18 +1,26 @@
 import { IDictionary } from "common-types";
-
-import { Model } from "../models/Model";
+import type { IAbstractedDatabase } from "universal-fire";
 import type { BaseSerializer } from "@forest-fire/serialized-query";
-import { FmModelConstructor, ICompositeKey } from "../@types";
-import { IWatchEventClassification, IFmWatcherStartOptions } from "./types";
-import { IReduxDispatch, IWatcherEventContext } from "../state-mgmt";
-import { FireModel, FmEvents, IListOptions } from "../index";
-import { FireModelError, FireModelProxyError } from "../errors";
-import { WatchDispatcher } from "./WatchDispatcher";
-import { waitForInitialization } from "./watchInitialization";
-import { addToWatcherPool } from "./watcherPool";
-import { WatchRecord } from "./WatchRecord";
-import { List } from "../List";
-import { IAbstractedDatabase } from "universal-fire";
+
+import {
+  List,
+  WatchRecord,
+  addToWatcherPool,
+  waitForInitialization,
+  WatchDispatcher,
+  FireModelError,
+  FireModelProxyError,
+  FireModel,
+  FmEvents,
+  IListOptions,
+  IReduxDispatch,
+  IWatcherEventContext,
+  IWatchEventClassification,
+  IFmWatcherStartOptions,
+  FmModelConstructor,
+  Model,
+  ICompositeKey,
+} from "@/private";
 
 /**
  * The base class which both `WatchList` and `WatchRecord` derive.

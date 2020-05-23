@@ -1,7 +1,7 @@
 import { IDictionary } from "common-types";
-import { Model } from "../../models/Model";
 import { hashToArray } from "typed-conversions";
-import { IFmModelRelationshipMeta } from "../types";
+
+import { IFmModelRelationshipMeta, Model } from "@/private";
 
 export const relationshipsByModel: IDictionary<IDictionary<
   IFmModelRelationshipMeta
@@ -33,7 +33,7 @@ export function getModelRelationship<T extends Model>(model: T) {
   const className = model.constructor.name;
 
   return (prop: string) => {
-    return relnsForModel.find(value => {
+    return relnsForModel.find((value) => {
       return value.property === prop;
     });
   };

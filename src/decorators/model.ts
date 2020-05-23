@@ -1,22 +1,21 @@
 import "reflect-metadata";
 import { IDictionary } from "common-types";
-import { getPushKeys } from "./decorator";
-import { addModelMeta } from "../ModelMeta";
-import { getDbIndexes } from "./indexing";
+
 import {
-  getModelProperty,
-  getProperties,
-  isProperty
-} from "./model-meta/property-store";
-import {
+  modelRegister,
+  FmModelConstructor,
+  Model,
+  IFmModelMeta,
   getModelRelationship,
   isRelationship,
-  getRelationships
-} from "./model-meta/relationship-store";
-import { IFmModelMeta } from "./types";
-import { Model } from "../models/Model";
-import { FmModelConstructor } from "../@types/general";
-import { modelRegister } from "../record/relationships/modelRegistration";
+  getRelationships,
+  getDbIndexes,
+  getModelProperty,
+  getPushKeys,
+  addModelMeta,
+  getProperties,
+  isProperty,
+} from "@/private";
 
 export function model(options: Partial<IFmModelMeta> = {}) {
   let isDirty: boolean = false;
@@ -58,22 +57,22 @@ export function model(options: Partial<IFmModelMeta> = {}) {
         ...{ plural: options.plural },
         ...{
           allProperties: [
-            ...getProperties(modelOfObject).map(p => p.property),
-            ...getRelationships(modelOfObject).map(p => p.property)
-          ]
+            ...getProperties(modelOfObject).map((p) => p.property),
+            ...getRelationships(modelOfObject).map((p) => p.property),
+          ],
         },
         ...{
           localPostfix:
-            options.localPostfix === undefined ? "all" : options.localPostfix
+            options.localPostfix === undefined ? "all" : options.localPostfix,
         },
         ...{
           localModelName:
             options.localModelName === undefined
               ? modelOfObject.constructor.name.slice(0, 1).toLowerCase() +
                 modelOfObject.constructor.name.slice(1)
-              : options.localModelName
+              : options.localModelName,
         },
-        ...{ isDirty }
+        ...{ isDirty },
       };
 
       addModelMeta(target.constructor.name.toLowerCase(), meta);
@@ -92,7 +91,7 @@ export function model(options: Partial<IFmModelMeta> = {}) {
           }
         },
         configurable: false,
-        enumerable: false
+        enumerable: false,
       });
 
       if (target) {

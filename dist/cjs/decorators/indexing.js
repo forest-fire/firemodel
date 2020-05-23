@@ -2,8 +2,8 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.uniqueIndex = exports.index = exports.getDbIndexes = exports.indexesForModel = void 0;
 require("reflect-metadata");
-const reflector_1 = require("./reflector");
 const typed_conversions_1 = require("typed-conversions");
+const private_1 = require("@/private");
 /** DB Indexes accumlated by index decorators */
 exports.indexesForModel = {};
 /**
@@ -16,12 +16,12 @@ function getDbIndexes(modelKlass) {
         : (typed_conversions_1.hashToArray(exports.indexesForModel[modelName]) || []).concat(typed_conversions_1.hashToArray(exports.indexesForModel.Model));
 }
 exports.getDbIndexes = getDbIndexes;
-exports.index = reflector_1.propertyReflector({
+exports.index = private_1.propertyReflector({
     isIndex: true,
-    isUniqueIndex: false
+    isUniqueIndex: false,
 }, exports.indexesForModel);
-exports.uniqueIndex = reflector_1.propertyReflector({
+exports.uniqueIndex = private_1.propertyReflector({
     isIndex: true,
-    isUniqueIndex: true
+    isUniqueIndex: true,
 }, exports.indexesForModel);
 //# sourceMappingURL=indexing.js.map

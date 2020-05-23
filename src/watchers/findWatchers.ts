@@ -1,6 +1,5 @@
-import { Watch } from "../Watch";
 import { hashToArray } from "typed-conversions";
-import { IWatcherEventContext, IWatcherEventContextList } from "../state-mgmt";
+import { IWatcherEventContext, Watch } from "@/private";
 
 /**
  * **findWatchers**
@@ -18,7 +17,7 @@ export function findWatchers(
   const inspectListofRecords = (watcher: IWatcherEventContext) => {
     const paths = watcher.watcherPaths;
     let found = false;
-    paths.forEach(p => {
+    paths.forEach((p) => {
       if (dbPath.includes(p)) {
         found = true;
       }
@@ -26,7 +25,7 @@ export function findWatchers(
     return found;
   };
 
-  return hashToArray(Watch.inventory).filter(i =>
+  return hashToArray(Watch.inventory).filter((i) =>
     i.watcherSource === "list-of-records"
       ? /** handles the "list-of-records" use case */
         inspectListofRecords(i)
