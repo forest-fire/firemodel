@@ -1,8 +1,7 @@
-import mockProperties from "./mockProperties";
-import addRelationships from "./addRelationships";
-import { Record } from "../Record";
-import { Mock } from "firemock";
+import { addRelationships, mockProperties } from "./index";
 import { FireModelError } from "../errors";
+import { Mock } from "firemock";
+import { Record } from "../Record";
 let mockPrepared = false;
 export default function API(db, modelConstructor) {
     const config = {

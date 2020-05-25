@@ -1,6 +1,6 @@
 import "reflect-metadata";
-import { propertyReflector } from "./reflector";
 import { propertiesByModel } from "./model-meta/property-store";
+import { propertyReflector } from "./reflector";
 export function constrainedProperty(options = {}) {
     return propertyReflector(Object.assign(Object.assign({}, options), { isRelationship: false, isProperty: true }), propertiesByModel);
 }
@@ -22,7 +22,7 @@ export function length(value) {
 }
 export const property = propertyReflector({
     isRelationship: false,
-    isProperty: true
+    isProperty: true,
 }, propertiesByModel);
 export const pushKey = propertyReflector({ pushKey: true }, propertiesByModel);
 //# sourceMappingURL=constraints.js.map

@@ -3,7 +3,7 @@ import { processHasOne } from "./processHasOne";
 /**
  * Adds relationships to mocked records
  */
-export default function addRelationships(db, config, exceptions = {}) {
+export function addRelationships(db, config, exceptions = {}) {
     return async (record) => {
         const relns = record.META.relationships;
         const relnResults = [];

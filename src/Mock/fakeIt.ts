@@ -1,8 +1,9 @@
-import NamedFakes from "./NamedFakes";
-import { fbKey } from "../index";
-import { IDictionary } from "common-types";
 import { format, parseISO } from "date-fns";
+
+import { IDictionary } from "common-types";
 import { MockHelper } from "firemock";
+import { NamedFakes } from "./NamedFakes";
+import { fbKey } from "../index";
 
 const sequence: IDictionary<number> = {};
 
@@ -35,7 +36,7 @@ function getDistribution<T = any>(...distribution: Array<[number, T]>) {
   return outcome;
 }
 
-export default function fakeIt<T = any>(
+export function fakeIt<T = any>(
   helper: MockHelper,
   type: keyof typeof NamedFakes,
   ...rest: any[]
@@ -262,7 +263,7 @@ export default function fakeIt<T = any>(
       const [width, height, imgType] = rest;
       return `https://placeimg.com/${width}/${height}/${
         imgType ? imgType : "all"
-        }`;
+      }`;
     case "placeHolder":
       const [size, backgroundColor, textColor] = rest;
       let url = `https://via.placeholder.com/${size}`;

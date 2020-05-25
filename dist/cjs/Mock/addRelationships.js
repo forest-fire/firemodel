@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.addRelationships = void 0;
 const processHasMany_1 = require("./processHasMany");
 const processHasOne_1 = require("./processHasOne");
 /**
@@ -48,7 +49,7 @@ function addRelationships(db, config, exceptions = {}) {
         ];
     };
 }
-exports.default = addRelationships;
+exports.addRelationships = addRelationships;
 function NumberBetween(startEnd) {
     return (Math.floor(Math.random() * (startEnd[1] - startEnd[0] + 1)) + startEnd[0]);
 }

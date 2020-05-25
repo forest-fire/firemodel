@@ -1,7 +1,5 @@
-import fakeIt from "./fakeIt";
-import NamedFakes from "./NamedFakes";
-import PropertyNamePatterns from "./PropertyNamePatterns";
-export default function mockValue(db, propMeta, mockHelper, ...rest) {
+import { NamedFakes, PropertyNamePatterns, fakeIt } from "./index";
+export function mockValue(db, propMeta, mockHelper, ...rest) {
     mockHelper.context = propMeta;
     const { type, mockType, mockParameters } = propMeta;
     if (mockType) {
