@@ -1,4 +1,4 @@
-declare const NamedFakes: {
+export declare const NamedFakes: {
     /** produces an "id" that looks/behaves like a Firebase key */
     id: boolean;
     /** produces an "id" that looks/behaves like a Firebase key */
@@ -71,4 +71,3 @@ declare const NamedFakes: {
     placeImage: boolean;
     placeHolder: boolean;
 };
-export default NamedFakes;

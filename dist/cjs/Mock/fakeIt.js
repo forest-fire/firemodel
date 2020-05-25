@@ -1,7 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const index_1 = require("../index");
+exports.fakeIt = void 0;
 const date_fns_1 = require("date-fns");
+const index_1 = require("../index");
 const sequence = {};
 function getDistribution(...distribution) {
     const num = Math.floor(Math.random() * 100) + 1;
@@ -231,5 +232,5 @@ function fakeIt(helper, type, ...rest) {
             return helper.faker.lorem.slug();
     }
 }
-exports.default = fakeIt;
+exports.fakeIt = fakeIt;
 //# sourceMappingURL=fakeIt.js.map

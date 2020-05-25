@@ -1,4 +1,4 @@
-const PropertyNamePatterns = {
+export const PropertyNamePatterns = {
     id: "id",
     name: "name",
     age: "age",
@@ -17,7 +17,6 @@ const PropertyNamePatterns = {
     longitude: "longitude",
     avatar: "imageAvatar",
     phone: "phoneNumber",
-    phoneNumber: "phoneNumber"
+    phoneNumber: "phoneNumber",
 };
-export default PropertyNamePatterns;
 //# sourceMappingURL=PropertyNamePatterns.js.map

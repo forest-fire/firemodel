@@ -1,5 +1,5 @@
-import { fbKey } from "../index";
 import { format } from "date-fns";
+import { fbKey } from "../index";
 const sequence = {};
 function getDistribution(...distribution) {
     const num = Math.floor(Math.random() * 100) + 1;
@@ -25,7 +25,7 @@ function getDistribution(...distribution) {
     }
     return outcome;
 }
-export default function fakeIt(helper, type, ...rest) {
+export function fakeIt(helper, type, ...rest) {
     function getNumber(numOptions) {
         return numOptions && typeof numOptions === "object"
             ? helper.faker.random.number(numOptions)

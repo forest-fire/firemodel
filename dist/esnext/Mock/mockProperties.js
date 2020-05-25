@@ -1,9 +1,9 @@
-import { getMockHelper } from "firemock";
 import { Record } from "..";
+import { getMockHelper } from "firemock";
 import { getModelMeta } from "../ModelMeta";
-import mockValue from "./mockValue";
+import { mockValue } from "./index";
 /** adds mock values for all the properties on a given model */
-export default function mockProperties(db, config = { relationshipBehavior: "ignore" }, exceptions) {
+export function mockProperties(db, config = { relationshipBehavior: "ignore" }, exceptions) {
     return async (record) => {
         const meta = getModelMeta(record);
         const props = meta.properties;

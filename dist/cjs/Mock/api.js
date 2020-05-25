@@ -1,13 +1,9 @@
 "use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
-const mockProperties_1 = __importDefault(require("./mockProperties"));
-const addRelationships_1 = __importDefault(require("./addRelationships"));
-const Record_1 = require("../Record");
-const firemock_1 = require("firemock");
+const index_1 = require("./index");
 const errors_1 = require("../errors");
+const firemock_1 = require("firemock");
+const Record_1 = require("../Record");
 let mockPrepared = false;
 function API(db, modelConstructor) {
     const config = {
@@ -28,8 +24,8 @@ function API(db, modelConstructor) {
                 await firemock_1.Mock.prepare();
                 mockPrepared = true;
             }
-            const props = mockProperties_1.default(db, config, exceptions);
-            const relns = addRelationships_1.default(db, config, exceptions);
+            const props = index_1.mockProperties(db, config, exceptions);
+            const relns = index_1.addRelationships(db, config, exceptions);
             // create record; using any incoming exception to build the object.
             // this is primarily to form the "composite key" where it is needed
             const record = Record_1.Record.createWith(modelConstructor, exceptions, { db: this.db });

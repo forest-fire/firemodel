@@ -2,8 +2,8 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.pushKey = exports.property = exports.length = exports.max = exports.min = exports.desc = exports.constrain = exports.constrainedProperty = void 0;
 require("reflect-metadata");
-const reflector_1 = require("./reflector");
 const property_store_1 = require("./model-meta/property-store");
+const reflector_1 = require("./reflector");
 function constrainedProperty(options = {}) {
     return reflector_1.propertyReflector(Object.assign(Object.assign({}, options), { isRelationship: false, isProperty: true }), property_store_1.propertiesByModel);
 }
@@ -31,7 +31,7 @@ function length(value) {
 exports.length = length;
 exports.property = reflector_1.propertyReflector({
     isRelationship: false,
-    isProperty: true
+    isProperty: true,
 }, property_store_1.propertiesByModel);
 exports.pushKey = reflector_1.propertyReflector({ pushKey: true }, property_store_1.propertiesByModel);
 //# sourceMappingURL=constraints.js.map
