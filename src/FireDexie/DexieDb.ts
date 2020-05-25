@@ -1,20 +1,19 @@
-import { IDictionary, pk } from "common-types";
 import Dexie, { TableSchema } from "dexie";
-
 import {
-  IModelConstructor,
-  Record,
-  ICompositeKey,
-  FireModelError,
   DexieError,
-  IPrimaryKey,
-  IDexiePriorVersion,
-  IDexieModelMeta,
-  capitalize,
   DexieList,
   DexieRecord,
+  FireModelError,
+  ICompositeKey,
+  IDexieModelMeta,
+  IDexiePriorVersion,
+  IModelConstructor,
+  IPrimaryKey,
   Model,
+  Record,
+  capitalize,
 } from "@/private";
+import { IDictionary, pk } from "common-types";
 
 /**
  * Provides a simple API to convert to/work with **Dexie** models

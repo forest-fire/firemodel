@@ -1,12 +1,12 @@
-import { IAbstractedDatabase } from "universal-fire";
-
 import {
+  IFmModelRelationshipMeta,
   IMockRelationshipConfig,
   IMockResponse,
-  IFmModelRelationshipMeta,
   Mock,
   Record,
 } from "@/private";
+
+import { IAbstractedDatabase } from "universal-fire";
 
 export async function processHasOne<T>(
   source: Record<T>,

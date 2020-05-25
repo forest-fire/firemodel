@@ -1,25 +1,25 @@
+import { IDictionary, wait } from "common-types";
 // tslint:disable:no-implicit-dependencies
 import {
-  Record,
-  Mock,
-  IFmWatchEvent,
   IFmLocalEvent,
+  IFmWatchEvent,
   IReduxAction,
+  Mock,
+  Record,
 } from "../src";
-import { RealTimeAdmin, IRealTimeAdmin } from "universal-fire";
-import { expect } from "chai";
+import { IRealTimeAdmin, RealTimeAdmin } from "universal-fire";
 
+import { BaseSerializer } from "@forest-fire/serialized-query";
+import { DeeperPerson } from "./testing/dynamicPaths/DeeperPerson";
 import { FireModel } from "../src/FireModel";
-import { Watch } from "../src/Watch";
+import { FmEvents } from "../src/state-mgmt";
 import { Person } from "./testing/Person";
 import { PersonWithLocalAndPrefix } from "./testing/PersonWithLocalAndPrefix";
-import { setupEnv } from "./testing/helpers";
-import { FmEvents } from "../src/state-mgmt";
-import { wait, IDictionary } from "common-types";
+import { Watch } from "../src/Watch";
 import { WatchList } from "../src/watchers/WatchList";
+import { expect } from "chai";
 import { getWatcherPool } from "../src/watchers/watcherPool";
-import { DeeperPerson } from "./testing/dynamicPaths/DeeperPerson";
-import { BaseSerializer } from "@forest-fire/serialized-query";
+import { setupEnv } from "./testing/helpers";
 
 setupEnv();
 

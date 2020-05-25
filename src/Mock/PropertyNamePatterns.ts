@@ -1,7 +1,7 @@
 import { IDictionary } from "common-types";
-import NamedFakes from "./NamedFakes";
+import { NamedFakes } from "@/private";
 
-const PropertyNamePatterns: IDictionary<keyof typeof NamedFakes> = {
+export const PropertyNamePatterns: IDictionary<keyof typeof NamedFakes> = {
   id: "id",
   name: "name",
   age: "age",
@@ -20,7 +20,5 @@ const PropertyNamePatterns: IDictionary<keyof typeof NamedFakes> = {
   longitude: "longitude",
   avatar: "imageAvatar",
   phone: "phoneNumber",
-  phoneNumber: "phoneNumber"
+  phoneNumber: "phoneNumber",
 };
-
-export default PropertyNamePatterns;

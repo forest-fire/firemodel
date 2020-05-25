@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.DexieError = void 0;
 /**
  * An error deriving from the **Dexie** integration with **Firemodel**.
  * Takes _message_ and _type/subtype_ as

@@ -1,14 +1,14 @@
 // #autoindex:named
 
 //#region autoindexed files
-// indexed at: 5th May, 2020, 03:53 PM ( GMT-7 )
+// indexed at: 5th May, 2020, 07:57 PM ( GMT-7 )
 export * from "./Audit";
 export * from "./AuditBase";
 export * from "./AuditList";
 export * from "./AuditRecord";
 export * from "./FireModel";
+export * from "./FiremodelMock";
 export * from "./List";
-export * from "./Mock";
 export * from "./ModelMeta";
 export * from "./Record";
 export * from "./VerboseError";
@@ -27,6 +27,12 @@ export * from "./state-mgmt/index";
 export * from "./verifications/index";
 export * from "./watchers/index";
 //#endregion
+
+
+
+
+
+
 
 
 

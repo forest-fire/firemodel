@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.modelsWithMeta = exports.getModelMeta = exports.addModelMeta = void 0;
 const meta = {};
 function addModelMeta(modelName, props) {
     meta[modelName] = props;

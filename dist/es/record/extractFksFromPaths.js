@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.extractFksFromPaths = void 0;
 const common_types_1 = require("common-types");
 function extractFksFromPaths(rec, prop, paths) {
     const pathToModel = rec.dbPath;

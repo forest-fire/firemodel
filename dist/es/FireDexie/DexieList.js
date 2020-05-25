@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.DexieList = void 0;
 const private_1 = require("@/private");
 /**
  * Provides a simple API for list based queries that resembles the Firemodel `List` API

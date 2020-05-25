@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.WatchRecord = void 0;
 const universal_fire_1 = require("universal-fire");
 const private_1 = require("@/private");
 class WatchRecord extends private_1.WatchBase {

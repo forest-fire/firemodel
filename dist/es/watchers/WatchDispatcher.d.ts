@@ -6,4 +6,4 @@ import { IReduxDispatch, IFmWatchEvent, IWatcherEventContext, IFmServerOrLocalEv
  * event information (like the `key` and `dbPath`) to provide a rich
  * data environment for the `dispatch` function to operate with.
  */
-export declare const WatchDispatcher: <T>(coreDispatchFn: IReduxDispatch<import("..").IReduxAction, any>) => (watcherContext: IWatcherEventContext<T>) => (event: IFmServerOrLocalEvent<T>) => Promise<IFmWatchEvent<T>>;
+export declare const WatchDispatcher: <T>(coreDispatchFn: IReduxDispatch) => (watcherContext: IWatcherEventContext<T>) => (event: IFmServerOrLocalEvent<T>) => Promise<IFmWatchEvent<T>>;

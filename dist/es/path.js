@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.pathJoin = void 0;
 const moreThanThreePeriods = /\.{3,}/g;
 // polyfill Array.isArray if necessary
 if (!Array.isArray) {

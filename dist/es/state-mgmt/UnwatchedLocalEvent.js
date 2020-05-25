@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.UnwatchedLocalEvent = void 0;
 function UnwatchedLocalEvent(rec, event) {
     const meta = {
         dynamicPathProperties: rec.dynamicPathComponents,

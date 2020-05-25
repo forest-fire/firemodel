@@ -1,24 +1,26 @@
+import * as chai from "chai";
+import * as helpers from "./testing/helpers";
+
 // tslint:disable:no-implicit-dependencies
 import {
-  Model,
-  model,
-  List,
-  property,
   FireModel,
-  Watch,
-  Record,
   FmEvents,
   IReduxAction,
+  List,
+  Model,
+  Record,
+  Watch,
+  model,
+  property,
 } from "../src";
-import { RealTimeAdmin, IRealTimeAdmin } from "universal-fire";
-import * as chai from "chai";
-import { Mock } from "../src/Mock";
-import { Mock as FireMock } from "firemock";
-import { FancyPerson } from "./testing/FancyPerson";
+import { IDictionary, wait } from "common-types";
+import { IRealTimeAdmin, RealTimeAdmin } from "universal-fire";
+
 import { Car } from "./testing/Car";
 import { Company } from "./testing/Company";
-import { IDictionary, wait } from "common-types";
-import * as helpers from "./testing/helpers";
+import { FancyPerson } from "./testing/FancyPerson";
+import { Mock as FireMock } from "firemock";
+import { FiremodelMock } from "../src/Mock";
 const expect = chai.expect;
 helpers.setupEnv();
 @model({})
@@ -54,7 +56,7 @@ describe("Mocking:", () => {
   });
 
   it("the auto-mock works for named properties", async () => {
-    await Mock(SimplePerson, db).generate(10);
+    await FiremodelMock(SimplePerson, db).generate(10);
     const people = await List.all(SimplePerson);
 
     expect(people).to.have.lengthOf(10);
@@ -64,7 +66,7 @@ describe("Mocking:", () => {
   });
 
   it("giving a @mock named hint corrects the typing of a named prop", async () => {
-    const m = await Mock(FancyPerson, db).generate(10);
+    const m = await FiremodelMock(FancyPerson, db).generate(10);
     const people = await List.all(FancyPerson);
 
     expect(people).to.have.lengthOf(10);
@@ -75,7 +77,7 @@ describe("Mocking:", () => {
   });
 
   it("passing in a function to @mock produces expected results", async () => {
-    await Mock(FancyPerson, db).generate(10);
+    await FiremodelMock(FancyPerson, db).generate(10);
     const people = await List.all(FancyPerson);
     expect(people).to.have.lengthOf(10);
     people.map((person) => {
@@ -86,7 +88,7 @@ describe("Mocking:", () => {
 
   it("using createRelationshipLinks() sets fake links to all relns", async () => {
     const numberOfFolks = 2;
-    await Mock(FancyPerson, db)
+    await FiremodelMock(FancyPerson, db)
       .createRelationshipLinks()
       .generate(numberOfFolks);
 
@@ -102,7 +104,7 @@ describe("Mocking:", () => {
   it("using followRelationshipLinks() sets links and adds those models", async () => {
     const numberOfFolks = 10;
     try {
-      await Mock(FancyPerson, db)
+      await FiremodelMock(FancyPerson, db)
         .followRelationshipLinks()
         .generate(numberOfFolks);
     } catch (e) {
@@ -128,7 +130,7 @@ describe("Mocking:", () => {
   it("using a specific config for createRelationshipLinks works as expected", async function () {
     this.timeout(15000);
     const numberOfFolks = 25;
-    await Mock(FancyPerson, db)
+    await FiremodelMock(FancyPerson, db)
       .followRelationshipLinks({
         cars: [3, 5],
       })
@@ -154,7 +156,7 @@ describe("Mocking:", () => {
   it("Mocking data does not fire fire local events (RECORD_ADD_LOCALLY, RECORD_ADD_CONFIRMATION) to dispatch", async () => {
     const events: IDictionary[] = [];
     FireModel.dispatch = async (e: IReduxAction) => events.push(e);
-    await Mock(FancyPerson).generate(10);
+    await FiremodelMock(FancyPerson).generate(10);
     expect(events).to.have.lengthOf(0);
   });
 
@@ -222,7 +224,7 @@ describe("Mocking:", () => {
     let eventTypes: Set<string> = new Set(events.map((e) => e.type));
     expect(Array.from(eventTypes)).to.not.include(FmEvents.RECORD_ADDED);
 
-    await Mock(FancyPerson).generate(1);
+    await FiremodelMock(FancyPerson).generate(1);
     eventTypes = new Set(events.map((e) => e.type));
 
     expect(Array.from(eventTypes)).to.not.include(FmEvents.RECORD_ADDED);

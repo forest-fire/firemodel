@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.defaultValue = void 0;
 const private_1 = require("@/private");
 // TODO: make the defaultValue typed
 /**

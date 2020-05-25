@@ -9,23 +9,31 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.Model = void 0;
 const private_1 = require("@/private");
-let Model = class Model {
-};
-__decorate([
-    private_1.property,
-    __metadata("design:type", String)
-], Model.prototype, "id", void 0);
-__decorate([
-    private_1.property, private_1.mock("dateRecentMiliseconds"), private_1.index,
-    __metadata("design:type", Number)
-], Model.prototype, "lastUpdated", void 0);
-__decorate([
-    private_1.property, private_1.mock("datePastMiliseconds"), private_1.index,
-    __metadata("design:type", Number)
-], Model.prototype, "createdAt", void 0);
-Model = __decorate([
-    private_1.model()
-], Model);
+let Model = /** @class */ (() => {
+    let Model = class Model {
+    };
+    __decorate([
+        private_1.property,
+        __metadata("design:type", String)
+    ], Model.prototype, "id", void 0);
+    __decorate([
+        private_1.property,
+        private_1.mock("dateRecentMiliseconds"),
+        private_1.index,
+        __metadata("design:type", Number)
+    ], Model.prototype, "lastUpdated", void 0);
+    __decorate([
+        private_1.property,
+        private_1.mock("datePastMiliseconds"),
+        private_1.index,
+        __metadata("design:type", Number)
+    ], Model.prototype, "createdAt", void 0);
+    Model = __decorate([
+        private_1.model()
+    ], Model);
+    return Model;
+})();
 exports.Model = Model;
 //# sourceMappingURL=Model.js.map

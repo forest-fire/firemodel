@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.AuditRecord = void 0;
 const base_serializer_1 = require("@forest-fire/base-serializer");
 const wait_in_parallel_1 = require("wait-in-parallel");
 const private_1 = require("@/private");

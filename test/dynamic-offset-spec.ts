@@ -1,20 +1,22 @@
-// tslint:disable:no-implicit-dependencies
-import { RealTimeAdmin, IRealTimeAdmin } from "universal-fire";
 import * as chai from "chai";
+
+import DeepPerson, { IDeepName } from "./testing/dynamicPaths/DeepPerson";
 import {
-  Record,
   FireModel,
-  Mock,
-  List,
-  Watch,
   FmEvents,
   IReduxAction,
+  List,
+  Mock,
+  Record,
+  Watch,
 } from "../src";
-import DeepPerson, { IDeepName } from "./testing/dynamicPaths/DeepPerson";
+// tslint:disable:no-implicit-dependencies
+import { IRealTimeAdmin, RealTimeAdmin } from "universal-fire";
+import { firstKey, firstRecord, lastRecord } from "./testing/helpers";
+
+import Company from "./testing/dynamicPaths/Company";
 import { DeeperPerson } from "./testing/dynamicPaths/DeeperPerson";
 import Hobby from "./testing/dynamicPaths/Hobby";
-import { firstKey, firstRecord, lastRecord } from "./testing/helpers";
-import Company from "./testing/dynamicPaths/Company";
 import { HumanAttribute } from "./testing/dynamicPaths/HumanAttribute";
 import { IDictionary } from "common-types";
 

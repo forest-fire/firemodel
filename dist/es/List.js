@@ -1,13 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.List = void 0;
 const typed_conversions_1 = require("typed-conversions");
-{
-    BaseSerializer,
-        IComparisonOperator,
-    ;
-}
-from;
-"@forest-fire/serialized-query";
 const base_serializer_1 = require("@forest-fire/base-serializer");
 const private_1 = require("@/private");
 const DEFAULT_IF_NOT_FOUND = "__DO_NOT_USE__";

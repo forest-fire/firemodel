@@ -14,4 +14,4 @@ export interface IHasPropertyAndType {
  * @param modelRollup a collection object which maintains
  * a dictionary of properties
  */
-export declare const propertyReflector: <R>(context?: IDictionary<any>, modelRollup?: IDictionary<IDictionary<R>>) => (modelKlass: Model, key: string) => void;
+export declare const propertyReflector: <R>(context?: IDictionary, modelRollup?: IDictionary<IDictionary<R>>) => (modelKlass: Model, key: string) => void;

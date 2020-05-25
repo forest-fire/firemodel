@@ -1,15 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-{
-    IAbstractedDatabase;
-}
-from;
-"universal-fire";
-{
-    BaseSerializer;
-}
-from;
-"@forest-fire/serialized-query";
+exports.WatchBase = void 0;
 const private_1 = require("@/private");
 /**
  * The base class which both `WatchList` and `WatchRecord` derive.

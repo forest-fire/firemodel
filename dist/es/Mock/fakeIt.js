@@ -1,5 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.fakeIt = void 0;
+const firebase_key_1 = require("firebase-key");
 const date_fns_1 = require("date-fns");
 const sequence = {};
 function getDistribution(...distribution) {
@@ -39,7 +41,7 @@ function fakeIt(helper, type, ...rest) {
     switch (type) {
         case "id":
         case "fbKey":
-            return fbKey();
+            return firebase_key_1.key();
         case "String":
             return helper.faker.lorem.words(5);
         case "number":
@@ -230,5 +232,5 @@ function fakeIt(helper, type, ...rest) {
             return helper.faker.lorem.slug();
     }
 }
-exports.default = fakeIt;
+exports.fakeIt = fakeIt;
 //# sourceMappingURL=fakeIt.js.map

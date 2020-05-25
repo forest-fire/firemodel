@@ -1,4 +1,4 @@
-const NamedFakes = {
+export const NamedFakes = {
   /** produces an "id" that looks/behaves like a Firebase key */
   id: true,
   /** produces an "id" that looks/behaves like a Firebase key */
@@ -69,7 +69,7 @@ const NamedFakes = {
   sequence: true,
   distribution: true,
   placeImage: true,
-  placeHolder: true
+  placeHolder: true,
 };
 
-export default NamedFakes;
+// export default NamedFakes;

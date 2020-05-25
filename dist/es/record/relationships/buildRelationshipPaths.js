@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.buildRelationshipPaths = void 0;
 const Record_1 = require("../../Record");
 const ModelMeta_1 = require("../../ModelMeta");
 const common_types_1 = require("common-types");

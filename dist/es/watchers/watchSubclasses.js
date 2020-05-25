@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.getWatchRecord = exports.getWatchList = void 0;
 const private_1 = require("@/private");
 /**
  * allows the parent `Watch` class to instantiate

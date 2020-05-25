@@ -1,10 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-{
-    BaseSerializer;
-}
-from;
-"@forest-fire/serialized-query";
+exports.AuditBase = void 0;
 const private_1 = require("@/private");
 class AuditBase {
     constructor(modelKlass, options = {}) {

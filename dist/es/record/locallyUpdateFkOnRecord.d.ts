@@ -1,5 +1,5 @@
-import { Model, Record, fk } from "../index";
-import { IFmLocalRelationshipEvent } from "../state-mgmt";
+import { IFmLocalRelationshipEvent, Model, Record } from "@/private";
+import { fk } from "common-types";
 /**
  * sets the `Record` property to the optimistic values set
  * with the relationship CRUD event.

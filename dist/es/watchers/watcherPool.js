@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.removeFromWatcherPool = exports.addDispatchForWatcher = exports.clearWatcherPool = exports.getFromWatcherPool = exports.addToWatcherPool = exports.getWatcherPoolList = exports.getWatcherPool = void 0;
 const typed_conversions_1 = require("typed-conversions");
 /** a cache of all the watched  */
 let watcherPool = {};

@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.relnRollback = exports.relnConfirmation = exports.localRelnOp = exports.relationshipOperation = void 0;
 const Record_1 = require("../Record");
 const __1 = require("..");
 const ModelMeta_1 = require("../ModelMeta");

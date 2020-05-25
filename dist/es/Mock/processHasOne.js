@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.processHasOne = void 0;
 const private_1 = require("@/private");
 async function processHasOne(source, rel, config, db) {
     const fkMock = private_1.Mock(rel.fkConstructor(), db);

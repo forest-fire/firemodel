@@ -1,14 +1,17 @@
-// tslint:disable:no-implicit-dependencies
-import { Record, List, IFmWatchEvent, IFmLocalEvent } from "../src";
-import { RealTimeAdmin, IRealTimeAdmin } from "universal-fire";
-import * as chai from "chai";
-const expect = chai.expect;
 import "reflect-metadata";
-import { Person } from "./testing/Person";
-import { Person as Peeps } from "./testing/PersonAsPeeps";
+
+import * as chai from "chai";
+
+// tslint:disable:no-implicit-dependencies
+import { IFmLocalEvent, IFmWatchEvent, List, Record } from "../src";
+import { IRealTimeAdmin, RealTimeAdmin } from "universal-fire";
+
 import { FireModel } from "../src/FireModel";
+import { FiremodelMock } from "../src/Mock";
 import { FmEvents } from "../src/state-mgmt";
-import { Mock } from "../src/Mock";
+import { Person as Peeps } from "./testing/PersonAsPeeps";
+import { Person } from "./testing/Person";
+const expect = chai.expect;
 
 describe("Record > ", () => {
   let db: IRealTimeAdmin;
@@ -195,7 +198,7 @@ describe("Record > ", () => {
   });
 
   it("calling remove() removes from DB and notifies FE state-mgmt", async () => {
-    await Mock(Person, db).generate(10);
+    await FiremodelMock(Person, db).generate(10);
     const peeps = await List.all(Person);
     expect(peeps.length).to.equal(10);
     const person = Record.createWith(Person, peeps.data[0]);
@@ -217,7 +220,7 @@ describe("Record > ", () => {
   }).timeout(3000);
 
   it("calling static remove() removes from DB, notifies FE state-mgmt", async () => {
-    await Mock(Person, db).generate(10);
+    await FiremodelMock(Person, db).generate(10);
     const peeps = await List.all(Person);
     const id = peeps.data[0].id;
     expect(peeps.length).to.equal(10);

@@ -1,6 +1,5 @@
+import { IFnToModelConstructor, Model, NamedFakes } from "@/private";
 import { MockHelper } from "firemock";
-import NamedFakes from "../Mock/NamedFakes";
-import { IFnToModelConstructor, Model } from "@/private";
 export declare type FmRelationshipType = "hasMany" | "hasOne";
 /**
  * **IFmModelMeta**

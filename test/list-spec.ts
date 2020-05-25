@@ -1,17 +1,20 @@
-// tslint:disable:no-implicit-dependencies
-import { Record, List, IFmWatchEvent } from "../src/index";
-import { RealTimeAdmin, IRealTimeAdmin } from "universal-fire";
+import "reflect-metadata";
+
 import * as chai from "chai";
 import * as helpers from "./testing/helpers";
-const expect = chai.expect;
-import "reflect-metadata";
-import { Person } from "./testing/Person";
-import { FireModel } from "../src/FireModel";
-import { Mock } from "../src/Mock";
-import { FmEvents } from "../src/state-mgmt";
+
+// tslint:disable:no-implicit-dependencies
+import { IFmWatchEvent, List, Record } from "../src/index";
+import { IRealTimeAdmin, RealTimeAdmin } from "universal-fire";
+
 import { Car } from "./testing/Car";
 import Company from "./testing/dynamicPaths/Company";
+import { FireModel } from "../src/FireModel";
+import { FiremodelMock } from "../src/Mock";
+import { FmEvents } from "../src/state-mgmt";
+import { Person } from "./testing/Person";
 import { SerializedQuery } from "@forest-fire/base-serializer";
+const expect = chai.expect;
 
 describe("List class: ", () => {
   let db: IRealTimeAdmin;
@@ -359,7 +362,7 @@ describe("List class: ", () => {
   });
 
   it("using remove() able to change local state, db state, and state mgmt", async () => {
-    await Mock(Person, db).generate(10);
+    await FiremodelMock(Person, db).generate(10);
     const events: Array<IFmWatchEvent<Person>> = [];
     Record.dispatch = async (evt: IFmWatchEvent<Person>) => events.push(evt);
     const peeps = await List.all(Person);
@@ -378,7 +381,7 @@ describe("List class: ", () => {
   });
 
   it("using add() changes local state, db state, and state mgmt", async () => {
-    await Mock(Person, db).generate(10);
+    await FiremodelMock(Person, db).generate(10);
     const events: Array<IFmWatchEvent<Person>> = [];
     Record.dispatch = async (evt: IFmWatchEvent<Person>) => events.push(evt);
     const peeps = await List.all(Person);

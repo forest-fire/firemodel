@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.createCompositeKeyFromFkString = void 0;
 const errors_1 = require("../errors");
 const util_1 = require("../util");
 function createCompositeKeyFromFkString(fkCompositeRef, modelConstructor) {

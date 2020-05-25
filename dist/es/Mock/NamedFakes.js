@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const NamedFakes = {
+exports.NamedFakes = void 0;
+exports.NamedFakes = {
     /** produces an "id" that looks/behaves like a Firebase key */
     id: true,
     /** produces an "id" that looks/behaves like a Firebase key */
@@ -71,7 +72,7 @@ const NamedFakes = {
     sequence: true,
     distribution: true,
     placeImage: true,
-    placeHolder: true
+    placeHolder: true,
 };
-exports.default = NamedFakes;
+// export default NamedFakes;
 //# sourceMappingURL=NamedFakes.js.map

@@ -1,7 +1,8 @@
-import NamedFakes from "./NamedFakes";
 import { IDictionary } from "common-types";
-import { format } from "date-fns";
 import { MockHelper } from "firemock";
+import { NamedFakes } from "@/private";
+import { key as fbKey } from "firebase-key";
+import { format } from "date-fns";
 
 const sequence: IDictionary<number> = {};
 
@@ -34,7 +35,7 @@ function getDistribution<T = any>(...distribution: Array<[number, T]>) {
   return outcome;
 }
 
-export default function fakeIt<T = any>(
+export function fakeIt<T = any>(
   helper: MockHelper,
   type: keyof typeof NamedFakes,
   ...rest: any[]

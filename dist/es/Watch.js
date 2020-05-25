@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.Watch = void 0;
 const private_1 = require("@/private");
 /**
  * A static library for interacting with _watchers_. It

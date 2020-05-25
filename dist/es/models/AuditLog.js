@@ -9,27 +9,33 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.AuditLog = void 0;
 const private_1 = require("@/private");
-let AuditLog = class AuditLog extends private_1.Model {
-};
-__decorate([
-    private_1.property, private_1.index,
-    __metadata("design:type", String)
-], AuditLog.prototype, "modelName", void 0);
-__decorate([
-    private_1.property, private_1.index,
-    __metadata("design:type", String)
-], AuditLog.prototype, "modelId", void 0);
-__decorate([
-    private_1.property,
-    __metadata("design:type", Array)
-], AuditLog.prototype, "changes", void 0);
-__decorate([
-    private_1.property,
-    __metadata("design:type", String)
-], AuditLog.prototype, "action", void 0);
-AuditLog = __decorate([
-    private_1.model({ dbOffset: "_auditing" })
-], AuditLog);
+let AuditLog = /** @class */ (() => {
+    let AuditLog = class AuditLog extends private_1.Model {
+    };
+    __decorate([
+        private_1.property,
+        private_1.index,
+        __metadata("design:type", String)
+    ], AuditLog.prototype, "modelName", void 0);
+    __decorate([
+        private_1.property,
+        private_1.index,
+        __metadata("design:type", String)
+    ], AuditLog.prototype, "modelId", void 0);
+    __decorate([
+        private_1.property,
+        __metadata("design:type", Array)
+    ], AuditLog.prototype, "changes", void 0);
+    __decorate([
+        private_1.property,
+        __metadata("design:type", String)
+    ], AuditLog.prototype, "action", void 0);
+    AuditLog = __decorate([
+        private_1.model({ dbOffset: "_auditing" })
+    ], AuditLog);
+    return AuditLog;
+})();
 exports.AuditLog = AuditLog;
 //# sourceMappingURL=AuditLog.js.map

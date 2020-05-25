@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const processHasMany_1 = require("./processHasMany");
-const processHasOne_1 = require("./processHasOne");
+exports.addRelationships = void 0;
+const private_1 = require("@/private");
 /**
  * Adds relationships to mocked records
  */
@@ -14,7 +14,7 @@ function addRelationships(db, config, exceptions = {}) {
                 if (!config.cardinality ||
                     Object.keys(config.cardinality).includes(rel.property)) {
                     if (rel.relType === "hasOne") {
-                        const fkRec = await processHasOne_1.processHasOne(record, rel, config, db);
+                        const fkRec = await private_1.processHasOne(record, rel, config, db);
                         if (config.relationshipBehavior === "follow") {
                             relnResults.push(fkRec);
                         }
@@ -26,7 +26,7 @@ function addRelationships(db, config, exceptions = {}) {
                                 : NumberBetween(config.cardinality[rel.property])
                             : 2;
                         for (const i of Array(cardinality)) {
-                            const fkRec = await processHasMany_1.processHasMany(record, rel, config, db);
+                            const fkRec = await private_1.processHasMany(record, rel, config, db);
                             if (config.relationshipBehavior === "follow") {
                                 relnResults.push(fkRec);
                             }
@@ -48,7 +48,7 @@ function addRelationships(db, config, exceptions = {}) {
         ];
     };
 }
-exports.default = addRelationships;
+exports.addRelationships = addRelationships;
 function NumberBetween(startEnd) {
     return (Math.floor(Math.random() * (startEnd[1] - startEnd[0] + 1)) + startEnd[0]);
 }

@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const PropertyNamePatterns = {
+exports.PropertyNamePatterns = void 0;
+exports.PropertyNamePatterns = {
     id: "id",
     name: "name",
     age: "age",
@@ -19,7 +20,6 @@ const PropertyNamePatterns = {
     longitude: "longitude",
     avatar: "imageAvatar",
     phone: "phoneNumber",
-    phoneNumber: "phoneNumber"
+    phoneNumber: "phoneNumber",
 };
-exports.default = PropertyNamePatterns;
 //# sourceMappingURL=PropertyNamePatterns.js.map
