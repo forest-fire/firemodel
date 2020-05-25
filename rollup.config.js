@@ -1,45 +1,39 @@
-import typescript from "rollup-plugin-typescript2";
+import typescript from "@rollup/plugin-typescript";
 
 export default {
   input: "src/index.ts",
-  output: [
-    {
-      file: "dist/firemodel.cjs.js",
-      format: "cjs",
-      name: "FireModel",
-      sourcemap: true
-    },
-    {
-      file: "dist/firemodel.umd.js",
-      format: "umd",
-      name: "FireModel",
-      sourcemap: true,
-      globals: {
-        lodash: "lodash",
-        "firebase-key": "fbKey",
-        "wait-in-parallel": "Parallel",
-        "common-types": "commonTypes",
-        "serialized-query": "serializedQuery"
-      }
-    },
-    {
-      file: "dist/firemodel.es2015.js",
-      format: "es",
-      sourcemap: true
-    }
-  ],
+  output: {
+    // {
+    //   file: "dist/firemodel.cjs.js",
+    //   format: "cjs",
+    //   name: "FireModel",
+    //   sourcemap: true,
+    // },
+
+    dir: "dist/es",
+    format: "es",
+    sourcemap: true,
+  },
+
   external: [
-    "firebase-key",
-    "reflect-metadata",
-    "serialized-query",
-    "lodash",
+    "@forest-fire/base-serializer",
     "common-types",
-    "abstracted-firebase",
-    "typed-conversions"
+    "typed-conversions",
+    "dexie",
+    "date-fns",
+    "get-value",
+    "set-value",
+    "firebase-key",
+    "fast-deep-equal",
+    "fast-copy",
+    "reflect-metadata",
+    "universal-fire",
+    "wait-in-parallel",
   ],
   plugins: [
     typescript({
-      tsconfig: "tsconfig.esnext.json"
-    })
-  ]
+      rootDir: ".",
+      tsconfig: "tsconfig.es.json",
+    }),
+  ],
 };

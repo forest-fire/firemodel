@@ -2,10 +2,8 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "noEmit": false,
-    "module": "CommonJS",
-    "outDir": "dist/cjs",
-    "baseUrl": "./src",
-    "declaration": false
+    "module": "ESnext",
+    "outDir": "dist/es"
   },
   "exclude": ["test"]
 }

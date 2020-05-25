@@ -16,8 +16,7 @@
     "baseUrl": "./src",
     "paths": {
       "@/*": ["."]
-    },
-    "typeRoots": ["./node_modules/@types", "./src/@types"]
+    }
   },
-  "include": ["src/**/*", "test/**/*-spec.ts"]
+  "include": ["src/**/*", "test/**/*"]
 }

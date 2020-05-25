@@ -2,17 +2,17 @@ import { List, Mock, Record } from "../src";
 
 import { AuditLog } from "../src/models/index";
 import { FireModel } from "../src/FireModel";
-import { IAbstractedDatabase } from "universal-fire";
 import { Person } from "./testing/AuditedPerson";
+import { RealTimeAdmin } from "@forest-fire/real-time-admin";
 // tslint:disable:no-implicit-dependencies
 import { expect } from "chai";
 import { wait } from "common-types";
 
 describe("Auditing ->�", () => {
-  let db: IAbstractedDatabase;
+  let db: RealTimeAdmin;
 
   beforeEach(async () => {
-    db = await RealTimeAdmin({ mocking: true });
+    db = await RealTimeAdmin.connect({ mocking: true });
     FireModel.defaultDb = db;
   });
 
@@ -27,7 +27,6 @@ describe("Auditing ->�", () => {
     await firstPerson.remove();
     await wait(100); // TODO: this shouldn't be needed but it IS!
     const audit = (await List.all(AuditLog)).data;
-    // console.log(JSON.stringify(audit, null, 2));
 
     expect(audit).to.have.lengthOf(5);
     const actions = audit.map((i) => i.action);

@@ -1,9 +1,3 @@
-// #autoindex:named
-
-export { fk, pk } from "common-types";
-
-//#region autoindexed files
-// indexed at: 5th May, 2020, 08:40 PM ( GMT-7 )
 export * from "./Audit";
 export * from "./AuditBase";
 export * from "./AuditList";
@@ -27,4 +21,3 @@ export * from "./record/index";
 export * from "./state-mgmt/index";
 export * from "./verifications/index";
 export * from "./watchers/index";
-//#endregion

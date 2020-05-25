@@ -13,7 +13,6 @@
   "files": [
     "dist"
   ],
-  "main": "dist/cjs/index.js",
   "module": "dist/es/index.js",
   "types": "dist/es/index.d.ts",
   "sideEffects": false,
@@ -22,11 +21,11 @@
     "clean:nuclear": "rimraf lib dist node_modules && yarn cache clean && rm yarn.lock && yarn && yarn upgrade",
     "lint": "./node_modules/.bin/tslint --force --format verbose \"src/**/*.ts\"",
     "build": "run-p build:cjs build:es",
-    "build:cjs": "tsc -P tsconfig.cjs.json",
-    "build:es": "tsc -P tsconfig.esnext.json",
+    "build:cjs": "echo CJS builds are disabled",
+    "build:es": "tsc -P tsconfig.es.json",
     "build:nuclear": "run-s clean:nuclear build",
     "autoindex": "do autoindex",
-    "test": "./node_modules/.bin/ts-node ./scripts/test.ts ",
+    "test": "yarn do test ",
     "deploy": "yarn build:nuclear && yarn test && yarn publish",
     "publish": "yarn build",
     "package": "./node_modules/.bin/ts-node ./scripts/package.ts ",
@@ -35,7 +34,7 @@
     "docs:build": "vuepress build docs",
     "circular": "yarn madge src/**/*.ts --circular",
     "watch": "run-p watch:es watch:cjs",
-    "watch:es": "tsc -w -P tsconfig.esnext.json",
+    "watch:es": "tsc -w -P tsconfig.es.json",
     "watch:cjs": "tsc -w -P tsconfig.cjs.json",
     "watch:autoindex": "do autoindex"
   },
@@ -51,7 +50,6 @@
     "firemock": "^0.49.5",
     "get-value": "^3.0.1",
     "lodash.first": "^3.0.0",
-    "module-alias": "^2.2.2",
     "pluralize": "^8.0.0",
     "reflect-metadata": "^0.1.13",
     "set-value": "^3.0.0",
@@ -60,6 +58,8 @@
     "wait-in-parallel": "^1.2.6"
   },
   "devDependencies": {
+    "@forest-fire/real-time-admin": "^0.49.5",
+    "@rollup/plugin-typescript": "^4.1.2",
     "@types/chai": "^4.2.9",
     "@types/faker": "^4.1.12",
     "@types/get-value": "^3.0.1",
@@ -67,6 +67,7 @@
     "@types/lodash": "^4.14.149",
     "@types/lodash.first": "^3.0.6",
     "@types/mocha": "^7.0.1",
+    "@types/module-alias": "^2.0.0",
     "@types/node": "^10.14.0",
     "@types/pluralize": "^0.0.29",
     "@types/rimraf": "^2.0.3",
@@ -79,17 +80,20 @@
     "async-shelljs": "^0.1.4",
     "chai": "^4.2.0",
     "chalk": "^3.0.0",
-    "do-devops": "^0.3.6",
+    "do-devops": "^0.3.8",
     "fake-indexeddb": "^3.0.0",
     "faker": "^4.1.0",
     "js-yaml": "^3.13.1",
     "madge": "^3.9.0",
-    "mocha": "^7.1.1",
+    "mocha": "^7.2.0",
     "npm-run-all": "^4.1.5",
     "prettier": "^2.0.5",
     "rimraf": "^3.0.0",
+    "rollup": "^2.10.9",
     "test-console": "^1.1.0",
     "ts-node": "^8.10.1",
+    "tsconfig-paths": "^3.9.0",
+    "tslib": "^2.0.0",
     "tslint": "^6.1.2",
     "tslint-config-prettier": "^1.18.0",
     "typescript": "^3.9.3",
@@ -99,5 +103,8 @@
   },
   "engines": {
     "node": ">=8.6.0"
+  },
+  "_moduleAliases": {
+    "@": "./dist/es"
   }
 }

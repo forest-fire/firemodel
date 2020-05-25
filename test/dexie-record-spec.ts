@@ -7,7 +7,7 @@ import { DexieRecord } from "../src/FireDexie/DexieRecord";
 // tslint:disable: no-implicit-dependencies
 // tslint:disable: no-submodule-imports
 import { expect } from "chai";
-import { fbKey } from "../src";
+import { key as fbKey } from "firebase-key";
 import fdbKeyRange from "fake-indexeddb/lib/FDBKeyRange";
 import indexedDB from "fake-indexeddb";
 import { wait } from "common-types";
