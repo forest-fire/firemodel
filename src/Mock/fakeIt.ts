@@ -2,7 +2,7 @@ import { IDictionary } from "common-types";
 import { MockHelper } from "firemock";
 import { NamedFakes } from "@/private";
 import { key as fbKey } from "firebase-key";
-import { format } from "date-fns";
+import format from "date-fns/es/format";
 
 const sequence: IDictionary<number> = {};
 
