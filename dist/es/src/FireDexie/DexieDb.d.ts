@@ -1,5 +1,5 @@
 import Dexie, { TableSchema } from "dexie";
-import { DexieList, DexieRecord, IDexiePriorVersion, IModelConstructor, IPrimaryKey, Model } from "@/private";
+import { DexieList, DexieRecord, IDexiePriorVersion, IModelConstructor, IPrimaryKey, Model } from "private";
 import { IDictionary } from "common-types";
 /**
  * Provides a simple API to convert to/work with **Dexie** models

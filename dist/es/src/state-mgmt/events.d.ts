@@ -1,6 +1,6 @@
-declare type IValueBasedWatchEvent = import("@forest-fire/real-time-db").IValueBasedWatchEvent;
-declare type IPathBasedWatchEvent = import("@forest-fire/real-time-db").IPathBasedWatchEvent;
-import { FmEvents, IFmLocalEvent, ICompositeKey, IWatcherEventContext, IFmLocalRecordEvent, IFmLocalRelationshipEvent, Model } from "@/private";
+declare type IValueBasedWatchEvent = any;
+declare type IPathBasedWatchEvent = any;
+import { FmEvents, ICompositeKey, IFmLocalEvent, IFmLocalRecordEvent, IFmLocalRelationshipEvent, IWatcherEventContext, Model } from "@/private";
 import { IDictionary } from "common-types";
 export declare type IFmEventType = "value" | "child_added" | "child_moved" | "child_removed" | "child_changed";
 /**

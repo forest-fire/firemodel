@@ -1,3 +1,4 @@
+export { fk, pk } from "common-types";
 export * from "./Audit";
 export * from "./AuditBase";
 export * from "./AuditList";

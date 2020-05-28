@@ -1,6 +1,6 @@
-import { IAbstractedDatabase } from "universal-fire";
+import { FireModel, ICompositeKey, IFMEventName, IFkReference, IFmCrudOperations, IFmDispatchOptions, IFmRelationshipOptions, IFmRelationshipOptionsForHasMany, IRecordOptions, IReduxDispatch, Model } from "private";
 import { IDictionary, Nullable, fk, pk } from "common-types";
-import { IFkReference, ICompositeKey, IRecordOptions, IFmRelationshipOptionsForHasMany, IFMEventName, IFmCrudOperations, IFmDispatchOptions, IReduxDispatch, FireModel, Model, IFmRelationshipOptions } from "@/private";
+import { IAbstractedDatabase } from "universal-fire";
 export interface IWriteOperation {
     id: string;
     type: "set" | "pushKey" | "update";

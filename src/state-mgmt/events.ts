@@ -1,15 +1,17 @@
 // TODO: look at way to abstract so we can move away from this
-type IValueBasedWatchEvent = import("@forest-fire/real-time-db").IValueBasedWatchEvent;
-type IPathBasedWatchEvent = import("@forest-fire/real-time-db").IPathBasedWatchEvent;
+type IValueBasedWatchEvent = any;
+type IPathBasedWatchEvent = any;
+
 import {
   FmEvents,
-  IFmLocalEvent,
   ICompositeKey,
-  IWatcherEventContext,
+  IFmLocalEvent,
   IFmLocalRecordEvent,
   IFmLocalRelationshipEvent,
+  IWatcherEventContext,
   Model,
 } from "@/private";
+
 import { IDictionary } from "common-types";
 
 export type IFmEventType =

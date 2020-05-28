@@ -2,7 +2,7 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "noEmit": false,
-    "module": "ESnext",
+    "module": "ESNext",
     "outDir": "dist/es"
   },
   "exclude": ["test"]

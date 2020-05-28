@@ -12,7 +12,7 @@ import {
   Model,
   Record,
   capitalize,
-} from "@/private";
+} from "private";
 import { IDictionary, pk } from "common-types";
 
 /**

@@ -11,12 +11,12 @@
     "emitDecoratorMetadata": true,
     "noEmit": true,
     "removeComments": false,
-    "esModuleInterop": true,
+    "esModuleInterop": false,
     "allowSyntheticDefaultImports": true,
     "baseUrl": "./src",
     "paths": {
       "@/*": ["."]
     }
   },
-  "include": ["src/**/*", "test/**/*"]
+  "include": ["src/**/*"]
 }
