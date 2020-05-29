@@ -1,6 +1,6 @@
 import { IDictionary } from "common-types";
-import { IWatcherEventContext } from "@/private";
-import { Model } from "@/private";
+import { IWatcherEventContext } from "../private";
+import { Model } from "../private";
 export declare const hasInitialized: (watcherId?: string, value?: true | "timed-out") => IDictionary<boolean | "timed-out">;
 /**
  * Waits for a newly started watcher to get back the first

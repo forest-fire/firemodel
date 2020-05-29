@@ -1,4 +1,3 @@
-import alias from "@rollup/plugin-alias";
 import { resolve } from "path";
 import typescript from "@rollup/plugin-typescript";
 
@@ -32,19 +31,12 @@ export default [
         /** this is only really needed for monorepos */
         rootDir: ".",
         tsconfig: "tsconfig.es.json",
+        typescript: require('ttypescript'),
+        plugins: [
+          { "transform": "typescript-transform-paths" },
+          { "transform": "typescript-transform-paths", "afterDeclarations": true }
+        ]
       }),
-      alias({
-        entries: {
-          private: resolve(__dirname, "src/private"),
-        },
-      }),
-      // alias(
-      //   {
-      //     entries: [
-      //       { find: "private", replacement: resolve(__dirname, "src/private") },
-      //     ],
-      //   }
-      // ),
     ],
   },
   // {

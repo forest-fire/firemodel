@@ -1,9 +1,9 @@
-import { IFmLocalEvent, Record } from "@/private";
+import { IFmLocalEvent, Record } from "../private";
 export declare function UnwatchedLocalEvent<T>(rec: Record<T>, event: IFmLocalEvent<T>): {
     dbPath: string;
     watcherSource: string;
     dynamicPathProperties: string[];
-    compositeKey: import("..").ICompositeKey<T>;
+    compositeKey: import("../private").ICompositeKey<T>;
     modelConstructor: new () => T;
     modelName: string;
     pluralName: string;
@@ -21,14 +21,14 @@ export declare function UnwatchedLocalEvent<T>(rec: Record<T>, event: IFmLocalEv
     key: string;
     transactionId: string;
     eventType: "value" | "local" | "child_added" | "child_changed" | "child_moved" | "child_removed";
-    paths?: import("..").IMultiPathUpdates[];
+    paths?: import("../FireModel").IMultiPathUpdates[];
     errorCode?: string | number;
     errorMessage?: string;
 } | {
     dbPath: string;
     watcherSource: string;
     dynamicPathProperties: string[];
-    compositeKey: import("..").ICompositeKey<T>;
+    compositeKey: import("../private").ICompositeKey<T>;
     modelConstructor: new () => T;
     modelName: string;
     pluralName: string;
@@ -36,7 +36,7 @@ export declare function UnwatchedLocalEvent<T>(rec: Record<T>, event: IFmLocalEv
     localPath: string;
     localPostfix: string;
     kind: "relationship";
-    operation: import("..").IFmRelationshipOperation;
+    operation: import("../private").IFmRelationshipOperation;
     property: keyof T & string;
     fks: string[];
     inverseProperty?: "id" | "lastUpdated" | "createdAt" | "META";
@@ -45,9 +45,9 @@ export declare function UnwatchedLocalEvent<T>(rec: Record<T>, event: IFmLocalEv
     fromLocal: string;
     toLocal: string;
     fromConstructor: new () => T;
-    toConstructor: new () => import("..").Model;
+    toConstructor: new () => import("../private").Model;
     value?: undefined;
-    paths: import("..").IFmPathValuePair[];
+    paths: import("../private").IFmPathValuePair[];
     type: import("./actions").FmEvents;
     key: string;
     transactionId: string;

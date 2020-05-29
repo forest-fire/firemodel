@@ -1,7 +1,7 @@
 import { epoch } from "common-types";
 import Dexie from "dexie";
 import { IComparisonOperator } from "@forest-fire/serialized-query";
-import { IDexieModelMeta, IDexieListOptions, PropType, Model, IModelConstructor } from "@/private";
+import { IDexieModelMeta, IDexieListOptions, PropType, Model, IModelConstructor } from "../private";
 /**
  * Provides a simple API for list based queries that resembles the Firemodel `List` API
  * but which works on the IndexDB using Dexie under the hood.

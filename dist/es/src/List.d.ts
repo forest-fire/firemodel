@@ -1,7 +1,7 @@
 import { IAbstractedDatabase } from "universal-fire";
 import { epochWithMilliseconds, IDictionary } from "common-types";
 import type { BaseSerializer, IComparisonOperator } from "@forest-fire/serialized-query";
-import { IListOptions, IPrimaryKey, Model, Record, FireModel, IReduxDispatch } from "@/private";
+import { IListOptions, IPrimaryKey, Model, Record, FireModel, IReduxDispatch } from "./private";
 export declare class List<T extends Model> extends FireModel<T> {
     /**
      * Sets the default database to be used by all FireModel classes

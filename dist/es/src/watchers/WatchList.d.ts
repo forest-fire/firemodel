@@ -1,6 +1,6 @@
 import { BaseSerializer, IComparisonOperator } from "@forest-fire/serialized-query";
 import { epochWithMilliseconds } from "common-types";
-import { IListOptions, IPrimaryKey, Model, WatchBase } from "@/private";
+import { IListOptions, IPrimaryKey, Model, WatchBase } from "../private";
 export declare class WatchList<T extends Model> extends WatchBase<T> {
     static list<T extends Model>(
     /**

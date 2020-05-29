@@ -1,5 +1,5 @@
 import { IDictionary } from "common-types";
-import { IFmModelPropertyMeta, Model } from "@/private";
+import { IFmModelPropertyMeta, Model } from "../../private";
 export declare function isProperty(modelKlass: IDictionary): (prop: string) => boolean;
 /** Properties accumlated by propertyDecorators  */
 export declare const propertiesByModel: IDictionary<IDictionary<IFmModelPropertyMeta>>;

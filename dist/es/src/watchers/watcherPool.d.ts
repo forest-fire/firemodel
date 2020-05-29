@@ -1,5 +1,5 @@
 import { IDictionary } from "common-types";
-import { IReduxDispatch, IWatcherEventContext } from "@/private";
+import { IReduxDispatch, IWatcherEventContext } from "../private";
 /** a cache of all the watched  */
 declare let watcherPool: IDictionary<IWatcherEventContext<any>>;
 export declare function getWatcherPool(): IDictionary<IWatcherEventContext<any>>;

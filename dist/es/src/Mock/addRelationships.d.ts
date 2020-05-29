@@ -1,4 +1,4 @@
-import { IMockRelationshipConfig, IMockResponse, Model, Record } from "@/private";
+import { IMockRelationshipConfig, IMockResponse, Model, Record } from "../private";
 import { IAbstractedDatabase } from "universal-fire";
 import { IDictionary } from "common-types";
 /**

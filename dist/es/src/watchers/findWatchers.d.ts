@@ -1,4 +1,4 @@
-import { IWatcherEventContext } from "@/private";
+import { IWatcherEventContext } from "../private";
 /**
  * **findWatchers**
  *

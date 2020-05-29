@@ -1,4 +1,4 @@
-import { FireModel, ICompositeKey, IFMEventName, IFkReference, IFmCrudOperations, IFmDispatchOptions, IFmRelationshipOptions, IFmRelationshipOptionsForHasMany, IRecordOptions, IReduxDispatch, Model } from "@/private";
+import { FireModel, ICompositeKey, IFMEventName, IFkReference, IFmCrudOperations, IFmDispatchOptions, IFmRelationshipOptions, IFmRelationshipOptionsForHasMany, IRecordOptions, IReduxDispatch, Model } from "./private";
 import { IDictionary, Nullable, fk, pk } from "common-types";
 import { IAbstractedDatabase } from "universal-fire";
 export interface IWriteOperation {

@@ -1,5 +1,5 @@
 import { IDictionary } from "common-types";
-import { ICompositeKey } from "@/private";
+import { ICompositeKey } from "../private";
 export declare type ICardinalityConfig<T> = {
     [key in keyof T]: [number, number] | number | true;
 };

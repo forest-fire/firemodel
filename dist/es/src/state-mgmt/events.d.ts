@@ -1,6 +1,6 @@
 declare type IValueBasedWatchEvent = any;
 declare type IPathBasedWatchEvent = any;
-import { FmEvents, ICompositeKey, IFmLocalEvent, IFmLocalRecordEvent, IFmLocalRelationshipEvent, IWatcherEventContext, Model } from "@/private";
+import { FmEvents, ICompositeKey, IFmLocalEvent, IFmLocalRecordEvent, IFmLocalRelationshipEvent, IWatcherEventContext, Model } from "../private";
 import { IDictionary } from "common-types";
 export declare type IFmEventType = "value" | "child_added" | "child_moved" | "child_removed" | "child_changed";
 /**

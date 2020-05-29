@@ -1,4 +1,4 @@
-import { IReduxDispatch, IFmWatchEvent, IWatcherEventContext, IFmServerOrLocalEvent } from "@/private";
+import { IReduxDispatch, IFmWatchEvent, IWatcherEventContext, IFmServerOrLocalEvent } from "../private";
 /**
  * **watchDispatcher**
  *

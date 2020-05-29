@@ -1,5 +1,5 @@
 import { IAbstractedDatabase } from "universal-fire";
-import { IReduxDispatch, IWatcherEventContext, IPrimaryKey, Model, IModelOptions, WatchRecord, WatchList } from "@/private";
+import { IReduxDispatch, IWatcherEventContext, IPrimaryKey, Model, IModelOptions, WatchRecord, WatchList } from "./private";
 /**
  * A static library for interacting with _watchers_. It
  * provides the entry point into the watcher API and then

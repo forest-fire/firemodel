@@ -1,4 +1,4 @@
-import { IMockRelationshipConfig, Model, Record } from "@/private";
+import { IMockRelationshipConfig, Model, Record } from "../private";
 import { IAbstractedDatabase } from "universal-fire";
 import { IDictionary } from "common-types";
 /** adds mock values for all the properties on a given model */

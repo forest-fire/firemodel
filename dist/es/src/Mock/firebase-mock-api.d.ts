@@ -1,4 +1,4 @@
-import { IMockResponse } from "@/private";
+import { IMockResponse } from "../private";
 import { IAbstractedDatabase } from "universal-fire";
 import { IDictionary } from "common-types";
 export declare function FiremodelMockApi<T>(db: IAbstractedDatabase, modelConstructor: new () => T): {

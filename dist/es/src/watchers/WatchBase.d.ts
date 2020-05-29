@@ -1,7 +1,7 @@
 import { IDictionary } from "common-types";
 import type { IAbstractedDatabase } from "universal-fire";
 import type { BaseSerializer } from "@forest-fire/serialized-query";
-import { WatchRecord, IListOptions, IReduxDispatch, IWatcherEventContext, IWatchEventClassification, IFmWatcherStartOptions, FmModelConstructor, Model, ICompositeKey } from "@/private";
+import { WatchRecord, IListOptions, IReduxDispatch, IWatcherEventContext, IWatchEventClassification, IFmWatcherStartOptions, FmModelConstructor, Model, ICompositeKey } from "../private";
 /**
  * The base class which both `WatchList` and `WatchRecord` derive.
  */
@@ -59,6 +59,6 @@ export declare class WatchBase<T extends Model> {
      * it is also used externally by locally triggered events as well
      */
     buildWatcherItem(name?: string): IWatcherEventContext<T>;
-    protected getCoreDispatch(): IReduxDispatch<import("..").IReduxAction, any>;
+    getCoreDispatch(): IReduxDispatch<import("../private").IReduxAction, any>;
     protected get db(): IAbstractedDatabase;
 }

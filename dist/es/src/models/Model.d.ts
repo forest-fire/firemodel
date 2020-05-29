@@ -3,7 +3,7 @@ export declare type NonProperties<T> = {
 }[keyof T];
 export declare type Properties<T> = Pick<T, NonProperties<T>>;
 import { epochWithMilliseconds } from "common-types";
-import { IFmModelMeta } from "@/private";
+import { IFmModelMeta } from "../private";
 export declare class Model {
     /** The primary-key for the record */
     id?: string;

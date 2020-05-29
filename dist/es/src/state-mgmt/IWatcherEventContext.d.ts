@@ -1,6 +1,6 @@
 import { epoch } from "common-types";
 import { BaseSerializer } from "@forest-fire/serialized-query";
-import { IWatchEventClassification, IFmRecordMeta, IReduxDispatch, IWatcherSource, Model } from "@/private";
+import { IWatchEventClassification, IFmRecordMeta, IReduxDispatch, IWatcherSource, Model } from "../private";
 export interface IWatcherEventContextBase<T extends Model = Model> extends IFmRecordMeta<T> {
     watcherId: string;
     /** if defined, pass along the string name off the watcher */

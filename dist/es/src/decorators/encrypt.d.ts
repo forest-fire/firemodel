@@ -1,1 +1,1 @@
-export declare const encrypt: (modelKlass: import("..").Model, key: string) => void;
+export declare const encrypt: (modelKlass: import("../private").Model, key: string) => void;

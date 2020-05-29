@@ -1,5 +1,5 @@
 import { epochWithMilliseconds } from "common-types";
-import { IModelOptions, IAuditLogItem, AuditBase, Model } from "@/private";
+import { IModelOptions, IAuditLogItem, AuditBase, Model } from "./private";
 export declare class AuditRecord<T extends Model> extends AuditBase {
     constructor(modelKlass: new () => T, id: string, options?: IModelOptions);
     /**

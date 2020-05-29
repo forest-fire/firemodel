@@ -1,4 +1,4 @@
-import { IAuditOperations, IAuditChange, Model } from "@/private";
+import { IAuditOperations, IAuditChange, Model } from "../private";
 export declare class AuditLog extends Model {
     /** the `Model` which has been changed */
     modelName: string;
