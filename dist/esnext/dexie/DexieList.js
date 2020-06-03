@@ -14,7 +14,7 @@ export class DexieList {
      * Get a full list of _all_ records of a given model type
      */
     async all(options = {
-        orderBy: "lastUpdated"
+        orderBy: "lastUpdated",
     }) {
         // TODO: had to remove the `orderBy` for models with a composite key; no idea why!
         const c = this.meta.hasDynamicPath
@@ -26,7 +26,7 @@ export class DexieList {
         if (options.offset) {
             c.offset(options.offset);
         }
-        const results = c.toArray().catch(e => {
+        const results = c.toArray().catch((e) => {
             if (e.code === "NotFoundError" || e.name === "NotFoundError") {
                 console.info(`No records for model ${capitalize(this.meta.modelName)} found!`);
                 return [];
@@ -59,7 +59,7 @@ export class DexieList {
         if (options.offset) {
             query = query.offset(options.offset);
         }
-        const results = query.toArray().catch(e => {
+        const results = query.toArray().catch((e) => {
             if (e.code === "NotFoundError" || e.name === "NotFoundError") {
                 console.info(`No records for model ${capitalize(this.meta.modelName)} found!`);
                 return [];
@@ -76,15 +76,8 @@ export class DexieList {
      */
     async recent(limit, skip) {
         const c = skip
-            ? this.table
-                .orderBy("lastUpdated")
-                .reverse()
-                .limit(limit)
-                .offset(skip)
-            : this.table
-                .orderBy("lastUpdated")
-                .reverse()
-                .limit(limit);
+            ? this.table.orderBy("lastUpdated").reverse().limit(limit).offset(skip)
+            : this.table.orderBy("lastUpdated").reverse().limit(limit);
         return c.toArray();
     }
     /**
@@ -98,16 +91,9 @@ export class DexieList {
      */
     async last(limit, skip) {
         const c = skip
-            ? this.table
-                .orderBy("createdAt")
-                .reverse()
-                .limit(limit)
-                .offset(skip)
-            : this.table
-                .orderBy("createdAt")
-                .reverse()
-                .limit(limit);
-        return c.toArray().catch(e => {
+            ? this.table.orderBy("createdAt").reverse().limit(limit).offset(skip)
+            : this.table.orderBy("createdAt").reverse().limit(limit);
+        return c.toArray().catch((e) => {
             if (e.code === "NotFoundError" || e.name === "NotFoundError") {
                 console.info(`No records for model ${capitalize(this.meta.modelName)} found!`);
                 return [];
@@ -122,12 +108,9 @@ export class DexieList {
      */
     async first(limit, skip) {
         const c = skip
-            ? this.table
-                .orderBy("createdAt")
-                .limit(limit)
-                .offset(skip)
+            ? this.table.orderBy("createdAt").limit(limit).offset(skip)
             : this.table.orderBy("createdAt").limit(limit);
-        return c.toArray().catch(e => {
+        return c.toArray().catch((e) => {
             if (e.code === "NotFoundError" || e.name === "NotFoundError") {
                 console.info(`No records for model ${capitalize(this.meta.modelName)} found!`);
                 return [];

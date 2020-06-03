@@ -1,4 +1,4 @@
-import { BaseSerializer } from "@forest-fire/serialized-query";
+import type { ISerializedQuery } from "universal-fire";
 import { Model } from "../models/Model";
 import { IWatchEventClassification, IReduxDispatch, IWatcherSource } from "..";
 import { epoch } from "common-types";
@@ -16,7 +16,7 @@ export interface IWatcherEventContextBase<T extends Model = Model> extends IFmRe
      * Indicates the **Firebase** event type/family; either `value` or `child`
      */
     eventFamily: IWatchEventClassification;
-    query: BaseSerializer<T> | Array<BaseSerializer<T>>;
+    query: ISerializedQuery<T> | Array<ISerializedQuery<T>>;
     /**
      * The date/time when this watcher was started.
      */
@@ -42,7 +42,7 @@ export interface IWatcherEventContextListofRecords<T extends Model = Model> exte
      * The underlying _record queries_ used to achieve
      * the `list-of-records` watcher.
      */
-    query: Array<BaseSerializer<T>>;
+    query: Array<ISerializedQuery<T>>;
     eventFamily: "child";
 }
 export interface IWatcherEventContextList<T extends Model = Model> extends IWatcherEventContextBase<T> {
@@ -50,7 +50,7 @@ export interface IWatcherEventContextList<T extends Model = Model> extends IWatc
     /**
      * The query setup to watch a `List`
      */
-    query: BaseSerializer<T>;
+    query: ISerializedQuery<T>;
     eventFamily: "child";
 }
 export interface IWatcherEventContextRecord<T extends Model = Model> extends IWatcherEventContextBase<T> {
@@ -58,7 +58,7 @@ export interface IWatcherEventContextRecord<T extends Model = Model> extends IWa
     /**
      * The query setup to watch a `Record`
      */
-    query: BaseSerializer<T>;
+    query: ISerializedQuery<T>;
     eventFamily: "value";
 }
 /**

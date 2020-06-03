@@ -1,13 +1,13 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.WatchList = void 0;
-const WatchBase_1 = require("./WatchBase");
+const universal_fire_1 = require("universal-fire");
+const errors_1 = require("../errors");
 const List_1 = require("../List");
 const Record_1 = require("../Record");
-const universal_fire_1 = require("universal-fire");
-const util_1 = require("../util");
 const index_1 = require("../index");
-const errors_1 = require("../errors");
+const WatchBase_1 = require("./WatchBase");
+const util_1 = require("../util");
 class WatchList extends WatchBase_1.WatchBase {
     constructor() {
         super(...arguments);

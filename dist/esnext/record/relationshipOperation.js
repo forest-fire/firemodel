@@ -1,11 +1,11 @@
-import { Record } from "../Record";
 import { FmEvents, } from "..";
-import { getModelMeta } from "../ModelMeta";
-import { UnknownRelationshipProblem } from "../errors/relationships/UnknownRelationshipProblem";
-import { locallyUpdateFkOnRecord } from "./locallyUpdateFkOnRecord";
-import { createCompositeRef } from "./createCompositeKeyString";
-import { capitalize } from "../util";
 import { FireModelProxyError } from "../errors";
+import { Record } from "../Record";
+import { UnknownRelationshipProblem } from "../errors/relationships/UnknownRelationshipProblem";
+import { capitalize } from "../util";
+import { createCompositeRef } from "./createCompositeKeyString";
+import { getModelMeta } from "../ModelMeta";
+import { locallyUpdateFkOnRecord } from "./locallyUpdateFkOnRecord";
 /**
  * **relationshipOperation**
  *

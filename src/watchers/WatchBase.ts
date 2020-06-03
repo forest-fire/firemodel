@@ -1,7 +1,7 @@
 import { IDictionary } from "common-types";
 
 import { Model } from "../models/Model";
-import type { BaseSerializer } from "@forest-fire/serialized-query";
+import type { ISerializedQuery, IAbstractedDatabase } from "universal-fire";
 import { FmModelConstructor, ICompositeKey } from "../@types";
 import { IWatchEventClassification, IFmWatcherStartOptions } from "./types";
 import { IReduxDispatch, IWatcherEventContext } from "../state-mgmt";
@@ -12,13 +12,12 @@ import { waitForInitialization } from "./watchInitialization";
 import { addToWatcherPool } from "./watcherPool";
 import { WatchRecord } from "./WatchRecord";
 import { List } from "../List";
-import { IAbstractedDatabase } from "universal-fire";
 
 /**
  * The base class which both `WatchList` and `WatchRecord` derive.
  */
 export class WatchBase<T extends Model> {
-  protected _query: BaseSerializer<T>;
+  protected _query: ISerializedQuery<T>;
   protected _modelConstructor: FmModelConstructor<T>;
   protected _eventType: IWatchEventClassification;
   protected _dispatcher: IReduxDispatch;
