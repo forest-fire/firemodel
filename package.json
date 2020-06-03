@@ -13,7 +13,7 @@
     "dist"
   ],
   "module": "dist/es/index.js",
-  "typings": "dist/es/src/index.d.ts",
+  "typings": "dist/es/index.d.ts",
   "scripts": {
     "clean": "rimraf dist;",
     "clean:nuclear": "rimraf lib dist node_modules && yarn cache clean && rm yarn.lock && yarn && yarn upgrade",
