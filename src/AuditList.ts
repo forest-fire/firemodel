@@ -1,9 +1,10 @@
-import { epochWithMilliseconds } from "common-types";
-import { Model } from "./models/Model";
+import { IAuditLogItem, IModelOptions } from "./@types";
+
 import { AuditBase } from "./AuditBase";
+import { Model } from "./models/Model";
+import { SerializedQuery } from "universal-fire";
+import { epochWithMilliseconds } from "common-types";
 import { pathJoin } from "./path";
-import { SerializedQuery } from "@forest-fire/base-serializer";
-import { IModelOptions, IAuditLogItem } from "./@types";
 
 export class AuditList<T extends Model> extends AuditBase<T> {
   constructor(modelKlass: new () => T, options: IModelOptions = {}) {
@@ -49,10 +50,7 @@ export class AuditList<T extends Model> extends AuditBase<T> {
     from: epochWithMilliseconds | string,
     to: epochWithMilliseconds | string
   ): Promise<IAuditLogItem[]> {
-    this._query = this._query
-      .orderByChild("createdAt")
-      .startAt(from)
-      .endAt(to);
+    this._query = this._query.orderByChild("createdAt").startAt(from).endAt(to);
     const log = await this.db.getList<IAuditLogItem>(this._query);
     return log || [];
   }

@@ -1,17 +1,20 @@
-// tslint:disable:no-implicit-dependencies
-import { Record, List, IFmWatchEvent } from "../src/index";
-import { RealTimeAdmin, IRealTimeAdmin } from "universal-fire";
+import "reflect-metadata";
+
 import * as chai from "chai";
 import * as helpers from "./testing/helpers";
-const expect = chai.expect;
-import "reflect-metadata";
-import { Person } from "./testing/Person";
-import { FireModel } from "../src/FireModel";
-import { Mock } from "../src/Mock";
-import { FmEvents } from "../src/state-mgmt";
+
+// tslint:disable:no-implicit-dependencies
+import { IFmWatchEvent, List, Record } from "../src/index";
+import { IRealTimeAdmin, RealTimeAdmin } from "universal-fire";
+
 import { Car } from "./testing/Car";
 import Company from "./testing/dynamicPaths/Company";
-import { SerializedQuery } from "@forest-fire/base-serializer";
+import { FireModel } from "../src/FireModel";
+import { FmEvents } from "../src/state-mgmt";
+import { Mock } from "../src/Mock";
+import { Person } from "./testing/Person";
+import { SerializedQuery } from "universal-fire";
+const expect = chai.expect;
 
 describe("List class: ", () => {
   let db: IRealTimeAdmin;
