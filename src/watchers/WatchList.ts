@@ -1,17 +1,18 @@
-import { WatchBase } from "./WatchBase";
-import { Model } from "../models/Model";
-import { IListOptions, IPrimaryKey } from "../@types";
-import { List } from "../List";
-import { Record } from "../Record";
 import {
-  BaseSerializer,
   IComparisonOperator,
-} from "@forest-fire/serialized-query";
-import { SerializedQuery } from "universal-fire";
-import { getAllPropertiesFromClassStructure } from "../util";
-import { epochWithMilliseconds } from "common-types";
-import { Watch } from "../index";
+  ISerializedQuery,
+  SerializedQuery,
+} from "universal-fire";
+import { IListOptions, IPrimaryKey } from "../@types";
+
 import { FireModelError } from "../errors";
+import { List } from "../List";
+import { Model } from "../models/Model";
+import { Record } from "../Record";
+import { Watch } from "../index";
+import { WatchBase } from "./WatchBase";
+import { epochWithMilliseconds } from "common-types";
+import { getAllPropertiesFromClassStructure } from "../util";
 
 export class WatchList<T extends Model> extends WatchBase<T> {
   public static list<T extends Model>(
@@ -268,7 +269,7 @@ export class WatchList<T extends Model> extends WatchBase<T> {
    *
    * @param query
    */
-  public fromQuery(inputQuery: BaseSerializer<T>): WatchList<T> {
+  public fromQuery(inputQuery: ISerializedQuery<T>): WatchList<T> {
     this._query = inputQuery;
 
     return this;

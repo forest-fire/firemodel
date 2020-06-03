@@ -1,12 +1,13 @@
-import { Model } from "../models/Model";
-import { IModelConstructor } from "..";
 import Dexie, { IndexableType } from "dexie";
-import { IDexieModelMeta, IDexieListOptions } from "../@types/optional/dexie";
+import { IDexieListOptions, IDexieModelMeta } from "../@types/optional/dexie";
+
 import { DexieError } from "../errors";
-import { capitalize } from "../util";
-import { IComparisonOperator } from "@forest-fire/serialized-query";
-import { epoch } from "common-types";
+import { IComparisonOperator } from "universal-fire";
+import { IModelConstructor } from "..";
+import { Model } from "../models/Model";
 import { PropType } from "../@types/index";
+import { capitalize } from "../util";
+import { epoch } from "common-types";
 
 /**
  * Provides a simple API for list based queries that resembles the Firemodel `List` API
@@ -24,7 +25,7 @@ export class DexieList<T extends Model> {
    */
   async all(
     options: IDexieListOptions<T> = {
-      orderBy: "lastUpdated"
+      orderBy: "lastUpdated",
     }
   ): Promise<T[]> {
     // TODO: had to remove the `orderBy` for models with a composite key; no idea why!
@@ -38,7 +39,7 @@ export class DexieList<T extends Model> {
       c.offset(options.offset);
     }
 
-    const results = c.toArray().catch(e => {
+    const results = c.toArray().catch((e) => {
       if (e.code === "NotFoundError" || e.name === "NotFoundError") {
         console.info(
           `No records for model ${capitalize(this.meta.modelName)} found!`
@@ -87,7 +88,7 @@ export class DexieList<T extends Model> {
       query = query.offset(options.offset);
     }
 
-    const results = query.toArray().catch(e => {
+    const results = query.toArray().catch((e) => {
       if (e.code === "NotFoundError" || e.name === "NotFoundError") {
         console.info(
           `No records for model ${capitalize(this.meta.modelName)} found!`
@@ -112,15 +113,8 @@ export class DexieList<T extends Model> {
    */
   async recent(limit: number, skip?: number) {
     const c = skip
-      ? this.table
-          .orderBy("lastUpdated")
-          .reverse()
-          .limit(limit)
-          .offset(skip)
-      : this.table
-          .orderBy("lastUpdated")
-          .reverse()
-          .limit(limit);
+      ? this.table.orderBy("lastUpdated").reverse().limit(limit).offset(skip)
+      : this.table.orderBy("lastUpdated").reverse().limit(limit);
 
     return c.toArray();
   }
@@ -140,17 +134,10 @@ export class DexieList<T extends Model> {
    */
   async last(limit: number, skip?: number): Promise<T[]> {
     const c = skip
-      ? this.table
-          .orderBy("createdAt")
-          .reverse()
-          .limit(limit)
-          .offset(skip)
-      : this.table
-          .orderBy("createdAt")
-          .reverse()
-          .limit(limit);
+      ? this.table.orderBy("createdAt").reverse().limit(limit).offset(skip)
+      : this.table.orderBy("createdAt").reverse().limit(limit);
 
-    return c.toArray().catch(e => {
+    return c.toArray().catch((e) => {
       if (e.code === "NotFoundError" || e.name === "NotFoundError") {
         console.info(
           `No records for model ${capitalize(this.meta.modelName)} found!`
@@ -172,13 +159,10 @@ export class DexieList<T extends Model> {
    */
   async first(limit: number, skip?: number): Promise<T[]> {
     const c = skip
-      ? this.table
-          .orderBy("createdAt")
-          .limit(limit)
-          .offset(skip)
+      ? this.table.orderBy("createdAt").limit(limit).offset(skip)
       : this.table.orderBy("createdAt").limit(limit);
 
-    return c.toArray().catch(e => {
+    return c.toArray().catch((e) => {
       if (e.code === "NotFoundError" || e.name === "NotFoundError") {
         console.info(
           `No records for model ${capitalize(this.meta.modelName)} found!`

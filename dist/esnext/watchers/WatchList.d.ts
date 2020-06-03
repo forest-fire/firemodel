@@ -1,7 +1,7 @@
-import { WatchBase } from "./WatchBase";
-import { Model } from "../models/Model";
+import { IComparisonOperator, ISerializedQuery } from "universal-fire";
 import { IListOptions, IPrimaryKey } from "../@types";
-import { BaseSerializer, IComparisonOperator } from "@forest-fire/serialized-query";
+import { Model } from "../models/Model";
+import { WatchBase } from "./WatchBase";
 import { epochWithMilliseconds } from "common-types";
 export declare class WatchList<T extends Model> extends WatchBase<T> {
     static list<T extends Model>(
@@ -124,7 +124,7 @@ export declare class WatchList<T extends Model> extends WatchBase<T> {
      *
      * @param query
      */
-    fromQuery(inputQuery: BaseSerializer<T>): WatchList<T>;
+    fromQuery(inputQuery: ISerializedQuery<T>): WatchList<T>;
     /**
      * **all**
      *

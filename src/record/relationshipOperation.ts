@@ -1,20 +1,22 @@
-import { IFmRelationshipOperation, IFmRelationshipOptions } from "../@types";
-import { Record } from "../Record";
-import { Model } from "../models/Model";
 import {
   FmEvents,
+  IFkReference,
   IFmPathValuePair,
   IFmRelationshipOptionsForHasMany,
-  IFkReference,
 } from "..";
-import { IDictionary } from "common-types";
-import { getModelMeta } from "../ModelMeta";
-import { UnknownRelationshipProblem } from "../errors/relationships/UnknownRelationshipProblem";
-import { locallyUpdateFkOnRecord } from "./locallyUpdateFkOnRecord";
-import { IFmLocalRelationshipEvent } from "../state-mgmt";
-import { createCompositeRef } from "./createCompositeKeyString";
-import { capitalize } from "../util";
+import { IFmRelationshipOperation, IFmRelationshipOptions } from "../@types";
+
 import { FireModelProxyError } from "../errors";
+import { IDictionary } from "common-types";
+import { IFmLocalRelationshipEvent } from "../state-mgmt";
+import { Model } from "../models/Model";
+import { Record } from "../Record";
+import { Reference } from "firemock";
+import { UnknownRelationshipProblem } from "../errors/relationships/UnknownRelationshipProblem";
+import { capitalize } from "../util";
+import { createCompositeRef } from "./createCompositeKeyString";
+import { getModelMeta } from "../ModelMeta";
+import { locallyUpdateFkOnRecord } from "./locallyUpdateFkOnRecord";
 
 /**
  * **relationshipOperation**
@@ -158,7 +160,7 @@ export async function localRelnOp<F extends Model, T extends Model>(
     rec.dispatch({ ...event, type });
     const ref = rec.db.ref("/");
     // TODO: replace with multiPathSet/transaction
-    await ref.update(
+    await (ref as Reference).update(
       event.paths.reduce((acc: IDictionary, curr) => {
         acc[curr.path] = curr.value;
         return acc;

@@ -1,10 +1,10 @@
-import { WatchBase } from "./WatchBase";
+import { SerializedQuery, } from "universal-fire";
+import { FireModelError } from "../errors";
 import { List } from "../List";
 import { Record } from "../Record";
-import { SerializedQuery } from "universal-fire";
-import { getAllPropertiesFromClassStructure } from "../util";
 import { Watch } from "../index";
-import { FireModelError } from "../errors";
+import { WatchBase } from "./WatchBase";
+import { getAllPropertiesFromClassStructure } from "../util";
 export class WatchList extends WatchBase {
     constructor() {
         super(...arguments);
