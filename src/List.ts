@@ -5,7 +5,7 @@ import type {
   BaseSerializer,
   IComparisonOperator,
 } from "@forest-fire/serialized-query";
-import { SerializedQuery } from "@forest-fire/base-serializer";
+import { SerializedQuery } from "universal-fire";
 
 import { Model } from "./models/Model";
 import { Record } from "./Record";

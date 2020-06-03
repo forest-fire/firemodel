@@ -12,14 +12,15 @@
   "files": [
     "dist"
   ],
-  "main": "dist/cjs/index.js",
-  "module": "dist/esnext/index.js",
-  "typings": "dist/cjs/index.d.ts",
+  "module": "dist/es/index.js",
+  "typings": "dist/es/src/index.d.ts",
   "scripts": {
-    "clean": "rimraf lib;",
+    "clean": "rimraf dist;",
     "clean:nuclear": "rimraf lib dist node_modules && yarn cache clean && rm yarn.lock && yarn && yarn upgrade",
     "lint": "./node_modules/.bin/tslint --force --format verbose \"src/**/*.ts\"",
-    "build": "yarn tslint src/**/*.ts && yarn tsc -P tsconfig.esnext.json && yarn tsc -P tsconfig.cjs.json",
+    "build": "run-s clean build:rollup",
+    "build:rollup": "rollup -c",
+    "build:tsc": "yarn tslint src/**/*.ts && yarn tsc -P tsconfig.esnext.json && yarn tsc -P tsconfig.cjs.json",
     "build:nuclear": "yarn clean:nuclear && yarn build",
     "test": "./node_modules/.bin/ts-node ./scripts/test.ts ",
     "deploy": "yarn build:nuclear && yarn test && yarn publish",
@@ -52,6 +53,10 @@
     "wait-in-parallel": "^1.2.6"
   },
   "devDependencies": {
+    "@rollup/plugin-commonjs": "^12.0.0",
+    "@rollup/plugin-json": "^4.0.3",
+    "@rollup/plugin-node-resolve": "^8.0.0",
+    "@rollup/plugin-typescript": "^4.1.2",
     "@types/chai": "^4.2.9",
     "@types/faker": "^4.1.12",
     "@types/get-value": "^3.0.1",
@@ -80,6 +85,8 @@
     "npm-run-all": "^4.1.5",
     "prettier": "^2.0.5",
     "rimraf": "^3.0.0",
+    "rollup": "^2.12.1",
+    "rollup-plugin-typescript2": "^0.27.1",
     "test-console": "^1.1.0",
     "ts-node": "^8.10.1",
     "tslint": "^6.1.2",

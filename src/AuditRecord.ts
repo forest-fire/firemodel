@@ -1,10 +1,11 @@
-import { epochWithMilliseconds } from "common-types";
-import { Model } from "./models/Model";
+import { IAuditLogItem, IModelOptions } from "./@types";
+
 import { AuditBase } from "./AuditBase";
-import { SerializedQuery } from "@forest-fire/base-serializer";
-import { pathJoin } from "./path";
+import { Model } from "./models/Model";
 import { Parallel } from "wait-in-parallel";
-import { IModelOptions, IAuditLogItem } from "./@types";
+import { SerializedQuery } from "universal-fire";
+import { epochWithMilliseconds } from "common-types";
+import { pathJoin } from "./path";
 
 export class AuditRecord<T extends Model> extends AuditBase {
   constructor(
@@ -29,11 +30,11 @@ export class AuditRecord<T extends Model> extends AuditBase {
     if (startAt) {
       this._query = this._query.startAt(startAt);
     }
-    const ids = (await this.db.getList(this._query)).map(i =>
+    const ids = (await this.db.getList(this._query)).map((i) =>
       pathJoin(this.auditLogs, i.id)
     );
     const p = new Parallel<IAuditLogItem>();
-    ids.map(id => p.add(id, this.db.getValue<IAuditLogItem>(id)));
+    ids.map((id) => p.add(id, this.db.getValue<IAuditLogItem>(id)));
     const results = await p.isDoneAsArray();
     return results;
   }
@@ -46,11 +47,11 @@ export class AuditRecord<T extends Model> extends AuditBase {
     if (startAt) {
       this._query = this._query.startAt(startAt);
     }
-    const ids = (await this.db.getList(this._query)).map(i =>
+    const ids = (await this.db.getList(this._query)).map((i) =>
       pathJoin(this.auditLogs, i.id)
     );
     const p = new Parallel<IAuditLogItem>();
-    ids.map(id => p.add(id, this.db.getValue(id)));
+    ids.map((id) => p.add(id, this.db.getValue(id)));
     const results = await p.isDoneAsArray();
     return results;
   }
@@ -66,13 +67,13 @@ export class AuditRecord<T extends Model> extends AuditBase {
       .startAt(when);
     const qr = await this.db.getList(this._query);
 
-    const ids = (await this.db.getList(this._query)).map(i =>
+    const ids = (await this.db.getList(this._query)).map((i) =>
       pathJoin(this.auditLogs, i.id)
     );
 
     const p = new Parallel<IAuditLogItem>();
 
-    ids.map(id => {
+    ids.map((id) => {
       p.add(id, this.db.getValue(id));
     });
     const results = await p.isDoneAsArray();
@@ -90,13 +91,13 @@ export class AuditRecord<T extends Model> extends AuditBase {
       .endAt(when);
     const qr = await this.db.getList(this._query);
 
-    const ids = (await this.db.getList(this._query)).map(i =>
+    const ids = (await this.db.getList(this._query)).map((i) =>
       pathJoin(this.auditLogs, i.id)
     );
 
     const p = new Parallel<IAuditLogItem>();
 
-    ids.map(id => {
+    ids.map((id) => {
       p.add(id, this.db.getValue(id));
     });
     const results = await p.isDoneAsArray();
@@ -121,13 +122,13 @@ export class AuditRecord<T extends Model> extends AuditBase {
       .endAt(before);
     const qr = await this.db.getList(this._query);
 
-    const ids = (await this.db.getList(this._query)).map(i =>
+    const ids = (await this.db.getList(this._query)).map((i) =>
       pathJoin(this.auditLogs, i.id)
     );
 
     const p = new Parallel<IAuditLogItem>();
 
-    ids.map(id => {
+    ids.map((id) => {
       p.add(id, this.db.getValue(id));
     });
     const results = await p.isDoneAsArray();
