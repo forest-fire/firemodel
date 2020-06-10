@@ -125,7 +125,9 @@ export declare class List<T extends Model> extends FireModel<T> {
     static dbPath<T extends Model, K extends keyof T>(model: new () => T, offsets?: Partial<T>): string;
     protected _offsets: Partial<T>;
     private _data;
+    private _query;
     constructor(model: new () => T, options?: IListOptions<T>);
+    get query(): BaseSerializer;
     get length(): number;
     get dbPath(): string;
     /**

@@ -3837,6 +3837,7 @@ class List extends FireModel {
             ? List.dbPath(model, options.offsets)
             : List.dbPath(model);
         query.setPath(path);
+        list._query = query;
         await list.load(query);
         return list;
     }
@@ -4009,6 +4010,9 @@ class List extends FireModel {
     static dbPath(model, offsets) {
         const obj = offsets ? List.create(model, { offsets }) : List.create(model);
         return obj.dbPath;
+    }
+    get query() {
+        return this._query;
     }
     get length() {
         return this._data.length;

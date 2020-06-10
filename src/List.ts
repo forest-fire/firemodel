@@ -123,7 +123,7 @@ export class List<T extends Model> extends FireModel<T> {
         : List.dbPath(model);
 
     query.setPath(path);
-
+    list._query = query;
     await list.load(query);
 
     return list;
@@ -379,6 +379,7 @@ export class List<T extends Model> extends FireModel<T> {
   //#endregion
 
   private _data: T[] = [];
+  private _query: BaseSerializer;
 
   constructor(model: new () => T, options: IListOptions<T> = {}) {
     super();
@@ -393,6 +394,10 @@ export class List<T extends Model> extends FireModel<T> {
     if (options.offsets) {
       this._offsets = options.offsets;
     }
+  }
+
+  public get query(): BaseSerializer {
+    return this._query;
   }
 
   public get length(): number {
