@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "declaration": true,
-    "module": "esnext",
+    "module": "es2015",
     "target": "es2020",
     "lib": ["es2020", "esnext.asynciterable", "es2015.reflect", "DOM"],
     "moduleResolution": "node",
@@ -9,7 +9,7 @@
     "noImplicitAny": true,
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
-    "outDir": "./dist/es",
+    "outDir": "./dist",
     "removeComments": false,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true
