@@ -30,11 +30,16 @@
     "cli": "./node_modules/.bin/ts-node cli/index.ts --",
     "docs": "vuepress dev docs",
     "docs:build": "vuepress build docs",
-    "circular": "yarn madge src/**/*.ts --circular",
     "watch": "run-p watch:es watch:cjs",
     "watch:es": "tsc -w -P tsconfig.esnext.json",
     "watch:cjs": "tsc -w -P tsconfig.cjs.json",
-    "watch:autoindex": "do autoindex"
+    "watch:autoindex": "do autoindex",
+    "visualize": "yarn madge src --extensions ts -i /tmp/dep-visualize.png && open /tmp/dep-visualize.png",
+    "circular": "yarn madge src --extensions ts --circular",
+    "orphans": "yarn madge src --extensions ts --orphans",
+    "leaves": "yarn madge src --extensions ts --leaves",
+    "warnings": "yarn madge src --extensions ts --warnings",
+    "summary": "yarn madge src --extensions ts --summary"
   },
   "dependencies": {
     "common-types": "^1.15.1",
