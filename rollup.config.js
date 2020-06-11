@@ -1,14 +1,14 @@
 import commonjs from "@rollup/plugin-commonjs";
-import json from "@rollup/plugin-json";
+// import json from "@rollup/plugin-json";
 import resolve from "@rollup/plugin-node-resolve";
-import typescript from "@rollup/plugin-typescript";
+// import typescript from "@rollup/plugin-typescript";
 import typescript2 from "rollup-plugin-typescript2";
 
-export default {
+const generalConfig = (moduleSystem) => ({
   input: "src/index.ts",
   output: {
-    dir: "dist/es",
-    format: "es",
+    dir: `dist/${moduleSystem}`,
+    format: `${moduleSystem}`,
     sourcemap: true,
   },
   external: ["universal-fire", "common-types", "firebase-key", "firemock"],
@@ -19,7 +19,9 @@ export default {
     }),
     commonjs(),
     typescript2({
-      tsconfig: "tsconfig.es.json",
+      tsconfig: `tsconfig.es.json`,
     }),
   ],
-};
+});
+
+export default [generalConfig("cjs"), generalConfig("es")];
