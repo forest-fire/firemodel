@@ -14,12 +14,13 @@ import { FmEvents } from "../src/state-mgmt";
 import { Mock } from "../src/Mock";
 import { Person } from "./testing/Person";
 import { SerializedQuery } from "universal-fire";
+
 const expect = chai.expect;
 
 describe("List class: ", () => {
   let db: IRealTimeAdmin;
   beforeEach(async () => {
-    db = await RealTimeAdmin({ mocking: true });
+    db = await RealTimeAdmin.connect({ mocking: true });
     FireModel.defaultDb = db;
   });
   it("can instantiate with new operator", () => {

@@ -1,17 +1,18 @@
+import { IRealTimeAdmin, RealTimeAdmin } from "universal-fire";
+import { List, Mock, Record } from "../src";
+
+import { AuditLog } from "../src/models/index";
+import { FireModel } from "../src/FireModel";
+import { Person } from "./testing/AuditedPerson";
 // tslint:disable:no-implicit-dependencies
 import { expect } from "chai";
-import { Record, List, Mock } from "../src";
-import { AuditLog } from "../src/models/index";
-import { RealTimeAdmin, IRealTimeAdmin } from "universal-fire";
-import { Person } from "./testing/AuditedPerson";
-import { FireModel } from "../src/FireModel";
 import { wait } from "common-types";
 
 describe("Auditing ->�", () => {
   let db: IRealTimeAdmin;
 
   beforeEach(async () => {
-    db = await RealTimeAdmin({ mocking: true });
+    db = await RealTimeAdmin.connect({ mocking: true });
     FireModel.defaultDb = db;
   });
 

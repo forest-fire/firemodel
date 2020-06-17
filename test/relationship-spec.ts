@@ -1,21 +1,23 @@
-// tslint:disable:no-implicit-dependencies
-import { Record, IFmWatchEvent } from "../src";
-import { RealTimeAdmin, IRealTimeAdmin } from "universal-fire";
 import * as chai from "chai";
-const expect = chai.expect;
-import { Person } from "./testing/Person";
-import { FireModel } from "../src/FireModel";
-import { FancyPerson } from "./testing/FancyPerson";
-import { FmEvents } from "../src/state-mgmt";
-import { Company } from "./testing/Company";
-import { Pay } from "./testing/Pay";
-import { extractFksFromPaths } from "../src/record/extractFksFromPaths";
+
+// tslint:disable:no-implicit-dependencies
+import { IFmWatchEvent, Record } from "../src";
+import { IRealTimeAdmin, RealTimeAdmin } from "universal-fire";
+
 import { Car } from "./testing/Car";
-import OffsetCar from "./testing/dynamicPaths/Car";
-import { buildRelationshipPaths } from "../src/record/relationships/buildRelationshipPaths";
-import { pathJoin } from "common-types";
-import { createCompositeKeyFromFkString } from "../src/record/createCompositeKeyFromFkString";
+import { Company } from "./testing/Company";
 import DeepPerson from "./testing/dynamicPaths/DeepPerson";
+import { FancyPerson } from "./testing/FancyPerson";
+import { FireModel } from "../src/FireModel";
+import { FmEvents } from "../src/state-mgmt";
+import OffsetCar from "./testing/dynamicPaths/Car";
+import { Pay } from "./testing/Pay";
+import { Person } from "./testing/Person";
+import { buildRelationshipPaths } from "../src/record/relationships/buildRelationshipPaths";
+import { createCompositeKeyFromFkString } from "../src/record/createCompositeKeyFromFkString";
+import { extractFksFromPaths } from "../src/record/extractFksFromPaths";
+import { pathJoin } from "common-types";
+const expect = chai.expect;
 
 const hasManyPaths = (id: string, now: number) => [
   { path: `/authenticated/people/${id}/children/janet`, value: true },
@@ -34,7 +36,7 @@ const hasOnePaths = (id: string, now: number) => [
 describe("Relationship > ", () => {
   let db: IRealTimeAdmin;
   beforeEach(async () => {
-    db = await RealTimeAdmin({ mocking: true });
+    db = await RealTimeAdmin.connect({ mocking: true });
     FireModel.defaultDb = db;
   });
 

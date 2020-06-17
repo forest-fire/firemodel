@@ -1,28 +1,31 @@
+import "reflect-metadata";
+
+import * as chai from "chai";
+import * as helpers from "./testing/helpers";
+
 // tslint:disable:no-implicit-dependencies
 import {
-  Record,
-  List,
-  Watch,
   FmEvents,
   IFmLocalEvent,
   IReduxAction,
+  List,
+  Record,
+  Watch,
 } from "../src";
-import { RealTimeAdmin, IRealTimeAdmin } from "universal-fire";
-import * as chai from "chai";
-const expect = chai.expect;
-import "reflect-metadata";
-import { Person } from "./testing/Person";
-import * as helpers from "./testing/helpers";
-import { FireModel } from "../src/FireModel";
-import { IDictionary, wait, pathJoin } from "common-types";
+import { IDictionary, pathJoin, wait } from "common-types";
+import { IRealTimeAdmin, RealTimeAdmin } from "universal-fire";
+
 import { FancyPerson } from "./testing/FancyPerson";
+import { FireModel } from "../src/FireModel";
+import { Person } from "./testing/Person";
+const expect = chai.expect;
 
 helpers.setupEnv();
 
 describe("Tests using REAL db =>�", () => {
   let db: IRealTimeAdmin;
   before(async () => {
-    db = await RealTimeAdmin({ mocking: true });
+    db = await RealTimeAdmin.connect({ mocking: true });
     FireModel.defaultDb = db;
   });
   after(async () => {

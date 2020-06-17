@@ -1,24 +1,26 @@
+import * as chai from "chai";
+import * as helpers from "./testing/helpers";
+
 // tslint:disable:no-implicit-dependencies
 import {
-  Model,
-  model,
-  List,
-  property,
   FireModel,
-  Watch,
-  Record,
   FmEvents,
   IReduxAction,
+  List,
+  Model,
+  Record,
+  Watch,
+  model,
+  property,
 } from "../src";
-import { RealTimeAdmin, IRealTimeAdmin } from "universal-fire";
-import * as chai from "chai";
-import { Mock } from "../src/Mock";
-import { Mock as FireMock } from "firemock";
-import { FancyPerson } from "./testing/FancyPerson";
+import { IDictionary, wait } from "common-types";
+import { IRealTimeAdmin, RealTimeAdmin } from "universal-fire";
+
 import { Car } from "./testing/Car";
 import { Company } from "./testing/Company";
-import { IDictionary, wait } from "common-types";
-import * as helpers from "./testing/helpers";
+import { FancyPerson } from "./testing/FancyPerson";
+import { Mock as FireMock } from "firemock";
+import { Mock } from "../src/Mock";
 const expect = chai.expect;
 helpers.setupEnv();
 @model({})
@@ -32,7 +34,7 @@ describe("Mocking:", () => {
   let db: IRealTimeAdmin;
   let realDb: IRealTimeAdmin;
   before(async () => {
-    realDb = await RealTimeAdmin({ mocking: true });
+    realDb = await RealTimeAdmin.connect({ mocking: true });
   });
   after(async () => {
     const fancy = Record.create(FancyPerson);
@@ -43,7 +45,7 @@ describe("Mocking:", () => {
     }
   });
   beforeEach(async () => {
-    db = await RealTimeAdmin({ mocking: true });
+    db = await RealTimeAdmin.connect({ mocking: true });
     FireModel.defaultDb = db;
   });
 

@@ -1,14 +1,16 @@
-// tslint:disable:no-implicit-dependencies
-import { Record, FireModel, Mock, List } from "../src";
 // import { DB, SDK } from "universal-fire";
 import * as chai from "chai";
+
+// tslint:disable:no-implicit-dependencies
+import { FireModel, List, Mock, Record } from "../src";
+
 import { Person } from "./testing/default-values/Person";
 import { RealTimeAdmin } from "universal-fire";
 const expect = chai.expect;
 
 describe("defaultValue() → ", () => {
   before(async () => {
-    const db = await RealTimeAdmin({ mocking: true });
+    const db = await RealTimeAdmin.connect({ mocking: true });
     FireModel.defaultDb = db;
   });
 
