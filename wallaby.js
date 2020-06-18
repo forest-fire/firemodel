@@ -2,24 +2,15 @@ module.exports = function(w) {
   return {
     // runAllTestsInAffectedTestFile: true,
     files: [
-      "src/**/*.ts",
-      {
-        pattern: "env.yml",
-        instrument: false
-      },
-
-      {
-        pattern: "test/testing/**/*.ts",
-        instrument: false
-      },
-      {
-        pattern: "test/testing/test-console.ts",
-        instrument: false
-      },
-      {
-        pattern: "test/dexie-test-data.ts",
-        instument: true
-      }
+      'src/**/*',
+      'jest.config.js',
+      'package.json',
+      'tsconfig.json',
+      { pattern: "env.yml", instrument: false },
+      { pattern: "test/jest.setup.js", instrument: false },
+      { pattern: "test/testing/test-console.ts", instrument: false },
+      { pattern: "test/testing/**/*.ts", instrument: true },
+      { pattern: "test/dexie-test-data.ts", instrument: true },
     ],
 
     tests: ["test/**/*-spec.ts"],
@@ -27,12 +18,6 @@ module.exports = function(w) {
     env: {
       type: "node",
       runner: "node"
-    },
-
-    compilers: {
-      "**/*.ts": w.compilers.typeScript({
-        module: "commonjs"
-      })
     },
 
     setup() {
@@ -58,7 +43,7 @@ module.exports = function(w) {
       }
     },
 
-    testFramework: "mocha",
+    testFramework: "jest",
     debug: true
   };
 };
