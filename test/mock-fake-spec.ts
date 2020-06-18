@@ -1,11 +1,12 @@
-// tslint:disable:no-implicit-dependencies
-import fakeIt from "../src/Mock/fakeIt";
 import { Mock as FireMock, MockHelper } from "firemock";
-import { expect } from "chai";
+import { FireModel, List, Mock } from "../src";
+
+import { Product } from "./testing/Product";
 // import { DB, SDK } from "universal-fire";
 import { RealTimeAdmin } from "@forest-fire/real-time-admin";
-import { Mock, FireModel, List } from "../src";
-import { Product } from "./testing/Product";
+import { expect } from "chai";
+// tslint:disable:no-implicit-dependencies
+import { fakeIt } from "../src/Mock/fakeIt";
 
 const helper = new MockHelper();
 
