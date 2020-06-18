@@ -1,12 +1,13 @@
+import { IRealTimeAdmin, RealTimeAdmin } from "universal-fire";
+
+import { FireModel } from "../src/FireModel";
 // tslint:disable:no-implicit-dependencies
 import { expect } from "chai";
-import { FireModel } from "../src/FireModel";
-import { RealTimeAdmin, IRealTimeAdmin } from "universal-fire";
 
 describe("Rolling back a record => ", () => {
   let db: IRealTimeAdmin;
   beforeEach(async () => {
-    db = await RealTimeAdmin({ mocking: true });
+    db = await RealTimeAdmin.connect({ mocking: true });
     FireModel.defaultDb = db;
   });
 

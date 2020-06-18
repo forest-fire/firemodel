@@ -1,21 +1,23 @@
-// tslint:disable:no-implicit-dependencies
-import { Record, IFmWatchEvent, IFmChangedProperties } from "../src";
 import * as chai from "chai";
+
+import { FireModel, IMultiPathUpdates } from "../src/FireModel";
+// tslint:disable:no-implicit-dependencies
+import { IFmChangedProperties, IFmWatchEvent, Record } from "../src";
+import { IRealTimeAdmin, RealTimeAdmin } from "universal-fire";
+import { IVuexDispatch, VeuxWrapper } from "../src/state-mgmt/VuexWrapper";
+import { compareHashes, withoutMetaOrPrivate } from "../src/util";
+
+import { FmEvents } from "../src/state-mgmt";
 import { Person } from "./testing/Person";
 import { PersonWithLocal } from "./testing/PersonWithLocal";
 import { PersonWithLocalAndPrefix } from "./testing/PersonWithLocalAndPrefix";
-import { IMultiPathUpdates, FireModel } from "../src/FireModel";
-import { FmEvents } from "../src/state-mgmt";
-import { RealTimeAdmin, IRealTimeAdmin } from "universal-fire";
 import { wait } from "./testing/helpers";
-import { IVuexDispatch, VeuxWrapper } from "../src/state-mgmt/VuexWrapper";
-import { compareHashes, withoutMetaOrPrivate } from "../src/util";
 const expect = chai.expect;
 
 describe("Dispatch →", () => {
   let db: IRealTimeAdmin;
   beforeEach(async () => {
-    db = await RealTimeAdmin({ mocking: true });
+    db = await RealTimeAdmin.connect({ mocking: true });
     Record.defaultDb = db;
     Record.dispatch = null;
   });

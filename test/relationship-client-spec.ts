@@ -1,14 +1,17 @@
-// tslint:disable:no-implicit-dependencies
-import { Record, IFmWatchEvent, IFmLocalRelationshipEvent } from "../src";
-import { RealTimeAdmin, IRealTimeAdmin } from "universal-fire";
-import * as chai from "chai";
-const expect = chai.expect;
 import "reflect-metadata";
-import { FireModel } from "../src/FireModel";
+
+import * as chai from "chai";
+
+// tslint:disable:no-implicit-dependencies
+import { IFmLocalRelationshipEvent, IFmWatchEvent, Record } from "../src";
+import { IRealTimeAdmin, RealTimeAdmin } from "universal-fire";
+
+import { Company } from "./testing/Company";
 import { FancyPerson } from "./testing/FancyPerson";
+import { FireModel } from "../src/FireModel";
 import { FmEvents } from "../src/state-mgmt";
 import { List } from "../src/List";
-import { Company } from "./testing/Company";
+const expect = chai.expect;
 
 const addFatherAndChildren = async () => {
   const bob = await Record.add(FancyPerson, {
@@ -39,7 +42,7 @@ const addFatherAndChildren = async () => {
 describe("Relationship > ", () => {
   let db: IRealTimeAdmin;
   beforeEach(async () => {
-    db = await RealTimeAdmin({ mocking: true });
+    db = await RealTimeAdmin.connect({ mocking: true });
     FireModel.defaultDb = db;
     FireModel.dispatch = null;
   });
