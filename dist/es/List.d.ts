@@ -1,12 +1,12 @@
 import { epochWithMilliseconds, IDictionary } from "common-types";
-import type { BaseSerializer, IComparisonOperator } from "@forest-fire/serialized-query";
+import type { IComparisonOperator } from "@forest-fire/serialized-query";
+import { ISerializedQuery, IAbstractedDatabase } from "universal-fire";
 import { Model } from "./models/Model";
 import { Record } from "./Record";
 import { FireModel } from "./FireModel";
 import { IReduxDispatch } from "./state-mgmt/index";
 import { IListOptions } from "./@types/general";
 import { IPrimaryKey } from "./@types";
-import { IAbstractedDatabase } from "universal-fire";
 export declare class List<T extends Model> extends FireModel<T> {
     /**
      * Sets the default database to be used by all FireModel classes
@@ -31,7 +31,7 @@ export declare class List<T extends Model> extends FireModel<T> {
      * @param query the serialized query; note that this LIST will override the path of the query
      * @param options model options
      */
-    static fromQuery<T extends Model>(model: new () => T, query: BaseSerializer<T>, options?: IListOptions<T>): Promise<List<T>>;
+    static fromQuery<T extends Model>(model: new () => T, query: ISerializedQuery<T>, options?: IListOptions<T>): Promise<List<T>>;
     /**
      * Loads all the records of a given schema-type ordered by lastUpdated
      *
@@ -127,7 +127,7 @@ export declare class List<T extends Model> extends FireModel<T> {
     private _data;
     private _query;
     constructor(model: new () => T, options?: IListOptions<T>);
-    get query(): BaseSerializer;
+    get query(): ISerializedQuery<T>;
     get length(): number;
     get dbPath(): string;
     /**
@@ -196,7 +196,7 @@ export declare class List<T extends Model> extends FireModel<T> {
     /**
      * Loads data into the `List` object
      */
-    load(pathOrQuery: string | BaseSerializer<T>): Promise<this>;
+    load(pathOrQuery: string | ISerializedQuery<T>): Promise<this>;
     private _injectDynamicDbOffsets;
 }
 export declare type ListFilterFunction<T> = (fc: T) => boolean;
