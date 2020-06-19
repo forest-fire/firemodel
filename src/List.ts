@@ -1,11 +1,12 @@
 import { arrayToHash } from "typed-conversions";
 
 import { epochWithMilliseconds, IDictionary } from "common-types";
-import type {
-  BaseSerializer,
-  IComparisonOperator,
-} from "@forest-fire/serialized-query";
-import { SerializedQuery } from "universal-fire";
+import type { IComparisonOperator } from "@forest-fire/serialized-query";
+import {
+  SerializedQuery,
+  ISerializedQuery,
+  IAbstractedDatabase,
+} from "universal-fire";
 
 import { Model } from "./models/Model";
 import { Record } from "./Record";
@@ -16,8 +17,7 @@ import { getModelMeta } from "./ModelMeta";
 import { IListOptions } from "./@types/general";
 import { FireModelError } from "./errors";
 import { capitalize } from "./util";
-import { ICompositeKey, IPrimaryKey } from "./@types";
-import { IAbstractedDatabase } from "universal-fire";
+import { IPrimaryKey } from "./@types";
 
 const DEFAULT_IF_NOT_FOUND = "__DO_NOT_USE__";
 
@@ -112,7 +112,7 @@ export class List<T extends Model> extends FireModel<T> {
    */
   public static async fromQuery<T extends Model>(
     model: new () => T,
-    query: BaseSerializer<T>,
+    query: ISerializedQuery<T>,
     options: IListOptions<T> = {}
   ): Promise<List<T>> {
     const list = List.create(model, options);
@@ -379,7 +379,7 @@ export class List<T extends Model> extends FireModel<T> {
   //#endregion
 
   private _data: T[] = [];
-  private _query: BaseSerializer;
+  private _query: ISerializedQuery<T>;
 
   constructor(model: new () => T, options: IListOptions<T> = {}) {
     super();
@@ -396,7 +396,7 @@ export class List<T extends Model> extends FireModel<T> {
     }
   }
 
-  public get query(): BaseSerializer {
+  public get query(): ISerializedQuery<T> {
     return this._query;
   }
 
@@ -626,7 +626,7 @@ export class List<T extends Model> extends FireModel<T> {
   /**
    * Loads data into the `List` object
    */
-  public async load(pathOrQuery: string | BaseSerializer<T>) {
+  public async load(pathOrQuery: string | ISerializedQuery<T>) {
     if (!this.db) {
       const e = new Error(
         `The attempt to load data into a List requires that the DB property be initialized first!`
