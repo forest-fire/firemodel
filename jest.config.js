@@ -14,6 +14,6 @@ module.exports = {
     // '^@forest-fire/real-time-client$': '<rootDir>/node_modules/@forest-fire/real-time-client/dist/es/index.js',
     // '^@forest-fire/real-time-admin$': '<rootDir>/node_modules/@forest-fire/real-time-admin/dist/es/index.js',
   },
-  setupFilesAfterEnv: ['jest-extended', '<rootDir>/jest.setup.js'],
+  setupFilesAfterEnv: ['jest-extended', './jest.setup.js'],
   testEnvironment: 'node',
 };
