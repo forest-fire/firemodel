@@ -1,24 +1,28 @@
-import { Record } from "..";
-import { getModelMeta } from "../ModelMeta";
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.buildDeepRelationshipLinks = void 0;
+const __1 = require("..");
+const ModelMeta_1 = require("../ModelMeta");
 /**
  * When creating a new record it is sometimes desirable to pass in
  * the "payload" of FK's instead of just the FK. This function facilitates
  * that.
  */
-export async function buildDeepRelationshipLinks(rec, property) {
-    const meta = getModelMeta(rec).property(property);
+async function buildDeepRelationshipLinks(rec, property) {
+    const meta = ModelMeta_1.getModelMeta(rec).property(property);
     return meta.relType === "hasMany"
         ? processHasMany(rec, property)
         : processBelongsTo(rec, property);
 }
+exports.buildDeepRelationshipLinks = buildDeepRelationshipLinks;
 async function processHasMany(rec, property) {
-    const meta = getModelMeta(rec).property(property);
+    const meta = ModelMeta_1.getModelMeta(rec).property(property);
     const fks = rec.get(property);
     const promises = [];
     for (const key of Object.keys(fks)) {
         const fk = fks[key];
         if (fk !== true) {
-            const fkRecord = await Record.add(meta.fkConstructor(), fk, {
+            const fkRecord = await __1.Record.add(meta.fkConstructor(), fk, {
                 setDeepRelationships: true
             });
             await rec.addToRelationship(property, fkRecord.compositeKeyRef);
@@ -41,9 +45,9 @@ async function processHasMany(rec, property) {
 }
 async function processBelongsTo(rec, property) {
     const fk = rec.get(property);
-    const meta = getModelMeta(rec).property(property);
+    const meta = ModelMeta_1.getModelMeta(rec).property(property);
     if (fk && typeof fk === "object") {
-        const fkRecord = Record.add(meta.fkConstructor(), fk, {
+        const fkRecord = __1.Record.add(meta.fkConstructor(), fk, {
             setDeepRelationships: true
         });
     }

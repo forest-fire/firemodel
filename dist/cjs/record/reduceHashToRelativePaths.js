@@ -1,5 +1,8 @@
-import { FireModelProxyError } from "../errors";
-export function discoverRootPath(results) {
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.discoverRootPath = void 0;
+const errors_1 = require("../errors");
+function discoverRootPath(results) {
     try {
         const incomingPaths = results.map(i => i.path);
         const rootParts = incomingPaths.reduce((acc, curr) => {
@@ -32,8 +35,9 @@ export function discoverRootPath(results) {
             throw e;
         }
         else {
-            throw new FireModelProxyError(e, "Problems in discoverRootPath");
+            throw new errors_1.FireModelProxyError(e, "Problems in discoverRootPath");
         }
     }
 }
+exports.discoverRootPath = discoverRootPath;
 //# sourceMappingURL=reduceHashToRelativePaths.js.map

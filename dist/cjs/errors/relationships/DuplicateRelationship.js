@@ -1,5 +1,8 @@
-import { FireModelError } from "../FireModelError";
-export class DuplicateRelationship extends FireModelError {
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.DuplicateRelationship = void 0;
+const FireModelError_1 = require("../FireModelError");
+class DuplicateRelationship extends FireModelError_1.FireModelError {
     constructor(pk, property, fkId) {
         const fkConstructor = pk.META.relationship("property").fkConstructor();
         const fkModel = new fkConstructor();
@@ -7,4 +10,5 @@ export class DuplicateRelationship extends FireModelError {
         super(message, "firemodel/duplicate-relationship");
     }
 }
+exports.DuplicateRelationship = DuplicateRelationship;
 //# sourceMappingURL=DuplicateRelationship.js.map

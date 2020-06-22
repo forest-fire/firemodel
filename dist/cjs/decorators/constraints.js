@@ -1,28 +1,37 @@
-import "reflect-metadata";
-import { propertiesByModel } from "./model-meta/property-store";
-import { propertyReflector } from "./reflector";
-export function constrainedProperty(options = {}) {
-    return propertyReflector(Object.assign(Object.assign({}, options), { isRelationship: false, isProperty: true }), propertiesByModel);
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.pushKey = exports.property = exports.length = exports.max = exports.min = exports.desc = exports.constrain = exports.constrainedProperty = void 0;
+require("reflect-metadata");
+const property_store_1 = require("./model-meta/property-store");
+const reflector_1 = require("./reflector");
+function constrainedProperty(options = {}) {
+    return reflector_1.propertyReflector(Object.assign(Object.assign({}, options), { isRelationship: false, isProperty: true }), property_store_1.propertiesByModel);
 }
+exports.constrainedProperty = constrainedProperty;
 /** allows the introduction of a new constraint to the metadata of a property */
-export function constrain(prop, value) {
-    return propertyReflector({ [prop]: value }, propertiesByModel);
+function constrain(prop, value) {
+    return reflector_1.propertyReflector({ [prop]: value }, property_store_1.propertiesByModel);
 }
-export function desc(value) {
-    return propertyReflector({ desc: value }, propertiesByModel);
+exports.constrain = constrain;
+function desc(value) {
+    return reflector_1.propertyReflector({ desc: value }, property_store_1.propertiesByModel);
 }
-export function min(value) {
-    return propertyReflector({ min: value }, propertiesByModel);
+exports.desc = desc;
+function min(value) {
+    return reflector_1.propertyReflector({ min: value }, property_store_1.propertiesByModel);
 }
-export function max(value) {
-    return propertyReflector({ max: value }, propertiesByModel);
+exports.min = min;
+function max(value) {
+    return reflector_1.propertyReflector({ max: value }, property_store_1.propertiesByModel);
 }
-export function length(value) {
-    return propertyReflector({ length: value }, propertiesByModel);
+exports.max = max;
+function length(value) {
+    return reflector_1.propertyReflector({ length: value }, property_store_1.propertiesByModel);
 }
-export const property = propertyReflector({
+exports.length = length;
+exports.property = reflector_1.propertyReflector({
     isRelationship: false,
     isProperty: true,
-}, propertiesByModel);
-export const pushKey = propertyReflector({ pushKey: true }, propertiesByModel);
+}, property_store_1.propertiesByModel);
+exports.pushKey = reflector_1.propertyReflector({ pushKey: true }, property_store_1.propertiesByModel);
 //# sourceMappingURL=constraints.js.map

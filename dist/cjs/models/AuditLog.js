@@ -1,3 +1,4 @@
+"use strict";
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -7,30 +8,32 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-import { model, property, index } from "../decorators/index";
-import { Model } from "../models/Model";
-let AuditLog = class AuditLog extends Model {
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.AuditLog = void 0;
+const index_1 = require("../decorators/index");
+const Model_1 = require("../models/Model");
+let AuditLog = class AuditLog extends Model_1.Model {
 };
 __decorate([
-    property,
-    index,
+    index_1.property,
+    index_1.index,
     __metadata("design:type", String)
 ], AuditLog.prototype, "modelName", void 0);
 __decorate([
-    property,
-    index,
+    index_1.property,
+    index_1.index,
     __metadata("design:type", String)
 ], AuditLog.prototype, "modelId", void 0);
 __decorate([
-    property,
+    index_1.property,
     __metadata("design:type", Array)
 ], AuditLog.prototype, "changes", void 0);
 __decorate([
-    property,
+    index_1.property,
     __metadata("design:type", String)
 ], AuditLog.prototype, "action", void 0);
 AuditLog = __decorate([
-    model({ dbOffset: "_auditing" })
+    index_1.model({ dbOffset: "_auditing" })
 ], AuditLog);
-export { AuditLog };
+exports.AuditLog = AuditLog;
 //# sourceMappingURL=AuditLog.js.map

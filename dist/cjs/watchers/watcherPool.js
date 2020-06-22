@@ -1,32 +1,42 @@
-import { hashToArray } from "typed-conversions";
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.removeFromWatcherPool = exports.addDispatchForWatcher = exports.clearWatcherPool = exports.getFromWatcherPool = exports.addToWatcherPool = exports.getWatcherPoolList = exports.getWatcherPool = void 0;
+const typed_conversions_1 = require("typed-conversions");
 /** a cache of all the watched  */
 let watcherPool = {};
-export function getWatcherPool() {
+function getWatcherPool() {
     return watcherPool;
 }
-export function getWatcherPoolList() {
-    return hashToArray(getWatcherPool());
+exports.getWatcherPool = getWatcherPool;
+function getWatcherPoolList() {
+    return typed_conversions_1.hashToArray(getWatcherPool());
 }
-export function addToWatcherPool(item) {
+exports.getWatcherPoolList = getWatcherPoolList;
+function addToWatcherPool(item) {
     watcherPool[item.watcherId] = item;
 }
-export function getFromWatcherPool(code) {
+exports.addToWatcherPool = addToWatcherPool;
+function getFromWatcherPool(code) {
     return watcherPool[code];
 }
-export function clearWatcherPool() {
+exports.getFromWatcherPool = getFromWatcherPool;
+function clearWatcherPool() {
     watcherPool = {};
 }
+exports.clearWatcherPool = clearWatcherPool;
 /**
  * Each watcher must have it's own `dispatch()` function which
  * is reponsible for capturing the "context". This will be used
  * both by locally originated events (which have more info) and
  * server based events.
  */
-export function addDispatchForWatcher(code, dispatch) {
+function addDispatchForWatcher(code, dispatch) {
     //
 }
-export function removeFromWatcherPool(code) {
+exports.addDispatchForWatcher = addDispatchForWatcher;
+function removeFromWatcherPool(code) {
     delete watcherPool[code];
     return watcherPool;
 }
+exports.removeFromWatcherPool = removeFromWatcherPool;
 //# sourceMappingURL=watcherPool.js.map

@@ -1,3 +1,4 @@
+"use strict";
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -7,30 +8,32 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-import { property } from "../decorators/constraints";
-import { mock } from "../decorators/mock";
-import { model } from "../decorators/model";
-import { index } from "../decorators/indexing";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.Model = void 0;
+const constraints_1 = require("../decorators/constraints");
+const mock_1 = require("../decorators/mock");
+const model_1 = require("../decorators/model");
+const indexing_1 = require("../decorators/indexing");
 let Model = class Model {
 };
 __decorate([
-    property,
+    constraints_1.property,
     __metadata("design:type", String)
 ], Model.prototype, "id", void 0);
 __decorate([
-    property,
-    mock("dateRecentMiliseconds"),
-    index,
+    constraints_1.property,
+    mock_1.mock("dateRecentMiliseconds"),
+    indexing_1.index,
     __metadata("design:type", Number)
 ], Model.prototype, "lastUpdated", void 0);
 __decorate([
-    property,
-    mock("datePastMiliseconds"),
-    index,
+    constraints_1.property,
+    mock_1.mock("datePastMiliseconds"),
+    indexing_1.index,
     __metadata("design:type", Number)
 ], Model.prototype, "createdAt", void 0);
 Model = __decorate([
-    model()
+    model_1.model()
 ], Model);
-export { Model };
+exports.Model = Model;
 //# sourceMappingURL=Model.js.map

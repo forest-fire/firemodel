@@ -1,3 +1,6 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.locallyUpdateFkOnRecord = void 0;
 /**
  * sets the `Record` property to the optimistic values set
  * with the relationship CRUD event.
@@ -5,7 +8,7 @@
  * This function has no concern with dispatch or the FK model
  * and any updates that may need to take place there.
  */
-export function locallyUpdateFkOnRecord(rec, fkId, event) {
+function locallyUpdateFkOnRecord(rec, fkId, event) {
     const relnType = rec.META.relationship(event.property).relType;
     // update lastUpdated but quietly as it will be updated again
     // once server responds
@@ -28,4 +31,5 @@ export function locallyUpdateFkOnRecord(rec, fkId, event) {
             return;
     }
 }
+exports.locallyUpdateFkOnRecord = locallyUpdateFkOnRecord;
 //# sourceMappingURL=locallyUpdateFkOnRecord.js.map

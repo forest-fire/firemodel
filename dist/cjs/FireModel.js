@@ -1,11 +1,14 @@
-import { pathJoin } from "common-types";
-import { getModelMeta } from "./ModelMeta";
-import { modelRegister, listRegisteredModels, modelRegistryLookup, } from "./record/relationships/modelRegistration";
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.FireModel = void 0;
+const common_types_1 = require("common-types");
+const ModelMeta_1 = require("./ModelMeta");
+const modelRegistration_1 = require("./record/relationships/modelRegistration");
 // tslint:disable-next-line:no-var-requires
 const pluralize = require("pluralize");
 const defaultDispatch = async (context) => "";
 const registeredModules = {};
-export class FireModel {
+class FireModel {
     static get defaultDb() {
         return FireModel._defaultDb;
     }
@@ -69,14 +72,14 @@ export class FireModel {
         return "dbPath was not overwritten!";
     }
     get META() {
-        return getModelMeta(this._model);
+        return ModelMeta_1.getModelMeta(this._model);
     }
     /**
      * A list of all the properties -- and those properties
      * meta information -- contained on the given model
      */
     get properties() {
-        const meta = getModelMeta(this._model);
+        const meta = ModelMeta_1.getModelMeta(this._model);
         return meta.properties;
     }
     /**
@@ -84,7 +87,7 @@ export class FireModel {
      * meta information -- contained on the given model
      */
     get relationships() {
-        const meta = getModelMeta(this._model);
+        const meta = ModelMeta_1.getModelMeta(this._model);
         return meta.relationships;
     }
     get dispatch() {
@@ -135,13 +138,13 @@ export class FireModel {
         return db;
     }
     static register(model) {
-        modelRegister(model);
+        modelRegistration_1.modelRegister(model);
     }
     static listRegisteredModels() {
-        return listRegisteredModels();
+        return modelRegistration_1.listRegisteredModels();
     }
     static lookupModel(name) {
-        return modelRegistryLookup(name);
+        return modelRegistration_1.modelRegistryLookup(name);
     }
     //#region STATIC INTERFACE
     static isBeingWatched(path) {
@@ -152,20 +155,21 @@ export class FireModel {
     //#region PROTECTED INTERFACE
     _getPaths(rec, deltas) {
         const added = (deltas.added || []).reduce((agg, curr) => {
-            agg[pathJoin(this.dbPath, curr)] = rec.get(curr);
+            agg[common_types_1.pathJoin(this.dbPath, curr)] = rec.get(curr);
             return agg;
         }, {});
         const removed = (deltas.removed || []).reduce((agg, curr) => {
-            agg[pathJoin(this.dbPath, curr)] = null;
+            agg[common_types_1.pathJoin(this.dbPath, curr)] = null;
             return agg;
         }, {});
         const updated = (deltas.changed || []).reduce((agg, curr) => {
-            agg[pathJoin(this.dbPath, curr)] = rec.get(curr);
+            agg[common_types_1.pathJoin(this.dbPath, curr)] = rec.get(curr);
             return agg;
         }, {});
         return Object.assign(Object.assign(Object.assign({}, added), removed), updated);
     }
 }
+exports.FireModel = FireModel;
 FireModel.auditLogs = "/auditing";
 FireModel._dispatchActive = false;
 /** the dispatch function used to interact with frontend frameworks */

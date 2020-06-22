@@ -1,15 +1,18 @@
-import { FireModelError } from "../FireModelError";
-import { Record } from "../../Record";
-import { MissingReciprocalInverse } from "./MissingReciprocalInverse";
-export class IncorrectReciprocalInverse extends FireModelError {
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.IncorrectReciprocalInverse = void 0;
+const FireModelError_1 = require("../FireModelError");
+const Record_1 = require("../../Record");
+const MissingReciprocalInverse_1 = require("./MissingReciprocalInverse");
+class IncorrectReciprocalInverse extends FireModelError_1.FireModelError {
     constructor(rec, property) {
         super("", "firemodel/missing-reciprocal-inverse");
         let message;
-        const fkRecord = Record.create(rec.META.relationship(property).fkConstructor(), { db: rec.db });
+        const fkRecord = Record_1.Record.create(rec.META.relationship(property).fkConstructor(), { db: rec.db });
         const inverseProperty = rec.META.relationship(property).inverseProperty;
         const fkInverse = fkRecord.META.relationship(inverseProperty);
         if (!fkInverse) {
-            const e = new MissingReciprocalInverse(rec, property);
+            const e = new MissingReciprocalInverse_1.MissingReciprocalInverse(rec, property);
             throw e;
         }
         else {
@@ -19,4 +22,5 @@ export class IncorrectReciprocalInverse extends FireModelError {
         this.message = message;
     }
 }
+exports.IncorrectReciprocalInverse = IncorrectReciprocalInverse;
 //# sourceMappingURL=IncorrectReciprocalInverse.js.map

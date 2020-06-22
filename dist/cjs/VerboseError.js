@@ -1,5 +1,8 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.VerboseError = void 0;
 let chalk;
-export class VerboseError extends Error {
+class VerboseError extends Error {
     constructor(err, ...args) {
         super(...args);
         this.code = err.code;
@@ -68,4 +71,5 @@ export class VerboseError extends Error {
         };
     }
 }
+exports.VerboseError = VerboseError;
 //# sourceMappingURL=VerboseError.js.map

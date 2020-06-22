@@ -1,8 +1,11 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.FireModelError = void 0;
 /**
  * Base **Error** for **FireModel**. Takes _message_ and _type/subtype_ as
  * parameters. The code will be the `subtype`; the name is both.
  */
-export class FireModelError extends Error {
+class FireModelError extends Error {
     constructor(message, classification = "firemodel/error") {
         super(message);
         this.firemodel = true;
@@ -12,4 +15,5 @@ export class FireModelError extends Error {
         this.code = subType;
     }
 }
+exports.FireModelError = FireModelError;
 //# sourceMappingURL=FireModelError.js.map

@@ -1,6 +1,6 @@
 {
   "name": "firemodel",
-  "version": "0.52.4",
+  "version": "0.52.5",
   "description": "Modeling, Access, and Mocking for Firebase Projects",
   "license": "MIT",
   "repository": "https://github.com/forest-fire/firemodel",
@@ -16,7 +16,7 @@
   "module": "dist/es/index.js",
   "typings": "dist/es/index.d.ts",
   "scripts": {
-    "clean": "rimraf dist;",
+    "clean": "rimraf dist",
     "clean:nuclear": "rimraf lib dist node_modules && yarn cache clean && rm yarn.lock && yarn && yarn upgrade",
     "lint": "./node_modules/.bin/tslint --force --format verbose \"src/**/*.ts\"",
     "build": "run-s clean build:rollup build:cjs",

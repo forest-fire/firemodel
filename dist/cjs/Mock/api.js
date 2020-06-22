@@ -1,9 +1,11 @@
-import { addRelationships, mockProperties } from "./index";
-import { FireModelError } from "../errors";
-import { Mock } from "firemock";
-import { Record } from "../Record";
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const index_1 = require("./index");
+const errors_1 = require("../errors");
+const firemock_1 = require("firemock");
+const Record_1 = require("../Record");
 let mockPrepared = false;
-export default function API(db, modelConstructor) {
+function API(db, modelConstructor) {
     const config = {
         relationshipBehavior: "ignore",
         exceptionPassthrough: false,
@@ -19,14 +21,14 @@ export default function API(db, modelConstructor) {
          */
         async generate(count, exceptions = {}) {
             if (!mockPrepared) {
-                await Mock.prepare();
+                await firemock_1.Mock.prepare();
                 mockPrepared = true;
             }
-            const props = mockProperties(db, config, exceptions);
-            const relns = addRelationships(db, config, exceptions);
+            const props = index_1.mockProperties(db, config, exceptions);
+            const relns = index_1.addRelationships(db, config, exceptions);
             // create record; using any incoming exception to build the object.
             // this is primarily to form the "composite key" where it is needed
-            const record = Record.createWith(modelConstructor, exceptions, { db: this.db });
+            const record = Record_1.Record.createWith(modelConstructor, exceptions, { db: this.db });
             if (record.hasDynamicPath) {
                 // which props -- required for compositeKey -- are not yet
                 // set
@@ -41,7 +43,7 @@ export default function API(db, modelConstructor) {
                     const mock = prop.mockType;
                     if (!mock ||
                         (typeof mock !== "function" && !validMocks.includes(mock))) {
-                        throw new FireModelError(`The mock for the "${record.modelName}" model has dynamic segments and "${key}" was neither set as a fixed value in the exception parameter [ ${Object.keys(exceptions || {})} ] of generate() nor was the model constrained by a @mock type ${mock ? `[ ${mock} ]` : ""} which is deemed valid. Valid named mocks are ${JSON.stringify(validMocks)}; all bespoke mocks are accepted as valid.`, `firemodel/mock-not-ready`);
+                        throw new errors_1.FireModelError(`The mock for the "${record.modelName}" model has dynamic segments and "${key}" was neither set as a fixed value in the exception parameter [ ${Object.keys(exceptions || {})} ] of generate() nor was the model constrained by a @mock type ${mock ? `[ ${mock} ]` : ""} which is deemed valid. Valid named mocks are ${JSON.stringify(validMocks)}; all bespoke mocks are accepted as valid.`, `firemodel/mock-not-ready`);
                     }
                 });
             }
@@ -93,4 +95,5 @@ export default function API(db, modelConstructor) {
     };
     return MockApi;
 }
+exports.default = API;
 //# sourceMappingURL=api.js.map

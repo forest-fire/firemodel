@@ -1,12 +1,15 @@
-import { WatchBase } from "./WatchBase";
-import { FireModelError } from "../errors";
-import { Record } from "..";
-import { SerializedQuery } from "universal-fire";
-import { FireModel } from "../FireModel";
-export class WatchRecord extends WatchBase {
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.WatchRecord = void 0;
+const WatchBase_1 = require("./WatchBase");
+const errors_1 = require("../errors");
+const __1 = require("..");
+const universal_fire_1 = require("universal-fire");
+const FireModel_1 = require("../FireModel");
+class WatchRecord extends WatchBase_1.WatchBase {
     static record(modelConstructor, pk, options = {}) {
         if (!pk) {
-            throw new FireModelError(`Attempt made to watch a RECORD but no primary key was provided!`, "firemodel/no-pk");
+            throw new errors_1.FireModelError(`Attempt made to watch a RECORD but no primary key was provided!`, "firemodel/no-pk");
         }
         const o = new WatchRecord();
         // if options hash has a DB reference; use it
@@ -15,8 +18,8 @@ export class WatchRecord extends WatchBase {
         }
         o._eventType = "value";
         o._watcherSource = "record";
-        const r = Record.createWith(modelConstructor, pk, options.db ? { db: options.db } : {});
-        o._query = SerializedQuery.create(options.db || FireModel.defaultDb, `${r.dbPath}`);
+        const r = __1.Record.createWith(modelConstructor, pk, options.db ? { db: options.db } : {});
+        o._query = universal_fire_1.SerializedQuery.create(options.db || FireModel_1.FireModel.defaultDb, `${r.dbPath}`);
         o._modelConstructor = modelConstructor;
         o._modelName = r.modelName;
         o._localModelName = r.META.localModelName;
@@ -28,4 +31,5 @@ export class WatchRecord extends WatchBase {
         return o;
     }
 }
+exports.WatchRecord = WatchRecord;
 //# sourceMappingURL=WatchRecord.js.map

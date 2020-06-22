@@ -1,11 +1,14 @@
-import { arrayToHash } from "typed-conversions";
-import { SerializedQuery, } from "universal-fire";
-import { Record } from "./Record";
-import { FireModel } from "./FireModel";
-import { pathJoin } from "./path";
-import { getModelMeta } from "./ModelMeta";
-import { FireModelError } from "./errors";
-import { capitalize } from "./util";
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.List = void 0;
+const typed_conversions_1 = require("typed-conversions");
+const universal_fire_1 = require("universal-fire");
+const Record_1 = require("./Record");
+const FireModel_1 = require("./FireModel");
+const path_1 = require("./path");
+const ModelMeta_1 = require("./ModelMeta");
+const errors_1 = require("./errors");
+const util_1 = require("./util");
 const DEFAULT_IF_NOT_FOUND = "__DO_NOT_USE__";
 function addTimestamps(obj) {
     const datetime = new Date().getTime();
@@ -15,7 +18,7 @@ function addTimestamps(obj) {
     });
     return output;
 }
-export class List extends FireModel {
+class List extends FireModel_1.FireModel {
     constructor(model, options = {}) {
         super();
         //#endregion
@@ -24,8 +27,8 @@ export class List extends FireModel {
         this._model = new model();
         if (options.db) {
             this._db = options.db;
-            if (!FireModel.defaultDb) {
-                FireModel.defaultDb = options.db;
+            if (!FireModel_1.FireModel.defaultDb) {
+                FireModel_1.FireModel.defaultDb = options.db;
             }
         }
         if (options.offsets) {
@@ -38,10 +41,10 @@ export class List extends FireModel {
      * unless explicitly told otherwise
      */
     static set defaultDb(db) {
-        FireModel.defaultDb = db;
+        FireModel_1.FireModel.defaultDb = db;
     }
     static get defaultDb() {
-        return FireModel.defaultDb;
+        return FireModel_1.FireModel.defaultDb;
     }
     /**
      * Set
@@ -52,7 +55,7 @@ export class List extends FireModel {
      */
     static async set(model, payload, options = {}) {
         try {
-            const m = Record.create(model, options);
+            const m = Record_1.Record.create(model, options);
             // If Auditing is one we must be more careful
             if (m.META.audit) {
                 const existing = await List.all(model, options);
@@ -69,7 +72,7 @@ export class List extends FireModel {
             else {
                 // Without auditing we can just set the payload into the DB
                 const datetime = new Date().getTime();
-                await FireModel.defaultDb.set(`${m.META.dbOffset}/${m.pluralName}`, addTimestamps(payload));
+                await FireModel_1.FireModel.defaultDb.set(`${m.META.dbOffset}/${m.pluralName}`, addTimestamps(payload));
             }
             const current = await List.all(model, options);
             return current;
@@ -81,7 +84,7 @@ export class List extends FireModel {
         }
     }
     static set dispatch(fn) {
-        FireModel.dispatch = fn;
+        FireModel_1.FireModel.dispatch = fn;
     }
     static create(model, options) {
         return new List(model, options);
@@ -110,7 +113,7 @@ export class List extends FireModel {
      * @param options model options
      */
     static async all(model, options = {}) {
-        const query = SerializedQuery.create(this.defaultDb).orderByChild("lastUpdated");
+        const query = universal_fire_1.SerializedQuery.create(this.defaultDb).orderByChild("lastUpdated");
         const list = await List.fromQuery(model, query, options);
         return list;
     }
@@ -123,7 +126,7 @@ export class List extends FireModel {
      * @param options model options
      */
     static async first(model, howMany, options = {}) {
-        const query = SerializedQuery.create(this.defaultDb)
+        const query = universal_fire_1.SerializedQuery.create(this.defaultDb)
             .orderByChild("createdAt")
             .limitToLast(howMany);
         const list = await List.fromQuery(model, query, options);
@@ -140,7 +143,7 @@ export class List extends FireModel {
      * @param options
      */
     static async recent(model, howMany, offset = 0, options = {}) {
-        const query = SerializedQuery.create(this.defaultDb)
+        const query = universal_fire_1.SerializedQuery.create(this.defaultDb)
             .orderByChild("lastUpdated")
             .limitToFirst(howMany);
         const list = await List.fromQuery(model, query, options);
@@ -157,7 +160,7 @@ export class List extends FireModel {
             e.name = "NotAllowed";
             throw e;
         }
-        const query = SerializedQuery.create(this.defaultDb)
+        const query = universal_fire_1.SerializedQuery.create(this.defaultDb)
             .orderByChild("lastUpdated")
             .startAt(since);
         const list = await List.fromQuery(model, query, options);
@@ -171,7 +174,7 @@ export class List extends FireModel {
      * without any update for the longest.
      */
     static async inactive(model, howMany, options = {}) {
-        const query = SerializedQuery.create(this.defaultDb)
+        const query = universal_fire_1.SerializedQuery.create(this.defaultDb)
             .orderByChild("lastUpdated")
             .limitToLast(howMany);
         const list = await List.fromQuery(model, query, options);
@@ -184,7 +187,7 @@ export class List extends FireModel {
      * that the record was **created**.
      */
     static async last(model, howMany, options = {}) {
-        const query = SerializedQuery.create(this.defaultDb)
+        const query = universal_fire_1.SerializedQuery.create(this.defaultDb)
             .orderByChild("createdAt")
             .limitToFirst(howMany);
         const list = await List.fromQuery(model, query, options);
@@ -205,14 +208,14 @@ export class List extends FireModel {
      * is only available to those who are using the Admin SDK/API.
      */
     static async bulkPut(model, records, options = {}) {
-        if (!FireModel.defaultDb.isAdminApi) {
-            throw new FireModelError(`You must use the Admin SDK/API to use the bulkPut feature. This may change in the future but in part because the dispatch functionality is not yet set it is restricted to the Admin API for now.`);
+        if (!FireModel_1.FireModel.defaultDb.isAdminApi) {
+            throw new errors_1.FireModelError(`You must use the Admin SDK/API to use the bulkPut feature. This may change in the future but in part because the dispatch functionality is not yet set it is restricted to the Admin API for now.`);
         }
         if (Array.isArray(records)) {
-            records = arrayToHash(records);
+            records = typed_conversions_1.arrayToHash(records);
         }
         const dbPath = List.dbPath(model, options.offsets);
-        await FireModel.defaultDb.update(dbPath, records);
+        await FireModel_1.FireModel.defaultDb.update(dbPath, records);
     }
     /**
      * **List.where()**
@@ -233,7 +236,7 @@ export class List extends FireModel {
             val = value[1];
             operation = value[0];
         }
-        const query = SerializedQuery.create(this.defaultDb)
+        const query = universal_fire_1.SerializedQuery.create(this.defaultDb)
             .orderByChild(property)
             // @ts-ignore
             // Not sure why there is a typing issue here.
@@ -255,7 +258,7 @@ export class List extends FireModel {
         const promises = [];
         const results = [];
         fks.forEach((fk) => {
-            promises.push(Record.get(model, fk).then((p) => results.push(p.data)));
+            promises.push(Record_1.Record.get(model, fk).then((p) => results.push(p.data)));
         });
         await Promise.all(promises);
         const obj = new List(model);
@@ -280,7 +283,7 @@ export class List extends FireModel {
         return this._data.length;
     }
     get dbPath() {
-        const dbOffset = getModelMeta(this._model).dbOffset;
+        const dbOffset = ModelMeta_1.getModelMeta(this._model).dbOffset;
         return [this._injectDynamicDbOffsets(dbOffset), this.pluralName].join("/");
     }
     /**
@@ -290,8 +293,8 @@ export class List extends FireModel {
      * Includes `localPrefix` and `pluralName`, but does not include `localPostfix`
      */
     get localPath() {
-        const meta = this._model.META || getModelMeta(this._model);
-        return pathJoin(meta.localPrefix, meta.localModelName !== this.modelName
+        const meta = this._model.META || ModelMeta_1.getModelMeta(this._model);
+        return path_1.pathJoin(meta.localPrefix, meta.localModelName !== this.modelName
             ? meta.localModelName
             : this.pluralName);
     }
@@ -303,7 +306,7 @@ export class List extends FireModel {
      * (assuming the default `all` postfix)
      */
     get localPostfix() {
-        const meta = this._model.META || getModelMeta(this._model);
+        const meta = this._model.META || ModelMeta_1.getModelMeta(this._model);
         return meta.localPostfix;
     }
     /** Returns another List with data filtered down by passed in filter function */
@@ -315,9 +318,9 @@ export class List extends FireModel {
     /** Returns another List with data filtered down by passed in filter function */
     find(f, defaultIfNotFound = DEFAULT_IF_NOT_FOUND) {
         const filtered = this._data.filter(f);
-        const r = Record.create(this._modelConstructor);
+        const r = Record_1.Record.create(this._modelConstructor);
         if (filtered.length > 0) {
-            return Record.createWith(this._modelConstructor, filtered[0]);
+            return Record_1.Record.createWith(this._modelConstructor, filtered[0]);
         }
         else {
             if (defaultIfNotFound !== DEFAULT_IF_NOT_FOUND) {
@@ -353,7 +356,7 @@ export class List extends FireModel {
             ? this.filterWhere(prop, value)
             : this.filterContains(prop, value);
         if (list.length > 0) {
-            return Record.createWith(this._modelConstructor, list._data[0]);
+            return Record_1.Record.createWith(this._modelConstructor, list._data[0]);
         }
         else {
             if (defaultIfNotFound !== DEFAULT_IF_NOT_FOUND) {
@@ -413,23 +416,23 @@ export class List extends FireModel {
             e.name = "NotFound";
             throw e;
         }
-        return Record.createWith(this._modelConstructor, find.data[0]);
+        return Record_1.Record.createWith(this._modelConstructor, find.data[0]);
     }
     async removeById(id, ignoreOnNotFound = false) {
         const rec = this.findById(id, null);
         if (!rec) {
             if (!ignoreOnNotFound) {
-                throw new FireModelError(`Could not remove "${id}" in list of ${this.pluralName} as the ID was not found!`, `firemodel/not-allowed`);
+                throw new errors_1.FireModelError(`Could not remove "${id}" in list of ${this.pluralName} as the ID was not found!`, `firemodel/not-allowed`);
             }
             else {
                 return;
             }
         }
-        const removed = await Record.remove(this._modelConstructor, id, rec);
+        const removed = await Record_1.Record.remove(this._modelConstructor, id, rec);
         this._data = this.filter((f) => f.id !== id).data;
     }
     async add(payload) {
-        const newRecord = await Record.add(this._modelConstructor, payload);
+        const newRecord = await Record_1.Record.add(this._modelConstructor, payload);
         this._data.push(newRecord.data);
         return newRecord;
     }
@@ -472,20 +475,21 @@ export class List extends FireModel {
         if (dbOffset.indexOf(":") === -1) {
             return dbOffset;
         }
-        const dynamicPathProps = Record.dynamicPathProperties(this._modelConstructor);
+        const dynamicPathProps = Record_1.Record.dynamicPathProperties(this._modelConstructor);
         Object.keys(this._offsets || {}).forEach((prop) => {
             if (dynamicPathProps.includes(prop)) {
                 const value = this._offsets[prop];
                 if (!["string", "number"].includes(typeof value)) {
-                    throw new FireModelError(`The dynamic dbOffset is using the property "${prop}" on ${this.modelName} as a part of the route path but that property must be either a string or a number and instead was a ${typeof value}`, "record/not-allowed");
+                    throw new errors_1.FireModelError(`The dynamic dbOffset is using the property "${prop}" on ${this.modelName} as a part of the route path but that property must be either a string or a number and instead was a ${typeof value}`, "record/not-allowed");
                 }
                 dbOffset = dbOffset.replace(`:${prop}`, String(value));
             }
         });
         if (dbOffset.includes(":")) {
-            throw new FireModelError(`Attempt to get the dbPath of a List where the underlying model [ ${capitalize(this.modelName)} ] has dynamic path segments which were NOT supplied! The offsets provided were "${JSON.stringify(Object.keys(this._offsets || {}))}" but this leaves the following uncompleted dbOffset: ${dbOffset}`);
+            throw new errors_1.FireModelError(`Attempt to get the dbPath of a List where the underlying model [ ${util_1.capitalize(this.modelName)} ] has dynamic path segments which were NOT supplied! The offsets provided were "${JSON.stringify(Object.keys(this._offsets || {}))}" but this leaves the following uncompleted dbOffset: ${dbOffset}`);
         }
         return dbOffset;
     }
 }
+exports.List = List;
 //# sourceMappingURL=List.js.map

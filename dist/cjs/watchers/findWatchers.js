@@ -1,5 +1,8 @@
-import { Watch } from "../Watch";
-import { hashToArray } from "typed-conversions";
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.findWatchers = void 0;
+const Watch_1 = require("../Watch");
+const typed_conversions_1 = require("typed-conversions");
 /**
  * **findWatchers**
  *
@@ -9,7 +12,7 @@ import { hashToArray } from "typed-conversions";
  * `1:1` relationship between "watcher" and Firebase listener there is instead
  * a `1:M` relationship.
  */
-export function findWatchers(
+function findWatchers(
 /** the database path where change was detected */
 dbPath) {
     const inspectListofRecords = (watcher) => {
@@ -22,10 +25,11 @@ dbPath) {
         });
         return found;
     };
-    return hashToArray(Watch.inventory).filter(i => i.watcherSource === "list-of-records"
+    return typed_conversions_1.hashToArray(Watch_1.Watch.inventory).filter(i => i.watcherSource === "list-of-records"
         ? /** handles the "list-of-records" use case */
             inspectListofRecords(i)
         : /** handles the standard use case */
             dbPath.includes(i.query.path));
 }
+exports.findWatchers = findWatchers;
 //# sourceMappingURL=findWatchers.js.map

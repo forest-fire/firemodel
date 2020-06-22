@@ -1,11 +1,14 @@
-import { SerializedQuery, } from "universal-fire";
-import { FireModelError } from "../errors";
-import { List } from "../List";
-import { Record } from "../Record";
-import { Watch } from "../index";
-import { WatchBase } from "./WatchBase";
-import { getAllPropertiesFromClassStructure } from "../util";
-export class WatchList extends WatchBase {
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.WatchList = void 0;
+const universal_fire_1 = require("universal-fire");
+const errors_1 = require("../errors");
+const List_1 = require("../List");
+const Record_1 = require("../Record");
+const index_1 = require("../index");
+const WatchBase_1 = require("./WatchBase");
+const util_1 = require("../util");
+class WatchList extends WatchBase_1.WatchBase {
     constructor() {
         super(...arguments);
         this._offsets = {};
@@ -31,10 +34,10 @@ export class WatchList extends WatchBase {
         if (options.offsets) {
             this._offsets = options.offsets;
         }
-        const lst = List.create(modelConstructor, options);
+        const lst = List_1.List.create(modelConstructor, options);
         this._modelConstructor = modelConstructor;
-        this._classProperties = getAllPropertiesFromClassStructure(new this._modelConstructor());
-        this._dynamicProperties = Record.dynamicPathProperties(modelConstructor);
+        this._classProperties = util_1.getAllPropertiesFromClassStructure(new this._modelConstructor());
+        this._dynamicProperties = Record_1.Record.dynamicPathProperties(modelConstructor);
         this.setPathDependantProperties();
         return this;
     }
@@ -44,7 +47,7 @@ export class WatchList extends WatchBase {
      */
     offsets(offsetDict) {
         this._offsets = offsetDict;
-        const lst = List.create(this._modelConstructor, this._options);
+        const lst = List_1.List.create(this._modelConstructor, this._options);
         this.setPathDependantProperties();
         return this;
     }
@@ -65,12 +68,12 @@ export class WatchList extends WatchBase {
      */
     ids(...ids) {
         if (ids.length === 0) {
-            throw new FireModelError(`You attempted to setup a watcher list on a given set of ID's of "${this._modelName}" but the list of ID's was empty!`, "firemodel/not-ready");
+            throw new errors_1.FireModelError(`You attempted to setup a watcher list on a given set of ID's of "${this._modelName}" but the list of ID's was empty!`, "firemodel/not-ready");
         }
         for (const id of ids) {
             this._underlyingRecordWatchers.push(this._options.offsets
-                ? Watch.record(this._modelConstructor, Object.assign(Object.assign({}, (typeof id === "string" ? { id } : id)), this._options.offsets))
-                : Watch.record(this._modelConstructor, id));
+                ? index_1.Watch.record(this._modelConstructor, Object.assign(Object.assign({}, (typeof id === "string" ? { id } : id)), this._options.offsets))
+                : index_1.Watch.record(this._modelConstructor, id));
         }
         this._watcherSource = "list-of-records";
         this._eventType = "value";
@@ -247,7 +250,7 @@ export class WatchList extends WatchBase {
         else {
             val = value;
         }
-        this._query = SerializedQuery.create(this.db, this._query.path)
+        this._query = universal_fire_1.SerializedQuery.create(this.db, this._query.path)
             .orderByChild(property)
             // TODO: fix typing issue here.
             // @ts-ignore
@@ -260,8 +263,8 @@ export class WatchList extends WatchBase {
     setPathDependantProperties() {
         if (this._dynamicProperties.length === 0 ||
             Object.keys(this._offsets).length > 0) {
-            const lst = List.create(this._modelConstructor, Object.assign(Object.assign({}, this._options), { offsets: this._offsets }));
-            this._query = SerializedQuery.create(this.db, lst.dbPath);
+            const lst = List_1.List.create(this._modelConstructor, Object.assign(Object.assign({}, this._options), { offsets: this._offsets }));
+            this._query = universal_fire_1.SerializedQuery.create(this.db, lst.dbPath);
             this._modelName = lst.modelName;
             this._pluralName = lst.pluralName;
             this._localPath = lst.localPath;
@@ -269,4 +272,5 @@ export class WatchList extends WatchBase {
         }
     }
 }
+exports.WatchList = WatchList;
 //# sourceMappingURL=WatchList.js.map

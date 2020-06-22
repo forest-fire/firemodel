@@ -1,7 +1,10 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.MockError = void 0;
 /**
  * A mocking error originated within FireModel
  */
-export class MockError extends Error {
+class MockError extends Error {
     constructor(message, classification = "firemodel/error") {
         super(message);
         this.firemodel = true;
@@ -11,4 +14,5 @@ export class MockError extends Error {
         this.code = subType;
     }
 }
+exports.MockError = MockError;
 //# sourceMappingURL=MockError.js.map

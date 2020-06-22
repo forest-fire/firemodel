@@ -1,3 +1,6 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.reduceCompositeNotationToStringRepresentation = void 0;
 /**
    * **_reduceCompositeNotationToStringRepresentation**
    *
@@ -7,10 +10,11 @@
 `${id}::${prop}:${propValue}::${prop2}:${propValue2}`
 ```
    */
-export function reduceCompositeNotationToStringRepresentation(ck) {
+function reduceCompositeNotationToStringRepresentation(ck) {
     return (`${ck.id}` +
         Object.keys(ck)
             .filter(k => k !== "id")
             .map(k => `::${k}:${ck[k]}`));
 }
+exports.reduceCompositeNotationToStringRepresentation = reduceCompositeNotationToStringRepresentation;
 //# sourceMappingURL=reduceCompositeNotationToStringRepresentation.js.map

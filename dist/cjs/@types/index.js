@@ -1,7 +1,19 @@
-export * from "./audit-types";
-export * from "./firemodel-types";
-export * from "./general";
-export * from "./record-types";
-export * from "./relationships";
-export * from "./optional/dexie";
+"use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __exportStar = (this && this.__exportStar) || function(m, exports) {
+    for (var p in m) if (p !== "default" && !exports.hasOwnProperty(p)) __createBinding(exports, m, p);
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+__exportStar(require("./audit-types"), exports);
+__exportStar(require("./firemodel-types"), exports);
+__exportStar(require("./general"), exports);
+__exportStar(require("./record-types"), exports);
+__exportStar(require("./relationships"), exports);
+__exportStar(require("./optional/dexie"), exports);
 //# sourceMappingURL=index.js.map

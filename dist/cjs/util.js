@@ -1,24 +1,34 @@
-import { hashToArray } from "typed-conversions";
-import { propertiesByModel } from "./decorators/model-meta/property-store";
-import equal from "fast-deep-equal";
-export function normalized(...args) {
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.stripLeadingSlash = exports.lowercase = exports.capitalize = exports.withoutMetaOrPrivate = exports.getAllPropertiesFromClassStructure = exports.compareHashes = exports.updateToAuditChanges = exports.dotNotation = exports.firstKey = exports.slashNotation = exports.normalized = void 0;
+const typed_conversions_1 = require("typed-conversions");
+const property_store_1 = require("./decorators/model-meta/property-store");
+const fast_deep_equal_1 = __importDefault(require("fast-deep-equal"));
+function normalized(...args) {
     return args
         .filter(a => a)
         .map(a => a.replace(/$[\.\/]/, "").replace(/[\.\/]^/, ""))
         .map(a => a.replace(/\./g, "/"));
 }
-export function slashNotation(...args) {
+exports.normalized = normalized;
+function slashNotation(...args) {
     return normalized(...args).join("/");
 }
-export function firstKey(thingy) {
+exports.slashNotation = slashNotation;
+function firstKey(thingy) {
     return Object.keys(thingy)[0];
 }
-export function dotNotation(...args) {
+exports.firstKey = firstKey;
+function dotNotation(...args) {
     return normalized(...args)
         .join(".")
         .replace("/", ".");
 }
-export function updateToAuditChanges(changed, prior) {
+exports.dotNotation = dotNotation;
+function updateToAuditChanges(changed, prior) {
     return Object.keys(changed).reduce((prev, curr) => {
         const after = changed[curr];
         const before = prior[curr];
@@ -33,7 +43,8 @@ export function updateToAuditChanges(changed, prior) {
         return prev;
     }, []);
 }
-export function compareHashes(from, to, 
+exports.updateToAuditChanges = updateToAuditChanges;
+function compareHashes(from, to, 
 /**
  * optionally explicitly state properties so that relationships
  * can be filtered away
@@ -64,25 +75,27 @@ modelProps) {
         else if (from[i] === null) {
             results.removed.push(i);
         }
-        else if (!equal(from[i], to[i])) {
+        else if (!fast_deep_equal_1.default(from[i], to[i])) {
             results.changed.push(i);
         }
     });
     return results;
 }
-export function getAllPropertiesFromClassStructure(model) {
+exports.compareHashes = compareHashes;
+function getAllPropertiesFromClassStructure(model) {
     const modelName = model.constructor.name;
-    const properties = hashToArray(propertiesByModel[modelName], "property") || [];
+    const properties = typed_conversions_1.hashToArray(property_store_1.propertiesByModel[modelName], "property") || [];
     let parent = Object.getPrototypeOf(model.constructor);
     while (parent.name) {
         const subClass = new parent();
         const subClassName = subClass.constructor.name;
-        properties.push(...hashToArray(propertiesByModel[subClassName], "property"));
+        properties.push(...typed_conversions_1.hashToArray(property_store_1.propertiesByModel[subClassName], "property"));
         parent = Object.getPrototypeOf(subClass.constructor);
     }
     return properties.map(p => p.property);
 }
-export function withoutMetaOrPrivate(model) {
+exports.getAllPropertiesFromClassStructure = getAllPropertiesFromClassStructure;
+function withoutMetaOrPrivate(model) {
     if (model && model.META) {
         model = Object.assign({}, model);
         delete model.META;
@@ -96,13 +109,17 @@ export function withoutMetaOrPrivate(model) {
     }
     return model;
 }
-export function capitalize(str) {
+exports.withoutMetaOrPrivate = withoutMetaOrPrivate;
+function capitalize(str) {
     return str ? str.slice(0, 1).toUpperCase() + str.slice(1) : "";
 }
-export function lowercase(str) {
+exports.capitalize = capitalize;
+function lowercase(str) {
     return str ? str.slice(0, 1).toLowerCase() + str.slice(1) : "";
 }
-export function stripLeadingSlash(str) {
+exports.lowercase = lowercase;
+function stripLeadingSlash(str) {
     return str.slice(0, 1) === "/" ? str.slice(1) : str;
 }
+exports.stripLeadingSlash = stripLeadingSlash;
 //# sourceMappingURL=util.js.map
