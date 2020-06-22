@@ -1,19 +1,24 @@
-import { hashToArray } from "typed-conversions";
-export const relationshipsByModel = {};
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.getRelationships = exports.getModelRelationship = exports.isRelationship = exports.addRelationshipToModelMeta = exports.relationshipsByModel = void 0;
+const typed_conversions_1 = require("typed-conversions");
+exports.relationshipsByModel = {};
 /** allows the addition of meta information to be added to a model's relationships */
-export function addRelationshipToModelMeta(modelName, property, meta) {
-    if (!relationshipsByModel[modelName]) {
-        relationshipsByModel[modelName] = {};
+function addRelationshipToModelMeta(modelName, property, meta) {
+    if (!exports.relationshipsByModel[modelName]) {
+        exports.relationshipsByModel[modelName] = {};
     }
     // TODO: investigate why we need to genericize to model (from <T>)
-    relationshipsByModel[modelName][property] = meta;
+    exports.relationshipsByModel[modelName][property] = meta;
 }
-export function isRelationship(modelKlass) {
+exports.addRelationshipToModelMeta = addRelationshipToModelMeta;
+function isRelationship(modelKlass) {
     return (prop) => {
         return getModelRelationship(modelKlass)(prop) ? true : false;
     };
 }
-export function getModelRelationship(model) {
+exports.isRelationship = isRelationship;
+function getModelRelationship(model) {
     const relnsForModel = getRelationships(model);
     const className = model.constructor.name;
     return (prop) => {
@@ -22,19 +27,21 @@ export function getModelRelationship(model) {
         });
     };
 }
+exports.getModelRelationship = getModelRelationship;
 /**
  * Gets all the relationships for a given model
  */
-export function getRelationships(model) {
+function getRelationships(model) {
     const modelName = model.constructor.name;
-    const properties = hashToArray(relationshipsByModel[modelName], "property") || [];
+    const properties = typed_conversions_1.hashToArray(exports.relationshipsByModel[modelName], "property") || [];
     let parent = Object.getPrototypeOf(model.constructor);
     while (parent.name) {
         const subClass = new parent();
         const subClassName = subClass.constructor.name;
-        properties.push(...hashToArray(relationshipsByModel[subClassName], "property"));
+        properties.push(...typed_conversions_1.hashToArray(exports.relationshipsByModel[subClassName], "property"));
         parent = Object.getPrototypeOf(subClass.constructor);
     }
     return properties;
 }
+exports.getRelationships = getRelationships;
 //# sourceMappingURL=relationship-store.js.map

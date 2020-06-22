@@ -1,4 +1,7 @@
-export const NamedFakes = {
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.NamedFakes = void 0;
+exports.NamedFakes = {
     /** produces an "id" that looks/behaves like a Firebase key */
     id: true,
     /** produces an "id" that looks/behaves like a Firebase key */

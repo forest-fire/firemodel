@@ -1,25 +1,31 @@
-import copy from "fast-copy";
-import { dotNotation } from "common-types";
-import { key as fbKey } from "firebase-key";
-import { FireModel } from "./FireModel";
-import { buildDeepRelationshipLinks } from "./record/buildDeepRelationshipLinks";
-import { FmEvents, } from "./state-mgmt/index";
-import { pathJoin } from "./path";
-import { getModelMeta } from "./ModelMeta";
-import { writeAudit } from "./Audit";
-import { compareHashes, withoutMetaOrPrivate, capitalize } from "./util";
-import { createCompositeKey, List, } from ".";
-import { findWatchers } from "./watchers/findWatchers";
-import { isHasManyRelationship } from "./verifications/isHasManyRelationship";
-import { NotHasManyRelationship, NotHasOneRelationship, FireModelError, FireModelProxyError, } from "./errors";
-import { buildRelationshipPaths } from "./record/relationships/buildRelationshipPaths";
-import { relationshipOperation } from "./record/relationshipOperation";
-import { createCompositeKeyRefFromRecord } from "./record/createCompositeKeyString";
-import { createCompositeKeyFromFkString } from "./record/createCompositeKeyFromFkString";
-import { RecordCrudFailure } from "./errors/record/DatabaseCrudFailure";
-import { WatchDispatcher } from "./watchers/WatchDispatcher";
-import { UnwatchedLocalEvent } from "./state-mgmt/UnwatchedLocalEvent";
-export class Record extends FireModel {
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.Record = void 0;
+const fast_copy_1 = __importDefault(require("fast-copy"));
+const common_types_1 = require("common-types");
+const firebase_key_1 = require("firebase-key");
+const FireModel_1 = require("./FireModel");
+const buildDeepRelationshipLinks_1 = require("./record/buildDeepRelationshipLinks");
+const index_1 = require("./state-mgmt/index");
+const path_1 = require("./path");
+const ModelMeta_1 = require("./ModelMeta");
+const Audit_1 = require("./Audit");
+const util_1 = require("./util");
+const _1 = require(".");
+const findWatchers_1 = require("./watchers/findWatchers");
+const isHasManyRelationship_1 = require("./verifications/isHasManyRelationship");
+const errors_1 = require("./errors");
+const buildRelationshipPaths_1 = require("./record/relationships/buildRelationshipPaths");
+const relationshipOperation_1 = require("./record/relationshipOperation");
+const createCompositeKeyString_1 = require("./record/createCompositeKeyString");
+const createCompositeKeyFromFkString_1 = require("./record/createCompositeKeyFromFkString");
+const DatabaseCrudFailure_1 = require("./errors/record/DatabaseCrudFailure");
+const WatchDispatcher_1 = require("./watchers/WatchDispatcher");
+const UnwatchedLocalEvent_1 = require("./state-mgmt/UnwatchedLocalEvent");
+class Record extends FireModel_1.FireModel {
     constructor(model, options = {}) {
         super();
         this.options = options;
@@ -30,18 +36,18 @@ export class Record extends FireModel {
         this._writeOperations = [];
         this._data = {};
         if (!model) {
-            throw new FireModelError(`You are trying to instantiate a Record but the "model constructor" passed in is empty!`, `firemodel/not-allowed`);
+            throw new errors_1.FireModelError(`You are trying to instantiate a Record but the "model constructor" passed in is empty!`, `firemodel/not-allowed`);
         }
         if (!model.constructor) {
             console.log(`The "model" property passed into the Record constructor is NOT a Model constructor! It is of type "${typeof model}": `, model);
             if (typeof model === "string") {
-                model = FireModel.lookupModel(model);
+                model = FireModel_1.FireModel.lookupModel(model);
                 if (!model) {
-                    throw new FireModelError(`Attempted to lookup the model in the registry but it was not found!`);
+                    throw new errors_1.FireModelError(`Attempted to lookup the model in the registry but it was not found!`);
                 }
             }
             else {
-                throw new FireModelError(`Can not instantiate a Record without a valid Model constructor`);
+                throw new errors_1.FireModelError(`Can not instantiate a Record without a valid Model constructor`);
             }
         }
         this._modelConstructor = model;
@@ -50,13 +56,13 @@ export class Record extends FireModel {
     }
     //#region STATIC INTERFACE
     static set defaultDb(db) {
-        FireModel.defaultDb = db;
+        FireModel_1.FireModel.defaultDb = db;
     }
     static get defaultDb() {
-        return FireModel.defaultDb;
+        return FireModel_1.FireModel.defaultDb;
     }
     static set dispatch(fn) {
-        FireModel.dispatch = fn;
+        FireModel_1.FireModel.dispatch = fn;
     }
     /**
      * **dynamicPathProperties**
@@ -80,7 +86,7 @@ export class Record extends FireModel {
     static create(model, options = {}) {
         const r = new Record(model, options);
         if (options.silent && !r.db.isMockDb) {
-            throw new FireModelError(`You can only add new records to the DB silently when using a Mock database!`, "forbidden");
+            throw new errors_1.FireModelError(`You can only add new records to the DB silently when using a Mock database!`, "forbidden");
         }
         return r;
     }
@@ -92,7 +98,7 @@ export class Record extends FireModel {
         const rec = Record.create(model, options);
         if (!options.ignoreEmptyValues &&
             (!values || Object.keys(values).length === 0)) {
-            throw new FireModelError("You used the static Record.local() method but passed nothing into the 'values' property! If you just want to skip this error then you can set the options to { ignoreEmptyValues: true } or just use the Record.create() method.", `firemodel/record::local`);
+            throw new errors_1.FireModelError("You used the static Record.local() method but passed nothing into the 'values' property! If you just want to skip this error then you can set the options to { ignoreEmptyValues: true } or just use the Record.create() method.", `firemodel/record::local`);
         }
         if (values) {
             const defaultValues = rec.META.properties.filter((i) => i.defaultValue !== undefined);
@@ -117,15 +123,15 @@ export class Record extends FireModel {
     static async add(model, payload, options = {}) {
         let r;
         if (typeof model === "string") {
-            model = FireModel.lookupModel(model);
+            model = FireModel_1.FireModel.lookupModel(model);
         }
         try {
             if (!model) {
-                throw new FireModelError(`The model passed into the Record.add() static initializer was not defined! This is often the result of a circular dependency. Note that the "payload" sent into Record.add() was:\n\n${JSON.stringify(payload, null, 2)}`);
+                throw new errors_1.FireModelError(`The model passed into the Record.add() static initializer was not defined! This is often the result of a circular dependency. Note that the "payload" sent into Record.add() was:\n\n${JSON.stringify(payload, null, 2)}`);
             }
             r = Record.createWith(model, payload, options);
             if (!payload.id) {
-                const path = List.dbPath(model, payload);
+                const path = _1.List.dbPath(model, payload);
                 payload.id = await r.db.getPushKey(path);
             }
             await r._initialize(payload, options);
@@ -140,12 +146,12 @@ export class Record extends FireModel {
         catch (e) {
             if (e.code === "permission-denied") {
                 const rec = Record.createWith(model, payload);
-                throw new FireModelError(`Permission error while trying to add the ${capitalize(rec.modelName)} to the database path ${rec.dbPath}`, "firemodel/permission-denied");
+                throw new errors_1.FireModelError(`Permission error while trying to add the ${util_1.capitalize(rec.modelName)} to the database path ${rec.dbPath}`, "firemodel/permission-denied");
             }
             if (e.name.includes("firemodel")) {
                 throw e;
             }
-            throw new FireModelProxyError(e, "Failed to add new record ");
+            throw new errors_1.FireModelProxyError(e, "Failed to add new record ");
         }
         return r;
     }
@@ -209,10 +215,10 @@ export class Record extends FireModel {
     static createWith(model, payload, options = {}) {
         const rec = Record.create(model, options);
         if (options.setDeepRelationships === true) {
-            throw new FireModelError(`Trying to create a ${capitalize(rec.modelName)} with the "setDeepRelationships" property set. This is NOT allowed; consider the 'Record.add()' method instead.`, "not-allowed");
+            throw new errors_1.FireModelError(`Trying to create a ${util_1.capitalize(rec.modelName)} with the "setDeepRelationships" property set. This is NOT allowed; consider the 'Record.add()' method instead.`, "not-allowed");
         }
         const properties = typeof payload === "string"
-            ? createCompositeKeyFromFkString(payload, rec.modelConstructor)
+            ? createCompositeKeyFromFkString_1.createCompositeKeyFromFkString(payload, rec.modelConstructor)
             : payload;
         // TODO: build some tests to ensure that ...
         // the async possibilites of this method (only if `options.setDeepRelationships`)
@@ -264,12 +270,12 @@ export class Record extends FireModel {
             return {};
         }
         const r = Record.create(model);
-        const pathParts = dotNotation(path).split(".");
+        const pathParts = common_types_1.dotNotation(path).split(".");
         const compositeKey = {};
-        const segments = dotNotation(r.dbOffset).split(".");
+        const segments = common_types_1.dotNotation(r.dbOffset).split(".");
         if (segments.length > pathParts.length ||
             pathParts.length - 2 > segments.length) {
-            throw new FireModelError(`Attempt to get the composite key from a path failed due to the diparity of segments in the path [ ${pathParts.length} ] versus the dynamic path [ ${segments.length} ]`, "firemodel/not-allowed");
+            throw new errors_1.FireModelError(`Attempt to get the composite key from a path failed due to the diparity of segments in the path [ ${pathParts.length} ] versus the dynamic path [ ${segments.length} ]`, "firemodel/not-allowed");
         }
         segments.forEach((segment, idx) => {
             if (segment.slice(0, 1) === ":") {
@@ -279,7 +285,7 @@ export class Record extends FireModel {
             }
             else {
                 if (segment !== pathParts[idx]) {
-                    throw new FireModelError(`The attempt to build a composite key for the model ${capitalize(r.modelName)} failed because the static parts of the path did not match up. Specifically where the "dbOffset" states the segment "${segment}" the path passed in had "${pathParts[idx]}" instead.`);
+                    throw new errors_1.FireModelError(`The attempt to build a composite key for the model ${util_1.capitalize(r.modelName)} failed because the static parts of the path did not match up. Specifically where the "dbOffset" states the segment "${segment}" the path passed in had "${pathParts[idx]}" instead.`);
                 }
             }
             if (pathParts.length - 1 === segments.length) {
@@ -300,7 +306,7 @@ export class Record extends FireModel {
         const dynamicSegments = Record.dynamicPathProperties(model).concat("id");
         return dynamicSegments.reduce((agg, prop) => {
             if (obj[prop] === undefined) {
-                throw new FireModelError(`You used attempted to generate a composite key of the model ${Record.modelName(model)} but the property "${prop}" is part of they dynamic path and the data passed in did not have a value for this property.`, "firemodel/not-ready");
+                throw new errors_1.FireModelError(`You used attempted to generate a composite key of the model ${Record.modelName(model)} but the property "${prop}" is part of they dynamic path and the data passed in did not have a value for this property.`, "firemodel/not-ready");
             }
             agg[prop] = obj[prop];
             return agg;
@@ -326,7 +332,7 @@ export class Record extends FireModel {
                 return object;
             }
             else {
-                throw new FireModelError(`Attempt to get a compositeKeyRef() but passed in a string/id value instead of a composite key for a model [ ${Record.modelName(model)}, "${object}" ] which HAS dynamic properties! Required props are: ${Record.dynamicPathProperties(model).join(", ")}`, "not-allowed");
+                throw new errors_1.FireModelError(`Attempt to get a compositeKeyRef() but passed in a string/id value instead of a composite key for a model [ ${Record.modelName(model)}, "${object}" ] which HAS dynamic properties! Required props are: ${Record.dynamicPathProperties(model).join(", ")}`, "not-allowed");
             }
         }
         const compositeKey = Record.compositeKey(model, object);
@@ -343,7 +349,7 @@ export class Record extends FireModel {
      */
     static modelName(model) {
         const r = Record.create(model);
-        return capitalize(r.modelName);
+        return util_1.capitalize(r.modelName);
     }
     get data() {
         return this._data;
@@ -367,7 +373,7 @@ export class Record extends FireModel {
      */
     get dbPath() {
         if (this.data.id ? false : true) {
-            throw new FireModelError(`you can not ask for the dbPath before setting an "id" property [ ${this.modelName} ]`, "record/not-ready");
+            throw new errors_1.FireModelError(`you can not ask for the dbPath before setting an "id" property [ ${this.modelName} ]`, "record/not-ready");
         }
         return [
             this._injectDynamicPathProperties(this.dbOffset),
@@ -404,14 +410,14 @@ export class Record extends FireModel {
      * the composite key of a model.
      */
     get compositeKey() {
-        return createCompositeKey(this);
+        return _1.createCompositeKey(this);
     }
     /**
      * a string value which is used in relationships to fully qualify
      * a composite string (aka, a model which has a dynamic dbOffset)
      */
     get compositeKeyRef() {
-        return createCompositeKeyRefFromRecord(this);
+        return createCompositeKeyString_1.createCompositeKeyRefFromRecord(this);
     }
     /**
      * The Record's primary key; this is the `id` property only. Not
@@ -426,7 +432,7 @@ export class Record extends FireModel {
      */
     set id(val) {
         if (this.data.id) {
-            throw new FireModelError(`You may not re-set the ID of a record [ ${this.modelName}.id ${this.data.id} => ${val} ].`, "firemodel/not-allowed");
+            throw new errors_1.FireModelError(`You may not re-set the ID of a record [ ${this.modelName}.id ${this.data.id} => ${val} ].`, "firemodel/not-allowed");
         }
         this._data.id = val;
     }
@@ -436,7 +442,7 @@ export class Record extends FireModel {
      * to indicate where the the values will go.
      */
     get dbOffset() {
-        return getModelMeta(this).dbOffset;
+        return ModelMeta_1.getModelMeta(this).dbOffset;
     }
     /**
      * returns the record's location in the frontend state management framework;
@@ -449,7 +455,7 @@ export class Record extends FireModel {
             // TODO: another example of impossible typing coming off of a get()
             prefix = prefix.replace(`:${prop}`, this.get(prop));
         });
-        return pathJoin(prefix, this.META.localModelName !== this.modelName
+        return path_1.pathJoin(prefix, this.META.localModelName !== this.modelName
             ? this.META.localModelName
             : this.options.pluralizeLocalPath
                 ? this.pluralName
@@ -461,14 +467,14 @@ export class Record extends FireModel {
      * Record versus a List.
      */
     get localPrefix() {
-        return getModelMeta(this).localPrefix;
+        return ModelMeta_1.getModelMeta(this).localPrefix;
     }
     get existsOnDB() {
         return this.data && this.data.id ? true : false;
     }
     /** indicates whether this record is already being watched locally */
     get isBeingWatched() {
-        return FireModel.isBeingWatched(this.dbPath);
+        return FireModel_1.FireModel.isBeingWatched(this.dbPath);
     }
     get modelConstructor() {
         return this._modelConstructor;
@@ -503,17 +509,17 @@ export class Record extends FireModel {
      */
     async pushKey(property, value) {
         if (this.META.pushKeys.indexOf(property) === -1) {
-            throw new FireModelError(`Invalid Operation: you can not push to property "${property}" as it has not been declared a pushKey property in the schema`, "invalid-operation/not-pushkey");
+            throw new errors_1.FireModelError(`Invalid Operation: you can not push to property "${property}" as it has not been declared a pushKey property in the schema`, "invalid-operation/not-pushkey");
         }
         if (!this.existsOnDB) {
-            throw new FireModelError(`Invalid Operation: you can not push to property "${property}" before saving the record to the database`, "invalid-operation/not-on-db");
+            throw new errors_1.FireModelError(`Invalid Operation: you can not push to property "${property}" before saving the record to the database`, "invalid-operation/not-on-db");
         }
         const key = this.db.isMockDb
-            ? fbKey()
-            : await this.db.getPushKey(pathJoin(this.dbPath, property));
-        await this.db.update(pathJoin(this.dbPath, property), {
-            [pathJoin(this.dbPath, property, key)]: value,
-            [pathJoin(this.dbPath, "lastUpdated")]: new Date().getTime(),
+            ? firebase_key_1.key()
+            : await this.db.getPushKey(path_1.pathJoin(this.dbPath, property));
+        await this.db.update(path_1.pathJoin(this.dbPath, property), {
+            [path_1.pathJoin(this.dbPath, property, key)]: value,
+            [path_1.pathJoin(this.dbPath, "lastUpdated")]: new Date().getTime(),
         });
         // set firemodel state locally
         const currentState = this.get(property) || {};
@@ -536,25 +542,25 @@ export class Record extends FireModel {
      * updated and their new values
      */
     async update(props) {
-        const meta = getModelMeta(this);
+        const meta = ModelMeta_1.getModelMeta(this);
         if (!meta.property) {
-            throw new FireModelError(`There is a problem with this record's META information [ model: ${capitalize(this.modelName)}, id: ${this.id} ]. The property() method -- used to dig into properties on any given model appears to be missing!`, "firemodel/meta-missing");
+            throw new errors_1.FireModelError(`There is a problem with this record's META information [ model: ${util_1.capitalize(this.modelName)}, id: ${this.id} ]. The property() method -- used to dig into properties on any given model appears to be missing!`, "firemodel/meta-missing");
         }
         // can not update relationship properties
         if (Object.keys(props).some((key) => {
             const root = key.split(".")[0];
             const rootProperties = meta.property(root);
             if (!rootProperties) {
-                throw new FireModelError(`While this record [ model: ${capitalize(this.modelName)}, id: ${this.id} ] does return a "META.property" function, looking up the property "${root}" has resulted in an invalid response [${typeof rootProperties}]`);
+                throw new errors_1.FireModelError(`While this record [ model: ${util_1.capitalize(this.modelName)}, id: ${this.id} ] does return a "META.property" function, looking up the property "${root}" has resulted in an invalid response [${typeof rootProperties}]`);
             }
             return rootProperties.isRelationship;
         })) {
             const relProps = Object.keys(props).filter((p) => meta.property(p).isRelationship);
-            throw new FireModelError(`You called update on a hash which has relationships included in it. Please only use "update" for updating properties. The relationships you were attempting to update were: ${relProps.join(", ")}.`, `firemodel/not-allowed`);
+            throw new errors_1.FireModelError(`You called update on a hash which has relationships included in it. Please only use "update" for updating properties. The relationships you were attempting to update were: ${relProps.join(", ")}.`, `firemodel/not-allowed`);
         }
         const lastUpdated = new Date().getTime();
         const changed = Object.assign(Object.assign({}, props), { lastUpdated });
-        const rollback = copy(this.data);
+        const rollback = fast_copy_1.default(this.data);
         // changes local Record to include updates immediately
         this._data = Object.assign(Object.assign({}, this.data), changed);
         // performs a two phase commit using dispatch messages
@@ -569,7 +575,7 @@ export class Record extends FireModel {
      */
     async remove() {
         this.isDirty = true;
-        await this._localCrudOperation("remove" /* remove */, copy(this.data));
+        await this._localCrudOperation("remove" /* remove */, fast_copy_1.default(this.data));
         this.isDirty = false;
         // TODO: handle dynamic paths and also consider removing relationships
     }
@@ -582,13 +588,13 @@ export class Record extends FireModel {
      * to the database or not
      */
     async set(prop, value, silent = false) {
-        const rollback = copy(this.data);
+        const rollback = fast_copy_1.default(this.data);
         const meta = this.META.property(prop);
         if (!meta) {
-            throw new FireModelError(`There was a problem getting the meta data for the model ${capitalize(this.modelName)} while attempting to set the "${prop}" property to: ${value}`);
+            throw new errors_1.FireModelError(`There was a problem getting the meta data for the model ${util_1.capitalize(this.modelName)} while attempting to set the "${prop}" property to: ${value}`);
         }
         if (meta.isRelationship) {
-            throw new FireModelError(`You can not "set" the property "${prop}" because it is configured as a relationship!`, "firemodel/not-allowed");
+            throw new errors_1.FireModelError(`You can not "set" the property "${prop}" because it is configured as a relationship!`, "firemodel/not-allowed");
         }
         const lastUpdated = new Date().getTime();
         const changed = {
@@ -616,12 +622,12 @@ export class Record extends FireModel {
     async associate(property, 
     // TODO: ideally stronger typing
     refs, options = {}) {
-        const meta = getModelMeta(this);
+        const meta = ModelMeta_1.getModelMeta(this);
         if (!meta.relationship(property)) {
-            throw new FireModelError(`Attempt to associate the property "${property}" can not be done on model ${capitalize(this.modelName)} because the property is not defined!`, `firemodel/not-allowed`);
+            throw new errors_1.FireModelError(`Attempt to associate the property "${property}" can not be done on model ${util_1.capitalize(this.modelName)} because the property is not defined!`, `firemodel/not-allowed`);
         }
         if (!meta.relationship(property).relType) {
-            throw new FireModelError(`For some reason the property "${property}" on the model ${capitalize(this.modelName)} doesn't have cardinality assigned to the "relType" (aka, hasMany, hasOne).\n\nThe META for relationships on the model are: ${JSON.stringify(meta.relationships, null, 2)}`, `firemodel/unknown`);
+            throw new errors_1.FireModelError(`For some reason the property "${property}" on the model ${util_1.capitalize(this.modelName)} doesn't have cardinality assigned to the "relType" (aka, hasMany, hasOne).\n\nThe META for relationships on the model are: ${JSON.stringify(meta.relationships, null, 2)}`, `firemodel/unknown`);
         }
         const relType = meta.relationship(property).relType;
         if (relType === "hasMany") {
@@ -633,7 +639,7 @@ export class Record extends FireModel {
                     refs = refs.pop();
                 }
                 else {
-                    throw new FireModelError(`Attempt to use "associate()" with a "hasOne" relationship [ ${property}] on the model ${capitalize(this.modelName)}.`, "firemodel/invalid-cardinality");
+                    throw new errors_1.FireModelError(`Attempt to use "associate()" with a "hasOne" relationship [ ${property}] on the model ${util_1.capitalize(this.modelName)}.`, "firemodel/invalid-cardinality");
                 }
             }
             await this.setRelationship(property, refs, options);
@@ -671,22 +677,22 @@ export class Record extends FireModel {
      */
     async addToRelationship(property, fkRefs, options = {}) {
         const altHasManyValue = options.altHasManyValue || true;
-        if (!isHasManyRelationship(this, property)) {
-            throw new NotHasManyRelationship(this, property, "addToRelationship");
+        if (!isHasManyRelationship_1.isHasManyRelationship(this, property)) {
+            throw new errors_1.NotHasManyRelationship(this, property, "addToRelationship");
         }
         fkRefs = Array.isArray(fkRefs) ? fkRefs : [fkRefs];
         let paths = [];
         const now = new Date().getTime();
         fkRefs.map((ref) => {
             paths = [
-                ...buildRelationshipPaths(this, property, ref, {
+                ...buildRelationshipPaths_1.buildRelationshipPaths(this, property, ref, {
                     now,
                     altHasManyValue,
                 }),
                 ...paths,
             ];
         });
-        await relationshipOperation(this, "add", property, fkRefs, paths, options);
+        await relationshipOperation_1.relationshipOperation(this, "add", property, fkRefs, paths, options);
     }
     /**
      * removeFromRelationship
@@ -697,22 +703,22 @@ export class Record extends FireModel {
      * @param fkRefs the FK's on the property which should be removed
      */
     async removeFromRelationship(property, fkRefs, options = {}) {
-        if (!isHasManyRelationship(this, property)) {
-            throw new NotHasManyRelationship(this, property, "removeFromRelationship");
+        if (!isHasManyRelationship_1.isHasManyRelationship(this, property)) {
+            throw new errors_1.NotHasManyRelationship(this, property, "removeFromRelationship");
         }
         fkRefs = Array.isArray(fkRefs) ? fkRefs : [fkRefs];
         let paths = [];
         const now = new Date().getTime();
         fkRefs.map((ref) => {
             paths = [
-                ...buildRelationshipPaths(this, property, ref, {
+                ...buildRelationshipPaths_1.buildRelationshipPaths(this, property, ref, {
                     now,
                     operation: "remove",
                 }),
                 ...paths,
             ];
         });
-        await relationshipOperation(this, "remove", property, fkRefs, paths, options);
+        await relationshipOperation_1.relationshipOperation(this, "remove", property, fkRefs, paths, options);
     }
     /**
      * **clearRelationship**
@@ -736,14 +742,14 @@ export class Record extends FireModel {
         const now = new Date().getTime();
         fkRefs.map((ref) => {
             paths = [
-                ...buildRelationshipPaths(this, property, ref, {
+                ...buildRelationshipPaths_1.buildRelationshipPaths(this, property, ref, {
                     now,
                     operation: "remove",
                 }),
                 ...paths,
             ];
         });
-        await relationshipOperation(this, "clear", property, fkRefs, paths, options);
+        await relationshipOperation_1.relationshipOperation(this, "clear", property, fkRefs, paths, options);
     }
     /**
      * **setRelationship**
@@ -755,13 +761,13 @@ export class Record extends FireModel {
      */
     async setRelationship(property, fkId, options = {}) {
         if (!fkId) {
-            throw new FireModelError(`Failed to set the relationship ${this.modelName}.${property} because no FK was passed in!`, "firemodel/not-allowed");
+            throw new errors_1.FireModelError(`Failed to set the relationship ${this.modelName}.${property} because no FK was passed in!`, "firemodel/not-allowed");
         }
-        if (isHasManyRelationship(this, property)) {
-            throw new NotHasOneRelationship(this, property, "setRelationship");
+        if (isHasManyRelationship_1.isHasManyRelationship(this, property)) {
+            throw new errors_1.NotHasOneRelationship(this, property, "setRelationship");
         }
-        const paths = buildRelationshipPaths(this, property, fkId);
-        await relationshipOperation(this, "set", property, [fkId], paths, options);
+        const paths = buildRelationshipPaths_1.buildRelationshipPaths(this, property, fkId);
+        await relationshipOperation_1.relationshipOperation(this, "set", property, [fkId], paths, options);
     }
     //#endregion INSTANCE DEFINITION
     /**
@@ -801,7 +807,7 @@ export class Record extends FireModel {
                 this._data[key] = data[key];
             });
         }
-        const relationships = getModelMeta(this).relationships;
+        const relationships = ModelMeta_1.getModelMeta(this).relationships;
         const hasOneRels = (relationships || [])
             .filter((r) => r.relType === "hasOne")
             .map((r) => r.property);
@@ -821,7 +827,7 @@ export class Record extends FireModel {
             }
             if (options.setDeepRelationships) {
                 if (this._data[oneToManyProp]) {
-                    promises.push(buildDeepRelationshipLinks(this, oneToManyProp));
+                    promises.push(buildDeepRelationshipLinks_1.buildDeepRelationshipLinks(this, oneToManyProp));
                 }
             }
         }
@@ -844,7 +850,7 @@ export class Record extends FireModel {
         priorValue = priorValue ? priorValue : {};
         try {
             if (this.META.audit) {
-                const deltas = compareHashes(currentValue, priorValue);
+                const deltas = util_1.compareHashes(currentValue, priorValue);
                 const auditLogEntries = [];
                 const added = deltas.added.forEach((a) => auditLogEntries.push({
                     action: "added",
@@ -869,11 +875,11 @@ export class Record extends FireModel {
                     update: "updated",
                     remove: "removed",
                 };
-                await writeAudit(this, pastTense[action], auditLogEntries, { db: this.db });
+                await Audit_1.writeAudit(this, pastTense[action], auditLogEntries, { db: this.db });
             }
         }
         catch (e) {
-            throw new FireModelProxyError(e);
+            throw new errors_1.FireModelProxyError(e);
         }
     }
     /**
@@ -912,26 +918,26 @@ export class Record extends FireModel {
             Math.random().toString(36).substr(2, 5);
         const lookup = {
             add: [
-                FmEvents.RECORD_ADDED_LOCALLY,
-                FmEvents.RECORD_ADDED_CONFIRMATION,
-                FmEvents.RECORD_ADDED_ROLLBACK,
+                index_1.FmEvents.RECORD_ADDED_LOCALLY,
+                index_1.FmEvents.RECORD_ADDED_CONFIRMATION,
+                index_1.FmEvents.RECORD_ADDED_ROLLBACK,
             ],
             update: [
-                FmEvents.RECORD_CHANGED_LOCALLY,
-                FmEvents.RECORD_CHANGED_CONFIRMATION,
-                FmEvents.RECORD_CHANGED_ROLLBACK,
+                index_1.FmEvents.RECORD_CHANGED_LOCALLY,
+                index_1.FmEvents.RECORD_CHANGED_CONFIRMATION,
+                index_1.FmEvents.RECORD_CHANGED_ROLLBACK,
             ],
             remove: [
-                FmEvents.RECORD_REMOVED_LOCALLY,
-                FmEvents.RECORD_REMOVED_CONFIRMATION,
-                FmEvents.RECORD_REMOVED_ROLLBACK,
+                index_1.FmEvents.RECORD_REMOVED_LOCALLY,
+                index_1.FmEvents.RECORD_REMOVED_CONFIRMATION,
+                index_1.FmEvents.RECORD_REMOVED_ROLLBACK,
             ],
         };
         const [actionTypeStart, actionTypeEnd, actionTypeFailure] = lookup[crudAction];
         this.isDirty = true;
         // Set aside prior value
-        const { changed, added, removed } = compareHashes(withoutMetaOrPrivate(this.data), withoutMetaOrPrivate(priorValue));
-        const watchers = findWatchers(this.dbPath);
+        const { changed, added, removed } = util_1.compareHashes(util_1.withoutMetaOrPrivate(this.data), util_1.withoutMetaOrPrivate(priorValue));
+        const watchers = findWatchers_1.findWatchers(this.dbPath);
         const event = {
             transactionId,
             modelConstructor: this.modelConstructor,
@@ -939,7 +945,7 @@ export class Record extends FireModel {
             operation: crudAction,
             eventType: "local",
             key: this.id,
-            value: withoutMetaOrPrivate(this.data),
+            value: util_1.withoutMetaOrPrivate(this.data),
             priorValue,
         };
         if (crudAction === "update") {
@@ -952,12 +958,12 @@ export class Record extends FireModel {
             if (!options.silent) {
                 // Note: if used on frontend, the mutations must be careful to
                 // set this to the right path considering there is no watcher
-                await this.dispatch(UnwatchedLocalEvent(this, Object.assign(Object.assign({ type: actionTypeStart }, event), { value: withoutMetaOrPrivate(this.data) })));
+                await this.dispatch(UnwatchedLocalEvent_1.UnwatchedLocalEvent(this, Object.assign(Object.assign({ type: actionTypeStart }, event), { value: util_1.withoutMetaOrPrivate(this.data) })));
             }
         }
         else {
             // For each watcher watching this DB path ...
-            const dispatch = WatchDispatcher(this.dispatch);
+            const dispatch = WatchDispatcher_1.WatchDispatcher(this.dispatch);
             for (const watcher of watchers) {
                 if (!options.silent) {
                     await dispatch(watcher)(Object.assign({ type: actionTypeStart }, event));
@@ -977,7 +983,7 @@ export class Record extends FireModel {
                         const test = this.dbPath;
                     }
                     catch (e) {
-                        throw new FireModelProxyError(e, `The attempt to "remove" the ${capitalize(this.modelName)} with ID of "${this.id}" has been aborted. This is often because you don't have the right properties set for the dynamic path. This model requires the following dynamic properties to uniquely define (and remove) it: ${this.dynamicPathComponents.join(", ")}`);
+                        throw new errors_1.FireModelProxyError(e, `The attempt to "remove" the ${util_1.capitalize(this.modelName)} with ID of "${this.id}" has been aborted. This is often because you don't have the right properties set for the dynamic path. This model requires the following dynamic properties to uniquely define (and remove) it: ${this.dynamicPathComponents.join(", ")}`);
                     }
                     // Check for relationship props and dis-associate
                     // before removing the actual record
@@ -995,7 +1001,7 @@ export class Record extends FireModel {
                             }
                         }
                         catch (e) {
-                            throw new FireModelProxyError(e, `While trying to remove ${capitalize(this.modelName)}.${this.id} from the database, problems were encountered removing the relationship defined by the "${rel.property} property (which relates to the model ${rel.fkModelName}). This relationship has a cardinality of "${rel.relType}" and the value(s) were: ${rel.relType === "hasOne"
+                            throw new errors_1.FireModelProxyError(e, `While trying to remove ${util_1.capitalize(this.modelName)}.${this.id} from the database, problems were encountered removing the relationship defined by the "${rel.property} property (which relates to the model ${rel.fkModelName}). This relationship has a cardinality of "${rel.relType}" and the value(s) were: ${rel.relType === "hasOne"
                                 ? Object.keys(this.get(rel.property))
                                 : this.get(rel.property)}`);
                         }
@@ -1007,7 +1013,7 @@ export class Record extends FireModel {
                         await this.db.set(path, this.data);
                     }
                     catch (e) {
-                        throw new FireModelProxyError(e, `Problem setting the "${path}" database path. Data passed in was of type ${typeof this
+                        throw new errors_1.FireModelProxyError(e, `Problem setting the "${path}" database path. Data passed in was of type ${typeof this
                             .data}. Error message encountered was: ${e.message}`, `firemodel/${(e.code = "PERMISSION_DENIED"
                             ? "permission-denied"
                             : "set-db")}`);
@@ -1024,10 +1030,10 @@ export class Record extends FireModel {
             // send confirm event
             if (!options.silent && !options.silentAcceptance) {
                 if (watchers.length === 0) {
-                    await this.dispatch(UnwatchedLocalEvent(this, Object.assign(Object.assign({ type: actionTypeEnd }, event), { transactionId, value: withoutMetaOrPrivate(this.data) })));
+                    await this.dispatch(UnwatchedLocalEvent_1.UnwatchedLocalEvent(this, Object.assign(Object.assign({ type: actionTypeEnd }, event), { transactionId, value: util_1.withoutMetaOrPrivate(this.data) })));
                 }
                 else {
-                    const dispatch = WatchDispatcher(this.dispatch);
+                    const dispatch = WatchDispatcher_1.WatchDispatcher(this.dispatch);
                     for (const watcher of watchers) {
                         if (!options.silent) {
                             await dispatch(watcher)(Object.assign({ type: actionTypeEnd }, event));
@@ -1041,8 +1047,8 @@ export class Record extends FireModel {
         }
         catch (e) {
             // send failure event
-            await this.dispatch(UnwatchedLocalEvent(this, Object.assign(Object.assign({ type: actionTypeFailure }, event), { transactionId, value: withoutMetaOrPrivate(this.data) })));
-            throw new RecordCrudFailure(this, crudAction, transactionId, e);
+            await this.dispatch(UnwatchedLocalEvent_1.UnwatchedLocalEvent(this, Object.assign(Object.assign({ type: actionTypeFailure }, event), { transactionId, value: util_1.withoutMetaOrPrivate(this.data) })));
+            throw new DatabaseCrudFailure_1.RecordCrudFailure(this, crudAction, transactionId, e);
         }
     }
     _findDynamicComponents(path = "") {
@@ -1068,10 +1074,10 @@ export class Record extends FireModel {
         this.dynamicPathComponents.forEach((prop) => {
             const value = this.data[prop];
             if (value ? false : true) {
-                throw new FireModelError(`You can not ask for the ${forProp} on a model like "${this.modelName}" which has a dynamic property of "${prop}" before setting that property [ data: ${JSON.stringify(this.data)} ].`, "record/not-ready");
+                throw new errors_1.FireModelError(`You can not ask for the ${forProp} on a model like "${this.modelName}" which has a dynamic property of "${prop}" before setting that property [ data: ${JSON.stringify(this.data)} ].`, "record/not-ready");
             }
             if (!["string", "number"].includes(typeof value)) {
-                throw new FireModelError(`The path is using the property "${prop}" on ${this.modelName} as a part of the route path but that property must be either a string or a number and instead was a ${typeof prop}`, "record/not-allowed");
+                throw new errors_1.FireModelError(`The path is using the property "${prop}" on ${this.modelName} as a part of the route path but that property must be either a string or a number and instead was a ${typeof prop}`, "record/not-allowed");
             }
             path = path.replace(`:${prop}`, String(this.get(prop)));
         });
@@ -1082,7 +1088,7 @@ export class Record extends FireModel {
      */
     async _getFromDB(id) {
         const keys = typeof id === "string"
-            ? createCompositeKeyFromFkString(id, this.modelConstructor)
+            ? createCompositeKeyFromFkString_1.createCompositeKeyFromFkString(id, this.modelConstructor)
             : id;
         // load composite key into props so the dbPath() will evaluate
         Object.keys(keys).map((key) => {
@@ -1094,7 +1100,7 @@ export class Record extends FireModel {
             await this._initialize(data);
         }
         else {
-            throw new FireModelError(`Failed to load the Record "${this.modelName}::${this.id}" with composite key of:\n ${JSON.stringify(keys, null, 2)}`, "firebase/invalid-composite-key");
+            throw new errors_1.FireModelError(`Failed to load the Record "${this.modelName}::${this.id}" with composite key of:\n ${JSON.stringify(keys, null, 2)}`, "firebase/invalid-composite-key");
         }
         return this;
     }
@@ -1103,7 +1109,7 @@ export class Record extends FireModel {
      */
     async _adding(options) {
         if (!this.id) {
-            this.id = fbKey();
+            this.id = firebase_key_1.key();
         }
         const now = new Date().getTime();
         if (!this.get("createdAt")) {
@@ -1114,7 +1120,7 @@ export class Record extends FireModel {
         // are updated using the _relationship_ based methods associate/disassociate
         // so that bi-lateral relationships are established/maintained
         if (!this.db) {
-            throw new FireModelError(`An attempt to add a ${capitalize(this.modelName)} record failed as the Database has not been connected yet. Try setting FireModel's defaultDb first.`, "firemodel/db-not-ready");
+            throw new errors_1.FireModelError(`An attempt to add a ${util_1.capitalize(this.modelName)} record failed as the Database has not been connected yet. Try setting FireModel's defaultDb first.`, "firemodel/db-not-ready");
         }
         await this._localCrudOperation("add" /* add */, undefined, options);
         // now that the record has been added we need to follow-up with any relationship fk's that
@@ -1149,9 +1155,10 @@ export class Record extends FireModel {
             await Promise.all(promises);
         }
         catch (e) {
-            throw new FireModelProxyError(e, `An ${capitalize(this.modelName)} [${this.id}] model was being added but when attempting to add in the relationships which were inferred by the record payload it ran into problems. The relationship(s) which had properties defined -- and which had a bi-lateral FK relationship (e.g., both models will track the relationship versus just the ${capitalize(this.modelName)} [${this.id} model) --  were: ${relationshipsTouched.join(", ")}`);
+            throw new errors_1.FireModelProxyError(e, `An ${util_1.capitalize(this.modelName)} [${this.id}] model was being added but when attempting to add in the relationships which were inferred by the record payload it ran into problems. The relationship(s) which had properties defined -- and which had a bi-lateral FK relationship (e.g., both models will track the relationship versus just the ${util_1.capitalize(this.modelName)} [${this.id} model) --  were: ${relationshipsTouched.join(", ")}`);
         }
         return this;
     }
 }
+exports.Record = Record;
 //# sourceMappingURL=Record.js.map

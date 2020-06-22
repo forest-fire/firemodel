@@ -1,3 +1,6 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.OneWay = void 0;
 /**
  * A helper method when designing relationships. In most cases when you
  * state a "inverse property" it means that the two entities can be
@@ -13,7 +16,8 @@ export default MyModel extends Model {
 }
 ```
  */
-export function OneWay(inverseProperty) {
+function OneWay(inverseProperty) {
     return [inverseProperty, "one-way"];
 }
+exports.OneWay = OneWay;
 //# sourceMappingURL=OneWay.js.map

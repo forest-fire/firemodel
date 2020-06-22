@@ -1,4 +1,7 @@
-export const PropertyNamePatterns = {
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.PropertyNamePatterns = void 0;
+exports.PropertyNamePatterns = {
     id: "id",
     name: "name",
     age: "age",

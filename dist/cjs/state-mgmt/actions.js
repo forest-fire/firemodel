@@ -1,5 +1,8 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.FmEvents = void 0;
 /** Enumeration of all Firemodel Actions that will be fired */
-export var FmEvents;
+var FmEvents;
 (function (FmEvents) {
     /** A record has been added locally */
     FmEvents["RECORD_ADDED_LOCALLY"] = "@firemodel/RECORD_ADDED_LOCALLY";
@@ -73,5 +76,5 @@ export var FmEvents;
     FmEvents["APP_CONNECTED"] = "@firemodel/APP_CONNECTED";
     FmEvents["APP_DISCONNECTED"] = "@firemodel/APP_DISCONNECTED";
     FmEvents["UNEXPECTED_ERROR"] = "@firemodel/UNEXPECTED_ERROR";
-})(FmEvents || (FmEvents = {}));
+})(FmEvents = exports.FmEvents || (exports.FmEvents = {}));
 //# sourceMappingURL=actions.js.map

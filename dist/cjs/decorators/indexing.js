@@ -1,23 +1,27 @@
-import "reflect-metadata";
-import { propertyReflector } from "./reflector";
-import { hashToArray } from "typed-conversions";
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.uniqueIndex = exports.index = exports.getDbIndexes = exports.indexesForModel = void 0;
+require("reflect-metadata");
+const reflector_1 = require("./reflector");
+const typed_conversions_1 = require("typed-conversions");
 /** DB Indexes accumlated by index decorators */
-export const indexesForModel = {};
+exports.indexesForModel = {};
 /**
  * Gets all the db indexes for a given model
  */
-export function getDbIndexes(modelKlass) {
+function getDbIndexes(modelKlass) {
     const modelName = modelKlass.constructor.name;
     return modelName === "Model"
-        ? hashToArray(indexesForModel[modelName])
-        : (hashToArray(indexesForModel[modelName]) || []).concat(hashToArray(indexesForModel.Model));
+        ? typed_conversions_1.hashToArray(exports.indexesForModel[modelName])
+        : (typed_conversions_1.hashToArray(exports.indexesForModel[modelName]) || []).concat(typed_conversions_1.hashToArray(exports.indexesForModel.Model));
 }
-export const index = propertyReflector({
+exports.getDbIndexes = getDbIndexes;
+exports.index = reflector_1.propertyReflector({
     isIndex: true,
     isUniqueIndex: false
-}, indexesForModel);
-export const uniqueIndex = propertyReflector({
+}, exports.indexesForModel);
+exports.uniqueIndex = reflector_1.propertyReflector({
     isIndex: true,
     isUniqueIndex: true
-}, indexesForModel);
+}, exports.indexesForModel);
 //# sourceMappingURL=indexing.js.map

@@ -1,9 +1,12 @@
-import { processHasMany } from "./processHasMany";
-import { processHasOne } from "./processHasOne";
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.addRelationships = void 0;
+const processHasMany_1 = require("./processHasMany");
+const processHasOne_1 = require("./processHasOne");
 /**
  * Adds relationships to mocked records
  */
-export function addRelationships(db, config, exceptions = {}) {
+function addRelationships(db, config, exceptions = {}) {
     return async (record) => {
         const relns = record.META.relationships;
         const relnResults = [];
@@ -12,7 +15,7 @@ export function addRelationships(db, config, exceptions = {}) {
                 if (!config.cardinality ||
                     Object.keys(config.cardinality).includes(rel.property)) {
                     if (rel.relType === "hasOne") {
-                        const fkRec = await processHasOne(record, rel, config, db);
+                        const fkRec = await processHasOne_1.processHasOne(record, rel, config, db);
                         if (config.relationshipBehavior === "follow") {
                             relnResults.push(fkRec);
                         }
@@ -24,7 +27,7 @@ export function addRelationships(db, config, exceptions = {}) {
                                 : NumberBetween(config.cardinality[rel.property])
                             : 2;
                         for (const i of Array(cardinality)) {
-                            const fkRec = await processHasMany(record, rel, config, db);
+                            const fkRec = await processHasMany_1.processHasMany(record, rel, config, db);
                             if (config.relationshipBehavior === "follow") {
                                 relnResults.push(fkRec);
                             }
@@ -46,6 +49,7 @@ export function addRelationships(db, config, exceptions = {}) {
         ];
     };
 }
+exports.addRelationships = addRelationships;
 function NumberBetween(startEnd) {
     return (Math.floor(Math.random() * (startEnd[1] - startEnd[0] + 1)) + startEnd[0]);
 }

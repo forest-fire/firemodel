@@ -1,9 +1,21 @@
-export * from "./FireModelError";
-export * from "./DexieError";
-export * from "./FireModelProxyError";
-export * from "./relationships/index";
-export * from "./mocks/MockError";
-export * from "./decorators/index";
-export * from "./relationships/index";
-export * from "./DynamicPropertiesNotReady";
+"use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __exportStar = (this && this.__exportStar) || function(m, exports) {
+    for (var p in m) if (p !== "default" && !exports.hasOwnProperty(p)) __createBinding(exports, m, p);
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+__exportStar(require("./FireModelError"), exports);
+__exportStar(require("./DexieError"), exports);
+__exportStar(require("./FireModelProxyError"), exports);
+__exportStar(require("./relationships/index"), exports);
+__exportStar(require("./mocks/MockError"), exports);
+__exportStar(require("./decorators/index"), exports);
+__exportStar(require("./relationships/index"), exports);
+__exportStar(require("./DynamicPropertiesNotReady"), exports);
 //# sourceMappingURL=index.js.map

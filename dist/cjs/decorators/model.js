@@ -1,11 +1,14 @@
-import "reflect-metadata";
-import { getPushKeys } from "./decorator";
-import { addModelMeta } from "../ModelMeta";
-import { getDbIndexes } from "./indexing";
-import { getModelProperty, getProperties, isProperty } from "./model-meta/property-store";
-import { getModelRelationship, isRelationship, getRelationships } from "./model-meta/relationship-store";
-import { modelRegister } from "../record/relationships/modelRegistration";
-export function model(options = {}) {
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.model = void 0;
+require("reflect-metadata");
+const decorator_1 = require("./decorator");
+const ModelMeta_1 = require("../ModelMeta");
+const indexing_1 = require("./indexing");
+const property_store_1 = require("./model-meta/property-store");
+const relationship_store_1 = require("./model-meta/relationship-store");
+const modelRegistration_1 = require("../record/relationships/modelRegistration");
+function model(options = {}) {
     let isDirty = false;
     return function decorateModel(target) {
         // Function to add META to the model
@@ -20,10 +23,10 @@ export function model(options = {}) {
                 console.log(`You set the audit property to "${options.audit}" which is invalid. Valid properties are true, false, and "server". The audit property will be set to false for now.`);
                 options.audit = false;
             }
-            const meta = Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign({}, options), { isProperty: isProperty(modelOfObject) }), { property: getModelProperty(modelOfObject) }), { properties: getProperties(modelOfObject) }), { isRelationship: isRelationship(modelOfObject) }), { relationship: getModelRelationship(modelOfObject) }), { relationships: getRelationships(modelOfObject) }), { dbIndexes: getDbIndexes(modelOfObject) }), { pushKeys: getPushKeys(modelOfObject) }), { dbOffset: options.dbOffset ? options.dbOffset : "" }), { audit: options.audit ? options.audit : false }), { plural: options.plural }), {
+            const meta = Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign({}, options), { isProperty: property_store_1.isProperty(modelOfObject) }), { property: property_store_1.getModelProperty(modelOfObject) }), { properties: property_store_1.getProperties(modelOfObject) }), { isRelationship: relationship_store_1.isRelationship(modelOfObject) }), { relationship: relationship_store_1.getModelRelationship(modelOfObject) }), { relationships: relationship_store_1.getRelationships(modelOfObject) }), { dbIndexes: indexing_1.getDbIndexes(modelOfObject) }), { pushKeys: decorator_1.getPushKeys(modelOfObject) }), { dbOffset: options.dbOffset ? options.dbOffset : "" }), { audit: options.audit ? options.audit : false }), { plural: options.plural }), {
                 allProperties: [
-                    ...getProperties(modelOfObject).map(p => p.property),
-                    ...getRelationships(modelOfObject).map(p => p.property)
+                    ...property_store_1.getProperties(modelOfObject).map(p => p.property),
+                    ...relationship_store_1.getRelationships(modelOfObject).map(p => p.property)
                 ]
             }), {
                 localPostfix: options.localPostfix === undefined ? "all" : options.localPostfix
@@ -33,7 +36,7 @@ export function model(options = {}) {
                         modelOfObject.constructor.name.slice(1)
                     : options.localModelName
             }), { isDirty });
-            addModelMeta(target.constructor.name.toLowerCase(), meta);
+            ModelMeta_1.addModelMeta(target.constructor.name.toLowerCase(), meta);
             Object.defineProperty(target.prototype, "META", {
                 get() {
                     return meta;
@@ -51,7 +54,7 @@ export function model(options = {}) {
             });
             if (target) {
                 // register the constructor so name based lookups will succeed
-                modelRegister(target);
+                modelRegistration_1.modelRegister(target);
             }
             return target;
         }
@@ -61,4 +64,5 @@ export function model(options = {}) {
         return addMetaProperty();
     };
 }
+exports.model = model;
 //# sourceMappingURL=model.js.map

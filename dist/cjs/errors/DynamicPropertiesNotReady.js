@@ -1,5 +1,8 @@
-import { FireModelError } from "./FireModelError";
-export class DynamicPropertiesNotReady extends FireModelError {
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.DynamicPropertiesNotReady = void 0;
+const FireModelError_1 = require("./FireModelError");
+class DynamicPropertiesNotReady extends FireModelError_1.FireModelError {
     constructor(rec, message) {
         message = message
             ? message
@@ -7,4 +10,5 @@ export class DynamicPropertiesNotReady extends FireModelError {
         super(message, "firemodel/dynamic-properties-not-ready");
     }
 }
+exports.DynamicPropertiesNotReady = DynamicPropertiesNotReady;
 //# sourceMappingURL=DynamicPropertiesNotReady.js.map

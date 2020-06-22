@@ -1,12 +1,15 @@
-import { AuditBase } from "./AuditBase";
-import { Parallel } from "wait-in-parallel";
-import { SerializedQuery } from "universal-fire";
-import { pathJoin } from "./path";
-export class AuditRecord extends AuditBase {
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.AuditRecord = void 0;
+const AuditBase_1 = require("./AuditBase");
+const wait_in_parallel_1 = require("wait-in-parallel");
+const universal_fire_1 = require("universal-fire");
+const path_1 = require("./path");
+class AuditRecord extends AuditBase_1.AuditBase {
     constructor(modelKlass, id, options = {}) {
         super(modelKlass, options);
         this._recordId = id;
-        this._query = SerializedQuery.create(this.db);
+        this._query = universal_fire_1.SerializedQuery.create(this.db);
     }
     /**
      * Queries the database for the first _x_ audit records [`howMany`] of
@@ -19,8 +22,8 @@ export class AuditRecord extends AuditBase {
         if (startAt) {
             this._query = this._query.startAt(startAt);
         }
-        const ids = (await this.db.getList(this._query)).map((i) => pathJoin(this.auditLogs, i.id));
-        const p = new Parallel();
+        const ids = (await this.db.getList(this._query)).map((i) => path_1.pathJoin(this.auditLogs, i.id));
+        const p = new wait_in_parallel_1.Parallel();
         ids.map((id) => p.add(id, this.db.getValue(id)));
         const results = await p.isDoneAsArray();
         return results;
@@ -33,8 +36,8 @@ export class AuditRecord extends AuditBase {
         if (startAt) {
             this._query = this._query.startAt(startAt);
         }
-        const ids = (await this.db.getList(this._query)).map((i) => pathJoin(this.auditLogs, i.id));
-        const p = new Parallel();
+        const ids = (await this.db.getList(this._query)).map((i) => path_1.pathJoin(this.auditLogs, i.id));
+        const p = new wait_in_parallel_1.Parallel();
         ids.map((id) => p.add(id, this.db.getValue(id)));
         const results = await p.isDoneAsArray();
         return results;
@@ -48,8 +51,8 @@ export class AuditRecord extends AuditBase {
             .orderByChild("value")
             .startAt(when);
         const qr = await this.db.getList(this._query);
-        const ids = (await this.db.getList(this._query)).map((i) => pathJoin(this.auditLogs, i.id));
-        const p = new Parallel();
+        const ids = (await this.db.getList(this._query)).map((i) => path_1.pathJoin(this.auditLogs, i.id));
+        const p = new wait_in_parallel_1.Parallel();
         ids.map((id) => {
             p.add(id, this.db.getValue(id));
         });
@@ -65,8 +68,8 @@ export class AuditRecord extends AuditBase {
             .orderByChild("value")
             .endAt(when);
         const qr = await this.db.getList(this._query);
-        const ids = (await this.db.getList(this._query)).map((i) => pathJoin(this.auditLogs, i.id));
-        const p = new Parallel();
+        const ids = (await this.db.getList(this._query)).map((i) => path_1.pathJoin(this.auditLogs, i.id));
+        const p = new wait_in_parallel_1.Parallel();
         ids.map((id) => {
             p.add(id, this.db.getValue(id));
         });
@@ -86,8 +89,8 @@ export class AuditRecord extends AuditBase {
             .startAt(after)
             .endAt(before);
         const qr = await this.db.getList(this._query);
-        const ids = (await this.db.getList(this._query)).map((i) => pathJoin(this.auditLogs, i.id));
-        const p = new Parallel();
+        const ids = (await this.db.getList(this._query)).map((i) => path_1.pathJoin(this.auditLogs, i.id));
+        const p = new wait_in_parallel_1.Parallel();
         ids.map((id) => {
             p.add(id, this.db.getValue(id));
         });
@@ -95,13 +98,14 @@ export class AuditRecord extends AuditBase {
         return results;
     }
     get auditLogs() {
-        return pathJoin(this.dbPath, "all");
+        return path_1.pathJoin(this.dbPath, "all");
     }
     get byId() {
-        return pathJoin(this.dbPath, "byId", this._recordId, "all");
+        return path_1.pathJoin(this.dbPath, "byId", this._recordId, "all");
     }
     byProp(prop) {
-        return pathJoin(this.dbPath, "byId", this._recordId, "props", prop);
+        return path_1.pathJoin(this.dbPath, "byId", this._recordId, "props", prop);
     }
 }
+exports.AuditRecord = AuditRecord;
 //# sourceMappingURL=AuditRecord.js.map

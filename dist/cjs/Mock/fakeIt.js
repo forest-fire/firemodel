@@ -1,5 +1,8 @@
-import { format } from "date-fns";
-import { fbKey } from "../index";
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.fakeIt = void 0;
+const date_fns_1 = require("date-fns");
+const index_1 = require("../index");
 const sequence = {};
 function getDistribution(...distribution) {
     const num = Math.floor(Math.random() * 100) + 1;
@@ -25,7 +28,7 @@ function getDistribution(...distribution) {
     }
     return outcome;
 }
-export function fakeIt(helper, type, ...rest) {
+function fakeIt(helper, type, ...rest) {
     function getNumber(numOptions) {
         return numOptions && typeof numOptions === "object"
             ? helper.faker.random.number(numOptions)
@@ -38,7 +41,7 @@ export function fakeIt(helper, type, ...rest) {
     switch (type) {
         case "id":
         case "fbKey":
-            return fbKey();
+            return index_1.fbKey();
         case "String":
             return helper.faker.lorem.words(5);
         case "number":
@@ -137,27 +140,27 @@ export function fakeIt(helper, type, ...rest) {
         case "dateRecent":
             return helper.faker.date.recent();
         case "dateRecentString":
-            return format(helper.faker.date.recent(), "yyyy-MM-dd");
+            return date_fns_1.format(helper.faker.date.recent(), "yyyy-MM-dd");
         case "dateMiliseconds":
         case "dateRecentMiliseconds":
             return helper.faker.date.recent().getTime();
         case "datePast":
             return helper.faker.date.past();
         case "datePastString":
-            return format(helper.faker.date.past(), "yyyy-MM-dd");
+            return date_fns_1.format(helper.faker.date.past(), "yyyy-MM-dd");
         case "datePastMiliseconds":
             return helper.faker.date.past().getTime();
         case "dateFuture":
             return helper.faker.date.future();
         /** returns string based date in format of "YYYY-MM-DD" */
         case "dateFutureString":
-            return format(helper.faker.date.future(), "yyyy-MM-dd");
+            return date_fns_1.format(helper.faker.date.future(), "yyyy-MM-dd");
         case "dateFutureMiliseconds":
             return helper.faker.date.future().getTime();
         case "dateSoon":
             return helper.faker.date.between(new Date(), new Date(new Date().getTime() + 5 * 24 * 60 * 1000));
         case "dateSoonString":
-            return format(helper.faker.date.between(new Date(), new Date(new Date().getTime() + 5 * 24 * 60 * 1000)), "yyyy-MM-dd");
+            return date_fns_1.format(helper.faker.date.between(new Date(), new Date(new Date().getTime() + 5 * 24 * 60 * 1000)), "yyyy-MM-dd");
         case "dateSoonMiliseconds":
             return helper.faker.date
                 .between(new Date(), new Date(new Date().getTime() + 5 * 24 * 60 * 1000))
@@ -229,4 +232,5 @@ export function fakeIt(helper, type, ...rest) {
             return helper.faker.lorem.slug();
     }
 }
+exports.fakeIt = fakeIt;
 //# sourceMappingURL=fakeIt.js.map

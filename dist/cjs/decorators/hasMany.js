@@ -1,8 +1,11 @@
-import { propertyReflector } from "./reflector";
-import { relationshipsByModel } from "./model-meta/relationship-store";
-import { DecoratorProblem } from "../errors/decorators/DecoratorProblem";
-import { modelNameLookup, modelConstructorLookup } from "../record/relationships/modelRegistration";
-export function hasMany(
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.hasMany = void 0;
+const reflector_1 = require("./reflector");
+const relationship_store_1 = require("./model-meta/relationship-store");
+const DecoratorProblem_1 = require("../errors/decorators/DecoratorProblem");
+const modelRegistration_1 = require("../record/relationships/modelRegistration");
+function hasMany(
 /**
  * either a _string_ representing the Model's class name
  * or a _constructor_ for the Model class
@@ -14,8 +17,8 @@ export function hasMany(
 fkClass, inverse) {
     try {
         const fkConstructor = typeof fkClass === "string"
-            ? modelNameLookup(fkClass)
-            : modelConstructorLookup(fkClass);
+            ? modelRegistration_1.modelNameLookup(fkClass)
+            : modelRegistration_1.modelConstructorLookup(fkClass);
         let inverseProperty;
         let directionality;
         if (Array.isArray(inverse)) {
@@ -35,10 +38,11 @@ fkClass, inverse) {
         if (inverseProperty) {
             payload.inverseProperty = inverseProperty;
         }
-        return propertyReflector(Object.assign(Object.assign({}, payload), { type: "Object" }), relationshipsByModel);
+        return reflector_1.propertyReflector(Object.assign(Object.assign({}, payload), { type: "Object" }), relationship_store_1.relationshipsByModel);
     }
     catch (e) {
-        throw new DecoratorProblem("hasMany", e, { inverse });
+        throw new DecoratorProblem_1.DecoratorProblem("hasMany", e, { inverse });
     }
 }
+exports.hasMany = hasMany;
 //# sourceMappingURL=hasMany.js.map

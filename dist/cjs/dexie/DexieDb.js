@@ -1,14 +1,20 @@
-import { Record } from "..";
-import { FireModelError, DexieError } from "../errors";
-import Dexie from "dexie";
-import { DexieRecord } from "./DexieRecord";
-import { DexieList } from "./DexieList";
-import { capitalize } from "../util";
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.DexieDb = void 0;
+const __1 = require("..");
+const errors_1 = require("../errors");
+const dexie_1 = __importDefault(require("dexie"));
+const DexieRecord_1 = require("./DexieRecord");
+const DexieList_1 = require("./DexieList");
+const util_1 = require("../util");
 /**
  * Provides a simple API to convert to/work with **Dexie** models
  * from a **Firemodel** model definition.
  */
-export class DexieDb {
+class DexieDb {
     constructor(_name, ...models) {
         this._name = _name;
         /** simple dictionary of Dixie model defn's for indexation */
@@ -26,8 +32,8 @@ export class DexieDb {
         this._status = "initialized";
         this._models = DexieDb.modelConversion(...models);
         this._db = DexieDb._indexedDb
-            ? new Dexie(this._name, { indexedDB: DexieDb._indexedDb })
-            : new Dexie(this._name);
+            ? new dexie_1.default(this._name, { indexedDB: DexieDb._indexedDb })
+            : new dexie_1.default(this._name);
         this._db.on("blocked", () => {
             this._status = "blocked";
         });
@@ -38,7 +44,7 @@ export class DexieDb {
             this._status = "ready";
         });
         models.forEach((m) => {
-            const r = Record.create(m);
+            const r = __1.Record.create(m);
             this._constructors[r.pluralName] = m;
             this._meta[r.pluralName] = Object.assign(Object.assign({}, r.META), { modelName: r.modelName, hasDynamicPath: r.hasDynamicPath, dynamicPathComponents: r.dynamicPathComponents, pluralName: r.pluralName });
             this._singularToPlural[r.modelName] = r.pluralName;
@@ -52,11 +58,11 @@ export class DexieDb {
      */
     static modelConversion(...modelConstructors) {
         if (modelConstructors.length === 0) {
-            throw new FireModelError(`A call to DexieModel.models() was made without passing in ANY firemodel models into it! You must at least provide one model`, "firemodel/no-models");
+            throw new errors_1.FireModelError(`A call to DexieModel.models() was made without passing in ANY firemodel models into it! You must at least provide one model`, "firemodel/no-models");
         }
         return modelConstructors.reduce((agg, curr) => {
             const dexieModel = [];
-            const r = Record.createWith(curr, new curr());
+            const r = __1.Record.createWith(curr, new curr());
             const compoundIndex = r.hasDynamicPath
                 ? ["id"].concat(r.dynamicPathComponents)
                 : "";
@@ -100,7 +106,7 @@ export class DexieDb {
         // Dexie.dependencies.indexedDB = indexedDB;
         DexieDb._indexedDb = indexedDB;
         if (idbKeyRange) {
-            Dexie.dependencies.IDBKeyRange = idbKeyRange;
+            dexie_1.default.dependencies.IDBKeyRange = idbKeyRange;
         }
     }
     //#endregion STATIC
@@ -178,19 +184,19 @@ export class DexieDb {
      * @param model the `Model` in question
      */
     modelIsManagedByDexie(model) {
-        const r = Record.create(model);
+        const r = __1.Record.create(model);
         return this.modelNames.includes(r.modelName);
     }
     /**
      * Returns a typed **Dexie** `Table` object for a given model class
      */
     table(model) {
-        const r = Record.create(model);
+        const r = __1.Record.create(model);
         if (!this.isOpen()) {
             this.open();
         }
         if (!this.modelIsManagedByDexie(model)) {
-            throw new DexieError(`Attempt to get a Dexie.Table for "${capitalize(r.modelName)}" Firemodel model but this model is not being managed by Dexie! Models being managed are: ${this.modelNames.join(", ")}`, "dexie/table-does-not-exist");
+            throw new errors_1.DexieError(`Attempt to get a Dexie.Table for "${util_1.capitalize(r.modelName)}" Firemodel model but this model is not being managed by Dexie! Models being managed are: ${this.modelNames.join(", ")}`, "dexie/table-does-not-exist");
         }
         const table = this._db.table(r.pluralName);
         table.mapToClass(model);
@@ -203,17 +209,17 @@ export class DexieDb {
      * @param model the **Firemodel** model (aka, the constructor)
      */
     record(model) {
-        const r = Record.create(model);
+        const r = __1.Record.create(model);
         if (!this.modelNames.includes(r.modelName)) {
             const isPlural = this.pluralNames.includes(r.modelName);
-            throw new DexieError(`Attempt to reach the record API via DexieDb.record("${model}") failed as there is no known Firemodel model of that name. ${isPlural
+            throw new errors_1.DexieError(`Attempt to reach the record API via DexieDb.record("${model}") failed as there is no known Firemodel model of that name. ${isPlural
                 ? "It looks like you may have accidentally used the plural name instead"
                 : ""}. Known model types are: ${this.modelNames.join(", ")}`, "dexie/model-does-not-exist");
         }
         if (!this.isOpen()) {
             this.open();
         }
-        return new DexieRecord(model, this.table(model), this.meta(r.modelName));
+        return new DexieRecord_1.DexieRecord(model, this.table(model), this.meta(r.modelName));
     }
     /**
      * Provides a very **Firemodel**-_like_ API surface to interact with LIST based
@@ -222,7 +228,7 @@ export class DexieDb {
      * @param model the **Firemodel** `Model` name
      */
     list(model) {
-        const r = Record.create(model);
+        const r = __1.Record.create(model);
         if (!this.isOpen()) {
             this.open();
         }
@@ -230,7 +236,7 @@ export class DexieDb {
             ? this.table(model)
             : this.table(model);
         const meta = this.meta(r.modelName);
-        return new DexieList(model, table, meta);
+        return new DexieList_1.DexieList(model, table, meta);
     }
     /**
      * Returns the META for a given `Model` identified by
@@ -271,7 +277,7 @@ export class DexieDb {
      */
     async open() {
         if (this._db.isOpen()) {
-            throw new DexieError(`Attempt to call DexieDb.open() failed because the database is already open!`, `dexie/db-already-open`);
+            throw new errors_1.DexieError(`Attempt to call DexieDb.open() failed because the database is already open!`, `dexie/db-already-open`);
         }
         if (!this.isMapped) {
             this.mapModels();
@@ -283,7 +289,7 @@ export class DexieDb {
      */
     close() {
         if (!this._db.isOpen()) {
-            throw new DexieError(`Attempt to call DexieDb.close() failed because the database is NOT open!`, `dexie/db-not-open`);
+            throw new errors_1.DexieError(`Attempt to call DexieDb.close() failed because the database is NOT open!`, `dexie/db-not-open`);
         }
         this._db.close();
     }
@@ -294,7 +300,7 @@ export class DexieDb {
         else if (this._singularToPlural[name]) {
             return obj[this._singularToPlural[name]];
         }
-        throw new DexieError(`Failed while calling DexieModel.${fn}("${name}") because "${name}" is neither a singular or plural name of a known model!`, `firemodel/invalid-dexie-model`);
+        throw new errors_1.DexieError(`Failed while calling DexieModel.${fn}("${name}") because "${name}" is neither a singular or plural name of a known model!`, `firemodel/invalid-dexie-model`);
     }
     _mapVersionsToDexie() {
         this._priors.forEach((prior, idx) => {
@@ -312,4 +318,5 @@ export class DexieDb {
         this._isMapped = true;
     }
 }
+exports.DexieDb = DexieDb;
 //# sourceMappingURL=DexieDb.js.map

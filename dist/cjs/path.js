@@ -1,3 +1,6 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.pathJoin = void 0;
 const moreThanThreePeriods = /\.{3,}/g;
 // polyfill Array.isArray if necessary
 if (!Array.isArray) {
@@ -9,7 +12,7 @@ const errorStr = (type) => {
     return `tried to join something other than undefined, a string or an array [${type}], it was ignored in pathJoin's result`;
 };
 /** An ISO-morphic path join that works everywhere */
-export function pathJoin(...args) {
+function pathJoin(...args) {
     return args
         .reduce((prev, val) => {
         if (typeof prev === "undefined") {
@@ -26,6 +29,7 @@ export function pathJoin(...args) {
     }, "")
         .replace(moreThanThreePeriods, ".."); // join the resulting array together
 }
+exports.pathJoin = pathJoin;
 function joinStringsWithSlash(str1, str2) {
     const str1isEmpty = !str1.length;
     const str1EndsInSlash = str1[str1.length - 1] === "/";

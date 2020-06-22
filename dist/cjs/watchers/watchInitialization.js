@@ -1,10 +1,13 @@
-import { wait } from "common-types";
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.waitForInitialization = exports.hasInitialized = void 0;
+const common_types_1 = require("common-types");
 /**
  * indicates which watcherId's have returned their initial
  * value.
  */
 const _hasInitialized = {};
-export const hasInitialized = (watcherId, value = true) => {
+exports.hasInitialized = (watcherId, value = true) => {
     if (watcherId) {
         _hasInitialized[watcherId] = value;
     }
@@ -15,18 +18,19 @@ export const hasInitialized = (watcherId, value = true) => {
  * data from the watcher. This indicates that the frontend
  * and Firebase DB are now in sync.
  */
-export async function waitForInitialization(watcher, timeout = 750) {
+async function waitForInitialization(watcher, timeout = 750) {
     setTimeout(() => {
         if (!ready(watcher)) {
             console.info(`A watcher [ ${watcher.watcherId} ] has not returned an event in the timeout window  [ ${timeout}ms ]. This might represent an issue but can also happen when a watcher starts listening to a path [ ${watcher.watcherPaths.join(", ")} ] which has no data yet.`);
         }
-        hasInitialized(watcher.watcherId, "timed-out");
+        exports.hasInitialized(watcher.watcherId, "timed-out");
     }, timeout);
     while (!ready(watcher)) {
-        await wait(50);
+        await common_types_1.wait(50);
     }
 }
+exports.waitForInitialization = waitForInitialization;
 function ready(watcher) {
-    return hasInitialized()[watcher.watcherId] ? true : false;
+    return exports.hasInitialized()[watcher.watcherId] ? true : false;
 }
 //# sourceMappingURL=watchInitialization.js.map

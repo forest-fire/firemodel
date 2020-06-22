@@ -1,7 +1,11 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.modelsWithMeta = exports.getModelMeta = exports.addModelMeta = void 0;
 const meta = {};
-export function addModelMeta(modelName, props) {
+function addModelMeta(modelName, props) {
     meta[modelName] = props;
 }
+exports.addModelMeta = addModelMeta;
 /**
  * Returns the META info for a given model, it will attempt to resolve
  * it locally first but if that is not available (as is the case with
@@ -10,12 +14,14 @@ export function addModelMeta(modelName, props) {
  *
  * @param modelKlass a model or record which exposes META property
  */
-export function getModelMeta(modelKlass) {
+function getModelMeta(modelKlass) {
     const localMeta = modelKlass.META;
     const modelMeta = meta[modelKlass.modelName];
     return localMeta && localMeta.properties ? localMeta : modelMeta || {};
 }
-export function modelsWithMeta() {
+exports.getModelMeta = getModelMeta;
+function modelsWithMeta() {
     return Object.keys(meta);
 }
+exports.modelsWithMeta = modelsWithMeta;
 //# sourceMappingURL=ModelMeta.js.map

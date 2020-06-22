@@ -1,8 +1,11 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.VeuxWrapper = void 0;
 /**
  * wraps a Vuex function's to Mutation.commit() function so it's
  * signature looks like a Redux call to dispatch
  */
-export function VeuxWrapper(vuexDispatch) {
+function VeuxWrapper(vuexDispatch) {
     /** vuex wrapped redux dispatch function */
     return async (reduxAction) => {
         const type = reduxAction.type;
@@ -10,4 +13,5 @@ export function VeuxWrapper(vuexDispatch) {
         return vuexDispatch(type, reduxAction);
     };
 }
+exports.VeuxWrapper = VeuxWrapper;
 //# sourceMappingURL=VuexWrapper.js.map

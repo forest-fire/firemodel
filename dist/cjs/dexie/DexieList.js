@@ -1,10 +1,13 @@
-import { DexieError } from "../errors";
-import { capitalize } from "../util";
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.DexieList = void 0;
+const errors_1 = require("../errors");
+const util_1 = require("../util");
 /**
  * Provides a simple API for list based queries that resembles the Firemodel `List` API
  * but which works on the IndexDB using Dexie under the hood.
  */
-export class DexieList {
+class DexieList {
     constructor(modelConstructor, table, meta) {
         this.modelConstructor = modelConstructor;
         this.table = table;
@@ -28,11 +31,11 @@ export class DexieList {
         }
         const results = c.toArray().catch((e) => {
             if (e.code === "NotFoundError" || e.name === "NotFoundError") {
-                console.info(`No records for model ${capitalize(this.meta.modelName)} found!`);
+                console.info(`No records for model ${util_1.capitalize(this.meta.modelName)} found!`);
                 return [];
             }
             else {
-                throw new DexieError(`Problem with list(${capitalize(this.meta.modelName)}).all(${JSON.stringify(options)}): ${e.message}`, `dexie/${e.code || e.name || "list.all"}`);
+                throw new errors_1.DexieError(`Problem with list(${util_1.capitalize(this.meta.modelName)}).all(${JSON.stringify(options)}): ${e.message}`, `dexie/${e.code || e.name || "list.all"}`);
             }
         });
         return results || [];
@@ -61,11 +64,11 @@ export class DexieList {
         }
         const results = query.toArray().catch((e) => {
             if (e.code === "NotFoundError" || e.name === "NotFoundError") {
-                console.info(`No records for model ${capitalize(this.meta.modelName)} found!`);
+                console.info(`No records for model ${util_1.capitalize(this.meta.modelName)} found!`);
                 return [];
             }
             else {
-                throw new DexieError(`list.where("${prop}", ${JSON.stringify(value)}, ${JSON.stringify(options)}) failed to execute: ${e.message}`, `dexie/${e.code || e.name || "list.where"}`);
+                throw new errors_1.DexieError(`list.where("${prop}", ${JSON.stringify(value)}, ${JSON.stringify(options)}) failed to execute: ${e.message}`, `dexie/${e.code || e.name || "list.where"}`);
             }
         });
         return results || [];
@@ -95,11 +98,11 @@ export class DexieList {
             : this.table.orderBy("createdAt").reverse().limit(limit);
         return c.toArray().catch((e) => {
             if (e.code === "NotFoundError" || e.name === "NotFoundError") {
-                console.info(`No records for model ${capitalize(this.meta.modelName)} found!`);
+                console.info(`No records for model ${util_1.capitalize(this.meta.modelName)} found!`);
                 return [];
             }
             else {
-                throw new DexieError(`list.last(${limit}${skip ? `, skip: ${skip}` : ""}) failed to execute: ${e.message}`, `dexie/${e.code || e.name || "list.last"}`);
+                throw new errors_1.DexieError(`list.last(${limit}${skip ? `, skip: ${skip}` : ""}) failed to execute: ${e.message}`, `dexie/${e.code || e.name || "list.last"}`);
             }
         });
     }
@@ -112,13 +115,14 @@ export class DexieList {
             : this.table.orderBy("createdAt").limit(limit);
         return c.toArray().catch((e) => {
             if (e.code === "NotFoundError" || e.name === "NotFoundError") {
-                console.info(`No records for model ${capitalize(this.meta.modelName)} found!`);
+                console.info(`No records for model ${util_1.capitalize(this.meta.modelName)} found!`);
                 return [];
             }
             else {
-                throw new DexieError(`list.first(${limit}${skip ? `, skip: ${skip}` : ""}) failed to execute: ${e.message}`, `dexie/${e.code || e.name || "list.first"}`);
+                throw new errors_1.DexieError(`list.first(${limit}${skip ? `, skip: ${skip}` : ""}) failed to execute: ${e.message}`, `dexie/${e.code || e.name || "list.first"}`);
             }
         });
     }
 }
+exports.DexieList = DexieList;
 //# sourceMappingURL=DexieList.js.map

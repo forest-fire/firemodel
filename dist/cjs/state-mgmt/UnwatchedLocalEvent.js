@@ -1,4 +1,7 @@
-export function UnwatchedLocalEvent(rec, event) {
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.UnwatchedLocalEvent = void 0;
+function UnwatchedLocalEvent(rec, event) {
     const meta = {
         dynamicPathProperties: rec.dynamicPathComponents,
         compositeKey: rec.compositeKey,
@@ -11,4 +14,5 @@ export function UnwatchedLocalEvent(rec, event) {
     };
     return Object.assign(Object.assign(Object.assign({}, event), meta), { dbPath: rec.dbPath, watcherSource: "unknown" });
 }
+exports.UnwatchedLocalEvent = UnwatchedLocalEvent;
 //# sourceMappingURL=UnwatchedLocalEvent.js.map

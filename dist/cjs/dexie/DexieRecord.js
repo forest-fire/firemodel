@@ -1,12 +1,15 @@
-import { key as fbKey } from "firebase-key";
-import { DexieError } from "../errors";
-import { capitalize } from "../util";
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.DexieRecord = void 0;
+const firebase_key_1 = require("firebase-key");
+const errors_1 = require("../errors");
+const util_1 = require("../util");
 /**
  * Provides a simple API to do CRUD operations
  * on Dexie/IndexDB which resembles the Firemodel
  * API.
  */
-export class DexieRecord {
+class DexieRecord {
     constructor(modelConstructor, table, meta) {
         this.modelConstructor = modelConstructor;
         this.table = table;
@@ -21,7 +24,7 @@ export class DexieRecord {
      */
     async get(pk) {
         return this.table.get(pk).catch((e) => {
-            throw new DexieError(`DexieRecord: problem getting record ${JSON.stringify(pk)} of model ${capitalize(this.meta.modelName)}: ${e.message}`, `dexie/${e.code || e.name || "get"}`);
+            throw new errors_1.DexieError(`DexieRecord: problem getting record ${JSON.stringify(pk)} of model ${util_1.capitalize(this.meta.modelName)}: ${e.message}`, `dexie/${e.code || e.name || "get"}`);
         });
     }
     /**
@@ -33,11 +36,11 @@ export class DexieRecord {
     async add(record) {
         if (this.meta.hasDynamicPath) {
             if (!this.meta.dynamicPathComponents.every((i) => record[i])) {
-                throw new DexieError(`The model ${capitalize(this.meta.modelName)} is based on a dynamic path [ ${this.meta.dynamicPathComponents.join(", ")} ] and every part of this path is therefore a required field but the record hash passed in did not define values for all these properties. The properties which WERE pass in included: ${Object.keys(record).join(", ")}`, "dexie/missing-property");
+                throw new errors_1.DexieError(`The model ${util_1.capitalize(this.meta.modelName)} is based on a dynamic path [ ${this.meta.dynamicPathComponents.join(", ")} ] and every part of this path is therefore a required field but the record hash passed in did not define values for all these properties. The properties which WERE pass in included: ${Object.keys(record).join(", ")}`, "dexie/missing-property");
             }
         }
         if (!record.id) {
-            record.id = fbKey();
+            record.id = firebase_key_1.key();
         }
         const now = new Date().getTime();
         record.createdAt = now;
@@ -45,7 +48,7 @@ export class DexieRecord {
         const pk = await this.table
             .add(record)
             .catch((e) => {
-            throw new DexieError(`DexieRecord: Problem adding record to ${capitalize(this.meta.modelName)}: ${e.message}`, `dexie/${e.code || e.name || "add"}`);
+            throw new errors_1.DexieError(`DexieRecord: Problem adding record to ${util_1.capitalize(this.meta.modelName)}: ${e.message}`, `dexie/${e.code || e.name || "add"}`);
         });
         return this.get(pk);
     }
@@ -58,19 +61,20 @@ export class DexieRecord {
         const result = await this.table
             .update(pk, updateHash)
             .catch((e) => {
-            throw new DexieError(`DexieRecord: Problem updating ${capitalize(this.meta.modelName)}.${typeof pk === "string" ? pk : pk.id}: ${e.message}`, `dexie/${e.code || e.name || "update"}`);
+            throw new errors_1.DexieError(`DexieRecord: Problem updating ${util_1.capitalize(this.meta.modelName)}.${typeof pk === "string" ? pk : pk.id}: ${e.message}`, `dexie/${e.code || e.name || "update"}`);
         });
         if (result === 0) {
-            throw new DexieError(`The primary key passed in to record.update(${JSON.stringify(pk)}) was NOT found in the IndexedDB!`, "dexie/record-not-found");
+            throw new errors_1.DexieError(`The primary key passed in to record.update(${JSON.stringify(pk)}) was NOT found in the IndexedDB!`, "dexie/record-not-found");
         }
         if (result > 1) {
-            throw new DexieError(`While calling record.update(${JSON.stringify(pk)}) MORE than one record was updated!`, "dexie/unexpected-error");
+            throw new errors_1.DexieError(`While calling record.update(${JSON.stringify(pk)}) MORE than one record was updated!`, "dexie/unexpected-error");
         }
     }
     async remove(id) {
         return this.table.delete(id).catch((e) => {
-            throw new DexieError(`Problem removing record ${JSON.stringify(id)} from the ${capitalize(this.meta.modelName)}: ${e.message}`, `dexie/${e.code || e.name || "remove"}`);
+            throw new errors_1.DexieError(`Problem removing record ${JSON.stringify(id)} from the ${util_1.capitalize(this.meta.modelName)}: ${e.message}`, `dexie/${e.code || e.name || "remove"}`);
         });
     }
 }
+exports.DexieRecord = DexieRecord;
 //# sourceMappingURL=DexieRecord.js.map

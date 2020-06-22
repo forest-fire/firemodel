@@ -1,5 +1,8 @@
-import { FireModelError } from ".";
-export class FireModelProxyError extends FireModelError {
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.FireModelProxyError = void 0;
+const _1 = require(".");
+class FireModelProxyError extends _1.FireModelError {
     constructor(e, context = "", name = "") {
         super("", !name ? `firemodel/${e.name}` : name);
         this.firemodel = true;
@@ -8,4 +11,5 @@ export class FireModelProxyError extends FireModelError {
         this.stack = e.stack;
     }
 }
+exports.FireModelProxyError = FireModelProxyError;
 //# sourceMappingURL=FireModelProxyError.js.map

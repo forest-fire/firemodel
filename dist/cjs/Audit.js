@@ -1,7 +1,10 @@
-import { FireModel } from "./FireModel";
-import { AuditLog } from "./index";
-import { Record } from "./Record";
-import { capitalize } from "./util";
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.writeAudit = void 0;
+const FireModel_1 = require("./FireModel");
+const index_1 = require("./index");
+const Record_1 = require("./Record");
+const util_1 = require("./util");
 /**
  * writeAudit
  *
@@ -13,13 +16,14 @@ import { capitalize } from "./util";
  * @param changes array of changes
  * @param options
  */
-export async function writeAudit(record, action, changes, options = {}) {
-    const db = options.db || FireModel.defaultDb;
-    await Record.add(AuditLog, {
-        modelName: capitalize(record.modelName),
+async function writeAudit(record, action, changes, options = {}) {
+    const db = options.db || FireModel_1.FireModel.defaultDb;
+    await Record_1.Record.add(index_1.AuditLog, {
+        modelName: util_1.capitalize(record.modelName),
         modelId: record.id,
         action,
         changes
     }, { db });
 }
+exports.writeAudit = writeAudit;
 //# sourceMappingURL=Audit.js.map
