@@ -17,7 +17,6 @@ import { Person } from "./testing/Person";
 import { PersonWithLocalAndPrefix } from "./testing/PersonWithLocalAndPrefix";
 import { Watch } from "../src/Watch";
 import { WatchList } from "../src/watchers/WatchList";
-import { expect } from "chai";
 import { getWatcherPool } from "../src/watchers/watcherPool";
 import { setupEnv } from "./testing/helpers";
 
@@ -25,7 +24,7 @@ setupEnv();
 
 describe("Watch →", () => {
   let realDB: IRealTimeAdmin;
-  before(async () => {
+  beforeEach(async () => {
     realDB = await RealTimeAdmin.connect();
     FireModel.defaultDb = realDB;
   });
@@ -40,9 +39,9 @@ describe("Watch →", () => {
     const { watcherId } = await Watch.record(Person, "12345")
       .dispatch(async () => "")
       .start();
-    expect(watcherId).to.be.a("string");
+    expect(watcherId).toBeInstanceOf("string");
 
-    expect(Watch.lookup(watcherId)).to.be.an("object");
+    expect(Watch.lookup(watcherId)).toBeInstanceOf("object");
     expect(Watch.lookup(watcherId)).to.haveOwnProperty("eventFamily");
     expect(Watch.lookup(watcherId)).to.haveOwnProperty("query");
     expect(Watch.lookup(watcherId)).to.haveOwnProperty("createdAt");
@@ -57,9 +56,9 @@ describe("Watch →", () => {
     FireModel.dispatch = cb;
     const w = await Watch.record(Person, "1234").start();
 
-    expect(Watch.inventory[w.watcherId]).to.be.an("object");
-    expect(Watch.inventory[w.watcherId].eventFamily).to.equal("value");
-    expect(Watch.inventory[w.watcherId].watcherPaths[0]).to.equal(
+    expect(Watch.inventory[w.watcherId]).toBeInstanceOf("object");
+    expect(Watch.inventory[w.watcherId].eventFamily).toBe("value");
+    expect(Watch.inventory[w.watcherId].watcherPaths[0]).toBe(
       "authenticated/people/1234"
     );
 
@@ -76,11 +75,11 @@ describe("Watch →", () => {
 
     const eventTypes = new Set(events.map((e) => e.type));
     console.log(eventTypes);
-    expect(eventTypes.has(FmEvents.RECORD_CHANGED)).to.equal(true);
-    expect(eventTypes.has(FmEvents.RECORD_REMOVED_LOCALLY)).to.equal(true);
-    expect(eventTypes.has(FmEvents.RECORD_REMOVED_CONFIRMATION)).to.equal(true);
-    expect(eventTypes.has(FmEvents.WATCHER_STARTING)).to.equal(true);
-    expect(eventTypes.has(FmEvents.WATCHER_STARTED)).to.equal(true);
+    expect(eventTypes.has(FmEvents.RECORD_CHANGED)).toBe(true);
+    expect(eventTypes.has(FmEvents.RECORD_REMOVED_LOCALLY)).toBe(true);
+    expect(eventTypes.has(FmEvents.RECORD_REMOVED_CONFIRMATION)).toBe(true);
+    expect(eventTypes.has(FmEvents.WATCHER_STARTING)).toBe(true);
+    expect(eventTypes.has(FmEvents.WATCHER_STARTED)).toBe(true);
   });
 
   it("Watching CRUD actions on List", async () => {
@@ -119,26 +118,26 @@ describe("Watch →", () => {
       age: 88,
     });
     eventTypes = new Set(events.map((e) => e.type));
-    expect(eventTypes.has(FmEvents.RECORD_CHANGED)).to.equal(true);
-    expect(eventTypes.has(FmEvents.RECORD_REMOVED)).to.equal(true);
-    expect(eventTypes.has(FmEvents.RECORD_ADDED)).to.equal(true);
+    expect(eventTypes.has(FmEvents.RECORD_CHANGED)).toBe(true);
+    expect(eventTypes.has(FmEvents.RECORD_REMOVED)).toBe(true);
+    expect(eventTypes.has(FmEvents.RECORD_ADDED)).toBe(true);
   });
 
   it("start() increases watcher count, stop() decreases it", async () => {
     Watch.reset();
     FireModel.dispatch = async () => "";
-    expect(Watch.watchCount).to.equal(0);
+    expect(Watch.watchCount).toBe(0);
     const { watcherId: hc1 } = await Watch.record(Person, "989898").start();
     const { watcherId: hc2 } = await Watch.record(Person, "45645645").start();
-    expect(Watch.watchCount).to.equal(2);
+    expect(Watch.watchCount).toBe(2);
     Watch.stop(hc1);
-    expect(Watch.watchCount).to.equal(1);
-    expect(Watch.lookup(hc2)).to.be.an("object");
+    expect(Watch.watchCount).toBe(1);
+    expect(Watch.lookup(hc2)).toBeInstanceOf("object");
     try {
       Watch.lookup(hc1);
       throw new Error("looking up an invalid hashcode should produce error!");
     } catch (e) {
-      expect(e.name).to.equal("FireModel::InvalidHashcode");
+      expect(e.name).toBe("FireModel::InvalidHashcode");
     }
   });
 
@@ -160,7 +159,7 @@ describe("Watch →", () => {
     console.log(events);
 
     events.forEach((evt) => {
-      expect(evt.localPath).to.equal(
+      expect(evt.localPath).toBe(
         `${person.META.localPrefix}/${
           person.META.localModelName || person.pluralName
         }`
@@ -183,7 +182,7 @@ describe("Watch →", () => {
     await Watch.record(PersonWithLocalAndPrefix, personId).start();
     await Record.add(PersonWithLocalAndPrefix, person.data);
     events.forEach((evt) => {
-      expect(evt.localPath).to.equal(
+      expect(evt.localPath).toBe(
         `${person.META.localPrefix}/${person.META.localModelName}`
       );
     });
@@ -198,7 +197,7 @@ describe("Watch →", () => {
       FmEvents.RECORD_CHANGED, // Record Listeners can't distinguish between ADD and UPDATE
     ];
     expectedTypes.forEach((e) => {
-      expect(eventTypes).to.include(e);
+      expect(eventTypes).toEqual(expect.arrayContaining([e]));
     });
   });
 });
@@ -206,8 +205,8 @@ describe("Watch →", () => {
 describe("Watch.list(XXX).ids()", () => {
   it("WatchList instantiated with ids() method", async () => {
     const wl = Watch.list(Person).ids("1234", "4567", "8989");
-    expect(wl).to.be.instanceOf(WatchList);
-    expect((wl as any)._underlyingRecordWatchers).to.have.lengthOf(3);
+    expect(wl).toBeInstanceOf(WatchList);
+    expect((wl as any)._underlyingRecordWatchers).toHaveLength(3);
   });
 
   it("Starting WatchList only has a single and appropriate entry in watcher pool", async () => {
@@ -218,10 +217,10 @@ describe("Watch.list(XXX).ids()", () => {
     });
     const wId = await wl.start();
     const pool = getWatcherPool();
-    expect(Object.keys(pool)).to.be.lengthOf(1);
-    expect(Object.keys(pool)).includes(wId.watcherId);
-    expect(wId.query).is.an("array");
-    expect(wId.watcherPaths).is.an("array");
+    expect(Object.keys(pool)).toHaveLength(1);
+    expect(Object.keys(pool)).toEqual(expect.arrayContaining([wId.watcherId]));
+    expect(wId.query).toBeInstanceOf("array");
+    expect(wId.watcherPaths).toBeInstanceOf("array");
   });
 
   it('An event, when encountered, is correctly associated with the "list of records" watcher', async () => {
@@ -260,18 +259,18 @@ describe("Watch.list(XXX).ids()", () => {
 
     // two events when the watcher is turned on;
     // two more when change takes place on a watched path
-    expect(recordsChanged).lengthOf(4);
+    expect(recordsChanged).toHaveLength(4);
 
     recordsChanged.forEach((i) => {
-      expect(i.watcherSource).to.equal("list-of-records");
-      expect(i.dbPath).to.be.a("string");
-      expect(i.query).to.be.an("array").and.to.have.length(2);
-      expect((i.query as BaseSerializer[])[0]).to.be.instanceOf(BaseSerializer);
+      expect(i.watcherSource).toBe("list-of-records");
+      expect(i.dbPath).toBeInstanceOf("string");
+      expect(i.query).toBeInstanceOf("array").and.toHaveLength(2);
+      expect((i.query as BaseSerializer[])[0]).toBeInstanceOf(BaseSerializer);
     });
 
-    expect(recordIdsChanged).includes("1234");
-    expect(recordIdsChanged).includes("4567");
-    expect(recordIdsChanged).does.not.include("who-cares");
+    expect(recordIdsChanged).toEqual(expect.arrayContaining(["1234"]));
+    expect(recordIdsChanged).toEqual(expect.arrayContaining(["4567"]));
+    expect(recordIdsChanged).toEqual(expect.not.arrayContaining(["who-cares"]));
   });
 
   it("The Watch.list(xyz).ids(...) works when the model has a composite key", async () => {
@@ -319,10 +318,10 @@ describe("Watch.list(XXX).ids()", () => {
     );
 
     recordsChanged.forEach((i) => {
-      expect(i.watcherSource).to.equal("list-of-records");
-      expect(i.dbPath).to.be.a("string");
-      expect(i.query).to.be.an("array").and.to.have.length(2);
-      expect((i.query as BaseSerializer[])[0]).to.be.instanceOf(BaseSerializer);
+      expect(i.watcherSource).toBe("list-of-records");
+      expect(i.dbPath).toBeInstanceOf("string");
+      expect(i.query).toBeInstanceOf("array").and.toHaveLength(2);
+      expect((i.query as BaseSerializer[])[0]).toBeInstanceOf(BaseSerializer);
     });
   });
 });

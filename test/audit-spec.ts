@@ -4,8 +4,6 @@ import { List, Mock, Record } from "../src";
 import { AuditLog } from "../src/models/index";
 import { FireModel } from "../src/FireModel";
 import { Person } from "./testing/AuditedPerson";
-// tslint:disable:no-implicit-dependencies
-import { expect } from "chai";
 import { wait } from "common-types";
 
 describe("Auditing ->�", () => {
@@ -29,14 +27,11 @@ describe("Auditing ->�", () => {
     const audit = (await List.all(AuditLog)).data;
     // console.log(JSON.stringify(audit, null, 2));
 
-    expect(audit).to.have.lengthOf(5);
+    expect(audit).toHaveLength(5);
     const actions = audit.map((i) => i.action);
 
-    expect(actions.includes("added")).to.equal(true);
-    expect(actions.includes("updated")).to.equal(true);
-    expect(actions.includes("removed")).to.equal(
-      true,
-      "removed audit should have been included"
-    );
+    expect(actions.includes("added")).toBe(true);
+    expect(actions.includes("updated")).toBe(true);
+    expect(actions.includes("removed")).toBe(true);
   });
 });
