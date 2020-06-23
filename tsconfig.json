@@ -3,7 +3,7 @@
     "declaration": true,
     "module": "commonjs",
     "target": "es2017",
-    "lib": ["es2016", "es2017", "esnext.asynciterable", "es2015.reflect"],
+    "lib": ["esnext.asynciterable", "es2015.reflect"],
     "moduleResolution": "node",
     "sourceMap": true,
     "noImplicitAny": true,

@@ -1,10 +1,17 @@
 {
-  "extends": "./tsconfig.json",
   "compilerOptions": {
     "declaration": true,
     "noEmit": false,
+    "module": "es2015",
+    "target": "es2020",
+
     "removeComments": false,
     "sourceMap": false,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "allowSyntheticDefaultImports": true,
+    "moduleResolution": "node",
+
     "outDir": "./dist/typings"
   },
   "include": ["src/**/*"]

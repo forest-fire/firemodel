@@ -1,12 +1,12 @@
-import { IDictionary, Nullable, fk, pk } from "common-types";
-import { Model } from "./models/Model";
-import { FireModel } from "./FireModel";
-import { IReduxDispatch } from "./state-mgmt";
 import { IFMEventName, IFmCrudOperations, IFmDispatchOptions } from "./state-mgmt/index";
-import { IFkReference, ICompositeKey, IRecordOptions } from "./@types/record-types";
 import { IFmRelationshipOptionsForHasMany } from ".";
+import { ICompositeKey, IFkReference, IRecordOptions } from "./@types/record-types";
+import { IDictionary, Nullable, fk, pk } from "common-types";
+import { IReduxDispatch } from "./state-mgmt";
 import { IFmRelationshipOptions } from "./@types";
+import { FireModel } from "./FireModel";
 import { IAbstractedDatabase } from "universal-fire";
+import { Model } from "./models/Model";
 export interface IWriteOperation {
     id: string;
     type: "set" | "pushKey" | "update";
@@ -67,7 +67,7 @@ export declare class Record<T extends Model> extends FireModel<T> {
      * @param updates properties to update; this is a non-destructive operation so properties not expressed will remain unchanged. Also, because values are _nullable_ you can set a property to `null` to REMOVE it from the database.
      * @param options
      */
-    static update<T extends Model>(model: new () => T, id: string | ICompositeKey<T>, updates: Nullable<Partial<T>>, options?: IRecordOptions): Promise<Record<T>>;
+    static update<T extends Model>(model: new () => T, id: string | ICompositeKey<T>, updates: Nullable<Partial<T>>, options?: IRecordOptions): Promise<any>;
     /**
      * Pushes a new item into a property that is setup as a "pushKey"
      *
