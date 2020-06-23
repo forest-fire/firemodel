@@ -1,0 +1,11 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "declaration": true,
+    "noEmit": false,
+    "removeComments": false,
+    "sourceMap": false,
+    "outDir": "./dist/typings"
+  },
+  "include": ["src/**/*"]
+}
