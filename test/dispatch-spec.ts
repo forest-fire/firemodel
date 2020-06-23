@@ -1,5 +1,3 @@
-import * as chai from "chai";
-
 import { FireModel, IMultiPathUpdates } from "../src/FireModel";
 // tslint:disable:no-implicit-dependencies
 import { IFmChangedProperties, IFmWatchEvent, Record } from "../src";
@@ -11,8 +9,8 @@ import { FmEvents } from "../src/state-mgmt";
 import { Person } from "./testing/Person";
 import { PersonWithLocal } from "./testing/PersonWithLocal";
 import { PersonWithLocalAndPrefix } from "./testing/PersonWithLocalAndPrefix";
+import { expect } from "chai";
 import { wait } from "./testing/helpers";
-const expect = chai.expect;
 
 describe("Dispatch →", () => {
   let db: IRealTimeAdmin;

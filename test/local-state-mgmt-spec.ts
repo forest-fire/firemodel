@@ -1,5 +1,4 @@
 // tslint:disable:no-implicit-dependencies
-import * as chai from "chai";
 
 import { FireModel, List, Record, pathJoin } from "../src";
 import { IRealTimeAdmin, RealTimeAdmin } from "universal-fire";
@@ -7,7 +6,7 @@ import { IRealTimeAdmin, RealTimeAdmin } from "universal-fire";
 import { DynamicPerson } from "./testing/localStateMgmt/DynamicPerson";
 import { Person } from "./testing/localStateMgmt/Person";
 import { PostfixPerson } from "./testing/localStateMgmt/PostfixPerson";
-const expect = chai.expect;
+import { expect } from "chai";
 
 describe("Client state management", () => {
   let db: IRealTimeAdmin;

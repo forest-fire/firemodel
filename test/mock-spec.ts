@@ -1,4 +1,3 @@
-import * as chai from "chai";
 import * as helpers from "./testing/helpers";
 
 // tslint:disable:no-implicit-dependencies
@@ -21,7 +20,8 @@ import { Company } from "./testing/Company";
 import { FancyPerson } from "./testing/FancyPerson";
 import { Mock as FireMock } from "firemock";
 import { Mock } from "../src/Mock";
-const expect = chai.expect;
+import { expect } from "chai";
+
 helpers.setupEnv();
 @model({})
 export class SimplePerson extends Model {

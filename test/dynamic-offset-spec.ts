@@ -1,5 +1,3 @@
-import * as chai from "chai";
-
 import DeepPerson, { IDeepName } from "./testing/dynamicPaths/DeepPerson";
 import {
   FireModel,
@@ -19,8 +17,7 @@ import { DeeperPerson } from "./testing/dynamicPaths/DeeperPerson";
 import Hobby from "./testing/dynamicPaths/Hobby";
 import { HumanAttribute } from "./testing/dynamicPaths/HumanAttribute";
 import { IDictionary } from "common-types";
-
-const expect = chai.expect;
+import { expect } from "chai";
 
 describe("Dynamic offsets reflected in path", () => {
   let db: IRealTimeAdmin;

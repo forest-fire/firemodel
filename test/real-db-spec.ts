@@ -1,6 +1,5 @@
 import "reflect-metadata";
 
-import * as chai from "chai";
 import * as helpers from "./testing/helpers";
 
 // tslint:disable:no-implicit-dependencies
@@ -18,7 +17,7 @@ import { IRealTimeAdmin, RealTimeAdmin } from "universal-fire";
 import { FancyPerson } from "./testing/FancyPerson";
 import { FireModel } from "../src/FireModel";
 import { Person } from "./testing/Person";
-const expect = chai.expect;
+import { expect } from "chai";
 
 helpers.setupEnv();
 

@@ -1,6 +1,5 @@
 import "reflect-metadata";
 
-import * as chai from "chai";
 import * as helpers from "./testing/helpers";
 
 // tslint:disable:no-implicit-dependencies
@@ -14,8 +13,7 @@ import { FmEvents } from "../src/state-mgmt";
 import { Mock } from "../src/Mock";
 import { Person } from "./testing/Person";
 import { SerializedQuery } from "universal-fire";
-
-const expect = chai.expect;
+import { expect } from "chai";
 
 describe("List class: ", () => {
   let db: IRealTimeAdmin;

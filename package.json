@@ -24,7 +24,7 @@
     "build:es": "esbuild --bundle src/index.ts --loader:.ts=ts --external:@firebase/firestore --external:firebase-admin --format=esm --outfile=dist/esm/index.mjs",
     "build:tsc": "run-s clean build:tsc:cjs build:tsc:es",
     "build:tsc:es": "tsc -P tsconfig.es.json",
-    "build:tsc:cjs": "tsc -P tsconfig.es.json",
+    "build:tsc:cjs": "tsc -P tsconfig.cjs.json",
     "build:rollup": "rollup -c",
     "build:nuclear": "yarn clean:nuclear && yarn build",
     "test": "./node_modules/.bin/ts-node ./scripts/test.ts ",

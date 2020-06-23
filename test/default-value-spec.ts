@@ -1,12 +1,11 @@
 // import { DB, SDK } from "universal-fire";
-import * as chai from "chai";
 
 // tslint:disable:no-implicit-dependencies
 import { FireModel, List, Mock, Record } from "../src";
 
 import { Person } from "./testing/default-values/Person";
 import { RealTimeAdmin } from "universal-fire";
-const expect = chai.expect;
+import { expect } from "chai";
 
 describe("defaultValue() → ", () => {
   before(async () => {

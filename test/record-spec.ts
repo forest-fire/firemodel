@@ -1,7 +1,5 @@
 import "reflect-metadata";
 
-import * as chai from "chai";
-
 // tslint:disable:no-implicit-dependencies
 import { IFmLocalEvent, IFmWatchEvent, List, Record } from "../src";
 import { IRealTimeAdmin, RealTimeAdmin } from "universal-fire";
@@ -11,7 +9,7 @@ import { FmEvents } from "../src/state-mgmt";
 import { Mock } from "../src/Mock";
 import { Person as Peeps } from "./testing/PersonAsPeeps";
 import { Person } from "./testing/Person";
-const expect = chai.expect;
+import { expect } from "chai";
 
 describe("Record > ", () => {
   let db: IRealTimeAdmin;

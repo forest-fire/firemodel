@@ -1,5 +1,3 @@
-import * as chai from "chai";
-
 // tslint:disable:no-implicit-dependencies
 import { IFmWatchEvent, Record } from "../src";
 import { IRealTimeAdmin, RealTimeAdmin } from "universal-fire";
@@ -15,9 +13,9 @@ import { Pay } from "./testing/Pay";
 import { Person } from "./testing/Person";
 import { buildRelationshipPaths } from "../src/record/relationships/buildRelationshipPaths";
 import { createCompositeKeyFromFkString } from "../src/record/createCompositeKeyFromFkString";
+import { expect } from "chai";
 import { extractFksFromPaths } from "../src/record/extractFksFromPaths";
 import { pathJoin } from "common-types";
-const expect = chai.expect;
 
 const hasManyPaths = (id: string, now: number) => [
   { path: `/authenticated/people/${id}/children/janet`, value: true },

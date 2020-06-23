@@ -1,11 +1,13 @@
 // tslint:disable:no-implicit-dependencies
-import * as chai from "chai";
-const expect = chai.expect;
+
+import { FireModel, Record } from "../src";
+
+import { Car } from "./testing/permissions/Car";
 import { IDictionary } from "common-types";
 // import { DB, SDK, IAbstractedDatabase } from "universal-fire";
 import { RealTimeClient } from "@forest-fire/real-time-client";
-import { FireModel, Record } from "../src";
-import { Car } from "./testing/permissions/Car";
+import { expect } from "chai";
+
 const clientConfig = {
   apiKey: "AIzaSyDuimhtnMcV1zeTl4m1MphOgWnzS17QhBM",
   authDomain: "abstracted-admin.firebaseapp.com",

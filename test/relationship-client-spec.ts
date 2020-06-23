@@ -1,7 +1,5 @@
 import "reflect-metadata";
 
-import * as chai from "chai";
-
 // tslint:disable:no-implicit-dependencies
 import { IFmLocalRelationshipEvent, IFmWatchEvent, Record } from "../src";
 import { IRealTimeAdmin, RealTimeAdmin } from "universal-fire";
@@ -11,7 +9,7 @@ import { FancyPerson } from "./testing/FancyPerson";
 import { FireModel } from "../src/FireModel";
 import { FmEvents } from "../src/state-mgmt";
 import { List } from "../src/List";
-const expect = chai.expect;
+import { expect } from "chai";
 
 const addFatherAndChildren = async () => {
   const bob = await Record.add(FancyPerson, {

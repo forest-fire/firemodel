@@ -1,11 +1,10 @@
+import { Klass } from "./testing/klass";
+import { Person } from "./testing/Person";
 // tslint:disable:no-implicit-dependencies
 // import { DB, SDK } from "universal-fire";
 import { RealTimeAdmin } from "@forest-fire/real-time-admin";
 import { Record } from "../src";
-import * as chai from "chai";
-import { Klass } from "./testing/klass";
-import { Person } from "./testing/Person";
-const expect = chai.expect;
+import { expect } from "chai";
 
 describe.skip("schema() decorator: ", () => {
   it("can read Schema meta properties", () => {
