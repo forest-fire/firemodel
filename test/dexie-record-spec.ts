@@ -4,7 +4,6 @@ import { DexieDb } from "../src/dexie/DexieDb";
 import "./testing/fake-indexeddb";
 import { Car } from "./testing/Car";
 import { DexieRecord } from "../src/dexie/DexieRecord";
-
 import indexedDB from "fake-indexeddb";
 import fdbKeyRange from "fake-indexeddb/lib/FDBKeyRange";
 import DeepPerson from "./testing/dynamicPaths/DeepPerson";
@@ -27,7 +26,7 @@ describe("Dexie - Record API", () => {
   it("Able to get the Record API from DexieDb", async () => {
     const car = d.record(Car);
     expect(car).toBeInstanceOf(DexieRecord);
-    expect(car.add).toBeInstanceOf("function");
+    expect(car.add).toBeInstanceOf(Function);
   });
 
   it("Able to call add() and then get() to show lifecycle", async () => {
@@ -42,8 +41,8 @@ describe("Dexie - Record API", () => {
     const result = await car.get(addResponse.id);
     expect(result.id).toBe(addResponse.id);
     expect(result.model).toBe("Fiesta");
-    expect(result.lastUpdated).toBeInstanceOf("number");
-    expect(result.createdAt).toBeInstanceOf("number");
+    expect(result.lastUpdated).toBeNumber();
+    expect(result.createdAt).toBeNumber();
     expect(result).toBeInstanceOf(Car);
 
     const person = d.record(DeepPerson);
@@ -52,19 +51,19 @@ describe("Dexie - Record API", () => {
       group: "testing"
     });
     expect(addPerson).toBeInstanceOf(DeepPerson);
-    expect(addPerson.id).toBeInstanceOf("string");
+    expect(typeof addPerson.id).toBeString();
     expect(addPerson.group).toBe("testing");
-    expect(addPerson.lastUpdated).toBeInstanceOf("number");
-    expect(addPerson.createdAt).toBeInstanceOf("number");
+    expect(addPerson.lastUpdated).toBeNumber();
+    expect(addPerson.createdAt).toBeNumber();
     const personResult = await person.get({
       id: addPerson.id,
       group: addPerson.group
     });
     expect(personResult).toBeInstanceOf(DeepPerson);
-    expect(personResult.id).toBeInstanceOf("string");
+    expect(typeof personResult.id).toBeString();
     expect(personResult.group).toBe("testing");
-    expect(personResult.lastUpdated).toBeInstanceOf("number");
-    expect(personResult.createdAt).toBeInstanceOf("number");
+    expect(personResult.lastUpdated).toBeNumber();
+    expect(personResult.createdAt).toBeNumber();
   });
 
   it(
@@ -75,7 +74,7 @@ describe("Dexie - Record API", () => {
         cost: 22000
       });
       expect(car).toBeInstanceOf(Car);
-      expect(car.id).toBeInstanceOf("string");
+      expect(typeof car.id).toBeString();
     }
   );
 

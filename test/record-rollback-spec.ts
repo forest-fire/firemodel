@@ -1,5 +1,4 @@
 import { IRealTimeAdmin, RealTimeAdmin } from "universal-fire";
-
 import { FireModel } from "../src/FireModel";
 
 describe("Rolling back a record => ", () => {

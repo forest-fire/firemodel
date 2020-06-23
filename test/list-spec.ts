@@ -1,11 +1,8 @@
 import "reflect-metadata";
-
 import * as helpers from "./testing/helpers";
-
 // tslint:disable:no-implicit-dependencies
 import { IFmWatchEvent, List, Record } from "../src/index";
 import { IRealTimeAdmin, RealTimeAdmin } from "universal-fire";
-
 import { Car } from "./testing/Car";
 import Company from "./testing/dynamicPaths/Company";
 import { FireModel } from "../src/FireModel";
@@ -66,8 +63,8 @@ describe("List class: ", () => {
     expect(list.map((i) => i.name)).toEqual(expect.arrayContaining(["Roger"]));
     expect(list.map((i) => i.age)).toEqual(expect.arrayContaining([14]));
     expect(list.map((i) => i.age)).toEqual(expect.arrayContaining([22]));
-    expect(list.data[0].createdAt).toBeInstanceOf("number");
-    expect(list.data[1].createdAt).toBeInstanceOf("number");
+    expect(list.data[0].createdAt).toBeNumber();
+    expect(list.data[1].createdAt).toBeNumber();
   });
 
   it("can instantiate with all() method", async () => {
@@ -198,10 +195,10 @@ describe("List class: ", () => {
       const firstPersonId = helpers.firstKey(db.mock.db.authenticated.people);
       const list = await List.all(Person);
       const record = list.findById(firstPersonId);
-      expect(record).toBeInstanceOf("object");
+      expect(record).toBeInstanceOf(Object);
       expect(record).toBeInstanceOf(Record);
       expect(record.data).toBeInstanceOf(Person);
-      expect(record.data.name).toBeInstanceOf("string");
+      expect(record.data.name).toBeString();
     }
   );
 
@@ -220,9 +217,9 @@ describe("List class: ", () => {
       const firstPersonId = helpers.firstKey(db.mock.db.authenticated.people);
       const list = await List.all(Person);
       const person = list.getData(firstPersonId);
-      expect(person).toBeInstanceOf("object");
+      expect(person).toBeInstanceOf(Object);
       expect(person).toBeInstanceOf(Person);
-      expect(person.name).toBeInstanceOf("string");
+      expect(person.name).toBeString();
     }
   );
 
@@ -335,9 +332,9 @@ describe("List class: ", () => {
       db.mock.queueSchema("person", 3, { age: 12 }).generate();
       const list = await List.all(Person);
       const firstPersonId = helpers.firstKey(db.mock.db.authenticated.people);
-      expect(list.findWhere("id", firstPersonId)).toBeInstanceOf("object");
-      expect(list.findWhere("name", "foobar")).toBeInstanceOf("object");
-      expect(list.findWhere("age", 12)).toBeInstanceOf("object");
+      expect(list.findWhere("id", firstPersonId)).toBeInstanceOf(Object);
+      expect(list.findWhere("name", "foobar")).toBeInstanceOf(Object);
+      expect(list.findWhere("age", 12)).toBeInstanceOf(Object);
     }
   );
 
@@ -355,7 +352,7 @@ describe("List class: ", () => {
       db.mock.queueSchema("person", 3, { age: 12 }).generate();
       const list = await List.all(Person);
       try {
-        expect(list.findWhere("name", "foobar")).toBeInstanceOf("object");
+        expect(list.findWhere("name", "foobar")).toBeInstanceOf(Object);
       } catch (e) {
         expect(e.name).toBe("NotFound");
       }
@@ -381,8 +378,8 @@ describe("List class: ", () => {
       const people = await List.all(Person);
 
       people.map((person) => {
-        expect(person.id).toBeInstanceOf("string");
-        expect(person.age).toBeInstanceOf("number");
+        expect(person.id).toBeString();
+        expect(person.age).toBeNumber();
         const foundById = people.findWhere("id", person.id);
         const foundByAge = people.findWhere("age", person.age);
       });
@@ -401,8 +398,8 @@ describe("List class: ", () => {
       expect(peeps).toHaveLength(9);
       const eventTypes = new Set(events.map((e) => e.type));
 
-      expect(eventTypes).toEqual(expect.arrayContaining([FmEvents.RECORD_REMOVED_CONFIRMATION]));
-      expect(eventTypes).toEqual(expect.arrayContaining([FmEvents.RECORD_REMOVED_LOCALLY]));
+      expect(eventTypes).toContain(FmEvents.RECORD_REMOVED_CONFIRMATION);
+      expect(eventTypes).toContain(FmEvents.RECORD_REMOVED_LOCALLY);
 
       const peeps2 = await List.all(Person);
       expect(peeps2).toHaveLength(9);

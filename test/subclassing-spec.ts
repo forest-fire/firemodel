@@ -1,13 +1,14 @@
 // tslint:disable:no-implicit-dependencies
 
+import { UserProfile } from "./testing/subClassing/UserProfile";
 import { Customer } from "./testing/subClassing/Customer";
 import { Record } from "../src";
-import { UserProfile } from "./testing/subClassing/UserProfile";
+
 
 describe("Subclassing Models", () => {
   it("Subclass has own props", async () => {
     const customer = Record.create(Customer);
-    const properties = customer.META.properties.map((p) => p.property);
+    const properties = customer.META.properties.map(p => p.property);
 
     expect(properties).toEqual(expect.arrayContaining(["currentDeliveryAddress"]));
     expect(properties).toEqual(expect.arrayContaining(["priorDeliveryAddress"]));
@@ -15,7 +16,7 @@ describe("Subclassing Models", () => {
 
   it("Subclass has parents props", async () => {
     const customer = Record.create(Customer);
-    const properties = customer.META.properties.map((p) => p.property);
+    const properties = customer.META.properties.map(p => p.property);
 
     expect(properties).toEqual(expect.arrayContaining(["name"]));
     expect(properties).toEqual(expect.arrayContaining(["uid"]));
@@ -23,7 +24,7 @@ describe("Subclassing Models", () => {
 
   it("Subclass has base Model props", async () => {
     const customer = Record.create(Customer);
-    const properties = customer.META.properties.map((p) => p.property);
+    const properties = customer.META.properties.map(p => p.property);
 
     expect(properties).toEqual(expect.arrayContaining(["id"]));
     expect(properties).toEqual(expect.arrayContaining(["lastUpdated"]));

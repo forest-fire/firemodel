@@ -1,13 +1,11 @@
-// import { DB, SDK } from "universal-fire";
-
 // tslint:disable:no-implicit-dependencies
 import { FireModel, List, Mock, Record } from "../src";
-
 import { Person } from "./testing/default-values/Person";
 import { RealTimeAdmin } from "universal-fire";
 
+
 describe("defaultValue() → ", () => {
-  beforeEach(async () => {
+  beforeAll(async () => {
     const db = await RealTimeAdmin.connect({ mocking: true });
     FireModel.defaultDb = db;
   });
@@ -32,7 +30,7 @@ describe("defaultValue() → ", () => {
   });
 
   // TODO: Look at this test, it is exhibiting odd async behaviour
-  it.skip("mocking ignores defaultValue", async () => {
+  it("mocking ignores defaultValue", async () => {
     await Mock(Person).generate(10);
     const people = await List.all(Person);
     people.map((person) => {

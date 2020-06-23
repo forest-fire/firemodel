@@ -1,6 +1,5 @@
 import { IRealTimeAdmin, RealTimeAdmin } from "universal-fire";
 import { List, Mock, Record } from "../src";
-
 import { AuditLog } from "../src/models/index";
 import { FireModel } from "../src/FireModel";
 import { Person } from "./testing/AuditedPerson";
@@ -25,7 +24,6 @@ describe("Auditing ->�", () => {
     await firstPerson.remove();
     await wait(100); // TODO: this shouldn't be needed but it IS!
     const audit = (await List.all(AuditLog)).data;
-    // console.log(JSON.stringify(audit, null, 2));
 
     expect(audit).toHaveLength(5);
     const actions = audit.map((i) => i.action);

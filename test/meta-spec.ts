@@ -1,11 +1,11 @@
-import { Klass } from "./testing/klass";
-import { Person } from "./testing/Person";
 // tslint:disable:no-implicit-dependencies
 // import { DB, SDK } from "universal-fire";
 import { RealTimeAdmin } from "@forest-fire/real-time-admin";
 import { Record } from "../src";
+import { Klass } from "./testing/klass";
+import { Person } from "./testing/Person";
 
-describe.skip("schema() decorator: ", () => {
+describe("schema() decorator: ", () => {
   it("can read Schema meta properties", () => {
     const myclass: any = new Klass();
     expect(myclass.META.dbOffset).toBe("authenticated");
@@ -14,8 +14,8 @@ describe.skip("schema() decorator: ", () => {
 
   it("can read Property meta properties off of META.property", () => {
     const myclass = new Klass();
-    expect(myclass.META.property("foo").type).toBe("String");
-    expect(myclass.META.property("bar").type).toBe("Number");
+    expect(myclass.META.property("foo").type).toBeString();
+    expect(myclass.META.property("bar").type).toBe("number");
     expect(myclass.META.property("bar3").max).toBe(10);
   });
 
@@ -23,7 +23,7 @@ describe.skip("schema() decorator: ", () => {
     const myclass: any = new Klass();
     try {
       myclass.META = { foo: "bar" };
-      expect(false, "setting meta property is not allowed!");
+      expect(false);
     } catch (e) {
       expect(e.message).toBe(
         "The META properties should only be set with the @model decorator at design time!"
@@ -35,11 +35,11 @@ describe.skip("schema() decorator: ", () => {
 describe("property decorator: ", () => {
   it("can discover type for properties on class", () => {
     const myclass = new Klass();
-    expect(Reflect.getMetadata("foo", myclass).type).toBe("string");
+    expect(Reflect.getMetadata("foo", myclass).type).toBeString();
     expect(Reflect.getMetadata("bar", myclass).type).toBe("number");
     expect(Reflect.getMetadata("bar2", myclass).type).toBe("number");
-    expect(Reflect.getMetadata("sub", myclass).type).toBe("string");
-    expect(Reflect.getMetadata("id", myclass).type).toBe("string");
+    expect(Reflect.getMetadata("sub", myclass).type).toBeString();
+    expect(Reflect.getMetadata("id", myclass).type).toBeString();
   });
 
   it("constraint() decorator-factory adds constrain metadata", () => {
@@ -134,7 +134,6 @@ describe("relationship decorators: ", () => {
   it("@relationships represent all relationships in a model", async () => {
     const person = new Person();
     const props = person.META.relationships.map((r) => r.property);
-    console.log(props);
 
     expect(props).toEqual(expect.arrayContaining(["mother"]));
     expect(props).toEqual(expect.arrayContaining(["father"]));
@@ -144,7 +143,7 @@ describe("relationship decorators: ", () => {
 
     person.META.relationships.map((p) => {
       if (p.relType === "hasOne") {
-        expect(p.type).toBe("String");
+        expect(p.type).toBeString();
       }
       if (p.relType === "hasMany") {
         expect(p.type).toBe("Object");

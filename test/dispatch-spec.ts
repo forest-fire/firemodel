@@ -4,7 +4,6 @@ import { IFmChangedProperties, IFmWatchEvent, Record } from "../src";
 import { IRealTimeAdmin, RealTimeAdmin } from "universal-fire";
 import { IVuexDispatch, VeuxWrapper } from "../src/state-mgmt/VuexWrapper";
 import { compareHashes, withoutMetaOrPrivate } from "../src/util";
-
 import { FmEvents } from "../src/state-mgmt";
 import { Person } from "./testing/Person";
 import { PersonWithLocal } from "./testing/PersonWithLocal";
@@ -99,7 +98,7 @@ describe("Dispatch →", () => {
       // 2nd EVENT
       event = events[1];
       expect(event.type).toBe(FmEvents.RECORD_CHANGED_CONFIRMATION);
-      expect(event.value).toBeInstanceOf("object");
+      expect(event.value).toBeInstanceOf(Object);
       expect(event.value.name).toBe("Carol");
       expect(event.value.age).toBe(18);
     }
@@ -173,10 +172,7 @@ describe("Dispatch →", () => {
       });
 
       events.forEach((event) =>
-        expect(
-          event.localPath,
-          `The localPath [ ${event.localPath} ] should equal the model's localModelName [ ${person.META.localModelName}`
-        )
+        expect(event.localPath)
       );
     }
   );
@@ -198,7 +194,6 @@ describe("Dispatch →", () => {
       await person.update({
         age: 12,
       });
-      console.log(events);
 
       events.forEach((event) => expect(event.watcherSource).toBe("unknown"));
     }

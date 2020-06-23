@@ -48,8 +48,10 @@ describe("Relationship > ", () => {
       const extractedHasMany = extractFksFromPaths(person, "children", hasMany);
       const extractedHasOne = extractFksFromPaths(person, "company", hasOne);
 
-      expect(extractedHasMany).to.be.an("array").toHaveLength(2);
-      expect(extractedHasOne).toBeInstanceOf("array").and.toHaveLength(1);
+      expect(extractedHasMany).toBeArray()
+      expect(extractedHasMany).toHaveLength(2);
+      expect(extractedHasOne).toBeInstanceOf(Array);
+      expect(extractedHasOne).toHaveLength(1);
 
       expect(extractedHasMany).toEqual(expect.arrayContaining(["janet"]));
       expect(extractedHasMany).toEqual(expect.arrayContaining(["bob"]));
@@ -81,7 +83,7 @@ describe("Relationship > ", () => {
       .pop();
 
     expect(pathWithFkRef.value).toBe("microsoft");
-    expect(pathWithInverseRef.path).toEqual(expect.arrayContaining([person.id]));
+    expect(pathWithInverseRef.path).toContain(person.id);
     expect(pathWithInverseRef.value).toBe(true);
   });
 
@@ -170,7 +172,8 @@ describe("Relationship > ", () => {
         name: "Bob",
         age: 23,
       });
-      expect(person.id).toBeDefined().and.toBeInstanceOf("string");
+      expect(person.id).toBeDefined();
+      expect(person.id).toBeString();
       const lastUpdated = person.data.lastUpdated;
       const events: IFmWatchEvent[] = [];
       Record.dispatch = async (evt: IFmWatchEvent) => events.push(evt);
@@ -184,7 +187,7 @@ describe("Relationship > ", () => {
       expect(Object.keys(p.data.cars)).toEqual(expect.arrayContaining(["12345"]));
 
       const c = await Record.get(Car, "12345");
-      expect(c.data.owner).toEqual(expect.arrayContaining([person.id]));
+      expect(c.data.owner).toContain(person.id);
     }
   );
 
@@ -290,7 +293,7 @@ describe("Relationship > ", () => {
 
       try {
         await person.associate("company", [company.id]);
-        expect(false, "passing array as refs is not allowed with hasOne!");
+        expect(false);
       } catch (e) {
         expect(e.message).toBe("Ref -LYdV5fhRmiGWXwdAWSg must not be an array of strings.");
       }
@@ -312,4 +315,4 @@ describe("Relationship > ", () => {
   //   expect(eventTypes.has(FMEvents.RELATIONSHIP_ADDED)).to.equal(true);
   //   expect(eventTypes.has(FMEvents.RELATIONSHIP_ADDED_LOCALLY)).to.equal(true);
   // });
-}).timeout(4000);
+})

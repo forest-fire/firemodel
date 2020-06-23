@@ -4,7 +4,6 @@ import { DexieDb } from "../src/dexie/DexieDb";
 import { Car } from "./testing/Car";
 import { Person } from "./testing/Person";
 import { DeeperPerson } from "./testing/dynamicPaths/DeeperPerson";
-
 import "./testing/fake-indexeddb";
 import indexedDB from "fake-indexeddb";
 import fdbKeyRange from "fake-indexeddb/lib/FDBKeyRange";
@@ -58,10 +57,10 @@ describe("DexieModel => ", () => {
     "meta information lookup works with singular and plural model name",
     async () => {
       const d = new DexieDb("testing", Car);
-      expect(d.meta("car")).toBeInstanceOf("object");
-      expect(d.meta("car").allProperties).toBeInstanceOf("array");
-      expect(d.meta("cars")).toBeInstanceOf("object");
-      expect(d.meta("cars").allProperties).toBeInstanceOf("array");
+      expect(d.meta("car")).toBeInstanceOf(Object);
+      expect(d.meta("car").allProperties).toBeInstanceOf(Array);
+      expect(d.meta("cars")).toBeInstanceOf(Object);
+      expect(d.meta("cars").allProperties).toBeInstanceOf(Array);
     }
   );
 
@@ -69,22 +68,22 @@ describe("DexieModel => ", () => {
     "Dexie model definition works for static pathed model with non-unique index",
     async () => {
       const d = new DexieDb("testing", Car);
-      expect(d.models.cars).toBeInstanceOf("string");
-      expect(d.models.cars).toEqual(expect.arrayContaining(["&id"]));
-      expect(d.models.cars).toEqual(expect.arrayContaining(["modelYear"]));
+      expect(d.models.cars).toBeString();
+      expect(d.models.cars).toContain("&id");
+      expect(d.models.cars).toContain("modelYear");
       expect(d.models.cars).toEqual(expect.not.arrayContaining(["&modelYear"]));
-      expect(d.models.cars).toEqual(expect.arrayContaining(["lastUpdated"]));
-      expect(d.models.cars).toEqual(expect.arrayContaining(["createdAt"]));
+      expect(d.models.cars).toContain("lastUpdated");
+      expect(d.models.cars).toContain("createdAt");
     }
   );
 
   it("Dexie model definition works for dynamically pathed model", async () => {
     const d = new DexieDb("testing", DeeperPerson);
-    expect(d.models.deeperPeople).toBeInstanceOf("string");
-    expect(d.models.deeperPeople).toEqual(expect.arrayContaining(["[id+group+subGroup]"]));
+    expect(d.models.deeperPeople).toBeString();
+    expect(d.models.deeperPeople).toContain("[id+group+subGroup]");
     expect(d.models.deeperPeople).toEqual(expect.not.arrayContaining(["&id"]));
-    expect(d.models.deeperPeople).toEqual(expect.arrayContaining(["lastUpdated"]));
-    expect(d.models.deeperPeople).toEqual(expect.arrayContaining(["createdAt"]));
+    expect(d.models.deeperPeople).toContain("lastUpdated");
+    expect(d.models.deeperPeople).toContain("createdAt");
   });
 
   it("calling addPriorVersion() once increments the version", async () => {
@@ -98,17 +97,17 @@ describe("DexieModel => ", () => {
   it("table() method returns a Dexie.Table class", async () => {
     const d = new DexieDb("testing", Car);
     const t = d.table(Car);
-    expect(t).toBeInstanceOf("object");
-    expect(t.add).toBeInstanceOf("function");
-    expect(t.bulkAdd).toBeInstanceOf("function");
-    expect(t.bulkPut).toBeInstanceOf("function");
+    expect(t).toBeInstanceOf(Object);
+    expect(t.add).toBeInstanceOf(Function);
+    expect(t.bulkAdd).toBeInstanceOf(Function);
+    expect(t.bulkPut).toBeInstanceOf(Function);
   });
 
   it("table() gets back valid schema properties", async () => {
     const d = new DexieDb("testing", Car);
     const t = d.table(Car);
     expect(t.schema.name).toBe("cars");
-    expect(t.schema.mappedClass).toBeInstanceOf("function");
+    expect(t.schema.mappedClass).toBeInstanceOf(Function);
     expect(t.schema.primKey.name).toBe("id");
   });
 

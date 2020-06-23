@@ -16,7 +16,7 @@ describe("Record static utils", () => {
         group: "my-group"
       });
 
-      expect(result).toBeInstanceOf("object");
+      expect(result).toBeInstanceOf(Object);
       expect(result.group).toBe("my-group");
     }
   );
@@ -30,7 +30,7 @@ describe("Record static utils", () => {
         subGroup: "my-sub-group"
       });
 
-      expect(result).toBeInstanceOf("object");
+      expect(result).toBeInstanceOf(Object);
       expect(result.id).toBe("1234");
       expect(result.group).toBe("my-group");
       expect(result.subGroup).toBe("my-sub-group");
@@ -46,7 +46,7 @@ describe("Record static utils", () => {
     } catch (e) {
       expect(e.code).toBe("not-ready");
       expect(e.name).toBe("firemodel/not-ready");
-      expect(e.message).toEqual(expect.arrayContaining(["group"]));
+      expect(e.message).toContain("group");
     }
   });
 
@@ -58,7 +58,7 @@ describe("Record static utils", () => {
         group: "my-group"
       });
 
-      expect(result).toBeInstanceOf("string");
+      expect(result).toBeString();
       expect(result).toBe("1234::group:my-group");
     }
   );
@@ -72,7 +72,7 @@ describe("Record static utils", () => {
         subGroup: "my-sub-group"
       });
 
-      expect(result).toBeInstanceOf("string");
+      expect(result).toBeString();
       expect(result).toBe("1234::group:my-group::subGroup:my-sub-group");
     }
   );

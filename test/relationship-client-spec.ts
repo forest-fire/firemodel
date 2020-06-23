@@ -1,9 +1,7 @@
 import "reflect-metadata";
-
 // tslint:disable:no-implicit-dependencies
 import { IFmLocalRelationshipEvent, IFmWatchEvent, Record } from "../src";
 import { IRealTimeAdmin, RealTimeAdmin } from "universal-fire";
-
 import { Company } from "./testing/Company";
 import { FancyPerson } from "./testing/FancyPerson";
 import { FireModel } from "../src/FireModel";
@@ -60,7 +58,8 @@ describe("Relationship > ", () => {
         name: "Bob",
         age: 23,
       });
-      expect(person.id).toBeDefined().and.toBeInstanceOf("string");
+      expect(person.id).toBeDefined();
+      expect(person.id).toBeString();
       const lastUpdated = person.data.lastUpdated;
       const events: IFmLocalRelationshipEvent[] = [];
       Record.dispatch = async (evt: IFmLocalRelationshipEvent) =>
@@ -139,8 +138,8 @@ describe("Relationship > ", () => {
     const father = await Record.get(FancyPerson, results.fatherId);
     await father.removeFromRelationship("children", results.bobId);
     const pops = await Record.get(FancyPerson, results.fatherId);
-    expect(pops.data.children).to.haveOwnProperty(results.chrissyId);
-    expect(pops.data.children).to.not.haveOwnProperty(results.bobId);
+    expect(pops.data.children).toHaveProperty(results.chrissyId);
+    expect(pops.data.children).not.toHaveProperty(results.bobId);
   });
 
   it("using addToRelationship() on a hasOne prop throws error", async () => {

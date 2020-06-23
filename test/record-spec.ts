@@ -1,9 +1,7 @@
 import "reflect-metadata";
-
 // tslint:disable:no-implicit-dependencies
 import { IFmLocalEvent, IFmWatchEvent, List, Record } from "../src";
 import { IRealTimeAdmin, RealTimeAdmin } from "universal-fire";
-
 import { FireModel } from "../src/FireModel";
 import { FmEvents } from "../src/state-mgmt";
 import { Mock } from "../src/Mock";
@@ -30,12 +28,12 @@ describe("Record > ", () => {
     });
     expect(r).toBeInstanceOf(Record);
     expect(r.get("name")).toBe("Bob Marley");
-    expect(r.id).toBeInstanceOf("string");
+    expect(r.id).toBeString();
     // test DB too
     const fromDb = await Record.get(Person, r.id);
     expect(fromDb).toBeInstanceOf(Record);
     expect(fromDb.get("name")).toBe("Bob Marley");
-    expect(fromDb.id).toBeInstanceOf("string");
+    expect(fromDb.id).toBeString();
   });
 
   it(`Record's static add() fires client events`, async () => {
@@ -59,7 +57,7 @@ describe("Record > ", () => {
     });
     expect(r).toBeInstanceOf(Record);
     expect(r.get("name")).toBe("Bob");
-    expect(r.id).toBeInstanceOf("undefined");
+    expect(r.id).toBeUndefined();
   });
 
   it("Once an ID is set it can not be reset", async () => {
@@ -150,13 +148,13 @@ describe("Record > ", () => {
       });
 
       // IMMEDIATE CHANGE on RECORD
-      expect(roger.get("scratchpad")).to.haveOwnProperty("foo");
-      expect(roger.get("tags")).to.haveOwnProperty("456");
+      expect(roger.get("scratchpad")).toHaveProperty("foo");
+      expect(roger.get("tags")).toHaveProperty("456");
       // CHANGE REFLECTED after pulling from DB
       const bugs = await Record.get(Person, "8888");
 
-      expect(bugs.get("tags")).to.haveOwnProperty("456");
-      expect(bugs.get("scratchpad")).to.haveOwnProperty("foo");
+      expect(bugs.get("tags")).toHaveProperty("456");
+      expect(bugs.get("scratchpad")).toHaveProperty("foo");
     }
   );
 
@@ -195,7 +193,7 @@ describe("Record > ", () => {
       } catch (e) {
         expect(e.code).toBe("not-ready");
         expect(e.name).toBe("record/not-ready");
-        expect(e.message).toEqual(expect.arrayContaining(["dbPath before"]));
+        expect(e.message).toContain("dbPath before");
       }
     }
   );
@@ -203,6 +201,7 @@ describe("Record > ", () => {
   it(
     "calling remove() removes from DB and notifies FE state-mgmt",
     async () => {
+      jest.setTimeout(3000);
       await Mock(Person, db).generate(10);
       const peeps = await List.all(Person);
       expect(peeps.length).toBe(10);
@@ -223,11 +222,12 @@ describe("Record > ", () => {
       const ids = peeps2.map((p) => p.id);
       expect(ids.includes(id)).toBe(false);
     }
-  ).timeout(3000);
+  )
 
   it(
     "calling static remove() removes from DB, notifies FE state-mgmt",
     async () => {
+      jest.setTimeout(3000);
       await Mock(Person, db).generate(10);
       const peeps = await List.all(Person);
       const id = peeps.data[0].id;
@@ -246,7 +246,7 @@ describe("Record > ", () => {
       const ids = peeps2.map((p) => p.id);
       expect(ids.includes(id)).toBe(false);
     }
-  ).timeout(3000);
+  )
 
   it(
     "setting an explicit value for plural is picked up by Record",
@@ -257,4 +257,4 @@ describe("Record > ", () => {
       expect(p.pluralName).toBe("peeps");
     }
   );
-}).timeout(4000);
+})
