@@ -1,6 +1,6 @@
-// tslint:disable:no-implicit-dependencies
-import chalk from "chalk";
 import { asyncExec, rm } from "async-shelljs";
+
+import chalk from "chalk";
 import { mkdirSync } from "fs";
 
 // https://serverless.com/framework/docs/providers/aws/cli-reference/package/
@@ -10,8 +10,8 @@ function clearOldPackageContents(dir: string) {
 }
 
 (async () => {
-  const args = process.argv.slice(2).filter(fn => fn[0] !== "-");
-  const options = new Set(process.argv.slice(2).filter(fn => fn[0] === "-"));
+  const args = process.argv.slice(2).filter((fn) => fn[0] !== "-");
+  const options = new Set(process.argv.slice(2).filter((fn) => fn[0] === "-"));
   const stage = options["--prod"] ? "prod" : "dev";
   const region = "us-east-1";
   const outputDir = "./serverless-package";
@@ -24,11 +24,15 @@ function clearOldPackageContents(dir: string) {
       }`
     );
   } catch (e) {
-    console.log(chalk.red(`- 😖  Failed to build so no attempt to deploy [${e.code}]`));
+    console.log(
+      chalk.red(`- 😖  Failed to build so no attempt to deploy [${e.code}]`)
+    );
     return;
   }
 
-  console.log(chalk.yellow(`- 🗯  Clearing the package directory [${outputDir}]`));
+  console.log(
+    chalk.yellow(`- 🗯  Clearing the package directory [${outputDir}]`)
+  );
   rm("-rf", outputDir);
   mkdirSync("serverless-package");
   console.log(chalk.green(`- 👍  Package directory cleared`));

@@ -1,4 +1,3 @@
-// tslint:disable:no-implicit-dependencies
 import { IFmWatchEvent, Record } from "../src";
 import { IRealTimeAdmin, RealTimeAdmin } from "universal-fire";
 
@@ -37,34 +36,33 @@ describe("Relationship > ", () => {
     FireModel.defaultDb = db;
   });
 
-  it(
-    "extractFksFromPath pulls out the ids which are being changed",
-    async () => {
-      const person = Record.createWith(Person, { id: "joe", name: "joe" });
-      const now = 12312256;
-      const hasMany = hasManyPaths(person.id, now);
-      const hasOne = hasOnePaths(person.id, now);
+  it("extractFksFromPath pulls out the ids which are being changed", async () => {
+    const person = Record.createWith(Person, { id: "joe", name: "joe" });
+    const now = 12312256;
+    const hasMany = hasManyPaths(person.id, now);
+    const hasOne = hasOnePaths(person.id, now);
 
-      const extractedHasMany = extractFksFromPaths(person, "children", hasMany);
-      const extractedHasOne = extractFksFromPaths(person, "company", hasOne);
+    const extractedHasMany = extractFksFromPaths(person, "children", hasMany);
+    const extractedHasOne = extractFksFromPaths(person, "company", hasOne);
 
-      expect(extractedHasMany).toBeArray()
-      expect(extractedHasMany).toHaveLength(2);
-      expect(extractedHasOne).toBeInstanceOf(Array);
-      expect(extractedHasOne).toHaveLength(1);
+    expect(extractedHasMany).toBeArray();
+    expect(extractedHasMany).toHaveLength(2);
+    expect(extractedHasOne).toBeInstanceOf(Array);
+    expect(extractedHasOne).toHaveLength(1);
 
-      expect(extractedHasMany).toEqual(expect.arrayContaining(["janet"]));
-      expect(extractedHasMany).toEqual(expect.arrayContaining(["bob"]));
-      expect(extractedHasOne).toEqual(expect.arrayContaining(["microsoft"]));
-    }
-  );
+    expect(extractedHasMany).toEqual(expect.arrayContaining(["janet"]));
+    expect(extractedHasMany).toEqual(expect.arrayContaining(["bob"]));
+    expect(extractedHasOne).toEqual(expect.arrayContaining(["microsoft"]));
+  });
 
   it("build relationship paths for 1:M", async () => {
     const person = Record.createWith(Person, { id: "joe", name: "joe" });
 
     const paths = buildRelationshipPaths(person, "children", "abcdef");
 
-    expect(paths.map((i) => i.path)).toEqual(expect.arrayContaining([pathJoin(person.dbPath, "children", "abcdef")]));
+    expect(paths.map((i) => i.path)).toEqual(
+      expect.arrayContaining([pathJoin(person.dbPath, "children", "abcdef")])
+    );
   });
 
   it("build relationship paths for 1:M (with inverse)", async () => {
@@ -74,7 +72,9 @@ describe("Relationship > ", () => {
       name: "Microsquish",
     });
     const paths = buildRelationshipPaths(person, "company", "microsoft");
-    expect(paths.map((i) => i.path)).toEqual(expect.arrayContaining([pathJoin(person.dbPath, "company")]));
+    expect(paths.map((i) => i.path)).toEqual(
+      expect.arrayContaining([pathJoin(person.dbPath, "company")])
+    );
     const pathWithFkRef = paths
       .filter((p) => p.path.includes(pathJoin(person.dbPath, "company")))
       .pop();
@@ -98,45 +98,35 @@ describe("Relationship > ", () => {
     expect(Object.keys(t2)).toHaveLength(1);
   });
 
-  it(
-    "can build TYPED composite key from Fk string and reference model",
-    async () => {
-      const t1 = createCompositeKeyFromFkString("foo::age:13", Person);
-      expect(t1.id).toBe("foo");
-      expect(t1.age).toBe(13);
-    }
-  );
+  it("can build TYPED composite key from Fk string and reference model", async () => {
+    const t1 = createCompositeKeyFromFkString("foo::age:13", Person);
+    expect(t1.id).toBe("foo");
+    expect(t1.age).toBe(13);
+  });
 
-  it(
-    "building a TYPED composite key errors when invalid property is introduced",
-    async () => {
-      try {
-        const t1 = createCompositeKeyFromFkString("foo::age:13::geo:CT", Person);
-        throw new Error("Should not reach this point because of invalid prop");
-      } catch (e) {
-        expect(e.firemodel).toBe(true);
-        expect(e.code).toBe("property-does-not-exist");
-      }
+  it("building a TYPED composite key errors when invalid property is introduced", async () => {
+    try {
+      const t1 = createCompositeKeyFromFkString("foo::age:13::geo:CT", Person);
+      throw new Error("Should not reach this point because of invalid prop");
+    } catch (e) {
+      expect(e.firemodel).toBe(true);
+      expect(e.code).toBe("property-does-not-exist");
     }
-  );
+  });
 
-  it(
-    "build relationship paths for M:1 (with one-way directionality)",
-    async () => {
-      const person = Record.createWith(Person, { id: "joe", name: "joe" });
-      const father = Record.createWith(Person, { id: "abcdef", name: "poppy" });
-      const paths = buildRelationshipPaths(person, "father", "abcdef");
+  it("build relationship paths for M:1 (with one-way directionality)", async () => {
+    const person = Record.createWith(Person, { id: "joe", name: "joe" });
+    const father = Record.createWith(Person, { id: "abcdef", name: "poppy" });
+    const paths = buildRelationshipPaths(person, "father", "abcdef");
 
-      expect(paths.map((i) => i.path)).toEqual(expect.arrayContaining([pathJoin(father.dbPath, "children", person.id)]));
-    }
-  );
+    expect(paths.map((i) => i.path)).toEqual(
+      expect.arrayContaining([pathJoin(father.dbPath, "children", person.id)])
+    );
+  });
 
-  it.skip(
-    "building relationship paths that point to non-existing records throws error when option is set",
-    async () => {
-      throw new Error("test not written");
-    }
-  );
+  it.skip("building relationship paths that point to non-existing records throws error when option is set", async () => {
+    throw new Error("test not written");
+  });
 
   it("build paths 1:M", async () => {
     const person = Record.createWith(FancyPerson, {
@@ -149,8 +139,12 @@ describe("Relationship > ", () => {
     const personFkToCars = pathJoin(person.dbPath, "cars", "12345");
     const carToOwner = pathJoin(car.dbPath, "owner");
 
-    expect(paths.map((p) => p.path)).toEqual(expect.arrayContaining([personFkToCars]));
-    expect(paths.map((p) => p.path)).toEqual(expect.arrayContaining([carToOwner]));
+    expect(paths.map((p) => p.path)).toEqual(
+      expect.arrayContaining([personFkToCars])
+    );
+    expect(paths.map((p) => p.path)).toEqual(
+      expect.arrayContaining([carToOwner])
+    );
   });
 
   it("build paths 1:M (with dynamic offset)", async () => {
@@ -161,35 +155,40 @@ describe("Relationship > ", () => {
     const personFkToCars = pathJoin(person.dbPath, "cars", carId);
     const carToOwner = pathJoin(car.dbPath, "owners", person.compositeKeyRef);
 
-    expect(paths.map((p) => p.path)).toEqual(expect.arrayContaining([personFkToCars]));
-    expect(paths.map((p) => p.path)).toEqual(expect.arrayContaining([carToOwner]));
+    expect(paths.map((p) => p.path)).toEqual(
+      expect.arrayContaining([personFkToCars])
+    );
+    expect(paths.map((p) => p.path)).toEqual(
+      expect.arrayContaining([carToOwner])
+    );
   });
 
-  it(
-    "using addToRelationship() on a hasMany (M:1) relationship updates DB and sends events",
-    async () => {
-      const person = await Record.add(FancyPerson, {
-        name: "Bob",
-        age: 23,
-      });
-      expect(person.id).toBeDefined();
-      expect(person.id).toBeString();
-      const lastUpdated = person.data.lastUpdated;
-      const events: IFmWatchEvent[] = [];
-      Record.dispatch = async (evt: IFmWatchEvent) => events.push(evt);
-      await person.addToRelationship("cars", "12345");
+  it("using addToRelationship() on a hasMany (M:1) relationship updates DB and sends events", async () => {
+    const person = await Record.add(FancyPerson, {
+      name: "Bob",
+      age: 23,
+    });
+    expect(person.id).toBeDefined();
+    expect(person.id).toBeString();
+    const lastUpdated = person.data.lastUpdated;
+    const events: IFmWatchEvent[] = [];
+    Record.dispatch = async (evt: IFmWatchEvent) => events.push(evt);
+    await person.addToRelationship("cars", "12345");
 
-      const eventTypes = Array.from(new Set(events.map((e) => e.type)));
-      expect(eventTypes).toEqual(expect.arrayContaining([FmEvents.RELATIONSHIP_ADDED_LOCALLY]));
-      expect(eventTypes).toEqual(expect.arrayContaining([FmEvents.RELATIONSHIP_ADDED_CONFIRMATION]));
+    const eventTypes = Array.from(new Set(events.map((e) => e.type)));
+    expect(eventTypes).toEqual(
+      expect.arrayContaining([FmEvents.RELATIONSHIP_ADDED_LOCALLY])
+    );
+    expect(eventTypes).toEqual(
+      expect.arrayContaining([FmEvents.RELATIONSHIP_ADDED_CONFIRMATION])
+    );
 
-      const p = await Record.get(FancyPerson, person.id);
-      expect(Object.keys(p.data.cars)).toEqual(expect.arrayContaining(["12345"]));
+    const p = await Record.get(FancyPerson, person.id);
+    expect(Object.keys(p.data.cars)).toEqual(expect.arrayContaining(["12345"]));
 
-      const c = await Record.get(Car, "12345");
-      expect(c.data.owner).toContain(person.id);
-    }
-  );
+    const c = await Record.get(Car, "12345");
+    expect(c.data.owner).toContain(person.id);
+  });
 
   it("using addToRelationship in a M:M relationship", async () => {
     const company = await Record.add(Company, {
@@ -277,28 +276,27 @@ describe("Relationship > ", () => {
     expect((person.data.pays as any)[pay.id]).not.toBe(true);
   });
 
-  it(
-    "testing it should throw an error when incorrect refs is passed in with associate",
-    async () => {
-      const company = await Record.add(Company, {
-        name: "Acme Inc",
-        founded: "1992",
-      });
+  it("testing it should throw an error when incorrect refs is passed in with associate", async () => {
+    const company = await Record.add(Company, {
+      name: "Acme Inc",
+      founded: "1992",
+    });
 
-      const person = await Record.add(Person, {
-        name: "Joe Bloggs",
-        age: 22,
-        gender: "male",
-      });
+    const person = await Record.add(Person, {
+      name: "Joe Bloggs",
+      age: 22,
+      gender: "male",
+    });
 
-      try {
-        await person.associate("company", [company.id]);
-        expect(false);
-      } catch (e) {
-        expect(e.message).toBe("Ref -LYdV5fhRmiGWXwdAWSg must not be an array of strings.");
-      }
+    try {
+      await person.associate("company", [company.id]);
+      expect(false);
+    } catch (e) {
+      expect(e.message).toBe(
+        "Ref -LYdV5fhRmiGWXwdAWSg must not be an array of strings."
+      );
     }
-  );
+  });
   // it.skip("using addToRelationship() on a hasMany relationship with an inverse of hasOne", async () => {
   //   const person = await Record.add(Person, {
   //     name: "Bob",
@@ -315,4 +313,4 @@ describe("Relationship > ", () => {
   //   expect(eventTypes.has(FMEvents.RELATIONSHIP_ADDED)).to.equal(true);
   //   expect(eventTypes.has(FMEvents.RELATIONSHIP_ADDED_LOCALLY)).to.equal(true);
   // });
-})
+});

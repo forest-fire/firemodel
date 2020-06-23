@@ -8,9 +8,9 @@ import {
   Record,
   Watch,
 } from "../src";
-// tslint:disable:no-implicit-dependencies
 import { IRealTimeAdmin, RealTimeAdmin } from "universal-fire";
 import { firstKey, firstRecord, lastRecord } from "./testing/helpers";
+
 import Company from "./testing/dynamicPaths/Company";
 import { DeeperPerson } from "./testing/dynamicPaths/DeeperPerson";
 import Hobby from "./testing/dynamicPaths/Hobby";
@@ -54,38 +54,37 @@ describe("Dynamic offsets reflected in path", () => {
 
     expect(person.META.dbOffset).toBe(":group/:subGroup/testing");
     expect(person.dynamicPathComponents).toContain("subGroup");
-    expect(person.dbPath).toContain(`${person.data.group}/${person.data.subGroup}/testing`);
+    expect(person.dbPath).toContain(
+      `${person.data.group}/${person.data.subGroup}/testing`
+    );
   });
 
-  it(
-    "Multiple dynamic offsets are used to set and get the correct path in the DB",
-    async () => {
-      const person = await Record.add(DeeperPerson, {
-        name: {
-          first: "Bob",
-          last: "Marley",
-        },
-        age: 60,
-        group: "foo",
-        subGroup: "bar",
-        phoneNumber: "555-1212",
-      });
+  it("Multiple dynamic offsets are used to set and get the correct path in the DB", async () => {
+    const person = await Record.add(DeeperPerson, {
+      name: {
+        first: "Bob",
+        last: "Marley",
+      },
+      age: 60,
+      group: "foo",
+      subGroup: "bar",
+      phoneNumber: "555-1212",
+    });
 
-      expect(db.mock.db.foo.bar.testing).toBeInstanceOf(Object);
-      const pathToRecord = db.mock.db.foo.bar.testing.deeperPeople[person.id];
-      expect(pathToRecord).toBeInstanceOf(Object);
-      expect(pathToRecord.age).toBe(person.data.age);
+    expect(db.mock.db.foo.bar.testing).toBeInstanceOf(Object);
+    const pathToRecord = db.mock.db.foo.bar.testing.deeperPeople[person.id];
+    expect(pathToRecord).toBeInstanceOf(Object);
+    expect(pathToRecord.age).toBe(person.data.age);
 
-      const p2 = await Record.get(DeeperPerson, {
-        id: person.id,
-        group: person.data.group,
-        subGroup: person.data.subGroup,
-      });
+    const p2 = await Record.get(DeeperPerson, {
+      id: person.id,
+      group: person.data.group,
+      subGroup: person.data.subGroup,
+    });
 
-      expect(p2.id).toBe(person.id);
-      expect(p2.data.age).toBe(person.data.age);
-    }
-  );
+    expect(p2.id).toBe(person.id);
+    expect(p2.data.age).toBe(person.data.age);
+  });
 });
 
 describe("Dynamic offsets work with relationships", () => {
@@ -109,178 +108,155 @@ describe("Dynamic offsets work with relationships", () => {
     hobbies = await List.all(Hobby);
   });
 
-  it(
-    "addToRelationship works for M:M (where FK is without dynamic segment)",
-    async () => {
-      await person.addToRelationship("hobbies", hobbies.data[0].id);
-      // FK reference should be standard ID key
-      expect(person.data.hobbies).toHaveProperty(hobbies.data[0].id);
-      const hobby = await Record.get(Hobby, hobbies.data[0].id);
-      // FK model should have composite key pointing back to DeepPerson
-      expect(firstKey(hobby.data.practitioners)).toBe(`${person.id}::group:test`);
-    }
-  );
+  it("addToRelationship works for M:M (where FK is without dynamic segment)", async () => {
+    await person.addToRelationship("hobbies", hobbies.data[0].id);
+    // FK reference should be standard ID key
+    expect(person.data.hobbies).toHaveProperty(hobbies.data[0].id);
+    const hobby = await Record.get(Hobby, hobbies.data[0].id);
+    // FK model should have composite key pointing back to DeepPerson
+    expect(firstKey(hobby.data.practitioners)).toBe(`${person.id}::group:test`);
+  });
 
-  it(
-    "addToRelationship works for M:M (FK has shared dynamic segment; using implicit composite key)",
-    async () => {
-      const motherId = (
-        await Mock(DeepPerson).generate(1, {
-          age: 55,
-          group: "test",
-        })
-      ).pop();
-      const fatherId = (
-        await Mock(DeepPerson).generate(1, {
-          age: 61,
-          group: "test",
-        })
-      ).pop();
-
-      await person.addToRelationship("parents", [
-        motherId.compositeKey,
-        fatherId.compositeKey,
-      ]);
-    }
-  );
-
-  it(
-    "addToRelationshipo works for M:M (FK has shared dynamic segment; using explicit composite key)",
-    async () => {
-      const motherId = (
-        await Mock(DeepPerson).generate(1, {
-          age: 55,
-          group: "test",
-        })
-      ).pop();
-      const fatherId = (
-        await Mock(DeepPerson).generate(1, {
-          age: 61,
-          group: "test",
-        })
-      ).pop();
-      let mother = await Record.get(DeepPerson, {
-        id: motherId.id,
+  it("addToRelationship works for M:M (FK has shared dynamic segment; using implicit composite key)", async () => {
+    const motherId = (
+      await Mock(DeepPerson).generate(1, {
+        age: 55,
         group: "test",
-      });
-      let father = await Record.get(DeepPerson, {
-        id: fatherId.id,
+      })
+    ).pop();
+    const fatherId = (
+      await Mock(DeepPerson).generate(1, {
+        age: 61,
         group: "test",
-      });
+      })
+    ).pop();
 
-      // add reln
-      await person.addToRelationship("parents", [
-        mother.compositeKey,
-        father.compositeKey,
-      ]);
+    await person.addToRelationship("parents", [
+      motherId.compositeKey,
+      fatherId.compositeKey,
+    ]);
+  });
 
-      // refresh records
-      person = await Record.get(DeepPerson, `${person.id}::group:test`);
-      mother = await Record.get(DeepPerson, mother.compositeKey);
-      father = await Record.get(DeepPerson, father.compositeKey);
-
-      // test
-      expect(person.data.parents).toHaveProperty(mother.compositeKeyRef);
-      expect(person.data.parents).toHaveProperty(father.compositeKeyRef);
-
-      expect(mother.data.children).toHaveProperty(person.compositeKeyRef);
-      expect(father.data.children).toHaveProperty(person.compositeKeyRef);
-    }
-  );
-
-  it(
-    "addToRelationshipo works for M:M (FK has different dynamic segment; using explicit composite key)",
-    async () => {
-      const motherId = (
-        await Mock(DeepPerson).generate(1, {
-          age: 55,
-          group: "test",
-        })
-      ).pop();
-      const fatherId = (
-        await Mock(DeepPerson).generate(1, {
-          age: 61,
-          group: "test",
-        })
-      ).pop();
-      let mother = await Record.get(DeepPerson, `${motherId.id}::group:test2`);
-      let father = await Record.get(DeepPerson, `${fatherId.id}::group:test2`);
-
-      // add reln
-      await person.addToRelationship("parents", [
-        mother.compositeKey,
-        father.compositeKey,
-      ]);
-
-      // refresh records
-      person = await Record.get(DeepPerson, `${person.id}::group:test`);
-      mother = await Record.get(DeepPerson, mother.compositeKey);
-      father = await Record.get(DeepPerson, father.compositeKey);
-
-      // test
-      expect(person.data.parents).toHaveProperty(mother.compositeKeyRef);
-      expect(person.data.parents).toHaveProperty(father.compositeKeyRef);
-
-      expect(mother.data.children).toHaveProperty(person.compositeKeyRef);
-      expect(father.data.children).toHaveProperty(person.compositeKeyRef);
-    }
-  );
-
-  it(
-    "setRelationship works for 1:M (where FK is on same dynamic path)",
-    async () => {
-      let company = await Record.add(Company, {
-        name: "acme",
-        state: "CA",
+  it("addToRelationshipo works for M:M (FK has shared dynamic segment; using explicit composite key)", async () => {
+    const motherId = (
+      await Mock(DeepPerson).generate(1, {
+        age: 55,
         group: "test",
-        employees: {},
-      });
-      person.setRelationship("employer", company.compositeKeyRef);
+      })
+    ).pop();
+    const fatherId = (
+      await Mock(DeepPerson).generate(1, {
+        age: 61,
+        group: "test",
+      })
+    ).pop();
+    let mother = await Record.get(DeepPerson, {
+      id: motherId.id,
+      group: "test",
+    });
+    let father = await Record.get(DeepPerson, {
+      id: fatherId.id,
+      group: "test",
+    });
 
-      company = await Record.get(Company, company.compositeKey);
-      person = await Record.get(DeepPerson, person.compositeKey);
+    // add reln
+    await person.addToRelationship("parents", [
+      mother.compositeKey,
+      father.compositeKey,
+    ]);
 
-      expect(person.data.employer).toBe(company.compositeKeyRef);
-      expect(company.data.employees).toHaveProperty(person.compositeKeyRef);
-    }
-  );
+    // refresh records
+    person = await Record.get(DeepPerson, `${person.id}::group:test`);
+    mother = await Record.get(DeepPerson, mother.compositeKey);
+    father = await Record.get(DeepPerson, father.compositeKey);
 
-  it(
-    "setRelationship works for 1:M (where FK is on different dynamic path)",
-    async () => {
-      let company = await Record.add(Company, {
-        name: "acme",
-        state: "CA",
-        group: "test2",
-        employees: {},
-      });
-      person.setRelationship("employer", company.compositeKeyRef);
+    // test
+    expect(person.data.parents).toHaveProperty(mother.compositeKeyRef);
+    expect(person.data.parents).toHaveProperty(father.compositeKeyRef);
 
-      company = await Record.get(Company, company.compositeKeyRef);
-      person = await Record.get(DeepPerson, person.compositeKeyRef);
+    expect(mother.data.children).toHaveProperty(person.compositeKeyRef);
+    expect(father.data.children).toHaveProperty(person.compositeKeyRef);
+  });
 
-      expect(person.data.employer).toBe(company.compositeKeyRef);
-      expect(company.data.employees).toHaveProperty(person.compositeKeyRef);
-    }
-  );
+  it("addToRelationshipo works for M:M (FK has different dynamic segment; using explicit composite key)", async () => {
+    const motherId = (
+      await Mock(DeepPerson).generate(1, {
+        age: 55,
+        group: "test",
+      })
+    ).pop();
+    const fatherId = (
+      await Mock(DeepPerson).generate(1, {
+        age: 61,
+        group: "test",
+      })
+    ).pop();
+    let mother = await Record.get(DeepPerson, `${motherId.id}::group:test2`);
+    let father = await Record.get(DeepPerson, `${fatherId.id}::group:test2`);
 
-  it(
-    "setRelationship works for 1:M (where FK is not on a dynamic path)",
-    async () => {
-      let attribute = await Record.add(HumanAttribute, {
-        attribute: "smart",
-        category: "abc",
-      });
-      person.addToRelationship("attributes", attribute.compositeKeyRef);
+    // add reln
+    await person.addToRelationship("parents", [
+      mother.compositeKey,
+      father.compositeKey,
+    ]);
 
-      attribute = await Record.get(HumanAttribute, attribute.compositeKeyRef);
-      person = await Record.get(DeepPerson, person.compositeKey);
+    // refresh records
+    person = await Record.get(DeepPerson, `${person.id}::group:test`);
+    mother = await Record.get(DeepPerson, mother.compositeKey);
+    father = await Record.get(DeepPerson, father.compositeKey);
 
-      expect(person.data.attributes).toHaveProperty(
-        attribute.compositeKeyRef
-      );
-    }
-  );
+    // test
+    expect(person.data.parents).toHaveProperty(mother.compositeKeyRef);
+    expect(person.data.parents).toHaveProperty(father.compositeKeyRef);
+
+    expect(mother.data.children).toHaveProperty(person.compositeKeyRef);
+    expect(father.data.children).toHaveProperty(person.compositeKeyRef);
+  });
+
+  it("setRelationship works for 1:M (where FK is on same dynamic path)", async () => {
+    let company = await Record.add(Company, {
+      name: "acme",
+      state: "CA",
+      group: "test",
+      employees: {},
+    });
+    person.setRelationship("employer", company.compositeKeyRef);
+
+    company = await Record.get(Company, company.compositeKey);
+    person = await Record.get(DeepPerson, person.compositeKey);
+
+    expect(person.data.employer).toBe(company.compositeKeyRef);
+    expect(company.data.employees).toHaveProperty(person.compositeKeyRef);
+  });
+
+  it("setRelationship works for 1:M (where FK is on different dynamic path)", async () => {
+    let company = await Record.add(Company, {
+      name: "acme",
+      state: "CA",
+      group: "test2",
+      employees: {},
+    });
+    person.setRelationship("employer", company.compositeKeyRef);
+
+    company = await Record.get(Company, company.compositeKeyRef);
+    person = await Record.get(DeepPerson, person.compositeKeyRef);
+
+    expect(person.data.employer).toBe(company.compositeKeyRef);
+    expect(company.data.employees).toHaveProperty(person.compositeKeyRef);
+  });
+
+  it("setRelationship works for 1:M (where FK is not on a dynamic path)", async () => {
+    let attribute = await Record.add(HumanAttribute, {
+      attribute: "smart",
+      category: "abc",
+    });
+    person.addToRelationship("attributes", attribute.compositeKeyRef);
+
+    attribute = await Record.get(HumanAttribute, attribute.compositeKeyRef);
+    person = await Record.get(DeepPerson, person.compositeKey);
+
+    expect(person.data.attributes).toHaveProperty(attribute.compositeKeyRef);
+  });
 });
 
 describe("LIST uses static offsets() with static API methods", () => {
@@ -330,21 +306,18 @@ describe("MOCK uses dynamic dbOffsets", () => {
     expect(Object.keys(last.hobbies)).toHaveLength(0);
   });
 
-  it(
-    "Mock() with 'createRelationshipLinks' adds fks but records it points does not exist",
-    async () => {
-      const results = await Mock(DeepPerson)
-        .createRelationshipLinks()
-        .generate(2, { group: "test" });
+  it("Mock() with 'createRelationshipLinks' adds fks but records it points does not exist", async () => {
+    const results = await Mock(DeepPerson)
+      .createRelationshipLinks()
+      .generate(2, { group: "test" });
 
-      const first = firstRecord(db.mock.db.group.test.testing.deepPeople);
-      const last = lastRecord(db.mock.db.group.test.testing.deepPeople);
-      expect(first.hobbies).toBeInstanceOf(Object);
-      expect(Object.keys(first.hobbies)).toHaveLength(2);
-      expect(last.hobbies).toBeInstanceOf(Object);
-      expect(Object.keys(last.hobbies)).toHaveLength(2);
-    }
-  );
+    const first = firstRecord(db.mock.db.group.test.testing.deepPeople);
+    const last = lastRecord(db.mock.db.group.test.testing.deepPeople);
+    expect(first.hobbies).toBeInstanceOf(Object);
+    expect(Object.keys(first.hobbies)).toHaveLength(2);
+    expect(last.hobbies).toBeInstanceOf(Object);
+    expect(Object.keys(last.hobbies)).toHaveLength(2);
+  });
 
   it("Mock() generates mocks on dynamic path", async () => {
     await Mock(DeepPerson)
@@ -360,62 +333,53 @@ describe("MOCK uses dynamic dbOffsets", () => {
     expect(db.mock.db.test.testing.companies).toBeInstanceOf(Object);
   });
 
-  it(
-    "Mock() mocks on dynamic path without relationships rendered",
-    async () => {
-      await Mock(DeepPerson).generate(2, { group: "test" });
-      expect(
-        firstRecord<DeepPerson>(db.mock.db.group.test.testing.deepPeople).age
-      ).toBeNumber();
-      fkStructuralChecksForHasMany(db.mock.db.group.test.testing.deepPeople);
-    }
-  );
+  it("Mock() mocks on dynamic path without relationships rendered", async () => {
+    await Mock(DeepPerson).generate(2, { group: "test" });
+    expect(
+      firstRecord<DeepPerson>(db.mock.db.group.test.testing.deepPeople).age
+    ).toBeNumber();
+    fkStructuralChecksForHasMany(db.mock.db.group.test.testing.deepPeople);
+  });
 
-  it(
-    "Mock() mocks on dynamic path and creates appropriate FK with using createRelationshipLinks()",
-    async () => {
-      await Mock(DeepPerson)
-        .createRelationshipLinks()
-        .generate(2, { group: "test" });
-      fkStructuralChecksForHasMany(db.mock.db.group.test.testing.deepPeople);
-    }
-  );
+  it("Mock() mocks on dynamic path and creates appropriate FK with using createRelationshipLinks()", async () => {
+    await Mock(DeepPerson)
+      .createRelationshipLinks()
+      .generate(2, { group: "test" });
+    fkStructuralChecksForHasMany(db.mock.db.group.test.testing.deepPeople);
+  });
 
-  it(
-    "Mock() mocks on dynamic path and creates appropriate FK bi-directionally with using followRelationshipLinks()",
-    async () => {
-      await Mock(DeepPerson)
-        .followRelationshipLinks()
-        .generate(2, { group: "test" });
-      // basics
-      expect(db.mock.db.group.test.testing.deepPeople).toBeInstanceOf(Object);
-      expect(db.mock.db.hobbies).toBeInstanceOf(Object);
-      expect(db.mock.db.test.testing.companies).toBeInstanceOf(Object);
-      // FK checks
-      fkStructuralChecksForHasMany(db.mock.db.group.test.testing.deepPeople);
+  it("Mock() mocks on dynamic path and creates appropriate FK bi-directionally with using followRelationshipLinks()", async () => {
+    await Mock(DeepPerson)
+      .followRelationshipLinks()
+      .generate(2, { group: "test" });
+    // basics
+    expect(db.mock.db.group.test.testing.deepPeople).toBeInstanceOf(Object);
+    expect(db.mock.db.hobbies).toBeInstanceOf(Object);
+    expect(db.mock.db.test.testing.companies).toBeInstanceOf(Object);
+    // FK checks
+    fkStructuralChecksForHasMany(db.mock.db.group.test.testing.deepPeople);
 
-      fkPropertyStructureForHasMany(
-        db.mock.db.group.test.testing.deepPeople,
-        ["parents", "children", "practitioners"],
-        true
-      );
-      fkPropertyStructureForHasMany(
-        db.mock.db.group.test.testing.deepPeople,
-        ["hobby"],
-        false
-      );
-      fkPropertyStructureForHasOne(
-        db.mock.db.group.test.testing.deepPeople,
-        ["employer"],
-        true
-      );
-      fkPropertyStructureForHasOne(
-        db.mock.db.group.test.testing.deepPeople,
-        ["school"],
-        false
-      );
-    }
-  );
+    fkPropertyStructureForHasMany(
+      db.mock.db.group.test.testing.deepPeople,
+      ["parents", "children", "practitioners"],
+      true
+    );
+    fkPropertyStructureForHasMany(
+      db.mock.db.group.test.testing.deepPeople,
+      ["hobby"],
+      false
+    );
+    fkPropertyStructureForHasOne(
+      db.mock.db.group.test.testing.deepPeople,
+      ["employer"],
+      true
+    );
+    fkPropertyStructureForHasOne(
+      db.mock.db.group.test.testing.deepPeople,
+      ["school"],
+      false
+    );
+  });
 
   it("Mock() throws an error if dynamic props aren't set", async () => {
     try {
@@ -465,7 +429,9 @@ describe("WATCHers work with dynamic dbOffsets", () => {
       name: { first: "Charlie", last: "Chaplin" },
     });
 
-    expect(events.map((i) => i.type)).toEqual(expect.arrayContaining([FmEvents.RECORD_ADDED_CONFIRMATION]));
+    expect(events.map((i) => i.type)).toEqual(
+      expect.arrayContaining([FmEvents.RECORD_ADDED_CONFIRMATION])
+    );
   });
 
   it("Watching a LIST with a dbOffset works", async () => {
@@ -496,7 +462,9 @@ describe("WATCHers work with dynamic dbOffsets", () => {
       group: "CA",
     });
 
-    expect(events.map((i) => i.type)).toEqual(expect.arrayContaining([FmEvents.RECORD_ADDED_CONFIRMATION]));
+    expect(events.map((i) => i.type)).toEqual(
+      expect.arrayContaining([FmEvents.RECORD_ADDED_CONFIRMATION])
+    );
   });
 });
 

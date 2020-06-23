@@ -1,8 +1,7 @@
-// tslint:disable:no-implicit-dependencies
 import { FireModel, List, Mock, Record } from "../src";
+
 import { Person } from "./testing/default-values/Person";
 import { RealTimeAdmin } from "universal-fire";
-
 
 describe("defaultValue() → ", () => {
   beforeAll(async () => {

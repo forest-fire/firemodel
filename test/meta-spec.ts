@@ -1,9 +1,8 @@
-// tslint:disable:no-implicit-dependencies
+import { Klass } from "./testing/klass";
+import { Person } from "./testing/Person";
 // import { DB, SDK } from "universal-fire";
 import { RealTimeAdmin } from "@forest-fire/real-time-admin";
 import { Record } from "../src";
-import { Klass } from "./testing/klass";
-import { Person } from "./testing/Person";
 
 describe("schema() decorator: ", () => {
   it("can read Schema meta properties", () => {
@@ -47,16 +46,15 @@ describe("property decorator: ", () => {
     expect(Reflect.getMetadata("bar", myclass).min).toBe(2);
   });
 
-  it(
-    "constrainedProperty() decorator-factory allows adding multiple contraints",
-    () => {
-      const myclass = new Klass();
-      expect(Reflect.getMetadata("foobar", myclass).length).toBe(15);
-      expect(Reflect.getMetadata("foobar", myclass).desc).toBe("who doesn't love a foobar?");
-      expect(Reflect.getMetadata("bar3", myclass).min).toBe(5);
-      expect(Reflect.getMetadata("bar3", myclass).max).toBe(10);
-    }
-  );
+  it("constrainedProperty() decorator-factory allows adding multiple contraints", () => {
+    const myclass = new Klass();
+    expect(Reflect.getMetadata("foobar", myclass).length).toBe(15);
+    expect(Reflect.getMetadata("foobar", myclass).desc).toBe(
+      "who doesn't love a foobar?"
+    );
+    expect(Reflect.getMetadata("bar3", myclass).min).toBe(5);
+    expect(Reflect.getMetadata("bar3", myclass).max).toBe(10);
+  });
 
   it("@pushKey decorator is reflected in meta", () => {
     const myclass = new Klass();
@@ -74,7 +72,9 @@ describe("property decorator: ", () => {
   it("all base meta keys are represented", () => {
     const myclass = new Klass();
     const keys: string[] = Reflect.getMetadataKeys(myclass);
-    expect(keys).toEqual(expect.arrayContaining(["id", "lastUpdated", "createdAt"]));
+    expect(keys).toEqual(
+      expect.arrayContaining(["id", "lastUpdated", "createdAt"])
+    );
   });
 });
 
@@ -113,8 +113,12 @@ describe("relationship decorators: ", () => {
       db: await RealTimeAdmin.connect({ mocking: true }),
     });
 
-    expect(PersonRecord.META.relationships.map((p) => p.property)).toEqual(expect.arrayContaining(["father"]));
-    expect(PersonRecord.META.relationships.map((p) => p.property)).toEqual(expect.arrayContaining(["children"]));
+    expect(PersonRecord.META.relationships.map((p) => p.property)).toEqual(
+      expect.arrayContaining(["father"])
+    );
+    expect(PersonRecord.META.relationships.map((p) => p.property)).toEqual(
+      expect.arrayContaining(["children"])
+    );
   });
 
   it("@properties show up on Schema's properties array", async () => {
@@ -161,8 +165,12 @@ describe("relationship decorators: ", () => {
     const PersonRecord = Record.create(Person, {
       db: await RealTimeAdmin.connect({ mocking: true }),
     });
-    expect(PersonRecord.META.properties.map((p) => p.property)).toEqual(expect.arrayContaining(["name"]));
-    expect(PersonRecord.META.properties.map((p) => p.property)).toEqual(expect.arrayContaining(["lastUpdated"]));
+    expect(PersonRecord.META.properties.map((p) => p.property)).toEqual(
+      expect.arrayContaining(["name"])
+    );
+    expect(PersonRecord.META.properties.map((p) => p.property)).toEqual(
+      expect.arrayContaining(["lastUpdated"])
+    );
   });
 
   it("inverse() sets correct meta props", async () => {

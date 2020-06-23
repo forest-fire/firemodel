@@ -1,9 +1,11 @@
-// tslint:disable:no-implicit-dependencies
-import chalk from "chalk";
-import { exec, asyncExec, rm } from "async-shelljs";
+import "../test/testing/test-console";
+
 // import rm from "rimraf";
 import * as process from "process";
-import "../test/testing/test-console";
+
+import { asyncExec, exec, rm } from "async-shelljs";
+
+import chalk from "chalk";
 import { stdout } from "test-console";
 
 function prepOutput(output: string) {
@@ -16,7 +18,7 @@ function prepOutput(output: string) {
 async function getScope(): Promise<string> {
   let scope: string;
 
-  return new Promise<string>(resolve => {
+  return new Promise<string>((resolve) => {
     const inspect = stdout.inspect();
     exec(`npm get files`, (code, output) => {
       inspect.restore();
@@ -39,7 +41,7 @@ async function getScope(): Promise<string> {
 }
 
 async function clearLib() {
-  return new Promise(resolve => {
+  return new Promise((resolve) => {
     rm("lib");
     console.log(chalk.dim("- cleared LIB directory of all previous files"));
   });
@@ -54,7 +56,7 @@ async function execute(scope: string) {
       chalk.dim.grey(`./node_modules/.bin/tsc ${scope}`) +
       chalk.dim(` )`)
   );
-  exec(`./node_modules/.bin/tsc ${scope}`, code => {
+  exec(`./node_modules/.bin/tsc ${scope}`, (code) => {
     if (code === 0) {
       console.log(chalk.green.bold(`- build completed successfully 👍\n`));
     } else {

@@ -1,7 +1,7 @@
-// tslint:disable:no-implicit-dependencies
-import chalk from "chalk";
-import { asyncExec } from "async-shelljs";
 import * as rm from "rimraf";
+
+import { asyncExec } from "async-shelljs";
+import chalk from "chalk";
 
 (async () => {
   try {
@@ -14,7 +14,7 @@ import * as rm from "rimraf";
 
   const currentVersion = String(
     await asyncExec(`node -p 'require("./package.json").version'`, {
-      silent: true
+      silent: true,
     })
   ).trim();
   console.log(

@@ -1,7 +1,8 @@
 import "reflect-metadata";
-// tslint:disable:no-implicit-dependencies
+
 import { IFmLocalEvent, IFmWatchEvent, List, Record } from "../src";
 import { IRealTimeAdmin, RealTimeAdmin } from "universal-fire";
+
 import { FireModel } from "../src/FireModel";
 import { FmEvents } from "../src/state-mgmt";
 import { Mock } from "../src/Mock";
@@ -132,31 +133,28 @@ describe("Record > ", () => {
     expect(roger.data.tags["123"]).toBe("cartoon");
   });
 
-  it(
-    "using update() allows non-destructive updates on object type when new props are/were undefined",
-    async () => {
-      await db.set<Person>("/authenticated/people/8888", {
-        name: "Roger Rabbit",
-        age: 3,
-        company: "disney",
-        lastUpdated: 12345,
-      });
-      const roger = await Record.get(Person, "8888");
-      await roger.update({
-        tags: { "456": "something else" },
-        scratchpad: { foo: "bar" },
-      });
+  it("using update() allows non-destructive updates on object type when new props are/were undefined", async () => {
+    await db.set<Person>("/authenticated/people/8888", {
+      name: "Roger Rabbit",
+      age: 3,
+      company: "disney",
+      lastUpdated: 12345,
+    });
+    const roger = await Record.get(Person, "8888");
+    await roger.update({
+      tags: { "456": "something else" },
+      scratchpad: { foo: "bar" },
+    });
 
-      // IMMEDIATE CHANGE on RECORD
-      expect(roger.get("scratchpad")).toHaveProperty("foo");
-      expect(roger.get("tags")).toHaveProperty("456");
-      // CHANGE REFLECTED after pulling from DB
-      const bugs = await Record.get(Person, "8888");
+    // IMMEDIATE CHANGE on RECORD
+    expect(roger.get("scratchpad")).toHaveProperty("foo");
+    expect(roger.get("tags")).toHaveProperty("456");
+    // CHANGE REFLECTED after pulling from DB
+    const bugs = await Record.get(Person, "8888");
 
-      expect(bugs.get("tags")).toHaveProperty("456");
-      expect(bugs.get("scratchpad")).toHaveProperty("foo");
-    }
-  );
+    expect(bugs.get("tags")).toHaveProperty("456");
+    expect(bugs.get("scratchpad")).toHaveProperty("foo");
+  });
 
   it("using update triggers correct client-side events", async () => {
     await db.set<Person>("/authenticated/people/8888", {
@@ -182,79 +180,67 @@ describe("Record > ", () => {
     expect(roger.get("age")).toBe(13);
   });
 
-  it(
-    "calling dbPath() before the ID is known provides useful error",
-    async () => {
-      const record = Record.create(Person, { db });
+  it("calling dbPath() before the ID is known provides useful error", async () => {
+    const record = Record.create(Person, { db });
 
-      try {
-        const foo = record.dbPath;
-        throw new Error("Error should have happened");
-      } catch (e) {
-        expect(e.code).toBe("not-ready");
-        expect(e.name).toBe("record/not-ready");
-        expect(e.message).toContain("dbPath before");
-      }
+    try {
+      const foo = record.dbPath;
+      throw new Error("Error should have happened");
+    } catch (e) {
+      expect(e.code).toBe("not-ready");
+      expect(e.name).toBe("record/not-ready");
+      expect(e.message).toContain("dbPath before");
     }
-  );
+  });
 
-  it(
-    "calling remove() removes from DB and notifies FE state-mgmt",
-    async () => {
-      jest.setTimeout(3000);
-      await Mock(Person, db).generate(10);
-      const peeps = await List.all(Person);
-      expect(peeps.length).toBe(10);
-      const person = Record.createWith(Person, peeps.data[0]);
-      const id = person.id;
-      const events: IFmWatchEvent[] = [];
-      FireModel.dispatch = async (evt: IFmWatchEvent) => events.push(evt);
-      await person.remove();
+  it("calling remove() removes from DB and notifies FE state-mgmt", async () => {
+    jest.setTimeout(3000);
+    await Mock(Person, db).generate(10);
+    const peeps = await List.all(Person);
+    expect(peeps.length).toBe(10);
+    const person = Record.createWith(Person, peeps.data[0]);
+    const id = person.id;
+    const events: IFmWatchEvent[] = [];
+    FireModel.dispatch = async (evt: IFmWatchEvent) => events.push(evt);
+    await person.remove();
 
-      expect(events).toHaveLength(2);
-      const eventTypes = new Set(events.map((e) => e.type));
-      expect(eventTypes.has(FmEvents.RECORD_REMOVED_LOCALLY)).toBe(true);
-      expect(eventTypes.has(FmEvents.RECORD_REMOVED_CONFIRMATION)).toBe(true);
+    expect(events).toHaveLength(2);
+    const eventTypes = new Set(events.map((e) => e.type));
+    expect(eventTypes.has(FmEvents.RECORD_REMOVED_LOCALLY)).toBe(true);
+    expect(eventTypes.has(FmEvents.RECORD_REMOVED_CONFIRMATION)).toBe(true);
 
-      const peeps2 = await List.all(Person);
+    const peeps2 = await List.all(Person);
 
-      expect(peeps2).toHaveLength(9);
-      const ids = peeps2.map((p) => p.id);
-      expect(ids.includes(id)).toBe(false);
-    }
-  )
+    expect(peeps2).toHaveLength(9);
+    const ids = peeps2.map((p) => p.id);
+    expect(ids.includes(id)).toBe(false);
+  });
 
-  it(
-    "calling static remove() removes from DB, notifies FE state-mgmt",
-    async () => {
-      jest.setTimeout(3000);
-      await Mock(Person, db).generate(10);
-      const peeps = await List.all(Person);
-      const id = peeps.data[0].id;
-      expect(peeps.length).toBe(10);
-      const events: IFmWatchEvent[] = [];
-      FireModel.dispatch = async (evt: IFmWatchEvent) => events.push(evt);
-      const removed = await Record.remove(Person, id);
-      expect(removed.id).toBe(id);
-      expect(events).toHaveLength(2);
-      const eventTypes = new Set(events.map((e) => e.type));
-      expect(eventTypes.has(FmEvents.RECORD_REMOVED_LOCALLY)).toBe(true);
-      expect(eventTypes.has(FmEvents.RECORD_REMOVED_ROLLBACK)).toBe(true);
+  it("calling static remove() removes from DB, notifies FE state-mgmt", async () => {
+    jest.setTimeout(3000);
+    await Mock(Person, db).generate(10);
+    const peeps = await List.all(Person);
+    const id = peeps.data[0].id;
+    expect(peeps.length).toBe(10);
+    const events: IFmWatchEvent[] = [];
+    FireModel.dispatch = async (evt: IFmWatchEvent) => events.push(evt);
+    const removed = await Record.remove(Person, id);
+    expect(removed.id).toBe(id);
+    expect(events).toHaveLength(2);
+    const eventTypes = new Set(events.map((e) => e.type));
+    expect(eventTypes.has(FmEvents.RECORD_REMOVED_LOCALLY)).toBe(true);
+    expect(eventTypes.has(FmEvents.RECORD_REMOVED_ROLLBACK)).toBe(true);
 
-      const peeps2 = await List.all(Person);
-      expect(peeps2).toHaveLength(9);
-      const ids = peeps2.map((p) => p.id);
-      expect(ids.includes(id)).toBe(false);
-    }
-  )
+    const peeps2 = await List.all(Person);
+    expect(peeps2).toHaveLength(9);
+    const ids = peeps2.map((p) => p.id);
+    expect(ids.includes(id)).toBe(false);
+  });
 
-  it(
-    "setting an explicit value for plural is picked up by Record",
-    async () => {
-      const p = Record.create(Peeps);
-      expect(p.modelName).toBe("person");
-      expect(p.META.plural).toBe("peeps");
-      expect(p.pluralName).toBe("peeps");
-    }
-  );
-})
+  it("setting an explicit value for plural is picked up by Record", async () => {
+    const p = Record.create(Peeps);
+    expect(p.modelName).toBe("person");
+    expect(p.META.plural).toBe("peeps");
+    expect(p.pluralName).toBe("peeps");
+  });
+});

@@ -9,13 +9,12 @@
     "noImplicitAny": true,
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
-    // "outDir": "./dist/cjs",
     "noEmit": true,
     "removeComments": false,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "typeRoots": ["./node_modules/@types", "./src/@types"]
   },
-  "include": ["src/**/*", "test/**/*-spec.ts"],
-  "exclude": ["node_modules/*"]
+  "files": ["global.d.ts"],
+  "include": ["src/**/*", "test/**/*-spec.ts", "global.d.ts"]
 }

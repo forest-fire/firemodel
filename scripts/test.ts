@@ -1,9 +1,11 @@
-// tslint:disable:no-implicit-dependencies
-import chalk from "chalk";
-import { exec, asyncExec, find } from "async-shelljs";
-import * as rm from "rimraf";
-import * as process from "process";
 import "../test/testing/test-console";
+
+import * as process from "process";
+import * as rm from "rimraf";
+
+import { asyncExec, exec, find } from "async-shelljs";
+
+import chalk from "chalk";
 import { stdout } from "test-console";
 
 function prepOutput(output: string) {
@@ -11,7 +13,7 @@ function prepOutput(output: string) {
 }
 
 function getExecutionStage(): Promise<string> {
-  return new Promise<string>(resolve => {
+  return new Promise<string>((resolve) => {
     const inspect = stdout.inspect();
     exec(`npm get stage`, (_code, output) => {
       inspect.restore();
@@ -32,7 +34,7 @@ function cleanJSTests() {
 }
 
 function scriptNames(scripts: string[]) {
-  return scripts.map(script => {
+  return scripts.map((script) => {
     const path = script.split("/");
     const last = path.pop().replace("-spec.ts", "");
     return chalk.grey(path.join("/") + "/" + chalk.white(last));
@@ -54,14 +56,14 @@ async function mochaTests(stg: string, searchTerms: string[]) {
 
 (async () => {
   const stage = await getExecutionStage();
-  const searchTerms = process.argv.slice(2).filter(fn => fn[0] !== "-");
-  const options = new Set(process.argv.slice(2).filter(fn => fn[0] === "-"));
-  const availableScripts = await find("./test").filter(f =>
+  const searchTerms = process.argv.slice(2).filter((fn) => fn[0] !== "-");
+  const options = new Set(process.argv.slice(2).filter((fn) => fn[0] === "-"));
+  const availableScripts = await find("./test").filter((f) =>
     f.match(/-spec\.ts/)
   );
   const scriptsToTest =
     searchTerms.length > 0
-      ? availableScripts.filter(s => {
+      ? availableScripts.filter((s) => {
           return searchTerms.reduce((prv, script) => s.match(script) || prv, 0);
         })
       : availableScripts;
