@@ -1,64 +1,66 @@
-module.exports = function(w) {
-  return {
-    // runAllTestsInAffectedTestFile: true,
-    files: [
-      "src/**/*.ts",
-      {
-        pattern: "env.yml",
-        instrument: false
-      },
+module.exports = function (w) {};
 
-      {
-        pattern: "test/testing/**/*.ts",
-        instrument: false
-      },
-      {
-        pattern: "test/testing/test-console.ts",
-        instrument: false
-      },
-      {
-        pattern: "test/dexie-test-data.ts",
-        instument: true
-      }
-    ],
+// module.exports = function(w) {
+//   return {
+//     // runAllTestsInAffectedTestFile: true,
+//     files: [
+//       "src/**/*.ts",
+//       {
+//         pattern: "env.yml",
+//         instrument: false
+//       },
 
-    tests: ["test/**/*-spec.ts"],
+//       {
+//         pattern: "test/testing/**/*.ts",
+//         instrument: false
+//       },
+//       {
+//         pattern: "test/testing/test-console.ts",
+//         instrument: false
+//       },
+//       {
+//         pattern: "test/dexie-test-data.ts",
+//         instument: true
+//       }
+//     ],
 
-    env: {
-      type: "node",
-      runner: "node"
-    },
+//     tests: ["test/**/*-spec.ts"],
 
-    compilers: {
-      "**/*.ts": w.compilers.typeScript({
-        module: "commonjs"
-      })
-    },
+//     env: {
+//       type: "node",
+//       runner: "node"
+//     },
 
-    setup() {
-      if (!process.env.AWS_STAGE) {
-        process.env.AWS_STAGE = "test";
-      }
+//     compilers: {
+//       "**/*.ts": w.compilers.typeScript({
+//         module: "commonjs"
+//       })
+//     },
 
-      if (!console._restored) {
-        console.log("console.log stream returned to normal for test purposes");
-        console.log = function() {
-          return require("console").Console.prototype.log.apply(
-            this,
-            arguments
-          );
-        };
-        console.error = function() {
-          return require("console").Console.prototype.error.apply(
-            this,
-            arguments
-          );
-        };
-        console._restored = true;
-      }
-    },
+//     setup() {
+//       if (!process.env.AWS_STAGE) {
+//         process.env.AWS_STAGE = "test";
+//       }
 
-    testFramework: "mocha",
-    debug: true
-  };
-};
+//       if (!console._restored) {
+//         console.log("console.log stream returned to normal for test purposes");
+//         console.log = function() {
+//           return require("console").Console.prototype.log.apply(
+//             this,
+//             arguments
+//           );
+//         };
+//         console.error = function() {
+//           return require("console").Console.prototype.error.apply(
+//             this,
+//             arguments
+//           );
+//         };
+//         console._restored = true;
+//       }
+//     },
+
+//     testFramework: "mocha",
+//     debug: true
+//   };
+// };
