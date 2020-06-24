@@ -1,8 +1,8 @@
-import { Model } from "../models/Model";
 import { IDictionary } from "common-types";
-import get from "get-value";
-import set from "set-value";
+import { Model } from "../models/Model";
+import { get } from "lodash-es";
 import { lowercase } from "../util";
+import { set } from "lodash-es";
 
 export interface IHasPropertyAndType {
   property: string;
@@ -44,7 +44,7 @@ export const propertyReflector = <R>(
     ...(Reflect.getMetadata(key, modelKlass) || {}),
     type: lowercase(reflect.name) as string,
     ...context,
-    property: key
+    property: key,
   };
 
   Reflect.defineMetadata(key, meta, modelKlass);
@@ -53,7 +53,7 @@ export const propertyReflector = <R>(
     const modelAndProp = modelName + "." + key;
     set(modelRollup, modelAndProp, {
       ...get(modelRollup, modelAndProp),
-      ...meta
+      ...meta,
     });
   }
 };

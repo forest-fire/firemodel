@@ -11,9 +11,13 @@
     "emitDecoratorMetadata": true,
     "noEmit": true,
     "removeComments": false,
-    "esModuleInterop": true,
-    "allowSyntheticDefaultImports": true,
-    "typeRoots": ["./node_modules/@types", "./src/@types"]
+    "esModuleInterop": false,
+    "allowSyntheticDefaultImports": false,
+    "typeRoots": ["./node_modules/@types", "./src/@types"],
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["*"]
+    }
   },
   "files": ["global.d.ts"],
   "include": ["src/**/*", "test/**/*-spec.ts", "global.d.ts"]

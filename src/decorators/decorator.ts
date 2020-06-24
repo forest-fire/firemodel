@@ -1,15 +1,16 @@
 import "reflect-metadata";
-import { Model } from "../models/Model";
-import { IDictionary } from "common-types";
-import get from "get-value";
-import set from "set-value";
 
-import {
-  getProperties,
-  addPropertyToModelMeta
-} from "./model-meta/property-store";
-import { addRelationshipToModelMeta } from "./model-meta/relationship-store";
 import { IFmModelPropertyMeta, IFmModelRelationshipMeta } from "./types";
+import {
+  addPropertyToModelMeta,
+  getProperties,
+} from "./model-meta/property-store";
+
+import { IDictionary } from "common-types";
+import { Model } from "../models/Model";
+import { addRelationshipToModelMeta } from "./model-meta/relationship-store";
+import { get } from "lodash-es";
+import { set } from "lodash-es";
 
 function push<T extends Model = Model>(
   target: IDictionary,
@@ -38,7 +39,7 @@ export const propertyDecorator = <T extends Model>(
     const meta: IFmModelPropertyMeta<T> = {
       ...Reflect.getMetadata(key, target),
       ...{ type: reflect.name },
-      ...nameValuePairs
+      ...nameValuePairs,
     };
     Reflect.defineMetadata(key, meta, target);
     addPropertyToModelMeta<T>(target.constructor.name, property, meta);
@@ -48,7 +49,7 @@ export const propertyDecorator = <T extends Model>(
     const meta: IFmModelRelationshipMeta<T> = {
       ...Reflect.getMetadata(key, target),
       ...{ type: reflect.name },
-      ...nameValuePairs
+      ...nameValuePairs,
     };
     Reflect.defineMetadata(key, meta, target);
     addRelationshipToModelMeta(target.constructor.name, property, meta);
@@ -63,5 +64,5 @@ function propertyMeta<T extends Model = Model>(context: object) {
 
 export function getPushKeys(target: object) {
   const props = getProperties(target);
-  return props.filter(p => p.pushKey).map(p => p.property);
+  return props.filter((p) => p.pushKey).map((p) => p.property);
 }
