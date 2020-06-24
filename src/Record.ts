@@ -40,7 +40,7 @@ import { UnwatchedLocalEvent } from "./state-mgmt/UnwatchedLocalEvent";
 import { WatchDispatcher } from "./watchers/WatchDispatcher";
 import { buildDeepRelationshipLinks } from "./record/buildDeepRelationshipLinks";
 import { buildRelationshipPaths } from "./record/relationships/buildRelationshipPaths";
-import copy from "fast-copy";
+import { default as copy } from "fast-copy";
 import { createCompositeKeyFromFkString } from "./record/createCompositeKeyFromFkString";
 import { createCompositeKeyRefFromRecord } from "./record/createCompositeKeyString";
 import { key as fbKey } from "firebase-key";

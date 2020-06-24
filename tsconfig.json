@@ -11,8 +11,8 @@
     "emitDecoratorMetadata": true,
     "noEmit": true,
     "removeComments": false,
-    "esModuleInterop": false,
-    "allowSyntheticDefaultImports": false,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
     "typeRoots": ["./node_modules/@types", "./src/@types"],
     "baseUrl": ".",
     "paths": {
