@@ -1,2493 +1,24 @@
 import { SerializedQuery } from 'universal-fire';
 import { getMockHelper, Mock as Mock$1 } from 'firemock';
 
-/** Detect free variable `global` from Node.js. */
-var freeGlobal = typeof global == 'object' && global && global.Object === Object && global;
-
-/** Detect free variable `self`. */
-var freeSelf = typeof self == 'object' && self && self.Object === Object && self;
-
-/** Used as a reference to the global object. */
-var root = freeGlobal || freeSelf || Function('return this')();
-
-/** Built-in value references. */
-var Symbol$1 = root.Symbol;
-
-/** Used for built-in method references. */
-var objectProto = Object.prototype;
-
-/** Used to check objects for own properties. */
-var hasOwnProperty = objectProto.hasOwnProperty;
-
 /**
- * Used to resolve the
- * [`toStringTag`](http://ecma-international.org/ecma-262/7.0/#sec-object.prototype.tostring)
- * of values.
- */
-var nativeObjectToString = objectProto.toString;
-
-/** Built-in value references. */
-var symToStringTag = Symbol$1 ? Symbol$1.toStringTag : undefined;
-
-/**
- * A specialized version of `baseGetTag` which ignores `Symbol.toStringTag` values.
- *
- * @private
- * @param {*} value The value to query.
- * @returns {string} Returns the raw `toStringTag`.
- */
-function getRawTag(value) {
-  var isOwn = hasOwnProperty.call(value, symToStringTag),
-      tag = value[symToStringTag];
-
-  try {
-    value[symToStringTag] = undefined;
-    var unmasked = true;
-  } catch (e) {}
-
-  var result = nativeObjectToString.call(value);
-  if (unmasked) {
-    if (isOwn) {
-      value[symToStringTag] = tag;
-    } else {
-      delete value[symToStringTag];
-    }
-  }
-  return result;
-}
-
-/** Used for built-in method references. */
-var objectProto$1 = Object.prototype;
-
-/**
- * Used to resolve the
- * [`toStringTag`](http://ecma-international.org/ecma-262/7.0/#sec-object.prototype.tostring)
- * of values.
- */
-var nativeObjectToString$1 = objectProto$1.toString;
-
-/**
- * Converts `value` to a string using `Object.prototype.toString`.
- *
- * @private
- * @param {*} value The value to convert.
- * @returns {string} Returns the converted string.
- */
-function objectToString(value) {
-  return nativeObjectToString$1.call(value);
-}
-
-/** `Object#toString` result references. */
-var nullTag = '[object Null]',
-    undefinedTag = '[object Undefined]';
-
-/** Built-in value references. */
-var symToStringTag$1 = Symbol$1 ? Symbol$1.toStringTag : undefined;
-
-/**
- * The base implementation of `getTag` without fallbacks for buggy environments.
- *
- * @private
- * @param {*} value The value to query.
- * @returns {string} Returns the `toStringTag`.
- */
-function baseGetTag(value) {
-  if (value == null) {
-    return value === undefined ? undefinedTag : nullTag;
-  }
-  return (symToStringTag$1 && symToStringTag$1 in Object(value))
-    ? getRawTag(value)
-    : objectToString(value);
-}
-
-/**
- * Checks if `value` is object-like. A value is object-like if it's not `null`
- * and has a `typeof` result of "object".
- *
- * @static
- * @memberOf _
- * @since 4.0.0
- * @category Lang
- * @param {*} value The value to check.
- * @returns {boolean} Returns `true` if `value` is object-like, else `false`.
- * @example
- *
- * _.isObjectLike({});
- * // => true
- *
- * _.isObjectLike([1, 2, 3]);
- * // => true
- *
- * _.isObjectLike(_.noop);
- * // => false
- *
- * _.isObjectLike(null);
- * // => false
- */
-function isObjectLike(value) {
-  return value != null && typeof value == 'object';
-}
-
-/** `Object#toString` result references. */
-var symbolTag = '[object Symbol]';
-
-/**
- * Checks if `value` is classified as a `Symbol` primitive or object.
- *
- * @static
- * @memberOf _
- * @since 4.0.0
- * @category Lang
- * @param {*} value The value to check.
- * @returns {boolean} Returns `true` if `value` is a symbol, else `false`.
- * @example
- *
- * _.isSymbol(Symbol.iterator);
- * // => true
- *
- * _.isSymbol('abc');
- * // => false
- */
-function isSymbol(value) {
-  return typeof value == 'symbol' ||
-    (isObjectLike(value) && baseGetTag(value) == symbolTag);
-}
-
-/**
- * A specialized version of `_.map` for arrays without support for iteratee
- * shorthands.
- *
- * @private
- * @param {Array} [array] The array to iterate over.
- * @param {Function} iteratee The function invoked per iteration.
- * @returns {Array} Returns the new mapped array.
- */
-function arrayMap(array, iteratee) {
-  var index = -1,
-      length = array == null ? 0 : array.length,
-      result = Array(length);
-
-  while (++index < length) {
-    result[index] = iteratee(array[index], index, array);
-  }
-  return result;
-}
-
-/**
- * Checks if `value` is classified as an `Array` object.
- *
- * @static
- * @memberOf _
- * @since 0.1.0
- * @category Lang
- * @param {*} value The value to check.
- * @returns {boolean} Returns `true` if `value` is an array, else `false`.
- * @example
- *
- * _.isArray([1, 2, 3]);
- * // => true
- *
- * _.isArray(document.body.children);
- * // => false
- *
- * _.isArray('abc');
- * // => false
- *
- * _.isArray(_.noop);
- * // => false
- */
-var isArray = Array.isArray;
-
-/** Used as references for various `Number` constants. */
-var INFINITY = 1 / 0;
-
-/** Used to convert symbols to primitives and strings. */
-var symbolProto = Symbol$1 ? Symbol$1.prototype : undefined,
-    symbolToString = symbolProto ? symbolProto.toString : undefined;
-
-/**
- * The base implementation of `_.toString` which doesn't convert nullish
- * values to empty strings.
- *
- * @private
- * @param {*} value The value to process.
- * @returns {string} Returns the string.
- */
-function baseToString(value) {
-  // Exit early for strings to avoid a performance hit in some environments.
-  if (typeof value == 'string') {
-    return value;
-  }
-  if (isArray(value)) {
-    // Recursively convert values (susceptible to call stack limits).
-    return arrayMap(value, baseToString) + '';
-  }
-  if (isSymbol(value)) {
-    return symbolToString ? symbolToString.call(value) : '';
-  }
-  var result = (value + '');
-  return (result == '0' && (1 / value) == -INFINITY) ? '-0' : result;
-}
-
-/**
- * Checks if `value` is the
- * [language type](http://www.ecma-international.org/ecma-262/7.0/#sec-ecmascript-language-types)
- * of `Object`. (e.g. arrays, functions, objects, regexes, `new Number(0)`, and `new String('')`)
- *
- * @static
- * @memberOf _
- * @since 0.1.0
- * @category Lang
- * @param {*} value The value to check.
- * @returns {boolean} Returns `true` if `value` is an object, else `false`.
- * @example
- *
- * _.isObject({});
- * // => true
- *
- * _.isObject([1, 2, 3]);
- * // => true
- *
- * _.isObject(_.noop);
- * // => true
- *
- * _.isObject(null);
- * // => false
- */
-function isObject(value) {
-  var type = typeof value;
-  return value != null && (type == 'object' || type == 'function');
-}
-
-/** `Object#toString` result references. */
-var asyncTag = '[object AsyncFunction]',
-    funcTag = '[object Function]',
-    genTag = '[object GeneratorFunction]',
-    proxyTag = '[object Proxy]';
-
-/**
- * Checks if `value` is classified as a `Function` object.
- *
- * @static
- * @memberOf _
- * @since 0.1.0
- * @category Lang
- * @param {*} value The value to check.
- * @returns {boolean} Returns `true` if `value` is a function, else `false`.
- * @example
- *
- * _.isFunction(_);
- * // => true
- *
- * _.isFunction(/abc/);
- * // => false
- */
-function isFunction(value) {
-  if (!isObject(value)) {
-    return false;
-  }
-  // The use of `Object#toString` avoids issues with the `typeof` operator
-  // in Safari 9 which returns 'object' for typed arrays and other constructors.
-  var tag = baseGetTag(value);
-  return tag == funcTag || tag == genTag || tag == asyncTag || tag == proxyTag;
-}
-
-/** Used to detect overreaching core-js shims. */
-var coreJsData = root['__core-js_shared__'];
-
-/** Used to detect methods masquerading as native. */
-var maskSrcKey = (function() {
-  var uid = /[^.]+$/.exec(coreJsData && coreJsData.keys && coreJsData.keys.IE_PROTO || '');
-  return uid ? ('Symbol(src)_1.' + uid) : '';
-}());
-
-/**
- * Checks if `func` has its source masked.
- *
- * @private
- * @param {Function} func The function to check.
- * @returns {boolean} Returns `true` if `func` is masked, else `false`.
- */
-function isMasked(func) {
-  return !!maskSrcKey && (maskSrcKey in func);
-}
-
-/** Used for built-in method references. */
-var funcProto = Function.prototype;
-
-/** Used to resolve the decompiled source of functions. */
-var funcToString = funcProto.toString;
-
-/**
- * Converts `func` to its source code.
- *
- * @private
- * @param {Function} func The function to convert.
- * @returns {string} Returns the source code.
- */
-function toSource(func) {
-  if (func != null) {
-    try {
-      return funcToString.call(func);
-    } catch (e) {}
-    try {
-      return (func + '');
-    } catch (e) {}
-  }
-  return '';
-}
-
-/**
- * Used to match `RegExp`
- * [syntax characters](http://ecma-international.org/ecma-262/7.0/#sec-patterns).
- */
-var reRegExpChar = /[\\^$.*+?()[\]{}|]/g;
-
-/** Used to detect host constructors (Safari). */
-var reIsHostCtor = /^\[object .+?Constructor\]$/;
-
-/** Used for built-in method references. */
-var funcProto$1 = Function.prototype,
-    objectProto$2 = Object.prototype;
-
-/** Used to resolve the decompiled source of functions. */
-var funcToString$1 = funcProto$1.toString;
-
-/** Used to check objects for own properties. */
-var hasOwnProperty$1 = objectProto$2.hasOwnProperty;
-
-/** Used to detect if a method is native. */
-var reIsNative = RegExp('^' +
-  funcToString$1.call(hasOwnProperty$1).replace(reRegExpChar, '\\$&')
-  .replace(/hasOwnProperty|(function).*?(?=\\\()| for .+?(?=\\\])/g, '$1.*?') + '$'
-);
-
-/**
- * The base implementation of `_.isNative` without bad shim checks.
- *
- * @private
- * @param {*} value The value to check.
- * @returns {boolean} Returns `true` if `value` is a native function,
- *  else `false`.
- */
-function baseIsNative(value) {
-  if (!isObject(value) || isMasked(value)) {
-    return false;
-  }
-  var pattern = isFunction(value) ? reIsNative : reIsHostCtor;
-  return pattern.test(toSource(value));
-}
-
-/**
- * Gets the value at `key` of `object`.
- *
- * @private
- * @param {Object} [object] The object to query.
- * @param {string} key The key of the property to get.
- * @returns {*} Returns the property value.
- */
-function getValue(object, key) {
-  return object == null ? undefined : object[key];
-}
-
-/**
- * Gets the native function at `key` of `object`.
- *
- * @private
- * @param {Object} object The object to query.
- * @param {string} key The key of the method to get.
- * @returns {*} Returns the function if it's native, else `undefined`.
- */
-function getNative(object, key) {
-  var value = getValue(object, key);
-  return baseIsNative(value) ? value : undefined;
-}
-
-var defineProperty = (function() {
-  try {
-    var func = getNative(Object, 'defineProperty');
-    func({}, '', {});
-    return func;
-  } catch (e) {}
-}());
-
-/** Used as references for various `Number` constants. */
-var MAX_SAFE_INTEGER = 9007199254740991;
-
-/** Used to detect unsigned integer values. */
-var reIsUint = /^(?:0|[1-9]\d*)$/;
-
-/**
- * Checks if `value` is a valid array-like index.
- *
- * @private
- * @param {*} value The value to check.
- * @param {number} [length=MAX_SAFE_INTEGER] The upper bounds of a valid index.
- * @returns {boolean} Returns `true` if `value` is a valid index, else `false`.
- */
-function isIndex(value, length) {
-  var type = typeof value;
-  length = length == null ? MAX_SAFE_INTEGER : length;
-
-  return !!length &&
-    (type == 'number' ||
-      (type != 'symbol' && reIsUint.test(value))) &&
-        (value > -1 && value % 1 == 0 && value < length);
-}
-
-/**
- * The base implementation of `assignValue` and `assignMergeValue` without
- * value checks.
- *
- * @private
- * @param {Object} object The object to modify.
- * @param {string} key The key of the property to assign.
- * @param {*} value The value to assign.
- */
-function baseAssignValue(object, key, value) {
-  if (key == '__proto__' && defineProperty) {
-    defineProperty(object, key, {
-      'configurable': true,
-      'enumerable': true,
-      'value': value,
-      'writable': true
-    });
-  } else {
-    object[key] = value;
-  }
-}
-
-/**
- * Performs a
- * [`SameValueZero`](http://ecma-international.org/ecma-262/7.0/#sec-samevaluezero)
- * comparison between two values to determine if they are equivalent.
- *
- * @static
- * @memberOf _
- * @since 4.0.0
- * @category Lang
- * @param {*} value The value to compare.
- * @param {*} other The other value to compare.
- * @returns {boolean} Returns `true` if the values are equivalent, else `false`.
- * @example
- *
- * var object = { 'a': 1 };
- * var other = { 'a': 1 };
- *
- * _.eq(object, object);
- * // => true
- *
- * _.eq(object, other);
- * // => false
- *
- * _.eq('a', 'a');
- * // => true
- *
- * _.eq('a', Object('a'));
- * // => false
- *
- * _.eq(NaN, NaN);
- * // => true
- */
-function eq(value, other) {
-  return value === other || (value !== value && other !== other);
-}
-
-/** Used for built-in method references. */
-var objectProto$3 = Object.prototype;
-
-/** Used to check objects for own properties. */
-var hasOwnProperty$2 = objectProto$3.hasOwnProperty;
-
-/**
- * Assigns `value` to `key` of `object` if the existing value is not equivalent
- * using [`SameValueZero`](http://ecma-international.org/ecma-262/7.0/#sec-samevaluezero)
- * for equality comparisons.
- *
- * @private
- * @param {Object} object The object to modify.
- * @param {string} key The key of the property to assign.
- * @param {*} value The value to assign.
- */
-function assignValue(object, key, value) {
-  var objValue = object[key];
-  if (!(hasOwnProperty$2.call(object, key) && eq(objValue, value)) ||
-      (value === undefined && !(key in object))) {
-    baseAssignValue(object, key, value);
-  }
-}
-
-/** Used to match property names within property paths. */
-var reIsDeepProp = /\.|\[(?:[^[\]]*|(["'])(?:(?!\1)[^\\]|\\.)*?\1)\]/,
-    reIsPlainProp = /^\w*$/;
-
-/**
- * Checks if `value` is a property name and not a property path.
- *
- * @private
- * @param {*} value The value to check.
- * @param {Object} [object] The object to query keys on.
- * @returns {boolean} Returns `true` if `value` is a property name, else `false`.
- */
-function isKey(value, object) {
-  if (isArray(value)) {
-    return false;
-  }
-  var type = typeof value;
-  if (type == 'number' || type == 'symbol' || type == 'boolean' ||
-      value == null || isSymbol(value)) {
-    return true;
-  }
-  return reIsPlainProp.test(value) || !reIsDeepProp.test(value) ||
-    (object != null && value in Object(object));
-}
-
-/* Built-in method references that are verified to be native. */
-var nativeCreate = getNative(Object, 'create');
-
-/**
- * Removes all key-value entries from the hash.
- *
- * @private
- * @name clear
- * @memberOf Hash
- */
-function hashClear() {
-  this.__data__ = nativeCreate ? nativeCreate(null) : {};
-  this.size = 0;
-}
-
-/**
- * Removes `key` and its value from the hash.
- *
- * @private
- * @name delete
- * @memberOf Hash
- * @param {Object} hash The hash to modify.
- * @param {string} key The key of the value to remove.
- * @returns {boolean} Returns `true` if the entry was removed, else `false`.
- */
-function hashDelete(key) {
-  var result = this.has(key) && delete this.__data__[key];
-  this.size -= result ? 1 : 0;
-  return result;
-}
-
-/** Used to stand-in for `undefined` hash values. */
-var HASH_UNDEFINED = '__lodash_hash_undefined__';
-
-/** Used for built-in method references. */
-var objectProto$4 = Object.prototype;
-
-/** Used to check objects for own properties. */
-var hasOwnProperty$3 = objectProto$4.hasOwnProperty;
-
-/**
- * Gets the hash value for `key`.
- *
- * @private
- * @name get
- * @memberOf Hash
- * @param {string} key The key of the value to get.
- * @returns {*} Returns the entry value.
- */
-function hashGet(key) {
-  var data = this.__data__;
-  if (nativeCreate) {
-    var result = data[key];
-    return result === HASH_UNDEFINED ? undefined : result;
-  }
-  return hasOwnProperty$3.call(data, key) ? data[key] : undefined;
-}
-
-/** Used for built-in method references. */
-var objectProto$5 = Object.prototype;
-
-/** Used to check objects for own properties. */
-var hasOwnProperty$4 = objectProto$5.hasOwnProperty;
-
-/**
- * Checks if a hash value for `key` exists.
- *
- * @private
- * @name has
- * @memberOf Hash
- * @param {string} key The key of the entry to check.
- * @returns {boolean} Returns `true` if an entry for `key` exists, else `false`.
- */
-function hashHas(key) {
-  var data = this.__data__;
-  return nativeCreate ? (data[key] !== undefined) : hasOwnProperty$4.call(data, key);
-}
-
-/** Used to stand-in for `undefined` hash values. */
-var HASH_UNDEFINED$1 = '__lodash_hash_undefined__';
-
-/**
- * Sets the hash `key` to `value`.
- *
- * @private
- * @name set
- * @memberOf Hash
- * @param {string} key The key of the value to set.
- * @param {*} value The value to set.
- * @returns {Object} Returns the hash instance.
- */
-function hashSet(key, value) {
-  var data = this.__data__;
-  this.size += this.has(key) ? 0 : 1;
-  data[key] = (nativeCreate && value === undefined) ? HASH_UNDEFINED$1 : value;
-  return this;
-}
-
-/**
- * Creates a hash object.
- *
- * @private
- * @constructor
- * @param {Array} [entries] The key-value pairs to cache.
- */
-function Hash(entries) {
-  var index = -1,
-      length = entries == null ? 0 : entries.length;
-
-  this.clear();
-  while (++index < length) {
-    var entry = entries[index];
-    this.set(entry[0], entry[1]);
-  }
-}
-
-// Add methods to `Hash`.
-Hash.prototype.clear = hashClear;
-Hash.prototype['delete'] = hashDelete;
-Hash.prototype.get = hashGet;
-Hash.prototype.has = hashHas;
-Hash.prototype.set = hashSet;
-
-/**
- * Removes all key-value entries from the list cache.
- *
- * @private
- * @name clear
- * @memberOf ListCache
- */
-function listCacheClear() {
-  this.__data__ = [];
-  this.size = 0;
-}
-
-/**
- * Gets the index at which the `key` is found in `array` of key-value pairs.
- *
- * @private
- * @param {Array} array The array to inspect.
- * @param {*} key The key to search for.
- * @returns {number} Returns the index of the matched value, else `-1`.
- */
-function assocIndexOf(array, key) {
-  var length = array.length;
-  while (length--) {
-    if (eq(array[length][0], key)) {
-      return length;
-    }
-  }
-  return -1;
-}
-
-/** Used for built-in method references. */
-var arrayProto = Array.prototype;
-
-/** Built-in value references. */
-var splice = arrayProto.splice;
-
-/**
- * Removes `key` and its value from the list cache.
- *
- * @private
- * @name delete
- * @memberOf ListCache
- * @param {string} key The key of the value to remove.
- * @returns {boolean} Returns `true` if the entry was removed, else `false`.
- */
-function listCacheDelete(key) {
-  var data = this.__data__,
-      index = assocIndexOf(data, key);
-
-  if (index < 0) {
-    return false;
-  }
-  var lastIndex = data.length - 1;
-  if (index == lastIndex) {
-    data.pop();
-  } else {
-    splice.call(data, index, 1);
-  }
-  --this.size;
-  return true;
-}
-
-/**
- * Gets the list cache value for `key`.
- *
- * @private
- * @name get
- * @memberOf ListCache
- * @param {string} key The key of the value to get.
- * @returns {*} Returns the entry value.
- */
-function listCacheGet(key) {
-  var data = this.__data__,
-      index = assocIndexOf(data, key);
-
-  return index < 0 ? undefined : data[index][1];
-}
-
-/**
- * Checks if a list cache value for `key` exists.
- *
- * @private
- * @name has
- * @memberOf ListCache
- * @param {string} key The key of the entry to check.
- * @returns {boolean} Returns `true` if an entry for `key` exists, else `false`.
- */
-function listCacheHas(key) {
-  return assocIndexOf(this.__data__, key) > -1;
-}
-
-/**
- * Sets the list cache `key` to `value`.
- *
- * @private
- * @name set
- * @memberOf ListCache
- * @param {string} key The key of the value to set.
- * @param {*} value The value to set.
- * @returns {Object} Returns the list cache instance.
- */
-function listCacheSet(key, value) {
-  var data = this.__data__,
-      index = assocIndexOf(data, key);
-
-  if (index < 0) {
-    ++this.size;
-    data.push([key, value]);
-  } else {
-    data[index][1] = value;
-  }
-  return this;
-}
-
-/**
- * Creates an list cache object.
- *
- * @private
- * @constructor
- * @param {Array} [entries] The key-value pairs to cache.
- */
-function ListCache(entries) {
-  var index = -1,
-      length = entries == null ? 0 : entries.length;
-
-  this.clear();
-  while (++index < length) {
-    var entry = entries[index];
-    this.set(entry[0], entry[1]);
-  }
-}
-
-// Add methods to `ListCache`.
-ListCache.prototype.clear = listCacheClear;
-ListCache.prototype['delete'] = listCacheDelete;
-ListCache.prototype.get = listCacheGet;
-ListCache.prototype.has = listCacheHas;
-ListCache.prototype.set = listCacheSet;
-
-/* Built-in method references that are verified to be native. */
-var Map$1 = getNative(root, 'Map');
-
-/**
- * Removes all key-value entries from the map.
- *
- * @private
- * @name clear
- * @memberOf MapCache
- */
-function mapCacheClear() {
-  this.size = 0;
-  this.__data__ = {
-    'hash': new Hash,
-    'map': new (Map$1 || ListCache),
-    'string': new Hash
-  };
-}
-
-/**
- * Checks if `value` is suitable for use as unique object key.
- *
- * @private
- * @param {*} value The value to check.
- * @returns {boolean} Returns `true` if `value` is suitable, else `false`.
- */
-function isKeyable(value) {
-  var type = typeof value;
-  return (type == 'string' || type == 'number' || type == 'symbol' || type == 'boolean')
-    ? (value !== '__proto__')
-    : (value === null);
-}
-
-/**
- * Gets the data for `map`.
- *
- * @private
- * @param {Object} map The map to query.
- * @param {string} key The reference key.
- * @returns {*} Returns the map data.
- */
-function getMapData(map, key) {
-  var data = map.__data__;
-  return isKeyable(key)
-    ? data[typeof key == 'string' ? 'string' : 'hash']
-    : data.map;
-}
-
-/**
- * Removes `key` and its value from the map.
- *
- * @private
- * @name delete
- * @memberOf MapCache
- * @param {string} key The key of the value to remove.
- * @returns {boolean} Returns `true` if the entry was removed, else `false`.
- */
-function mapCacheDelete(key) {
-  var result = getMapData(this, key)['delete'](key);
-  this.size -= result ? 1 : 0;
-  return result;
-}
-
-/**
- * Gets the map value for `key`.
- *
- * @private
- * @name get
- * @memberOf MapCache
- * @param {string} key The key of the value to get.
- * @returns {*} Returns the entry value.
- */
-function mapCacheGet(key) {
-  return getMapData(this, key).get(key);
-}
-
-/**
- * Checks if a map value for `key` exists.
- *
- * @private
- * @name has
- * @memberOf MapCache
- * @param {string} key The key of the entry to check.
- * @returns {boolean} Returns `true` if an entry for `key` exists, else `false`.
- */
-function mapCacheHas(key) {
-  return getMapData(this, key).has(key);
-}
-
-/**
- * Sets the map `key` to `value`.
- *
- * @private
- * @name set
- * @memberOf MapCache
- * @param {string} key The key of the value to set.
- * @param {*} value The value to set.
- * @returns {Object} Returns the map cache instance.
- */
-function mapCacheSet(key, value) {
-  var data = getMapData(this, key),
-      size = data.size;
-
-  data.set(key, value);
-  this.size += data.size == size ? 0 : 1;
-  return this;
-}
-
-/**
- * Creates a map cache object to store key-value pairs.
- *
- * @private
- * @constructor
- * @param {Array} [entries] The key-value pairs to cache.
- */
-function MapCache(entries) {
-  var index = -1,
-      length = entries == null ? 0 : entries.length;
-
-  this.clear();
-  while (++index < length) {
-    var entry = entries[index];
-    this.set(entry[0], entry[1]);
-  }
-}
-
-// Add methods to `MapCache`.
-MapCache.prototype.clear = mapCacheClear;
-MapCache.prototype['delete'] = mapCacheDelete;
-MapCache.prototype.get = mapCacheGet;
-MapCache.prototype.has = mapCacheHas;
-MapCache.prototype.set = mapCacheSet;
-
-/** Error message constants. */
-var FUNC_ERROR_TEXT = 'Expected a function';
-
-/**
- * Creates a function that memoizes the result of `func`. If `resolver` is
- * provided, it determines the cache key for storing the result based on the
- * arguments provided to the memoized function. By default, the first argument
- * provided to the memoized function is used as the map cache key. The `func`
- * is invoked with the `this` binding of the memoized function.
- *
- * **Note:** The cache is exposed as the `cache` property on the memoized
- * function. Its creation may be customized by replacing the `_.memoize.Cache`
- * constructor with one whose instances implement the
- * [`Map`](http://ecma-international.org/ecma-262/7.0/#sec-properties-of-the-map-prototype-object)
- * method interface of `clear`, `delete`, `get`, `has`, and `set`.
- *
- * @static
- * @memberOf _
- * @since 0.1.0
- * @category Function
- * @param {Function} func The function to have its output memoized.
- * @param {Function} [resolver] The function to resolve the cache key.
- * @returns {Function} Returns the new memoized function.
- * @example
- *
- * var object = { 'a': 1, 'b': 2 };
- * var other = { 'c': 3, 'd': 4 };
- *
- * var values = _.memoize(_.values);
- * values(object);
- * // => [1, 2]
- *
- * values(other);
- * // => [3, 4]
- *
- * object.a = 2;
- * values(object);
- * // => [1, 2]
- *
- * // Modify the result cache.
- * values.cache.set(object, ['a', 'b']);
- * values(object);
- * // => ['a', 'b']
- *
- * // Replace `_.memoize.Cache`.
- * _.memoize.Cache = WeakMap;
- */
-function memoize(func, resolver) {
-  if (typeof func != 'function' || (resolver != null && typeof resolver != 'function')) {
-    throw new TypeError(FUNC_ERROR_TEXT);
-  }
-  var memoized = function() {
-    var args = arguments,
-        key = resolver ? resolver.apply(this, args) : args[0],
-        cache = memoized.cache;
-
-    if (cache.has(key)) {
-      return cache.get(key);
-    }
-    var result = func.apply(this, args);
-    memoized.cache = cache.set(key, result) || cache;
-    return result;
-  };
-  memoized.cache = new (memoize.Cache || MapCache);
-  return memoized;
-}
-
-// Expose `MapCache`.
-memoize.Cache = MapCache;
-
-/** Used as the maximum memoize cache size. */
-var MAX_MEMOIZE_SIZE = 500;
-
-/**
- * A specialized version of `_.memoize` which clears the memoized function's
- * cache when it exceeds `MAX_MEMOIZE_SIZE`.
- *
- * @private
- * @param {Function} func The function to have its output memoized.
- * @returns {Function} Returns the new memoized function.
- */
-function memoizeCapped(func) {
-  var result = memoize(func, function(key) {
-    if (cache.size === MAX_MEMOIZE_SIZE) {
-      cache.clear();
-    }
-    return key;
-  });
-
-  var cache = result.cache;
-  return result;
-}
-
-/** Used to match property names within property paths. */
-var rePropName = /[^.[\]]+|\[(?:(-?\d+(?:\.\d+)?)|(["'])((?:(?!\2)[^\\]|\\.)*?)\2)\]|(?=(?:\.|\[\])(?:\.|\[\]|$))/g;
-
-/** Used to match backslashes in property paths. */
-var reEscapeChar = /\\(\\)?/g;
-
-/**
- * Converts `string` to a property path array.
- *
- * @private
- * @param {string} string The string to convert.
- * @returns {Array} Returns the property path array.
- */
-var stringToPath = memoizeCapped(function(string) {
-  var result = [];
-  if (string.charCodeAt(0) === 46 /* . */) {
-    result.push('');
-  }
-  string.replace(rePropName, function(match, number, quote, subString) {
-    result.push(quote ? subString.replace(reEscapeChar, '$1') : (number || match));
-  });
-  return result;
-});
-
-/**
- * Converts `value` to a string. An empty string is returned for `null`
- * and `undefined` values. The sign of `-0` is preserved.
- *
- * @static
- * @memberOf _
- * @since 4.0.0
- * @category Lang
- * @param {*} value The value to convert.
- * @returns {string} Returns the converted string.
- * @example
- *
- * _.toString(null);
- * // => ''
- *
- * _.toString(-0);
- * // => '-0'
- *
- * _.toString([1, 2, 3]);
- * // => '1,2,3'
- */
-function toString(value) {
-  return value == null ? '' : baseToString(value);
-}
-
-/**
- * Casts `value` to a path array if it's not one.
- *
- * @private
- * @param {*} value The value to inspect.
- * @param {Object} [object] The object to query keys on.
- * @returns {Array} Returns the cast property path array.
- */
-function castPath(value, object) {
-  if (isArray(value)) {
-    return value;
-  }
-  return isKey(value, object) ? [value] : stringToPath(toString(value));
-}
-
-/** Used as references for various `Number` constants. */
-var INFINITY$1 = 1 / 0;
-
-/**
- * Converts `value` to a string key if it's not a string or symbol.
- *
- * @private
- * @param {*} value The value to inspect.
- * @returns {string|symbol} Returns the key.
- */
-function toKey(value) {
-  if (typeof value == 'string' || isSymbol(value)) {
-    return value;
-  }
-  var result = (value + '');
-  return (result == '0' && (1 / value) == -INFINITY$1) ? '-0' : result;
-}
-
-/**
- * The base implementation of `_.get` without support for default values.
- *
- * @private
- * @param {Object} object The object to query.
- * @param {Array|string} path The path of the property to get.
- * @returns {*} Returns the resolved value.
- */
-function baseGet(object, path) {
-  path = castPath(path, object);
-
-  var index = 0,
-      length = path.length;
-
-  while (object != null && index < length) {
-    object = object[toKey(path[index++])];
-  }
-  return (index && index == length) ? object : undefined;
-}
-
-/**
- * Gets the value at `path` of `object`. If the resolved value is
- * `undefined`, the `defaultValue` is returned in its place.
- *
- * @static
- * @memberOf _
- * @since 3.7.0
- * @category Object
- * @param {Object} object The object to query.
- * @param {Array|string} path The path of the property to get.
- * @param {*} [defaultValue] The value returned for `undefined` resolved values.
- * @returns {*} Returns the resolved value.
- * @example
- *
- * var object = { 'a': [{ 'b': { 'c': 3 } }] };
- *
- * _.get(object, 'a[0].b.c');
- * // => 3
- *
- * _.get(object, ['a', '0', 'b', 'c']);
- * // => 3
- *
- * _.get(object, 'a.b.c', 'default');
- * // => 'default'
- */
-function get(object, path, defaultValue) {
-  var result = object == null ? undefined : baseGet(object, path);
-  return result === undefined ? defaultValue : result;
-}
-
-/**
- * The base implementation of `_.set`.
- *
- * @private
- * @param {Object} object The object to modify.
- * @param {Array|string} path The path of the property to set.
- * @param {*} value The value to set.
- * @param {Function} [customizer] The function to customize path creation.
- * @returns {Object} Returns `object`.
- */
-function baseSet(object, path, value, customizer) {
-  if (!isObject(object)) {
-    return object;
-  }
-  path = castPath(path, object);
-
-  var index = -1,
-      length = path.length,
-      lastIndex = length - 1,
-      nested = object;
-
-  while (nested != null && ++index < length) {
-    var key = toKey(path[index]),
-        newValue = value;
-
-    if (index != lastIndex) {
-      var objValue = nested[key];
-      newValue = customizer ? customizer(objValue, key, nested) : undefined;
-      if (newValue === undefined) {
-        newValue = isObject(objValue)
-          ? objValue
-          : (isIndex(path[index + 1]) ? [] : {});
-      }
-    }
-    assignValue(nested, key, newValue);
-    nested = nested[key];
-  }
-  return object;
-}
-
-/**
- * Sets the value at `path` of `object`. If a portion of `path` doesn't exist,
- * it's created. Arrays are created for missing index properties while objects
- * are created for all other missing properties. Use `_.setWith` to customize
- * `path` creation.
- *
- * **Note:** This method mutates `object`.
- *
- * @static
- * @memberOf _
- * @since 3.7.0
- * @category Object
- * @param {Object} object The object to modify.
- * @param {Array|string} path The path of the property to set.
- * @param {*} value The value to set.
- * @returns {Object} Returns `object`.
- * @example
- *
- * var object = { 'a': [{ 'b': { 'c': 3 } }] };
- *
- * _.set(object, 'a[0].b.c', 4);
- * console.log(object.a[0].b.c);
- * // => 4
- *
- * _.set(object, ['x', '0', 'y', 'z'], 5);
- * console.log(object.x[0].y.z);
- * // => 5
- */
-function set(object, path, value) {
-  return object == null ? object : baseSet(object, path, value);
-}
-
-/** Detect free variable `global` from Node.js. */
-var freeGlobal$1 = typeof global == 'object' && global && global.Object === Object && global;
-
-/** Detect free variable `self`. */
-var freeSelf$1 = typeof self == 'object' && self && self.Object === Object && self;
-
-/** Used as a reference to the global object. */
-var root$1 = freeGlobal$1 || freeSelf$1 || Function('return this')();
-
-/** Built-in value references. */
-var Symbol$2 = root$1.Symbol;
-
-/** Used for built-in method references. */
-var objectProto$6 = Object.prototype;
-
-/** Used to check objects for own properties. */
-var hasOwnProperty$5 = objectProto$6.hasOwnProperty;
-
-/**
- * Used to resolve the
- * [`toStringTag`](http://ecma-international.org/ecma-262/7.0/#sec-object.prototype.tostring)
- * of values.
- */
-var nativeObjectToString$2 = objectProto$6.toString;
-
-/** Built-in value references. */
-var symToStringTag$2 = Symbol$2 ? Symbol$2.toStringTag : undefined;
-
-/**
- * A specialized version of `baseGetTag` which ignores `Symbol.toStringTag` values.
- *
- * @private
- * @param {*} value The value to query.
- * @returns {string} Returns the raw `toStringTag`.
- */
-function getRawTag$1(value) {
-  var isOwn = hasOwnProperty$5.call(value, symToStringTag$2),
-      tag = value[symToStringTag$2];
-
-  try {
-    value[symToStringTag$2] = undefined;
-    var unmasked = true;
-  } catch (e) {}
-
-  var result = nativeObjectToString$2.call(value);
-  if (unmasked) {
-    if (isOwn) {
-      value[symToStringTag$2] = tag;
-    } else {
-      delete value[symToStringTag$2];
-    }
-  }
-  return result;
-}
-
-/** Used for built-in method references. */
-var objectProto$1$1 = Object.prototype;
-
-/**
- * Used to resolve the
- * [`toStringTag`](http://ecma-international.org/ecma-262/7.0/#sec-object.prototype.tostring)
- * of values.
- */
-var nativeObjectToString$1$1 = objectProto$1$1.toString;
-
-/**
- * Converts `value` to a string using `Object.prototype.toString`.
- *
- * @private
- * @param {*} value The value to convert.
- * @returns {string} Returns the converted string.
- */
-function objectToString$1(value) {
-  return nativeObjectToString$1$1.call(value);
-}
-
-/** `Object#toString` result references. */
-var nullTag$1 = '[object Null]',
-    undefinedTag$1 = '[object Undefined]';
-
-/** Built-in value references. */
-var symToStringTag$1$1 = Symbol$2 ? Symbol$2.toStringTag : undefined;
-
-/**
- * The base implementation of `getTag` without fallbacks for buggy environments.
- *
- * @private
- * @param {*} value The value to query.
- * @returns {string} Returns the `toStringTag`.
- */
-function baseGetTag$1(value) {
-  if (value == null) {
-    return value === undefined ? undefinedTag$1 : nullTag$1;
-  }
-  return (symToStringTag$1$1 && symToStringTag$1$1 in Object(value))
-    ? getRawTag$1(value)
-    : objectToString$1(value);
-}
-
-/** Used to convert symbols to primitives and strings. */
-var symbolProto$1 = Symbol$2 ? Symbol$2.prototype : undefined,
-    symbolToString$1 = symbolProto$1 ? symbolProto$1.toString : undefined;
-
-/**
- * Checks if `value` is the
- * [language type](http://www.ecma-international.org/ecma-262/7.0/#sec-ecmascript-language-types)
- * of `Object`. (e.g. arrays, functions, objects, regexes, `new Number(0)`, and `new String('')`)
- *
- * @static
- * @memberOf _
- * @since 0.1.0
- * @category Lang
- * @param {*} value The value to check.
- * @returns {boolean} Returns `true` if `value` is an object, else `false`.
- * @example
- *
- * _.isObject({});
- * // => true
- *
- * _.isObject([1, 2, 3]);
- * // => true
- *
- * _.isObject(_.noop);
- * // => true
- *
- * _.isObject(null);
- * // => false
- */
-function isObject$1(value) {
-  var type = typeof value;
-  return value != null && (type == 'object' || type == 'function');
-}
-
-/** `Object#toString` result references. */
-var asyncTag$1 = '[object AsyncFunction]',
-    funcTag$1 = '[object Function]',
-    genTag$1 = '[object GeneratorFunction]',
-    proxyTag$1 = '[object Proxy]';
-
-/**
- * Checks if `value` is classified as a `Function` object.
- *
- * @static
- * @memberOf _
- * @since 0.1.0
- * @category Lang
- * @param {*} value The value to check.
- * @returns {boolean} Returns `true` if `value` is a function, else `false`.
- * @example
- *
- * _.isFunction(_);
- * // => true
- *
- * _.isFunction(/abc/);
- * // => false
- */
-function isFunction$1(value) {
-  if (!isObject$1(value)) {
-    return false;
-  }
-  // The use of `Object#toString` avoids issues with the `typeof` operator
-  // in Safari 9 which returns 'object' for typed arrays and other constructors.
-  var tag = baseGetTag$1(value);
-  return tag == funcTag$1 || tag == genTag$1 || tag == asyncTag$1 || tag == proxyTag$1;
-}
-
-/** Used to detect overreaching core-js shims. */
-var coreJsData$1 = root$1['__core-js_shared__'];
-
-/** Used to detect methods masquerading as native. */
-var maskSrcKey$1 = (function() {
-  var uid = /[^.]+$/.exec(coreJsData$1 && coreJsData$1.keys && coreJsData$1.keys.IE_PROTO || '');
-  return uid ? ('Symbol(src)_1.' + uid) : '';
-}());
-
-/**
- * Checks if `func` has its source masked.
- *
- * @private
- * @param {Function} func The function to check.
- * @returns {boolean} Returns `true` if `func` is masked, else `false`.
- */
-function isMasked$1(func) {
-  return !!maskSrcKey$1 && (maskSrcKey$1 in func);
-}
-
-/** Used for built-in method references. */
-var funcProto$2 = Function.prototype;
-
-/** Used to resolve the decompiled source of functions. */
-var funcToString$2 = funcProto$2.toString;
-
-/**
- * Converts `func` to its source code.
- *
- * @private
- * @param {Function} func The function to convert.
- * @returns {string} Returns the source code.
- */
-function toSource$1(func) {
-  if (func != null) {
-    try {
-      return funcToString$2.call(func);
-    } catch (e) {}
-    try {
-      return (func + '');
-    } catch (e) {}
-  }
-  return '';
-}
-
-/**
- * Used to match `RegExp`
- * [syntax characters](http://ecma-international.org/ecma-262/7.0/#sec-patterns).
- */
-var reRegExpChar$1 = /[\\^$.*+?()[\]{}|]/g;
-
-/** Used to detect host constructors (Safari). */
-var reIsHostCtor$1 = /^\[object .+?Constructor\]$/;
-
-/** Used for built-in method references. */
-var funcProto$1$1 = Function.prototype,
-    objectProto$2$1 = Object.prototype;
-
-/** Used to resolve the decompiled source of functions. */
-var funcToString$1$1 = funcProto$1$1.toString;
-
-/** Used to check objects for own properties. */
-var hasOwnProperty$1$1 = objectProto$2$1.hasOwnProperty;
-
-/** Used to detect if a method is native. */
-var reIsNative$1 = RegExp('^' +
-  funcToString$1$1.call(hasOwnProperty$1$1).replace(reRegExpChar$1, '\\$&')
-  .replace(/hasOwnProperty|(function).*?(?=\\\()| for .+?(?=\\\])/g, '$1.*?') + '$'
-);
-
-/**
- * The base implementation of `_.isNative` without bad shim checks.
- *
- * @private
- * @param {*} value The value to check.
- * @returns {boolean} Returns `true` if `value` is a native function,
- *  else `false`.
- */
-function baseIsNative$1(value) {
-  if (!isObject$1(value) || isMasked$1(value)) {
-    return false;
-  }
-  var pattern = isFunction$1(value) ? reIsNative$1 : reIsHostCtor$1;
-  return pattern.test(toSource$1(value));
-}
-
-/**
- * Gets the value at `key` of `object`.
- *
- * @private
- * @param {Object} [object] The object to query.
- * @param {string} key The key of the property to get.
- * @returns {*} Returns the property value.
- */
-function getValue$1(object, key) {
-  return object == null ? undefined : object[key];
-}
-
-/**
- * Gets the native function at `key` of `object`.
- *
- * @private
- * @param {Object} object The object to query.
- * @param {string} key The key of the method to get.
- * @returns {*} Returns the function if it's native, else `undefined`.
- */
-function getNative$1(object, key) {
-  var value = getValue$1(object, key);
-  return baseIsNative$1(value) ? value : undefined;
-}
-
-/**
- * Performs a
- * [`SameValueZero`](http://ecma-international.org/ecma-262/7.0/#sec-samevaluezero)
- * comparison between two values to determine if they are equivalent.
- *
- * @static
- * @memberOf _
- * @since 4.0.0
- * @category Lang
- * @param {*} value The value to compare.
- * @param {*} other The other value to compare.
- * @returns {boolean} Returns `true` if the values are equivalent, else `false`.
- * @example
- *
- * var object = { 'a': 1 };
- * var other = { 'a': 1 };
- *
- * _.eq(object, object);
- * // => true
- *
- * _.eq(object, other);
- * // => false
- *
- * _.eq('a', 'a');
- * // => true
- *
- * _.eq('a', Object('a'));
- * // => false
- *
- * _.eq(NaN, NaN);
- * // => true
- */
-function eq$1(value, other) {
-  return value === other || (value !== value && other !== other);
-}
-
-/* Built-in method references that are verified to be native. */
-var nativeCreate$1 = getNative$1(Object, 'create');
-
-/**
- * Removes all key-value entries from the hash.
- *
- * @private
- * @name clear
- * @memberOf Hash
- */
-function hashClear$1() {
-  this.__data__ = nativeCreate$1 ? nativeCreate$1(null) : {};
-  this.size = 0;
-}
-
-/**
- * Removes `key` and its value from the hash.
- *
- * @private
- * @name delete
- * @memberOf Hash
- * @param {Object} hash The hash to modify.
- * @param {string} key The key of the value to remove.
- * @returns {boolean} Returns `true` if the entry was removed, else `false`.
- */
-function hashDelete$1(key) {
-  var result = this.has(key) && delete this.__data__[key];
-  this.size -= result ? 1 : 0;
-  return result;
-}
-
-/** Used to stand-in for `undefined` hash values. */
-var HASH_UNDEFINED$2 = '__lodash_hash_undefined__';
-
-/** Used for built-in method references. */
-var objectProto$3$1 = Object.prototype;
-
-/** Used to check objects for own properties. */
-var hasOwnProperty$2$1 = objectProto$3$1.hasOwnProperty;
-
-/**
- * Gets the hash value for `key`.
- *
- * @private
- * @name get
- * @memberOf Hash
- * @param {string} key The key of the value to get.
- * @returns {*} Returns the entry value.
- */
-function hashGet$1(key) {
-  var data = this.__data__;
-  if (nativeCreate$1) {
-    var result = data[key];
-    return result === HASH_UNDEFINED$2 ? undefined : result;
-  }
-  return hasOwnProperty$2$1.call(data, key) ? data[key] : undefined;
-}
-
-/** Used for built-in method references. */
-var objectProto$4$1 = Object.prototype;
-
-/** Used to check objects for own properties. */
-var hasOwnProperty$3$1 = objectProto$4$1.hasOwnProperty;
-
-/**
- * Checks if a hash value for `key` exists.
- *
- * @private
- * @name has
- * @memberOf Hash
- * @param {string} key The key of the entry to check.
- * @returns {boolean} Returns `true` if an entry for `key` exists, else `false`.
- */
-function hashHas$1(key) {
-  var data = this.__data__;
-  return nativeCreate$1 ? (data[key] !== undefined) : hasOwnProperty$3$1.call(data, key);
-}
-
-/** Used to stand-in for `undefined` hash values. */
-var HASH_UNDEFINED$1$1 = '__lodash_hash_undefined__';
-
-/**
- * Sets the hash `key` to `value`.
- *
- * @private
- * @name set
- * @memberOf Hash
- * @param {string} key The key of the value to set.
- * @param {*} value The value to set.
- * @returns {Object} Returns the hash instance.
- */
-function hashSet$1(key, value) {
-  var data = this.__data__;
-  this.size += this.has(key) ? 0 : 1;
-  data[key] = (nativeCreate$1 && value === undefined) ? HASH_UNDEFINED$1$1 : value;
-  return this;
-}
-
-/**
- * Creates a hash object.
- *
- * @private
- * @constructor
- * @param {Array} [entries] The key-value pairs to cache.
- */
-function Hash$1(entries) {
-  var index = -1,
-      length = entries == null ? 0 : entries.length;
-
-  this.clear();
-  while (++index < length) {
-    var entry = entries[index];
-    this.set(entry[0], entry[1]);
-  }
-}
-
-// Add methods to `Hash`.
-Hash$1.prototype.clear = hashClear$1;
-Hash$1.prototype['delete'] = hashDelete$1;
-Hash$1.prototype.get = hashGet$1;
-Hash$1.prototype.has = hashHas$1;
-Hash$1.prototype.set = hashSet$1;
-
-/**
- * Removes all key-value entries from the list cache.
- *
- * @private
- * @name clear
- * @memberOf ListCache
- */
-function listCacheClear$1() {
-  this.__data__ = [];
-  this.size = 0;
-}
-
-/**
- * Gets the index at which the `key` is found in `array` of key-value pairs.
- *
- * @private
- * @param {Array} array The array to inspect.
- * @param {*} key The key to search for.
- * @returns {number} Returns the index of the matched value, else `-1`.
- */
-function assocIndexOf$1(array, key) {
-  var length = array.length;
-  while (length--) {
-    if (eq$1(array[length][0], key)) {
-      return length;
-    }
-  }
-  return -1;
-}
-
-/** Used for built-in method references. */
-var arrayProto$1 = Array.prototype;
-
-/** Built-in value references. */
-var splice$1 = arrayProto$1.splice;
-
-/**
- * Removes `key` and its value from the list cache.
- *
- * @private
- * @name delete
- * @memberOf ListCache
- * @param {string} key The key of the value to remove.
- * @returns {boolean} Returns `true` if the entry was removed, else `false`.
- */
-function listCacheDelete$1(key) {
-  var data = this.__data__,
-      index = assocIndexOf$1(data, key);
-
-  if (index < 0) {
-    return false;
-  }
-  var lastIndex = data.length - 1;
-  if (index == lastIndex) {
-    data.pop();
-  } else {
-    splice$1.call(data, index, 1);
-  }
-  --this.size;
-  return true;
-}
-
-/**
- * Gets the list cache value for `key`.
- *
- * @private
- * @name get
- * @memberOf ListCache
- * @param {string} key The key of the value to get.
- * @returns {*} Returns the entry value.
- */
-function listCacheGet$1(key) {
-  var data = this.__data__,
-      index = assocIndexOf$1(data, key);
-
-  return index < 0 ? undefined : data[index][1];
-}
-
-/**
- * Checks if a list cache value for `key` exists.
+ * A helper method when designing relationships. In most cases when you
+ * state a "inverse property" it means that the two entities can be
+ * bi-directionly managed. If, however, you either don't want them to be
+ * or in some cases the relationship can be "lossy" and automatic bi-directional
+ * management is not possible.
  *
- * @private
- * @name has
- * @memberOf ListCache
- * @param {string} key The key of the entry to check.
- * @returns {boolean} Returns `true` if an entry for `key` exists, else `false`.
- */
-function listCacheHas$1(key) {
-  return assocIndexOf$1(this.__data__, key) > -1;
-}
-
-/**
- * Sets the list cache `key` to `value`.
- *
- * @private
- * @name set
- * @memberOf ListCache
- * @param {string} key The key of the value to set.
- * @param {*} value The value to set.
- * @returns {Object} Returns the list cache instance.
- */
-function listCacheSet$1(key, value) {
-  var data = this.__data__,
-      index = assocIndexOf$1(data, key);
-
-  if (index < 0) {
-    ++this.size;
-    data.push([key, value]);
-  } else {
-    data[index][1] = value;
-  }
-  return this;
-}
-
-/**
- * Creates an list cache object.
- *
- * @private
- * @constructor
- * @param {Array} [entries] The key-value pairs to cache.
- */
-function ListCache$1(entries) {
-  var index = -1,
-      length = entries == null ? 0 : entries.length;
-
-  this.clear();
-  while (++index < length) {
-    var entry = entries[index];
-    this.set(entry[0], entry[1]);
-  }
-}
-
-// Add methods to `ListCache`.
-ListCache$1.prototype.clear = listCacheClear$1;
-ListCache$1.prototype['delete'] = listCacheDelete$1;
-ListCache$1.prototype.get = listCacheGet$1;
-ListCache$1.prototype.has = listCacheHas$1;
-ListCache$1.prototype.set = listCacheSet$1;
-
-/* Built-in method references that are verified to be native. */
-var Map$2 = getNative$1(root$1, 'Map');
-
-/**
- * Removes all key-value entries from the map.
- *
- * @private
- * @name clear
- * @memberOf MapCache
- */
-function mapCacheClear$1() {
-  this.size = 0;
-  this.__data__ = {
-    'hash': new Hash$1,
-    'map': new (Map$2 || ListCache$1),
-    'string': new Hash$1
-  };
-}
-
-/**
- * Checks if `value` is suitable for use as unique object key.
- *
- * @private
- * @param {*} value The value to check.
- * @returns {boolean} Returns `true` if `value` is suitable, else `false`.
- */
-function isKeyable$1(value) {
-  var type = typeof value;
-  return (type == 'string' || type == 'number' || type == 'symbol' || type == 'boolean')
-    ? (value !== '__proto__')
-    : (value === null);
-}
-
-/**
- * Gets the data for `map`.
- *
- * @private
- * @param {Object} map The map to query.
- * @param {string} key The reference key.
- * @returns {*} Returns the map data.
- */
-function getMapData$1(map, key) {
-  var data = map.__data__;
-  return isKeyable$1(key)
-    ? data[typeof key == 'string' ? 'string' : 'hash']
-    : data.map;
-}
-
-/**
- * Removes `key` and its value from the map.
- *
- * @private
- * @name delete
- * @memberOf MapCache
- * @param {string} key The key of the value to remove.
- * @returns {boolean} Returns `true` if the entry was removed, else `false`.
- */
-function mapCacheDelete$1(key) {
-  var result = getMapData$1(this, key)['delete'](key);
-  this.size -= result ? 1 : 0;
-  return result;
-}
-
-/**
- * Gets the map value for `key`.
- *
- * @private
- * @name get
- * @memberOf MapCache
- * @param {string} key The key of the value to get.
- * @returns {*} Returns the entry value.
- */
-function mapCacheGet$1(key) {
-  return getMapData$1(this, key).get(key);
-}
-
-/**
- * Checks if a map value for `key` exists.
- *
- * @private
- * @name has
- * @memberOf MapCache
- * @param {string} key The key of the entry to check.
- * @returns {boolean} Returns `true` if an entry for `key` exists, else `false`.
- */
-function mapCacheHas$1(key) {
-  return getMapData$1(this, key).has(key);
-}
-
-/**
- * Sets the map `key` to `value`.
- *
- * @private
- * @name set
- * @memberOf MapCache
- * @param {string} key The key of the value to set.
- * @param {*} value The value to set.
- * @returns {Object} Returns the map cache instance.
- */
-function mapCacheSet$1(key, value) {
-  var data = getMapData$1(this, key),
-      size = data.size;
-
-  data.set(key, value);
-  this.size += data.size == size ? 0 : 1;
-  return this;
-}
-
-/**
- * Creates a map cache object to store key-value pairs.
- *
- * @private
- * @constructor
- * @param {Array} [entries] The key-value pairs to cache.
- */
-function MapCache$1(entries) {
-  var index = -1,
-      length = entries == null ? 0 : entries.length;
-
-  this.clear();
-  while (++index < length) {
-    var entry = entries[index];
-    this.set(entry[0], entry[1]);
-  }
-}
-
-// Add methods to `MapCache`.
-MapCache$1.prototype.clear = mapCacheClear$1;
-MapCache$1.prototype['delete'] = mapCacheDelete$1;
-MapCache$1.prototype.get = mapCacheGet$1;
-MapCache$1.prototype.has = mapCacheHas$1;
-MapCache$1.prototype.set = mapCacheSet$1;
-
-/** Error message constants. */
-var FUNC_ERROR_TEXT$1 = 'Expected a function';
-
-/**
- * Creates a function that memoizes the result of `func`. If `resolver` is
- * provided, it determines the cache key for storing the result based on the
- * arguments provided to the memoized function. By default, the first argument
- * provided to the memoized function is used as the map cache key. The `func`
- * is invoked with the `this` binding of the memoized function.
- *
- * **Note:** The cache is exposed as the `cache` property on the memoized
- * function. Its creation may be customized by replacing the `_.memoize.Cache`
- * constructor with one whose instances implement the
- * [`Map`](http://ecma-international.org/ecma-262/7.0/#sec-properties-of-the-map-prototype-object)
- * method interface of `clear`, `delete`, `get`, `has`, and `set`.
- *
- * @static
- * @memberOf _
- * @since 0.1.0
- * @category Function
- * @param {Function} func The function to have its output memoized.
- * @param {Function} [resolver] The function to resolve the cache key.
- * @returns {Function} Returns the new memoized function.
- * @example
- *
- * var object = { 'a': 1, 'b': 2 };
- * var other = { 'c': 3, 'd': 4 };
- *
- * var values = _.memoize(_.values);
- * values(object);
- * // => [1, 2]
- *
- * values(other);
- * // => [3, 4]
- *
- * object.a = 2;
- * values(object);
- * // => [1, 2]
- *
- * // Modify the result cache.
- * values.cache.set(object, ['a', 'b']);
- * values(object);
- * // => ['a', 'b']
- *
- * // Replace `_.memoize.Cache`.
- * _.memoize.Cache = WeakMap;
- */
-function memoize$1(func, resolver) {
-  if (typeof func != 'function' || (resolver != null && typeof resolver != 'function')) {
-    throw new TypeError(FUNC_ERROR_TEXT$1);
-  }
-  var memoized = function() {
-    var args = arguments,
-        key = resolver ? resolver.apply(this, args) : args[0],
-        cache = memoized.cache;
-
-    if (cache.has(key)) {
-      return cache.get(key);
-    }
-    var result = func.apply(this, args);
-    memoized.cache = cache.set(key, result) || cache;
-    return result;
-  };
-  memoized.cache = new (memoize$1.Cache || MapCache$1);
-  return memoized;
-}
-
-// Expose `MapCache`.
-memoize$1.Cache = MapCache$1;
-
-/** Used as the maximum memoize cache size. */
-var MAX_MEMOIZE_SIZE$1 = 500;
-
-/**
- * A specialized version of `_.memoize` which clears the memoized function's
- * cache when it exceeds `MAX_MEMOIZE_SIZE`.
- *
- * @private
- * @param {Function} func The function to have its output memoized.
- * @returns {Function} Returns the new memoized function.
- */
-function memoizeCapped$1(func) {
-  var result = memoize$1(func, function(key) {
-    if (cache.size === MAX_MEMOIZE_SIZE$1) {
-      cache.clear();
-    }
-    return key;
-  });
-
-  var cache = result.cache;
-  return result;
-}
-
-/** Used to match property names within property paths. */
-var rePropName$1 = /[^.[\]]+|\[(?:(-?\d+(?:\.\d+)?)|(["'])((?:(?!\2)[^\\]|\\.)*?)\2)\]|(?=(?:\.|\[\])(?:\.|\[\]|$))/g;
-
-/** Used to match backslashes in property paths. */
-var reEscapeChar$1 = /\\(\\)?/g;
-
-/**
- * Converts `string` to a property path array.
- *
- * @private
- * @param {string} string The string to convert.
- * @returns {Array} Returns the property path array.
- */
-var stringToPath$1 = memoizeCapped$1(function(string) {
-  var result = [];
-  if (string.charCodeAt(0) === 46 /* . */) {
-    result.push('');
-  }
-  string.replace(rePropName$1, function(match, number, quote, subString) {
-    result.push(quote ? subString.replace(reEscapeChar$1, '$1') : (number || match));
-  });
-  return result;
-});
-
-function removeIdPropertyFromHash(hash, idProp = "id") {
-    const output = {};
-    Object.keys(hash).map((objId) => {
-        const input = hash[objId];
-        output[objId] = {};
-        Object.keys(input).map((prop) => {
-            if (prop !== idProp) {
-                output[objId][prop] = input[prop];
-            }
-        });
-    });
-    return output;
-}
-/**
- * hashToArray
- *
- * Converts a hash data structure of {key: value, key2: value2} to an
- * array of [ {id, value}, {id2, value2} ]. This should happen regardless
- * to whether the values are themselves hashes (which they often are) or
- * scalar values.
- *
- * The one edge case is where all the hashes passed in have a value of "true"
- * which indicates that this really just a simple value based array encoded as
- * a hash (as is often the case in Firebase for FK relationships).
- *
- * @param hashObj an object of keys that point to some data payload
- * @param ___key__ the property name on the converted array-of-hashes which will contain the key value; by default this is "id"
- */
-function hashToArray(hashObj, __key__ = "id") {
-    if (hashObj && typeof hashObj !== "object") {
-        throw new Error("Cant convert hash-to-array because hash was not passed in: " + hashObj);
-    }
-    const hash = Object.assign({}, hashObj);
-    const results = [];
-    const isHashArray = Object.keys(hash).every((i) => hash[i] === true);
-    const isHashValue = Object.keys(hash).every((i) => typeof hash[i] !== "object");
-    Object.keys(hash).map((id) => {
-        const obj = typeof hash[id] === "object"
-            ? Object.assign(Object.assign({}, hash[id]), { [__key__]: id }) : isHashArray
-            ? id
-            : { [__key__]: id, value: hash[id] };
-        results.push(obj);
-    });
-    return results;
-}
-/**
- * arrayToHash
- *
- * Converts an array of things into a hash/dictionary where "things" is a consistent
- * type of data structure (can be either object or primitive)
- *
- * @param arr an array of a particular type
- * @param keyProperty the property that will be used as the dictionaries key; if false
- * then will assign a firebase pushkey
- * @param removeIdProperty allow you to optionally exclude the `id` from the object
- * as it is redundant to the `key` of the hash. By default though, this is _not_ done as
- * Firemodel benefits (and expects) from this duplication.
- */
-function arrayToHash(arr, keyProperty, removeIdProperty = false) {
-    if (arr.length === 0) {
-        return {};
-    }
-    const isScalar = typeof arr[0] === "object" ? false : true;
-    if (isScalar && keyProperty) {
-        const e = new Error(`You can not have an array of primitive values AND set a keyProperty!`);
-        e.name = "NotAllowed";
-        throw e;
-    }
-    if (!keyProperty && !isScalar) {
-        if (arr[0].hasOwnProperty("id")) {
-            keyProperty = "id";
-        }
-        else {
-            const e = new Error(`Tried to default to a keyProperty of "id" but that property does not appear to be in the array passed in`);
-            e.name = "NotAllowed";
-            throw e;
-        }
-    }
-    if (!Array.isArray(arr)) {
-        const e = new Error(`arrayToHash: input was not an array!`);
-        e.name = "NotAllowed";
-        throw e;
-    }
-    const output = arr.reduce((prev, curr) => {
-        const key = isScalar
-            ? curr
-            : typeof keyProperty === "function"
-                ? keyProperty(curr)
-                : curr[keyProperty];
-        return isScalar
-            ? Object.assign(Object.assign({}, prev), { [key]: true }) : Object.assign(Object.assign({}, prev), { [key]: curr });
-    }, {});
-    return removeIdProperty ? removeIdPropertyFromHash(output) : output;
-}
-
-function isProperty(modelKlass) {
-    return (prop) => {
-        return getModelProperty(modelKlass)(prop) ? true : false;
-    };
-}
-/** Properties accumlated by propertyDecorators  */
-const propertiesByModel = {};
-/** lookup meta data for schema properties */
-function getModelProperty(model) {
-    const className = model.constructor.name;
-    const propsForModel = getProperties(model);
-    return (prop) => {
-        return propsForModel.find(value => {
-            return value.property === prop;
-        });
-    };
-}
-/**
- * Gets all the properties for a given model
- *
- * @param modelConstructor the schema object which is being looked up
- */
-function getProperties(model) {
-    const modelName = model.constructor.name;
-    const properties = hashToArray(propertiesByModel[modelName], "property") || [];
-    let parent = Object.getPrototypeOf(model.constructor);
-    while (parent.name) {
-        const subClass = new parent();
-        const subClassName = subClass.constructor.name;
-        properties.push(...hashToArray(propertiesByModel[subClassName], "property"));
-        parent = Object.getPrototypeOf(subClass.constructor);
-    }
-    return properties;
-}
-
-const equal = require("fast-deep-equal/es6");
-function firstKey(thingy) {
-    return Object.keys(thingy)[0];
-}
-function compareHashes(from, to, 
-/**
- * optionally explicitly state properties so that relationships
- * can be filtered away
- */
-modelProps) {
-    const results = {
-        added: [],
-        changed: [],
-        removed: [],
-    };
-    from = from ? from : {};
-    to = to ? to : {};
-    let keys = Array.from(new Set([
-        ...Object.keys(from),
-        ...Object.keys(to),
-    ]))
-        // META should never be part of comparison
-        .filter((i) => i !== "META")
-        // neither should private properties indicated by underscore
-        .filter((i) => i.slice(0, 1) !== "_");
-    if (modelProps) {
-        keys = keys.filter((i) => modelProps.includes(i));
-    }
-    keys.forEach((i) => {
-        if (!to[i]) {
-            results.added.push(i);
-        }
-        else if (from[i] === null) {
-            results.removed.push(i);
-        }
-        else if (!equal(from[i], to[i])) {
-            results.changed.push(i);
-        }
-    });
-    return results;
-}
-function getAllPropertiesFromClassStructure(model) {
-    const modelName = model.constructor.name;
-    const properties = hashToArray(propertiesByModel[modelName], "property") || [];
-    let parent = Object.getPrototypeOf(model.constructor);
-    while (parent.name) {
-        const subClass = new parent();
-        const subClassName = subClass.constructor.name;
-        properties.push(...hashToArray(propertiesByModel[subClassName], "property"));
-        parent = Object.getPrototypeOf(subClass.constructor);
-    }
-    return properties.map((p) => p.property);
-}
-function withoutMetaOrPrivate(model) {
-    if (model && model.META) {
-        model = { ...model };
-        delete model.META;
-    }
-    return model;
-}
-function capitalize(str) {
-    return str ? str.slice(0, 1).toUpperCase() + str.slice(1) : "";
-}
-function lowercase(str) {
-    return str ? str.slice(0, 1).toLowerCase() + str.slice(1) : "";
-}
-
-/**
- * Adds meta data to a given "property" on a model. In this
- * case we mean property to be either a strict property or
- * a relationship.
- *
- * @param context The meta information as a dictionary/hash
- * @param modelRollup a collection object which maintains
- * a dictionary of properties
- */
-const propertyReflector = (context = {}, 
-/**
- * if you want this to be rollup up as an dictionary by prop;
- * to be exposed in the model (or otherwise)
- */
-modelRollup) => (modelKlass, key) => {
-    const modelName = modelKlass.constructor.name;
-    const reflect = Reflect.getMetadata("design:type", modelKlass, key) || {};
-    const meta = {
-        ...(Reflect.getMetadata(key, modelKlass) || {}),
-        type: lowercase(reflect.name),
-        ...context,
-        property: key,
-    };
-    Reflect.defineMetadata(key, meta, modelKlass);
-    if (modelRollup) {
-        const modelAndProp = modelName + "." + key;
-        set(modelRollup, modelAndProp, {
-            ...get(modelRollup, modelAndProp),
-            ...meta,
-        });
-    }
-};
-
-const relationshipsByModel = {};
-function isRelationship(modelKlass) {
-    return (prop) => {
-        return getModelRelationship(modelKlass)(prop) ? true : false;
-    };
-}
-function getModelRelationship(model) {
-    const relnsForModel = getRelationships(model);
-    const className = model.constructor.name;
-    return (prop) => {
-        return relnsForModel.find(value => {
-            return value.property === prop;
-        });
-    };
-}
-/**
- * Gets all the relationships for a given model
- */
-function getRelationships(model) {
-    const modelName = model.constructor.name;
-    const properties = hashToArray(relationshipsByModel[modelName], "property") || [];
-    let parent = Object.getPrototypeOf(model.constructor);
-    while (parent.name) {
-        const subClass = new parent();
-        const subClassName = subClass.constructor.name;
-        properties.push(...hashToArray(relationshipsByModel[subClassName], "property"));
-        parent = Object.getPrototypeOf(subClass.constructor);
-    }
-    return properties;
-}
-
-/**
- * Base **Error** for **FireModel**. Takes _message_ and _type/subtype_ as
- * parameters. The code will be the `subtype`; the name is both.
- */
-class FireModelError extends Error {
-    constructor(message, classification = "firemodel/error") {
-        super(message);
-        this.firemodel = true;
-        const parts = classification.split("/");
-        const [type, subType] = parts.length === 1 ? ["firemodel", parts[0]] : parts;
-        this.name = `${type}/${subType}`;
-        this.code = subType;
-    }
-}
-
-class DecoratorProblem extends FireModelError {
-    constructor(decorator, e, context) {
-        super("", "firemodel/decorator-problem");
-        const errText = typeof e === "string" ? e : e.message;
-        this.message = `There was a problem in the "${decorator}" decorator. ${errText}\n${context}`;
-    }
-}
-
-const registeredModels = {};
-/**
- * Registered a model's constructor so that it can be used by name. This
- * is sometime necessary due to circular dependencies.
- *
- * @param model a class constructor derived from `Model`
- */
-function modelRegister(...models) {
-    models.forEach(model => {
-        if (!model) {
-            throw new FireModelError(`An attempt was made to register a Model subclass but the passed in constructor was undefined!${models.length > 0
-                ? ` [ ${models.length} models being registed during this call ]`
-                : ""}`, "firemodel/not-allowed");
-        }
-        if (typeof model !== "function" || !model.constructor) {
-            throw new FireModelError(`An attempt was made to register a Model subclass but the passed in constructor was the wrong type [ ${typeof model} ]!\nmodel passed was: ${model}`, "firemodel/not-allowed");
-        }
-        const modelName = new model().constructor.name;
-        registeredModels[modelName] = model;
-    });
-}
-function listRegisteredModels() {
-    return Object.keys(registeredModels);
-}
-function modelRegistryLookup(name) {
-    const model = registeredModels[name];
-    if (!name) {
-        throw new FireModelError(`Look failed because the model ${name} was not registered!`, "firemodel/not-allowed");
-    }
-    return model;
-}
-/**
- * When you are building relationships to other `Model`'s it is often
- * benefitial to just pass in the name of the `Model` rather than it's
- * constructor as this avoids the dreaded "circular dependency" problem
- * that occur when you try to pass in class constructors which depend
- * on one another.
- */
-const modelNameLookup = (name) => () => {
-    return modelRegistryLookup(name);
-};
-/**
- * When you are defining a _relationship_ between `Model`'s it sometimes
- * useful to just pass in the constructor to the other `Model`. This is in
- * contrast to just passing a string name of the model.
- *
- * The advantage here is that the external model does not need to be
- * "registered" separately whereas with a string name it would have to be.
- */
-const modelConstructorLookup = (constructor) => () => {
-    // TODO: remove the "any"
-    return isConstructable(constructor) ? constructor : constructor();
-};
-// tslint:disable-next-line: ban-types
-function isConstructable(fn) {
-    try {
-        const f = new fn();
-        return true;
-    }
-    catch (e) {
-        return false;
-    }
-}
-
-function hasMany(
-/**
- * either a _string_ representing the Model's class name
- * or a _constructor_ for the Model class
- *
- * In order to support prior implementations we include the
- * possibility that a user of this API will pass in a _function_
- * to a _constructor_. This approach is now deprecated.
- */
-fkClass, inverse) {
-    try {
-        const fkConstructor = typeof fkClass === "string"
-            ? modelNameLookup(fkClass)
-            : modelConstructorLookup(fkClass);
-        let inverseProperty;
-        let directionality;
-        if (Array.isArray(inverse)) {
-            [inverseProperty, directionality] = inverse;
-        }
-        else {
-            inverseProperty = inverse;
-            directionality = inverse ? "bi-directional" : "one-way";
-        }
-        const payload = {
-            isRelationship: true,
-            isProperty: false,
-            relType: "hasMany",
-            directionality,
-            fkConstructor
-        };
-        if (inverseProperty) {
-            payload.inverseProperty = inverseProperty;
-        }
-        return propertyReflector({ ...payload, type: "Object" }, relationshipsByModel);
-    }
-    catch (e) {
-        throw new DecoratorProblem("hasMany", e, { inverse });
-    }
+ * When you find yourself in this situation you can use this function in the
+ * following manner:
+```typescript
+export default MyModel extends Model {
+  @hasMany(Person, OneWay('children')) parent: fk;
 }
-
-function belongsTo(
-/**
- * either a _string_ representing the Model's class name
- * or a _constructor_ for the Model class.
- *
- * In order to support prior implementations we include the
- * possibility that a user of this API will pass in a _function_
- * to a _constructor_. This approach is now deprecated.
+```
  */
-fkClass, inverse) {
-    try {
-        const fkConstructor = typeof fkClass === "string"
-            ? modelNameLookup(fkClass)
-            : modelConstructorLookup(fkClass);
-        let inverseProperty;
-        let directionality;
-        if (Array.isArray(inverse)) {
-            [inverseProperty, directionality] = inverse;
-        }
-        else {
-            inverseProperty = inverse;
-            directionality = inverse ? "bi-directional" : "one-way";
-        }
-        const payload = {
-            isRelationship: true,
-            isProperty: false,
-            relType: "hasOne",
-            directionality,
-            fkConstructor
-        };
-        if (inverseProperty) {
-            payload.inverseProperty = inverseProperty;
-        }
-        return propertyReflector({ ...payload, type: "String" }, relationshipsByModel);
-    }
-    catch (e) {
-        throw new DecoratorProblem("hasOne", e, { inverse });
-    }
+function OneWay(inverseProperty) {
+    return [inverseProperty, "one-way"];
 }
-const ownedBy = belongsTo;
-const hasOne = belongsTo;
 
 /*! *****************************************************************************
 Copyright (C) Microsoft. All rights reserved.
@@ -3621,31 +1152,2296 @@ var Reflect$1;
     });
 })(Reflect$1 || (Reflect$1 = {}));
 
-/** DB Indexes accumlated by index decorators */
-const indexesForModel = {};
+/** Detect free variable `global` from Node.js. */
+var freeGlobal = typeof global == 'object' && global && global.Object === Object && global;
+
+/** Detect free variable `self`. */
+var freeSelf = typeof self == 'object' && self && self.Object === Object && self;
+
+/** Used as a reference to the global object. */
+var root = freeGlobal || freeSelf || Function('return this')();
+
+/** Built-in value references. */
+var Symbol$1 = root.Symbol;
+
+/** Used for built-in method references. */
+var objectProto = Object.prototype;
+
+/** Used to check objects for own properties. */
+var hasOwnProperty = objectProto.hasOwnProperty;
+
 /**
- * Gets all the db indexes for a given model
+ * Used to resolve the
+ * [`toStringTag`](http://ecma-international.org/ecma-262/7.0/#sec-object.prototype.tostring)
+ * of values.
  */
-function getDbIndexes(modelKlass) {
-    const modelName = modelKlass.constructor.name;
-    return modelName === "Model"
-        ? hashToArray(indexesForModel[modelName])
-        : (hashToArray(indexesForModel[modelName]) || []).concat(hashToArray(indexesForModel.Model));
+var nativeObjectToString = objectProto.toString;
+
+/** Built-in value references. */
+var symToStringTag = Symbol$1 ? Symbol$1.toStringTag : undefined;
+
+/**
+ * A specialized version of `baseGetTag` which ignores `Symbol.toStringTag` values.
+ *
+ * @private
+ * @param {*} value The value to query.
+ * @returns {string} Returns the raw `toStringTag`.
+ */
+function getRawTag(value) {
+  var isOwn = hasOwnProperty.call(value, symToStringTag),
+      tag = value[symToStringTag];
+
+  try {
+    value[symToStringTag] = undefined;
+    var unmasked = true;
+  } catch (e) {}
+
+  var result = nativeObjectToString.call(value);
+  if (unmasked) {
+    if (isOwn) {
+      value[symToStringTag] = tag;
+    } else {
+      delete value[symToStringTag];
+    }
+  }
+  return result;
 }
-const index = propertyReflector({
-    isIndex: true,
-    isUniqueIndex: false
-}, indexesForModel);
-const uniqueIndex = propertyReflector({
-    isIndex: true,
-    isUniqueIndex: true
-}, indexesForModel);
+
+/** Used for built-in method references. */
+var objectProto$1 = Object.prototype;
+
+/**
+ * Used to resolve the
+ * [`toStringTag`](http://ecma-international.org/ecma-262/7.0/#sec-object.prototype.tostring)
+ * of values.
+ */
+var nativeObjectToString$1 = objectProto$1.toString;
+
+/**
+ * Converts `value` to a string using `Object.prototype.toString`.
+ *
+ * @private
+ * @param {*} value The value to convert.
+ * @returns {string} Returns the converted string.
+ */
+function objectToString(value) {
+  return nativeObjectToString$1.call(value);
+}
+
+/** `Object#toString` result references. */
+var nullTag = '[object Null]',
+    undefinedTag = '[object Undefined]';
+
+/** Built-in value references. */
+var symToStringTag$1 = Symbol$1 ? Symbol$1.toStringTag : undefined;
+
+/**
+ * The base implementation of `getTag` without fallbacks for buggy environments.
+ *
+ * @private
+ * @param {*} value The value to query.
+ * @returns {string} Returns the `toStringTag`.
+ */
+function baseGetTag(value) {
+  if (value == null) {
+    return value === undefined ? undefinedTag : nullTag;
+  }
+  return (symToStringTag$1 && symToStringTag$1 in Object(value))
+    ? getRawTag(value)
+    : objectToString(value);
+}
+
+/** Used to convert symbols to primitives and strings. */
+var symbolProto = Symbol$1 ? Symbol$1.prototype : undefined,
+    symbolToString = symbolProto ? symbolProto.toString : undefined;
+
+/**
+ * Checks if `value` is the
+ * [language type](http://www.ecma-international.org/ecma-262/7.0/#sec-ecmascript-language-types)
+ * of `Object`. (e.g. arrays, functions, objects, regexes, `new Number(0)`, and `new String('')`)
+ *
+ * @static
+ * @memberOf _
+ * @since 0.1.0
+ * @category Lang
+ * @param {*} value The value to check.
+ * @returns {boolean} Returns `true` if `value` is an object, else `false`.
+ * @example
+ *
+ * _.isObject({});
+ * // => true
+ *
+ * _.isObject([1, 2, 3]);
+ * // => true
+ *
+ * _.isObject(_.noop);
+ * // => true
+ *
+ * _.isObject(null);
+ * // => false
+ */
+function isObject(value) {
+  var type = typeof value;
+  return value != null && (type == 'object' || type == 'function');
+}
+
+/** `Object#toString` result references. */
+var asyncTag = '[object AsyncFunction]',
+    funcTag = '[object Function]',
+    genTag = '[object GeneratorFunction]',
+    proxyTag = '[object Proxy]';
+
+/**
+ * Checks if `value` is classified as a `Function` object.
+ *
+ * @static
+ * @memberOf _
+ * @since 0.1.0
+ * @category Lang
+ * @param {*} value The value to check.
+ * @returns {boolean} Returns `true` if `value` is a function, else `false`.
+ * @example
+ *
+ * _.isFunction(_);
+ * // => true
+ *
+ * _.isFunction(/abc/);
+ * // => false
+ */
+function isFunction(value) {
+  if (!isObject(value)) {
+    return false;
+  }
+  // The use of `Object#toString` avoids issues with the `typeof` operator
+  // in Safari 9 which returns 'object' for typed arrays and other constructors.
+  var tag = baseGetTag(value);
+  return tag == funcTag || tag == genTag || tag == asyncTag || tag == proxyTag;
+}
+
+/** Used to detect overreaching core-js shims. */
+var coreJsData = root['__core-js_shared__'];
+
+/** Used to detect methods masquerading as native. */
+var maskSrcKey = (function() {
+  var uid = /[^.]+$/.exec(coreJsData && coreJsData.keys && coreJsData.keys.IE_PROTO || '');
+  return uid ? ('Symbol(src)_1.' + uid) : '';
+}());
+
+/**
+ * Checks if `func` has its source masked.
+ *
+ * @private
+ * @param {Function} func The function to check.
+ * @returns {boolean} Returns `true` if `func` is masked, else `false`.
+ */
+function isMasked(func) {
+  return !!maskSrcKey && (maskSrcKey in func);
+}
+
+/** Used for built-in method references. */
+var funcProto = Function.prototype;
+
+/** Used to resolve the decompiled source of functions. */
+var funcToString = funcProto.toString;
+
+/**
+ * Converts `func` to its source code.
+ *
+ * @private
+ * @param {Function} func The function to convert.
+ * @returns {string} Returns the source code.
+ */
+function toSource(func) {
+  if (func != null) {
+    try {
+      return funcToString.call(func);
+    } catch (e) {}
+    try {
+      return (func + '');
+    } catch (e) {}
+  }
+  return '';
+}
+
+/**
+ * Used to match `RegExp`
+ * [syntax characters](http://ecma-international.org/ecma-262/7.0/#sec-patterns).
+ */
+var reRegExpChar = /[\\^$.*+?()[\]{}|]/g;
+
+/** Used to detect host constructors (Safari). */
+var reIsHostCtor = /^\[object .+?Constructor\]$/;
+
+/** Used for built-in method references. */
+var funcProto$1 = Function.prototype,
+    objectProto$2 = Object.prototype;
+
+/** Used to resolve the decompiled source of functions. */
+var funcToString$1 = funcProto$1.toString;
+
+/** Used to check objects for own properties. */
+var hasOwnProperty$1 = objectProto$2.hasOwnProperty;
+
+/** Used to detect if a method is native. */
+var reIsNative = RegExp('^' +
+  funcToString$1.call(hasOwnProperty$1).replace(reRegExpChar, '\\$&')
+  .replace(/hasOwnProperty|(function).*?(?=\\\()| for .+?(?=\\\])/g, '$1.*?') + '$'
+);
+
+/**
+ * The base implementation of `_.isNative` without bad shim checks.
+ *
+ * @private
+ * @param {*} value The value to check.
+ * @returns {boolean} Returns `true` if `value` is a native function,
+ *  else `false`.
+ */
+function baseIsNative(value) {
+  if (!isObject(value) || isMasked(value)) {
+    return false;
+  }
+  var pattern = isFunction(value) ? reIsNative : reIsHostCtor;
+  return pattern.test(toSource(value));
+}
+
+/**
+ * Gets the value at `key` of `object`.
+ *
+ * @private
+ * @param {Object} [object] The object to query.
+ * @param {string} key The key of the property to get.
+ * @returns {*} Returns the property value.
+ */
+function getValue(object, key) {
+  return object == null ? undefined : object[key];
+}
+
+/**
+ * Gets the native function at `key` of `object`.
+ *
+ * @private
+ * @param {Object} object The object to query.
+ * @param {string} key The key of the method to get.
+ * @returns {*} Returns the function if it's native, else `undefined`.
+ */
+function getNative(object, key) {
+  var value = getValue(object, key);
+  return baseIsNative(value) ? value : undefined;
+}
+
+/**
+ * Performs a
+ * [`SameValueZero`](http://ecma-international.org/ecma-262/7.0/#sec-samevaluezero)
+ * comparison between two values to determine if they are equivalent.
+ *
+ * @static
+ * @memberOf _
+ * @since 4.0.0
+ * @category Lang
+ * @param {*} value The value to compare.
+ * @param {*} other The other value to compare.
+ * @returns {boolean} Returns `true` if the values are equivalent, else `false`.
+ * @example
+ *
+ * var object = { 'a': 1 };
+ * var other = { 'a': 1 };
+ *
+ * _.eq(object, object);
+ * // => true
+ *
+ * _.eq(object, other);
+ * // => false
+ *
+ * _.eq('a', 'a');
+ * // => true
+ *
+ * _.eq('a', Object('a'));
+ * // => false
+ *
+ * _.eq(NaN, NaN);
+ * // => true
+ */
+function eq(value, other) {
+  return value === other || (value !== value && other !== other);
+}
+
+/* Built-in method references that are verified to be native. */
+var nativeCreate = getNative(Object, 'create');
+
+/**
+ * Removes all key-value entries from the hash.
+ *
+ * @private
+ * @name clear
+ * @memberOf Hash
+ */
+function hashClear() {
+  this.__data__ = nativeCreate ? nativeCreate(null) : {};
+  this.size = 0;
+}
+
+/**
+ * Removes `key` and its value from the hash.
+ *
+ * @private
+ * @name delete
+ * @memberOf Hash
+ * @param {Object} hash The hash to modify.
+ * @param {string} key The key of the value to remove.
+ * @returns {boolean} Returns `true` if the entry was removed, else `false`.
+ */
+function hashDelete(key) {
+  var result = this.has(key) && delete this.__data__[key];
+  this.size -= result ? 1 : 0;
+  return result;
+}
+
+/** Used to stand-in for `undefined` hash values. */
+var HASH_UNDEFINED = '__lodash_hash_undefined__';
+
+/** Used for built-in method references. */
+var objectProto$3 = Object.prototype;
+
+/** Used to check objects for own properties. */
+var hasOwnProperty$2 = objectProto$3.hasOwnProperty;
+
+/**
+ * Gets the hash value for `key`.
+ *
+ * @private
+ * @name get
+ * @memberOf Hash
+ * @param {string} key The key of the value to get.
+ * @returns {*} Returns the entry value.
+ */
+function hashGet(key) {
+  var data = this.__data__;
+  if (nativeCreate) {
+    var result = data[key];
+    return result === HASH_UNDEFINED ? undefined : result;
+  }
+  return hasOwnProperty$2.call(data, key) ? data[key] : undefined;
+}
+
+/** Used for built-in method references. */
+var objectProto$4 = Object.prototype;
+
+/** Used to check objects for own properties. */
+var hasOwnProperty$3 = objectProto$4.hasOwnProperty;
+
+/**
+ * Checks if a hash value for `key` exists.
+ *
+ * @private
+ * @name has
+ * @memberOf Hash
+ * @param {string} key The key of the entry to check.
+ * @returns {boolean} Returns `true` if an entry for `key` exists, else `false`.
+ */
+function hashHas(key) {
+  var data = this.__data__;
+  return nativeCreate ? (data[key] !== undefined) : hasOwnProperty$3.call(data, key);
+}
+
+/** Used to stand-in for `undefined` hash values. */
+var HASH_UNDEFINED$1 = '__lodash_hash_undefined__';
+
+/**
+ * Sets the hash `key` to `value`.
+ *
+ * @private
+ * @name set
+ * @memberOf Hash
+ * @param {string} key The key of the value to set.
+ * @param {*} value The value to set.
+ * @returns {Object} Returns the hash instance.
+ */
+function hashSet(key, value) {
+  var data = this.__data__;
+  this.size += this.has(key) ? 0 : 1;
+  data[key] = (nativeCreate && value === undefined) ? HASH_UNDEFINED$1 : value;
+  return this;
+}
+
+/**
+ * Creates a hash object.
+ *
+ * @private
+ * @constructor
+ * @param {Array} [entries] The key-value pairs to cache.
+ */
+function Hash(entries) {
+  var index = -1,
+      length = entries == null ? 0 : entries.length;
+
+  this.clear();
+  while (++index < length) {
+    var entry = entries[index];
+    this.set(entry[0], entry[1]);
+  }
+}
+
+// Add methods to `Hash`.
+Hash.prototype.clear = hashClear;
+Hash.prototype['delete'] = hashDelete;
+Hash.prototype.get = hashGet;
+Hash.prototype.has = hashHas;
+Hash.prototype.set = hashSet;
+
+/**
+ * Removes all key-value entries from the list cache.
+ *
+ * @private
+ * @name clear
+ * @memberOf ListCache
+ */
+function listCacheClear() {
+  this.__data__ = [];
+  this.size = 0;
+}
+
+/**
+ * Gets the index at which the `key` is found in `array` of key-value pairs.
+ *
+ * @private
+ * @param {Array} array The array to inspect.
+ * @param {*} key The key to search for.
+ * @returns {number} Returns the index of the matched value, else `-1`.
+ */
+function assocIndexOf(array, key) {
+  var length = array.length;
+  while (length--) {
+    if (eq(array[length][0], key)) {
+      return length;
+    }
+  }
+  return -1;
+}
+
+/** Used for built-in method references. */
+var arrayProto = Array.prototype;
+
+/** Built-in value references. */
+var splice = arrayProto.splice;
+
+/**
+ * Removes `key` and its value from the list cache.
+ *
+ * @private
+ * @name delete
+ * @memberOf ListCache
+ * @param {string} key The key of the value to remove.
+ * @returns {boolean} Returns `true` if the entry was removed, else `false`.
+ */
+function listCacheDelete(key) {
+  var data = this.__data__,
+      index = assocIndexOf(data, key);
+
+  if (index < 0) {
+    return false;
+  }
+  var lastIndex = data.length - 1;
+  if (index == lastIndex) {
+    data.pop();
+  } else {
+    splice.call(data, index, 1);
+  }
+  --this.size;
+  return true;
+}
+
+/**
+ * Gets the list cache value for `key`.
+ *
+ * @private
+ * @name get
+ * @memberOf ListCache
+ * @param {string} key The key of the value to get.
+ * @returns {*} Returns the entry value.
+ */
+function listCacheGet(key) {
+  var data = this.__data__,
+      index = assocIndexOf(data, key);
+
+  return index < 0 ? undefined : data[index][1];
+}
+
+/**
+ * Checks if a list cache value for `key` exists.
+ *
+ * @private
+ * @name has
+ * @memberOf ListCache
+ * @param {string} key The key of the entry to check.
+ * @returns {boolean} Returns `true` if an entry for `key` exists, else `false`.
+ */
+function listCacheHas(key) {
+  return assocIndexOf(this.__data__, key) > -1;
+}
+
+/**
+ * Sets the list cache `key` to `value`.
+ *
+ * @private
+ * @name set
+ * @memberOf ListCache
+ * @param {string} key The key of the value to set.
+ * @param {*} value The value to set.
+ * @returns {Object} Returns the list cache instance.
+ */
+function listCacheSet(key, value) {
+  var data = this.__data__,
+      index = assocIndexOf(data, key);
+
+  if (index < 0) {
+    ++this.size;
+    data.push([key, value]);
+  } else {
+    data[index][1] = value;
+  }
+  return this;
+}
+
+/**
+ * Creates an list cache object.
+ *
+ * @private
+ * @constructor
+ * @param {Array} [entries] The key-value pairs to cache.
+ */
+function ListCache(entries) {
+  var index = -1,
+      length = entries == null ? 0 : entries.length;
+
+  this.clear();
+  while (++index < length) {
+    var entry = entries[index];
+    this.set(entry[0], entry[1]);
+  }
+}
+
+// Add methods to `ListCache`.
+ListCache.prototype.clear = listCacheClear;
+ListCache.prototype['delete'] = listCacheDelete;
+ListCache.prototype.get = listCacheGet;
+ListCache.prototype.has = listCacheHas;
+ListCache.prototype.set = listCacheSet;
+
+/* Built-in method references that are verified to be native. */
+var Map$1 = getNative(root, 'Map');
+
+/**
+ * Removes all key-value entries from the map.
+ *
+ * @private
+ * @name clear
+ * @memberOf MapCache
+ */
+function mapCacheClear() {
+  this.size = 0;
+  this.__data__ = {
+    'hash': new Hash,
+    'map': new (Map$1 || ListCache),
+    'string': new Hash
+  };
+}
+
+/**
+ * Checks if `value` is suitable for use as unique object key.
+ *
+ * @private
+ * @param {*} value The value to check.
+ * @returns {boolean} Returns `true` if `value` is suitable, else `false`.
+ */
+function isKeyable(value) {
+  var type = typeof value;
+  return (type == 'string' || type == 'number' || type == 'symbol' || type == 'boolean')
+    ? (value !== '__proto__')
+    : (value === null);
+}
+
+/**
+ * Gets the data for `map`.
+ *
+ * @private
+ * @param {Object} map The map to query.
+ * @param {string} key The reference key.
+ * @returns {*} Returns the map data.
+ */
+function getMapData(map, key) {
+  var data = map.__data__;
+  return isKeyable(key)
+    ? data[typeof key == 'string' ? 'string' : 'hash']
+    : data.map;
+}
+
+/**
+ * Removes `key` and its value from the map.
+ *
+ * @private
+ * @name delete
+ * @memberOf MapCache
+ * @param {string} key The key of the value to remove.
+ * @returns {boolean} Returns `true` if the entry was removed, else `false`.
+ */
+function mapCacheDelete(key) {
+  var result = getMapData(this, key)['delete'](key);
+  this.size -= result ? 1 : 0;
+  return result;
+}
+
+/**
+ * Gets the map value for `key`.
+ *
+ * @private
+ * @name get
+ * @memberOf MapCache
+ * @param {string} key The key of the value to get.
+ * @returns {*} Returns the entry value.
+ */
+function mapCacheGet(key) {
+  return getMapData(this, key).get(key);
+}
+
+/**
+ * Checks if a map value for `key` exists.
+ *
+ * @private
+ * @name has
+ * @memberOf MapCache
+ * @param {string} key The key of the entry to check.
+ * @returns {boolean} Returns `true` if an entry for `key` exists, else `false`.
+ */
+function mapCacheHas(key) {
+  return getMapData(this, key).has(key);
+}
+
+/**
+ * Sets the map `key` to `value`.
+ *
+ * @private
+ * @name set
+ * @memberOf MapCache
+ * @param {string} key The key of the value to set.
+ * @param {*} value The value to set.
+ * @returns {Object} Returns the map cache instance.
+ */
+function mapCacheSet(key, value) {
+  var data = getMapData(this, key),
+      size = data.size;
+
+  data.set(key, value);
+  this.size += data.size == size ? 0 : 1;
+  return this;
+}
+
+/**
+ * Creates a map cache object to store key-value pairs.
+ *
+ * @private
+ * @constructor
+ * @param {Array} [entries] The key-value pairs to cache.
+ */
+function MapCache(entries) {
+  var index = -1,
+      length = entries == null ? 0 : entries.length;
+
+  this.clear();
+  while (++index < length) {
+    var entry = entries[index];
+    this.set(entry[0], entry[1]);
+  }
+}
+
+// Add methods to `MapCache`.
+MapCache.prototype.clear = mapCacheClear;
+MapCache.prototype['delete'] = mapCacheDelete;
+MapCache.prototype.get = mapCacheGet;
+MapCache.prototype.has = mapCacheHas;
+MapCache.prototype.set = mapCacheSet;
+
+/** Error message constants. */
+var FUNC_ERROR_TEXT = 'Expected a function';
+
+/**
+ * Creates a function that memoizes the result of `func`. If `resolver` is
+ * provided, it determines the cache key for storing the result based on the
+ * arguments provided to the memoized function. By default, the first argument
+ * provided to the memoized function is used as the map cache key. The `func`
+ * is invoked with the `this` binding of the memoized function.
+ *
+ * **Note:** The cache is exposed as the `cache` property on the memoized
+ * function. Its creation may be customized by replacing the `_.memoize.Cache`
+ * constructor with one whose instances implement the
+ * [`Map`](http://ecma-international.org/ecma-262/7.0/#sec-properties-of-the-map-prototype-object)
+ * method interface of `clear`, `delete`, `get`, `has`, and `set`.
+ *
+ * @static
+ * @memberOf _
+ * @since 0.1.0
+ * @category Function
+ * @param {Function} func The function to have its output memoized.
+ * @param {Function} [resolver] The function to resolve the cache key.
+ * @returns {Function} Returns the new memoized function.
+ * @example
+ *
+ * var object = { 'a': 1, 'b': 2 };
+ * var other = { 'c': 3, 'd': 4 };
+ *
+ * var values = _.memoize(_.values);
+ * values(object);
+ * // => [1, 2]
+ *
+ * values(other);
+ * // => [3, 4]
+ *
+ * object.a = 2;
+ * values(object);
+ * // => [1, 2]
+ *
+ * // Modify the result cache.
+ * values.cache.set(object, ['a', 'b']);
+ * values(object);
+ * // => ['a', 'b']
+ *
+ * // Replace `_.memoize.Cache`.
+ * _.memoize.Cache = WeakMap;
+ */
+function memoize(func, resolver) {
+  if (typeof func != 'function' || (resolver != null && typeof resolver != 'function')) {
+    throw new TypeError(FUNC_ERROR_TEXT);
+  }
+  var memoized = function() {
+    var args = arguments,
+        key = resolver ? resolver.apply(this, args) : args[0],
+        cache = memoized.cache;
+
+    if (cache.has(key)) {
+      return cache.get(key);
+    }
+    var result = func.apply(this, args);
+    memoized.cache = cache.set(key, result) || cache;
+    return result;
+  };
+  memoized.cache = new (memoize.Cache || MapCache);
+  return memoized;
+}
+
+// Expose `MapCache`.
+memoize.Cache = MapCache;
+
+/** Used as the maximum memoize cache size. */
+var MAX_MEMOIZE_SIZE = 500;
+
+/**
+ * A specialized version of `_.memoize` which clears the memoized function's
+ * cache when it exceeds `MAX_MEMOIZE_SIZE`.
+ *
+ * @private
+ * @param {Function} func The function to have its output memoized.
+ * @returns {Function} Returns the new memoized function.
+ */
+function memoizeCapped(func) {
+  var result = memoize(func, function(key) {
+    if (cache.size === MAX_MEMOIZE_SIZE) {
+      cache.clear();
+    }
+    return key;
+  });
+
+  var cache = result.cache;
+  return result;
+}
+
+/** Used to match property names within property paths. */
+var rePropName = /[^.[\]]+|\[(?:(-?\d+(?:\.\d+)?)|(["'])((?:(?!\2)[^\\]|\\.)*?)\2)\]|(?=(?:\.|\[\])(?:\.|\[\]|$))/g;
+
+/** Used to match backslashes in property paths. */
+var reEscapeChar = /\\(\\)?/g;
+
+/**
+ * Converts `string` to a property path array.
+ *
+ * @private
+ * @param {string} string The string to convert.
+ * @returns {Array} Returns the property path array.
+ */
+var stringToPath = memoizeCapped(function(string) {
+  var result = [];
+  if (string.charCodeAt(0) === 46 /* . */) {
+    result.push('');
+  }
+  string.replace(rePropName, function(match, number, quote, subString) {
+    result.push(quote ? subString.replace(reEscapeChar, '$1') : (number || match));
+  });
+  return result;
+});
+
+function removeIdPropertyFromHash(hash, idProp = "id") {
+    const output = {};
+    Object.keys(hash).map((objId) => {
+        const input = hash[objId];
+        output[objId] = {};
+        Object.keys(input).map((prop) => {
+            if (prop !== idProp) {
+                output[objId][prop] = input[prop];
+            }
+        });
+    });
+    return output;
+}
+/**
+ * hashToArray
+ *
+ * Converts a hash data structure of {key: value, key2: value2} to an
+ * array of [ {id, value}, {id2, value2} ]. This should happen regardless
+ * to whether the values are themselves hashes (which they often are) or
+ * scalar values.
+ *
+ * The one edge case is where all the hashes passed in have a value of "true"
+ * which indicates that this really just a simple value based array encoded as
+ * a hash (as is often the case in Firebase for FK relationships).
+ *
+ * @param hashObj an object of keys that point to some data payload
+ * @param ___key__ the property name on the converted array-of-hashes which will contain the key value; by default this is "id"
+ */
+function hashToArray(hashObj, __key__ = "id") {
+    if (hashObj && typeof hashObj !== "object") {
+        throw new Error("Cant convert hash-to-array because hash was not passed in: " + hashObj);
+    }
+    const hash = Object.assign({}, hashObj);
+    const results = [];
+    const isHashArray = Object.keys(hash).every((i) => hash[i] === true);
+    const isHashValue = Object.keys(hash).every((i) => typeof hash[i] !== "object");
+    Object.keys(hash).map((id) => {
+        const obj = typeof hash[id] === "object"
+            ? Object.assign(Object.assign({}, hash[id]), { [__key__]: id }) : isHashArray
+            ? id
+            : { [__key__]: id, value: hash[id] };
+        results.push(obj);
+    });
+    return results;
+}
+/**
+ * arrayToHash
+ *
+ * Converts an array of things into a hash/dictionary where "things" is a consistent
+ * type of data structure (can be either object or primitive)
+ *
+ * @param arr an array of a particular type
+ * @param keyProperty the property that will be used as the dictionaries key; if false
+ * then will assign a firebase pushkey
+ * @param removeIdProperty allow you to optionally exclude the `id` from the object
+ * as it is redundant to the `key` of the hash. By default though, this is _not_ done as
+ * Firemodel benefits (and expects) from this duplication.
+ */
+function arrayToHash(arr, keyProperty, removeIdProperty = false) {
+    if (arr.length === 0) {
+        return {};
+    }
+    const isScalar = typeof arr[0] === "object" ? false : true;
+    if (isScalar && keyProperty) {
+        const e = new Error(`You can not have an array of primitive values AND set a keyProperty!`);
+        e.name = "NotAllowed";
+        throw e;
+    }
+    if (!keyProperty && !isScalar) {
+        if (arr[0].hasOwnProperty("id")) {
+            keyProperty = "id";
+        }
+        else {
+            const e = new Error(`Tried to default to a keyProperty of "id" but that property does not appear to be in the array passed in`);
+            e.name = "NotAllowed";
+            throw e;
+        }
+    }
+    if (!Array.isArray(arr)) {
+        const e = new Error(`arrayToHash: input was not an array!`);
+        e.name = "NotAllowed";
+        throw e;
+    }
+    const output = arr.reduce((prev, curr) => {
+        const key = isScalar
+            ? curr
+            : typeof keyProperty === "function"
+                ? keyProperty(curr)
+                : curr[keyProperty];
+        return isScalar
+            ? Object.assign(Object.assign({}, prev), { [key]: true }) : Object.assign(Object.assign({}, prev), { [key]: curr });
+    }, {});
+    return removeIdProperty ? removeIdPropertyFromHash(output) : output;
+}
+
+function isProperty(modelKlass) {
+    return (prop) => {
+        return getModelProperty(modelKlass)(prop) ? true : false;
+    };
+}
+/** Properties accumlated by propertyDecorators  */
+const propertiesByModel = {};
+/** allows the addition of meta information to be added to a model's properties */
+function addPropertyToModelMeta(modelName, property, meta) {
+    if (!propertiesByModel[modelName]) {
+        propertiesByModel[modelName] = {};
+    }
+    // TODO: investigate why we need to genericize to model (from <T>)
+    propertiesByModel[modelName][property] = meta;
+}
+/** lookup meta data for schema properties */
+function getModelProperty(model) {
+    const className = model.constructor.name;
+    const propsForModel = getProperties(model);
+    return (prop) => {
+        return propsForModel.find(value => {
+            return value.property === prop;
+        });
+    };
+}
+/**
+ * Gets all the properties for a given model
+ *
+ * @param modelConstructor the schema object which is being looked up
+ */
+function getProperties(model) {
+    const modelName = model.constructor.name;
+    const properties = hashToArray(propertiesByModel[modelName], "property") || [];
+    let parent = Object.getPrototypeOf(model.constructor);
+    while (parent.name) {
+        const subClass = new parent();
+        const subClassName = subClass.constructor.name;
+        properties.push(...hashToArray(propertiesByModel[subClassName], "property"));
+        parent = Object.getPrototypeOf(subClass.constructor);
+    }
+    return properties;
+}
+
+/** Detect free variable `global` from Node.js. */
+var freeGlobal$1 = typeof global == 'object' && global && global.Object === Object && global;
+
+/** Detect free variable `self`. */
+var freeSelf$1 = typeof self == 'object' && self && self.Object === Object && self;
+
+/** Used as a reference to the global object. */
+var root$1 = freeGlobal$1 || freeSelf$1 || Function('return this')();
+
+/** Built-in value references. */
+var Symbol$2 = root$1.Symbol;
+
+/** Used for built-in method references. */
+var objectProto$5 = Object.prototype;
+
+/** Used to check objects for own properties. */
+var hasOwnProperty$4 = objectProto$5.hasOwnProperty;
+
+/**
+ * Used to resolve the
+ * [`toStringTag`](http://ecma-international.org/ecma-262/7.0/#sec-object.prototype.tostring)
+ * of values.
+ */
+var nativeObjectToString$2 = objectProto$5.toString;
+
+/** Built-in value references. */
+var symToStringTag$2 = Symbol$2 ? Symbol$2.toStringTag : undefined;
+
+/**
+ * A specialized version of `baseGetTag` which ignores `Symbol.toStringTag` values.
+ *
+ * @private
+ * @param {*} value The value to query.
+ * @returns {string} Returns the raw `toStringTag`.
+ */
+function getRawTag$1(value) {
+  var isOwn = hasOwnProperty$4.call(value, symToStringTag$2),
+      tag = value[symToStringTag$2];
+
+  try {
+    value[symToStringTag$2] = undefined;
+    var unmasked = true;
+  } catch (e) {}
+
+  var result = nativeObjectToString$2.call(value);
+  if (unmasked) {
+    if (isOwn) {
+      value[symToStringTag$2] = tag;
+    } else {
+      delete value[symToStringTag$2];
+    }
+  }
+  return result;
+}
+
+/** Used for built-in method references. */
+var objectProto$6 = Object.prototype;
+
+/**
+ * Used to resolve the
+ * [`toStringTag`](http://ecma-international.org/ecma-262/7.0/#sec-object.prototype.tostring)
+ * of values.
+ */
+var nativeObjectToString$3 = objectProto$6.toString;
+
+/**
+ * Converts `value` to a string using `Object.prototype.toString`.
+ *
+ * @private
+ * @param {*} value The value to convert.
+ * @returns {string} Returns the converted string.
+ */
+function objectToString$1(value) {
+  return nativeObjectToString$3.call(value);
+}
+
+/** `Object#toString` result references. */
+var nullTag$1 = '[object Null]',
+    undefinedTag$1 = '[object Undefined]';
+
+/** Built-in value references. */
+var symToStringTag$3 = Symbol$2 ? Symbol$2.toStringTag : undefined;
+
+/**
+ * The base implementation of `getTag` without fallbacks for buggy environments.
+ *
+ * @private
+ * @param {*} value The value to query.
+ * @returns {string} Returns the `toStringTag`.
+ */
+function baseGetTag$1(value) {
+  if (value == null) {
+    return value === undefined ? undefinedTag$1 : nullTag$1;
+  }
+  return (symToStringTag$3 && symToStringTag$3 in Object(value))
+    ? getRawTag$1(value)
+    : objectToString$1(value);
+}
+
+/**
+ * Checks if `value` is object-like. A value is object-like if it's not `null`
+ * and has a `typeof` result of "object".
+ *
+ * @static
+ * @memberOf _
+ * @since 4.0.0
+ * @category Lang
+ * @param {*} value The value to check.
+ * @returns {boolean} Returns `true` if `value` is object-like, else `false`.
+ * @example
+ *
+ * _.isObjectLike({});
+ * // => true
+ *
+ * _.isObjectLike([1, 2, 3]);
+ * // => true
+ *
+ * _.isObjectLike(_.noop);
+ * // => false
+ *
+ * _.isObjectLike(null);
+ * // => false
+ */
+function isObjectLike(value) {
+  return value != null && typeof value == 'object';
+}
+
+/** `Object#toString` result references. */
+var symbolTag = '[object Symbol]';
+
+/**
+ * Checks if `value` is classified as a `Symbol` primitive or object.
+ *
+ * @static
+ * @memberOf _
+ * @since 4.0.0
+ * @category Lang
+ * @param {*} value The value to check.
+ * @returns {boolean} Returns `true` if `value` is a symbol, else `false`.
+ * @example
+ *
+ * _.isSymbol(Symbol.iterator);
+ * // => true
+ *
+ * _.isSymbol('abc');
+ * // => false
+ */
+function isSymbol(value) {
+  return typeof value == 'symbol' ||
+    (isObjectLike(value) && baseGetTag$1(value) == symbolTag);
+}
+
+/**
+ * A specialized version of `_.map` for arrays without support for iteratee
+ * shorthands.
+ *
+ * @private
+ * @param {Array} [array] The array to iterate over.
+ * @param {Function} iteratee The function invoked per iteration.
+ * @returns {Array} Returns the new mapped array.
+ */
+function arrayMap(array, iteratee) {
+  var index = -1,
+      length = array == null ? 0 : array.length,
+      result = Array(length);
+
+  while (++index < length) {
+    result[index] = iteratee(array[index], index, array);
+  }
+  return result;
+}
+
+/**
+ * Checks if `value` is classified as an `Array` object.
+ *
+ * @static
+ * @memberOf _
+ * @since 0.1.0
+ * @category Lang
+ * @param {*} value The value to check.
+ * @returns {boolean} Returns `true` if `value` is an array, else `false`.
+ * @example
+ *
+ * _.isArray([1, 2, 3]);
+ * // => true
+ *
+ * _.isArray(document.body.children);
+ * // => false
+ *
+ * _.isArray('abc');
+ * // => false
+ *
+ * _.isArray(_.noop);
+ * // => false
+ */
+var isArray = Array.isArray;
+
+/** Used as references for various `Number` constants. */
+var INFINITY = 1 / 0;
+
+/** Used to convert symbols to primitives and strings. */
+var symbolProto$1 = Symbol$2 ? Symbol$2.prototype : undefined,
+    symbolToString$1 = symbolProto$1 ? symbolProto$1.toString : undefined;
+
+/**
+ * The base implementation of `_.toString` which doesn't convert nullish
+ * values to empty strings.
+ *
+ * @private
+ * @param {*} value The value to process.
+ * @returns {string} Returns the string.
+ */
+function baseToString(value) {
+  // Exit early for strings to avoid a performance hit in some environments.
+  if (typeof value == 'string') {
+    return value;
+  }
+  if (isArray(value)) {
+    // Recursively convert values (susceptible to call stack limits).
+    return arrayMap(value, baseToString) + '';
+  }
+  if (isSymbol(value)) {
+    return symbolToString$1 ? symbolToString$1.call(value) : '';
+  }
+  var result = (value + '');
+  return (result == '0' && (1 / value) == -INFINITY) ? '-0' : result;
+}
+
+/**
+ * Checks if `value` is the
+ * [language type](http://www.ecma-international.org/ecma-262/7.0/#sec-ecmascript-language-types)
+ * of `Object`. (e.g. arrays, functions, objects, regexes, `new Number(0)`, and `new String('')`)
+ *
+ * @static
+ * @memberOf _
+ * @since 0.1.0
+ * @category Lang
+ * @param {*} value The value to check.
+ * @returns {boolean} Returns `true` if `value` is an object, else `false`.
+ * @example
+ *
+ * _.isObject({});
+ * // => true
+ *
+ * _.isObject([1, 2, 3]);
+ * // => true
+ *
+ * _.isObject(_.noop);
+ * // => true
+ *
+ * _.isObject(null);
+ * // => false
+ */
+function isObject$1(value) {
+  var type = typeof value;
+  return value != null && (type == 'object' || type == 'function');
+}
+
+/** `Object#toString` result references. */
+var asyncTag$1 = '[object AsyncFunction]',
+    funcTag$1 = '[object Function]',
+    genTag$1 = '[object GeneratorFunction]',
+    proxyTag$1 = '[object Proxy]';
+
+/**
+ * Checks if `value` is classified as a `Function` object.
+ *
+ * @static
+ * @memberOf _
+ * @since 0.1.0
+ * @category Lang
+ * @param {*} value The value to check.
+ * @returns {boolean} Returns `true` if `value` is a function, else `false`.
+ * @example
+ *
+ * _.isFunction(_);
+ * // => true
+ *
+ * _.isFunction(/abc/);
+ * // => false
+ */
+function isFunction$1(value) {
+  if (!isObject$1(value)) {
+    return false;
+  }
+  // The use of `Object#toString` avoids issues with the `typeof` operator
+  // in Safari 9 which returns 'object' for typed arrays and other constructors.
+  var tag = baseGetTag$1(value);
+  return tag == funcTag$1 || tag == genTag$1 || tag == asyncTag$1 || tag == proxyTag$1;
+}
+
+/** Used to detect overreaching core-js shims. */
+var coreJsData$1 = root$1['__core-js_shared__'];
+
+/** Used to detect methods masquerading as native. */
+var maskSrcKey$1 = (function() {
+  var uid = /[^.]+$/.exec(coreJsData$1 && coreJsData$1.keys && coreJsData$1.keys.IE_PROTO || '');
+  return uid ? ('Symbol(src)_1.' + uid) : '';
+}());
+
+/**
+ * Checks if `func` has its source masked.
+ *
+ * @private
+ * @param {Function} func The function to check.
+ * @returns {boolean} Returns `true` if `func` is masked, else `false`.
+ */
+function isMasked$1(func) {
+  return !!maskSrcKey$1 && (maskSrcKey$1 in func);
+}
+
+/** Used for built-in method references. */
+var funcProto$2 = Function.prototype;
+
+/** Used to resolve the decompiled source of functions. */
+var funcToString$2 = funcProto$2.toString;
+
+/**
+ * Converts `func` to its source code.
+ *
+ * @private
+ * @param {Function} func The function to convert.
+ * @returns {string} Returns the source code.
+ */
+function toSource$1(func) {
+  if (func != null) {
+    try {
+      return funcToString$2.call(func);
+    } catch (e) {}
+    try {
+      return (func + '');
+    } catch (e) {}
+  }
+  return '';
+}
+
+/**
+ * Used to match `RegExp`
+ * [syntax characters](http://ecma-international.org/ecma-262/7.0/#sec-patterns).
+ */
+var reRegExpChar$1 = /[\\^$.*+?()[\]{}|]/g;
+
+/** Used to detect host constructors (Safari). */
+var reIsHostCtor$1 = /^\[object .+?Constructor\]$/;
+
+/** Used for built-in method references. */
+var funcProto$3 = Function.prototype,
+    objectProto$7 = Object.prototype;
+
+/** Used to resolve the decompiled source of functions. */
+var funcToString$3 = funcProto$3.toString;
+
+/** Used to check objects for own properties. */
+var hasOwnProperty$5 = objectProto$7.hasOwnProperty;
+
+/** Used to detect if a method is native. */
+var reIsNative$1 = RegExp('^' +
+  funcToString$3.call(hasOwnProperty$5).replace(reRegExpChar$1, '\\$&')
+  .replace(/hasOwnProperty|(function).*?(?=\\\()| for .+?(?=\\\])/g, '$1.*?') + '$'
+);
+
+/**
+ * The base implementation of `_.isNative` without bad shim checks.
+ *
+ * @private
+ * @param {*} value The value to check.
+ * @returns {boolean} Returns `true` if `value` is a native function,
+ *  else `false`.
+ */
+function baseIsNative$1(value) {
+  if (!isObject$1(value) || isMasked$1(value)) {
+    return false;
+  }
+  var pattern = isFunction$1(value) ? reIsNative$1 : reIsHostCtor$1;
+  return pattern.test(toSource$1(value));
+}
+
+/**
+ * Gets the value at `key` of `object`.
+ *
+ * @private
+ * @param {Object} [object] The object to query.
+ * @param {string} key The key of the property to get.
+ * @returns {*} Returns the property value.
+ */
+function getValue$1(object, key) {
+  return object == null ? undefined : object[key];
+}
+
+/**
+ * Gets the native function at `key` of `object`.
+ *
+ * @private
+ * @param {Object} object The object to query.
+ * @param {string} key The key of the method to get.
+ * @returns {*} Returns the function if it's native, else `undefined`.
+ */
+function getNative$1(object, key) {
+  var value = getValue$1(object, key);
+  return baseIsNative$1(value) ? value : undefined;
+}
+
+var defineProperty = (function() {
+  try {
+    var func = getNative$1(Object, 'defineProperty');
+    func({}, '', {});
+    return func;
+  } catch (e) {}
+}());
+
+/** Used as references for various `Number` constants. */
+var MAX_SAFE_INTEGER = 9007199254740991;
+
+/** Used to detect unsigned integer values. */
+var reIsUint = /^(?:0|[1-9]\d*)$/;
+
+/**
+ * Checks if `value` is a valid array-like index.
+ *
+ * @private
+ * @param {*} value The value to check.
+ * @param {number} [length=MAX_SAFE_INTEGER] The upper bounds of a valid index.
+ * @returns {boolean} Returns `true` if `value` is a valid index, else `false`.
+ */
+function isIndex(value, length) {
+  var type = typeof value;
+  length = length == null ? MAX_SAFE_INTEGER : length;
+
+  return !!length &&
+    (type == 'number' ||
+      (type != 'symbol' && reIsUint.test(value))) &&
+        (value > -1 && value % 1 == 0 && value < length);
+}
+
+/**
+ * The base implementation of `assignValue` and `assignMergeValue` without
+ * value checks.
+ *
+ * @private
+ * @param {Object} object The object to modify.
+ * @param {string} key The key of the property to assign.
+ * @param {*} value The value to assign.
+ */
+function baseAssignValue(object, key, value) {
+  if (key == '__proto__' && defineProperty) {
+    defineProperty(object, key, {
+      'configurable': true,
+      'enumerable': true,
+      'value': value,
+      'writable': true
+    });
+  } else {
+    object[key] = value;
+  }
+}
+
+/**
+ * Performs a
+ * [`SameValueZero`](http://ecma-international.org/ecma-262/7.0/#sec-samevaluezero)
+ * comparison between two values to determine if they are equivalent.
+ *
+ * @static
+ * @memberOf _
+ * @since 4.0.0
+ * @category Lang
+ * @param {*} value The value to compare.
+ * @param {*} other The other value to compare.
+ * @returns {boolean} Returns `true` if the values are equivalent, else `false`.
+ * @example
+ *
+ * var object = { 'a': 1 };
+ * var other = { 'a': 1 };
+ *
+ * _.eq(object, object);
+ * // => true
+ *
+ * _.eq(object, other);
+ * // => false
+ *
+ * _.eq('a', 'a');
+ * // => true
+ *
+ * _.eq('a', Object('a'));
+ * // => false
+ *
+ * _.eq(NaN, NaN);
+ * // => true
+ */
+function eq$1(value, other) {
+  return value === other || (value !== value && other !== other);
+}
+
+/** Used for built-in method references. */
+var objectProto$8 = Object.prototype;
+
+/** Used to check objects for own properties. */
+var hasOwnProperty$6 = objectProto$8.hasOwnProperty;
+
+/**
+ * Assigns `value` to `key` of `object` if the existing value is not equivalent
+ * using [`SameValueZero`](http://ecma-international.org/ecma-262/7.0/#sec-samevaluezero)
+ * for equality comparisons.
+ *
+ * @private
+ * @param {Object} object The object to modify.
+ * @param {string} key The key of the property to assign.
+ * @param {*} value The value to assign.
+ */
+function assignValue(object, key, value) {
+  var objValue = object[key];
+  if (!(hasOwnProperty$6.call(object, key) && eq$1(objValue, value)) ||
+      (value === undefined && !(key in object))) {
+    baseAssignValue(object, key, value);
+  }
+}
+
+/** Used to match property names within property paths. */
+var reIsDeepProp = /\.|\[(?:[^[\]]*|(["'])(?:(?!\1)[^\\]|\\.)*?\1)\]/,
+    reIsPlainProp = /^\w*$/;
+
+/**
+ * Checks if `value` is a property name and not a property path.
+ *
+ * @private
+ * @param {*} value The value to check.
+ * @param {Object} [object] The object to query keys on.
+ * @returns {boolean} Returns `true` if `value` is a property name, else `false`.
+ */
+function isKey(value, object) {
+  if (isArray(value)) {
+    return false;
+  }
+  var type = typeof value;
+  if (type == 'number' || type == 'symbol' || type == 'boolean' ||
+      value == null || isSymbol(value)) {
+    return true;
+  }
+  return reIsPlainProp.test(value) || !reIsDeepProp.test(value) ||
+    (object != null && value in Object(object));
+}
+
+/* Built-in method references that are verified to be native. */
+var nativeCreate$1 = getNative$1(Object, 'create');
+
+/**
+ * Removes all key-value entries from the hash.
+ *
+ * @private
+ * @name clear
+ * @memberOf Hash
+ */
+function hashClear$1() {
+  this.__data__ = nativeCreate$1 ? nativeCreate$1(null) : {};
+  this.size = 0;
+}
+
+/**
+ * Removes `key` and its value from the hash.
+ *
+ * @private
+ * @name delete
+ * @memberOf Hash
+ * @param {Object} hash The hash to modify.
+ * @param {string} key The key of the value to remove.
+ * @returns {boolean} Returns `true` if the entry was removed, else `false`.
+ */
+function hashDelete$1(key) {
+  var result = this.has(key) && delete this.__data__[key];
+  this.size -= result ? 1 : 0;
+  return result;
+}
+
+/** Used to stand-in for `undefined` hash values. */
+var HASH_UNDEFINED$2 = '__lodash_hash_undefined__';
+
+/** Used for built-in method references. */
+var objectProto$9 = Object.prototype;
+
+/** Used to check objects for own properties. */
+var hasOwnProperty$7 = objectProto$9.hasOwnProperty;
+
+/**
+ * Gets the hash value for `key`.
+ *
+ * @private
+ * @name get
+ * @memberOf Hash
+ * @param {string} key The key of the value to get.
+ * @returns {*} Returns the entry value.
+ */
+function hashGet$1(key) {
+  var data = this.__data__;
+  if (nativeCreate$1) {
+    var result = data[key];
+    return result === HASH_UNDEFINED$2 ? undefined : result;
+  }
+  return hasOwnProperty$7.call(data, key) ? data[key] : undefined;
+}
+
+/** Used for built-in method references. */
+var objectProto$a = Object.prototype;
+
+/** Used to check objects for own properties. */
+var hasOwnProperty$8 = objectProto$a.hasOwnProperty;
+
+/**
+ * Checks if a hash value for `key` exists.
+ *
+ * @private
+ * @name has
+ * @memberOf Hash
+ * @param {string} key The key of the entry to check.
+ * @returns {boolean} Returns `true` if an entry for `key` exists, else `false`.
+ */
+function hashHas$1(key) {
+  var data = this.__data__;
+  return nativeCreate$1 ? (data[key] !== undefined) : hasOwnProperty$8.call(data, key);
+}
+
+/** Used to stand-in for `undefined` hash values. */
+var HASH_UNDEFINED$3 = '__lodash_hash_undefined__';
+
+/**
+ * Sets the hash `key` to `value`.
+ *
+ * @private
+ * @name set
+ * @memberOf Hash
+ * @param {string} key The key of the value to set.
+ * @param {*} value The value to set.
+ * @returns {Object} Returns the hash instance.
+ */
+function hashSet$1(key, value) {
+  var data = this.__data__;
+  this.size += this.has(key) ? 0 : 1;
+  data[key] = (nativeCreate$1 && value === undefined) ? HASH_UNDEFINED$3 : value;
+  return this;
+}
+
+/**
+ * Creates a hash object.
+ *
+ * @private
+ * @constructor
+ * @param {Array} [entries] The key-value pairs to cache.
+ */
+function Hash$1(entries) {
+  var index = -1,
+      length = entries == null ? 0 : entries.length;
+
+  this.clear();
+  while (++index < length) {
+    var entry = entries[index];
+    this.set(entry[0], entry[1]);
+  }
+}
+
+// Add methods to `Hash`.
+Hash$1.prototype.clear = hashClear$1;
+Hash$1.prototype['delete'] = hashDelete$1;
+Hash$1.prototype.get = hashGet$1;
+Hash$1.prototype.has = hashHas$1;
+Hash$1.prototype.set = hashSet$1;
+
+/**
+ * Removes all key-value entries from the list cache.
+ *
+ * @private
+ * @name clear
+ * @memberOf ListCache
+ */
+function listCacheClear$1() {
+  this.__data__ = [];
+  this.size = 0;
+}
+
+/**
+ * Gets the index at which the `key` is found in `array` of key-value pairs.
+ *
+ * @private
+ * @param {Array} array The array to inspect.
+ * @param {*} key The key to search for.
+ * @returns {number} Returns the index of the matched value, else `-1`.
+ */
+function assocIndexOf$1(array, key) {
+  var length = array.length;
+  while (length--) {
+    if (eq$1(array[length][0], key)) {
+      return length;
+    }
+  }
+  return -1;
+}
+
+/** Used for built-in method references. */
+var arrayProto$1 = Array.prototype;
+
+/** Built-in value references. */
+var splice$1 = arrayProto$1.splice;
+
+/**
+ * Removes `key` and its value from the list cache.
+ *
+ * @private
+ * @name delete
+ * @memberOf ListCache
+ * @param {string} key The key of the value to remove.
+ * @returns {boolean} Returns `true` if the entry was removed, else `false`.
+ */
+function listCacheDelete$1(key) {
+  var data = this.__data__,
+      index = assocIndexOf$1(data, key);
+
+  if (index < 0) {
+    return false;
+  }
+  var lastIndex = data.length - 1;
+  if (index == lastIndex) {
+    data.pop();
+  } else {
+    splice$1.call(data, index, 1);
+  }
+  --this.size;
+  return true;
+}
+
+/**
+ * Gets the list cache value for `key`.
+ *
+ * @private
+ * @name get
+ * @memberOf ListCache
+ * @param {string} key The key of the value to get.
+ * @returns {*} Returns the entry value.
+ */
+function listCacheGet$1(key) {
+  var data = this.__data__,
+      index = assocIndexOf$1(data, key);
+
+  return index < 0 ? undefined : data[index][1];
+}
+
+/**
+ * Checks if a list cache value for `key` exists.
+ *
+ * @private
+ * @name has
+ * @memberOf ListCache
+ * @param {string} key The key of the entry to check.
+ * @returns {boolean} Returns `true` if an entry for `key` exists, else `false`.
+ */
+function listCacheHas$1(key) {
+  return assocIndexOf$1(this.__data__, key) > -1;
+}
+
+/**
+ * Sets the list cache `key` to `value`.
+ *
+ * @private
+ * @name set
+ * @memberOf ListCache
+ * @param {string} key The key of the value to set.
+ * @param {*} value The value to set.
+ * @returns {Object} Returns the list cache instance.
+ */
+function listCacheSet$1(key, value) {
+  var data = this.__data__,
+      index = assocIndexOf$1(data, key);
+
+  if (index < 0) {
+    ++this.size;
+    data.push([key, value]);
+  } else {
+    data[index][1] = value;
+  }
+  return this;
+}
+
+/**
+ * Creates an list cache object.
+ *
+ * @private
+ * @constructor
+ * @param {Array} [entries] The key-value pairs to cache.
+ */
+function ListCache$1(entries) {
+  var index = -1,
+      length = entries == null ? 0 : entries.length;
+
+  this.clear();
+  while (++index < length) {
+    var entry = entries[index];
+    this.set(entry[0], entry[1]);
+  }
+}
+
+// Add methods to `ListCache`.
+ListCache$1.prototype.clear = listCacheClear$1;
+ListCache$1.prototype['delete'] = listCacheDelete$1;
+ListCache$1.prototype.get = listCacheGet$1;
+ListCache$1.prototype.has = listCacheHas$1;
+ListCache$1.prototype.set = listCacheSet$1;
+
+/* Built-in method references that are verified to be native. */
+var Map$2 = getNative$1(root$1, 'Map');
+
+/**
+ * Removes all key-value entries from the map.
+ *
+ * @private
+ * @name clear
+ * @memberOf MapCache
+ */
+function mapCacheClear$1() {
+  this.size = 0;
+  this.__data__ = {
+    'hash': new Hash$1,
+    'map': new (Map$2 || ListCache$1),
+    'string': new Hash$1
+  };
+}
+
+/**
+ * Checks if `value` is suitable for use as unique object key.
+ *
+ * @private
+ * @param {*} value The value to check.
+ * @returns {boolean} Returns `true` if `value` is suitable, else `false`.
+ */
+function isKeyable$1(value) {
+  var type = typeof value;
+  return (type == 'string' || type == 'number' || type == 'symbol' || type == 'boolean')
+    ? (value !== '__proto__')
+    : (value === null);
+}
+
+/**
+ * Gets the data for `map`.
+ *
+ * @private
+ * @param {Object} map The map to query.
+ * @param {string} key The reference key.
+ * @returns {*} Returns the map data.
+ */
+function getMapData$1(map, key) {
+  var data = map.__data__;
+  return isKeyable$1(key)
+    ? data[typeof key == 'string' ? 'string' : 'hash']
+    : data.map;
+}
+
+/**
+ * Removes `key` and its value from the map.
+ *
+ * @private
+ * @name delete
+ * @memberOf MapCache
+ * @param {string} key The key of the value to remove.
+ * @returns {boolean} Returns `true` if the entry was removed, else `false`.
+ */
+function mapCacheDelete$1(key) {
+  var result = getMapData$1(this, key)['delete'](key);
+  this.size -= result ? 1 : 0;
+  return result;
+}
+
+/**
+ * Gets the map value for `key`.
+ *
+ * @private
+ * @name get
+ * @memberOf MapCache
+ * @param {string} key The key of the value to get.
+ * @returns {*} Returns the entry value.
+ */
+function mapCacheGet$1(key) {
+  return getMapData$1(this, key).get(key);
+}
+
+/**
+ * Checks if a map value for `key` exists.
+ *
+ * @private
+ * @name has
+ * @memberOf MapCache
+ * @param {string} key The key of the entry to check.
+ * @returns {boolean} Returns `true` if an entry for `key` exists, else `false`.
+ */
+function mapCacheHas$1(key) {
+  return getMapData$1(this, key).has(key);
+}
+
+/**
+ * Sets the map `key` to `value`.
+ *
+ * @private
+ * @name set
+ * @memberOf MapCache
+ * @param {string} key The key of the value to set.
+ * @param {*} value The value to set.
+ * @returns {Object} Returns the map cache instance.
+ */
+function mapCacheSet$1(key, value) {
+  var data = getMapData$1(this, key),
+      size = data.size;
+
+  data.set(key, value);
+  this.size += data.size == size ? 0 : 1;
+  return this;
+}
+
+/**
+ * Creates a map cache object to store key-value pairs.
+ *
+ * @private
+ * @constructor
+ * @param {Array} [entries] The key-value pairs to cache.
+ */
+function MapCache$1(entries) {
+  var index = -1,
+      length = entries == null ? 0 : entries.length;
+
+  this.clear();
+  while (++index < length) {
+    var entry = entries[index];
+    this.set(entry[0], entry[1]);
+  }
+}
+
+// Add methods to `MapCache`.
+MapCache$1.prototype.clear = mapCacheClear$1;
+MapCache$1.prototype['delete'] = mapCacheDelete$1;
+MapCache$1.prototype.get = mapCacheGet$1;
+MapCache$1.prototype.has = mapCacheHas$1;
+MapCache$1.prototype.set = mapCacheSet$1;
+
+/** Error message constants. */
+var FUNC_ERROR_TEXT$1 = 'Expected a function';
+
+/**
+ * Creates a function that memoizes the result of `func`. If `resolver` is
+ * provided, it determines the cache key for storing the result based on the
+ * arguments provided to the memoized function. By default, the first argument
+ * provided to the memoized function is used as the map cache key. The `func`
+ * is invoked with the `this` binding of the memoized function.
+ *
+ * **Note:** The cache is exposed as the `cache` property on the memoized
+ * function. Its creation may be customized by replacing the `_.memoize.Cache`
+ * constructor with one whose instances implement the
+ * [`Map`](http://ecma-international.org/ecma-262/7.0/#sec-properties-of-the-map-prototype-object)
+ * method interface of `clear`, `delete`, `get`, `has`, and `set`.
+ *
+ * @static
+ * @memberOf _
+ * @since 0.1.0
+ * @category Function
+ * @param {Function} func The function to have its output memoized.
+ * @param {Function} [resolver] The function to resolve the cache key.
+ * @returns {Function} Returns the new memoized function.
+ * @example
+ *
+ * var object = { 'a': 1, 'b': 2 };
+ * var other = { 'c': 3, 'd': 4 };
+ *
+ * var values = _.memoize(_.values);
+ * values(object);
+ * // => [1, 2]
+ *
+ * values(other);
+ * // => [3, 4]
+ *
+ * object.a = 2;
+ * values(object);
+ * // => [1, 2]
+ *
+ * // Modify the result cache.
+ * values.cache.set(object, ['a', 'b']);
+ * values(object);
+ * // => ['a', 'b']
+ *
+ * // Replace `_.memoize.Cache`.
+ * _.memoize.Cache = WeakMap;
+ */
+function memoize$1(func, resolver) {
+  if (typeof func != 'function' || (resolver != null && typeof resolver != 'function')) {
+    throw new TypeError(FUNC_ERROR_TEXT$1);
+  }
+  var memoized = function() {
+    var args = arguments,
+        key = resolver ? resolver.apply(this, args) : args[0],
+        cache = memoized.cache;
+
+    if (cache.has(key)) {
+      return cache.get(key);
+    }
+    var result = func.apply(this, args);
+    memoized.cache = cache.set(key, result) || cache;
+    return result;
+  };
+  memoized.cache = new (memoize$1.Cache || MapCache$1);
+  return memoized;
+}
+
+// Expose `MapCache`.
+memoize$1.Cache = MapCache$1;
+
+/** Used as the maximum memoize cache size. */
+var MAX_MEMOIZE_SIZE$1 = 500;
+
+/**
+ * A specialized version of `_.memoize` which clears the memoized function's
+ * cache when it exceeds `MAX_MEMOIZE_SIZE`.
+ *
+ * @private
+ * @param {Function} func The function to have its output memoized.
+ * @returns {Function} Returns the new memoized function.
+ */
+function memoizeCapped$1(func) {
+  var result = memoize$1(func, function(key) {
+    if (cache.size === MAX_MEMOIZE_SIZE$1) {
+      cache.clear();
+    }
+    return key;
+  });
+
+  var cache = result.cache;
+  return result;
+}
+
+/** Used to match property names within property paths. */
+var rePropName$1 = /[^.[\]]+|\[(?:(-?\d+(?:\.\d+)?)|(["'])((?:(?!\2)[^\\]|\\.)*?)\2)\]|(?=(?:\.|\[\])(?:\.|\[\]|$))/g;
+
+/** Used to match backslashes in property paths. */
+var reEscapeChar$1 = /\\(\\)?/g;
+
+/**
+ * Converts `string` to a property path array.
+ *
+ * @private
+ * @param {string} string The string to convert.
+ * @returns {Array} Returns the property path array.
+ */
+var stringToPath$1 = memoizeCapped$1(function(string) {
+  var result = [];
+  if (string.charCodeAt(0) === 46 /* . */) {
+    result.push('');
+  }
+  string.replace(rePropName$1, function(match, number, quote, subString) {
+    result.push(quote ? subString.replace(reEscapeChar$1, '$1') : (number || match));
+  });
+  return result;
+});
+
+/**
+ * Converts `value` to a string. An empty string is returned for `null`
+ * and `undefined` values. The sign of `-0` is preserved.
+ *
+ * @static
+ * @memberOf _
+ * @since 4.0.0
+ * @category Lang
+ * @param {*} value The value to convert.
+ * @returns {string} Returns the converted string.
+ * @example
+ *
+ * _.toString(null);
+ * // => ''
+ *
+ * _.toString(-0);
+ * // => '-0'
+ *
+ * _.toString([1, 2, 3]);
+ * // => '1,2,3'
+ */
+function toString(value) {
+  return value == null ? '' : baseToString(value);
+}
+
+/**
+ * Casts `value` to a path array if it's not one.
+ *
+ * @private
+ * @param {*} value The value to inspect.
+ * @param {Object} [object] The object to query keys on.
+ * @returns {Array} Returns the cast property path array.
+ */
+function castPath(value, object) {
+  if (isArray(value)) {
+    return value;
+  }
+  return isKey(value, object) ? [value] : stringToPath$1(toString(value));
+}
+
+/** Used as references for various `Number` constants. */
+var INFINITY$1 = 1 / 0;
+
+/**
+ * Converts `value` to a string key if it's not a string or symbol.
+ *
+ * @private
+ * @param {*} value The value to inspect.
+ * @returns {string|symbol} Returns the key.
+ */
+function toKey(value) {
+  if (typeof value == 'string' || isSymbol(value)) {
+    return value;
+  }
+  var result = (value + '');
+  return (result == '0' && (1 / value) == -INFINITY$1) ? '-0' : result;
+}
+
+/**
+ * The base implementation of `_.get` without support for default values.
+ *
+ * @private
+ * @param {Object} object The object to query.
+ * @param {Array|string} path The path of the property to get.
+ * @returns {*} Returns the resolved value.
+ */
+function baseGet(object, path) {
+  path = castPath(path, object);
+
+  var index = 0,
+      length = path.length;
+
+  while (object != null && index < length) {
+    object = object[toKey(path[index++])];
+  }
+  return (index && index == length) ? object : undefined;
+}
+
+/**
+ * Gets the value at `path` of `object`. If the resolved value is
+ * `undefined`, the `defaultValue` is returned in its place.
+ *
+ * @static
+ * @memberOf _
+ * @since 3.7.0
+ * @category Object
+ * @param {Object} object The object to query.
+ * @param {Array|string} path The path of the property to get.
+ * @param {*} [defaultValue] The value returned for `undefined` resolved values.
+ * @returns {*} Returns the resolved value.
+ * @example
+ *
+ * var object = { 'a': [{ 'b': { 'c': 3 } }] };
+ *
+ * _.get(object, 'a[0].b.c');
+ * // => 3
+ *
+ * _.get(object, ['a', '0', 'b', 'c']);
+ * // => 3
+ *
+ * _.get(object, 'a.b.c', 'default');
+ * // => 'default'
+ */
+function get(object, path, defaultValue) {
+  var result = object == null ? undefined : baseGet(object, path);
+  return result === undefined ? defaultValue : result;
+}
+
+/**
+ * The base implementation of `_.set`.
+ *
+ * @private
+ * @param {Object} object The object to modify.
+ * @param {Array|string} path The path of the property to set.
+ * @param {*} value The value to set.
+ * @param {Function} [customizer] The function to customize path creation.
+ * @returns {Object} Returns `object`.
+ */
+function baseSet(object, path, value, customizer) {
+  if (!isObject$1(object)) {
+    return object;
+  }
+  path = castPath(path, object);
+
+  var index = -1,
+      length = path.length,
+      lastIndex = length - 1,
+      nested = object;
+
+  while (nested != null && ++index < length) {
+    var key = toKey(path[index]),
+        newValue = value;
+
+    if (index != lastIndex) {
+      var objValue = nested[key];
+      newValue = customizer ? customizer(objValue, key, nested) : undefined;
+      if (newValue === undefined) {
+        newValue = isObject$1(objValue)
+          ? objValue
+          : (isIndex(path[index + 1]) ? [] : {});
+      }
+    }
+    assignValue(nested, key, newValue);
+    nested = nested[key];
+  }
+  return object;
+}
+
+/**
+ * Sets the value at `path` of `object`. If a portion of `path` doesn't exist,
+ * it's created. Arrays are created for missing index properties while objects
+ * are created for all other missing properties. Use `_.setWith` to customize
+ * `path` creation.
+ *
+ * **Note:** This method mutates `object`.
+ *
+ * @static
+ * @memberOf _
+ * @since 3.7.0
+ * @category Object
+ * @param {Object} object The object to modify.
+ * @param {Array|string} path The path of the property to set.
+ * @param {*} value The value to set.
+ * @returns {Object} Returns `object`.
+ * @example
+ *
+ * var object = { 'a': [{ 'b': { 'c': 3 } }] };
+ *
+ * _.set(object, 'a[0].b.c', 4);
+ * console.log(object.a[0].b.c);
+ * // => 4
+ *
+ * _.set(object, ['x', '0', 'y', 'z'], 5);
+ * console.log(object.x[0].y.z);
+ * // => 5
+ */
+function set(object, path, value) {
+  return object == null ? object : baseSet(object, path, value);
+}
+
+const equal = require("fast-deep-equal/es6");
+function firstKey(thingy) {
+    return Object.keys(thingy)[0];
+}
+function compareHashes(from, to, 
+/**
+ * optionally explicitly state properties so that relationships
+ * can be filtered away
+ */
+modelProps) {
+    const results = {
+        added: [],
+        changed: [],
+        removed: [],
+    };
+    from = from ? from : {};
+    to = to ? to : {};
+    let keys = Array.from(new Set([
+        ...Object.keys(from),
+        ...Object.keys(to),
+    ]))
+        // META should never be part of comparison
+        .filter((i) => i !== "META")
+        // neither should private properties indicated by underscore
+        .filter((i) => i.slice(0, 1) !== "_");
+    if (modelProps) {
+        keys = keys.filter((i) => modelProps.includes(i));
+    }
+    keys.forEach((i) => {
+        if (!to[i]) {
+            results.added.push(i);
+        }
+        else if (from[i] === null) {
+            results.removed.push(i);
+        }
+        else if (!equal(from[i], to[i])) {
+            results.changed.push(i);
+        }
+    });
+    return results;
+}
+function getAllPropertiesFromClassStructure(model) {
+    const modelName = model.constructor.name;
+    const properties = hashToArray(propertiesByModel[modelName], "property") || [];
+    let parent = Object.getPrototypeOf(model.constructor);
+    while (parent.name) {
+        const subClass = new parent();
+        const subClassName = subClass.constructor.name;
+        properties.push(...hashToArray(propertiesByModel[subClassName], "property"));
+        parent = Object.getPrototypeOf(subClass.constructor);
+    }
+    return properties.map((p) => p.property);
+}
+function withoutMetaOrPrivate(model) {
+    if (model && model.META) {
+        model = Object.assign({}, model);
+        delete model.META;
+    }
+    return model;
+}
+function capitalize(str) {
+    return str ? str.slice(0, 1).toUpperCase() + str.slice(1) : "";
+}
+function lowercase(str) {
+    return str ? str.slice(0, 1).toLowerCase() + str.slice(1) : "";
+}
+
+/**
+ * Adds meta data to a given "property" on a model. In this
+ * case we mean property to be either a strict property or
+ * a relationship.
+ *
+ * @param context The meta information as a dictionary/hash
+ * @param modelRollup a collection object which maintains
+ * a dictionary of properties
+ */
+const propertyReflector = (context = {}, 
+/**
+ * if you want this to be rollup up as an dictionary by prop;
+ * to be exposed in the model (or otherwise)
+ */
+modelRollup) => (modelKlass, key) => {
+    const modelName = modelKlass.constructor.name;
+    const reflect = Reflect.getMetadata("design:type", modelKlass, key) || {};
+    const meta = Object.assign(Object.assign(Object.assign(Object.assign({}, (Reflect.getMetadata(key, modelKlass) || {})), { type: lowercase(reflect.name) }), context), { property: key });
+    Reflect.defineMetadata(key, meta, modelKlass);
+    if (modelRollup) {
+        const modelAndProp = modelName + "." + key;
+        set(modelRollup, modelAndProp, Object.assign(Object.assign({}, get(modelRollup, modelAndProp)), meta));
+    }
+};
 
 function constrainedProperty(options = {}) {
-    return propertyReflector({
-        ...options,
-        ...{ isRelationship: false, isProperty: true },
-    }, propertiesByModel);
+    return propertyReflector(Object.assign(Object.assign({}, options), { isRelationship: false, isProperty: true }), propertiesByModel);
 }
 /** allows the introduction of a new constraint to the metadata of a property */
 function constrain(prop, value) {
@@ -3669,9 +3465,269 @@ const property = propertyReflector({
 }, propertiesByModel);
 const pushKey = propertyReflector({ pushKey: true }, propertiesByModel);
 
+const relationshipsByModel = {};
+/** allows the addition of meta information to be added to a model's relationships */
+function addRelationshipToModelMeta(modelName, property, meta) {
+    if (!relationshipsByModel[modelName]) {
+        relationshipsByModel[modelName] = {};
+    }
+    // TODO: investigate why we need to genericize to model (from <T>)
+    relationshipsByModel[modelName][property] = meta;
+}
+function isRelationship(modelKlass) {
+    return (prop) => {
+        return getModelRelationship(modelKlass)(prop) ? true : false;
+    };
+}
+function getModelRelationship(model) {
+    const relnsForModel = getRelationships(model);
+    const className = model.constructor.name;
+    return (prop) => {
+        return relnsForModel.find(value => {
+            return value.property === prop;
+        });
+    };
+}
+/**
+ * Gets all the relationships for a given model
+ */
+function getRelationships(model) {
+    const modelName = model.constructor.name;
+    const properties = hashToArray(relationshipsByModel[modelName], "property") || [];
+    let parent = Object.getPrototypeOf(model.constructor);
+    while (parent.name) {
+        const subClass = new parent();
+        const subClassName = subClass.constructor.name;
+        properties.push(...hashToArray(relationshipsByModel[subClassName], "property"));
+        parent = Object.getPrototypeOf(subClass.constructor);
+    }
+    return properties;
+}
+
+const propertyDecorator = (nameValuePairs = {}, 
+/**
+ * if you want to set the property being decorated's name
+ * as property on meta specify the meta properties name here
+ */
+property) => (target, key) => {
+    const reflect = Reflect.getMetadata("design:type", target, key) || {};
+    if (nameValuePairs.isProperty) {
+        const meta = Object.assign(Object.assign(Object.assign({}, Reflect.getMetadata(key, target)), { type: reflect.name }), nameValuePairs);
+        Reflect.defineMetadata(key, meta, target);
+        addPropertyToModelMeta(target.constructor.name, property, meta);
+    }
+    if (nameValuePairs.isRelationship) {
+        const meta = Object.assign(Object.assign(Object.assign({}, Reflect.getMetadata(key, target)), { type: reflect.name }), nameValuePairs);
+        Reflect.defineMetadata(key, meta, target);
+        addRelationshipToModelMeta(target.constructor.name, property, meta);
+    }
+};
 function getPushKeys(target) {
     const props = getProperties(target);
     return props.filter((p) => p.pushKey).map((p) => p.property);
+}
+
+// TODO: make the defaultValue typed
+/**
+ * Allows setting a default value for a given property
+ */
+function defaultValue(value) {
+    return propertyReflector({ defaultValue: value }, propertiesByModel);
+}
+
+const encrypt = propertyReflector({ encrypt: true }, propertiesByModel);
+
+/**
+ * Base **Error** for **FireModel**. Takes _message_ and _type/subtype_ as
+ * parameters. The code will be the `subtype`; the name is both.
+ */
+class FireModelError extends Error {
+    constructor(message, classification = "firemodel/error") {
+        super(message);
+        this.firemodel = true;
+        const parts = classification.split("/");
+        const [type, subType] = parts.length === 1 ? ["firemodel", parts[0]] : parts;
+        this.name = `${type}/${subType}`;
+        this.code = subType;
+    }
+}
+
+class DecoratorProblem extends FireModelError {
+    constructor(decorator, e, context) {
+        super("", "firemodel/decorator-problem");
+        const errText = typeof e === "string" ? e : e.message;
+        this.message = `There was a problem in the "${decorator}" decorator. ${errText}\n${context}`;
+    }
+}
+
+const registeredModels = {};
+/**
+ * Registered a model's constructor so that it can be used by name. This
+ * is sometime necessary due to circular dependencies.
+ *
+ * @param model a class constructor derived from `Model`
+ */
+function modelRegister(...models) {
+    models.forEach(model => {
+        if (!model) {
+            throw new FireModelError(`An attempt was made to register a Model subclass but the passed in constructor was undefined!${models.length > 0
+                ? ` [ ${models.length} models being registed during this call ]`
+                : ""}`, "firemodel/not-allowed");
+        }
+        if (typeof model !== "function" || !model.constructor) {
+            throw new FireModelError(`An attempt was made to register a Model subclass but the passed in constructor was the wrong type [ ${typeof model} ]!\nmodel passed was: ${model}`, "firemodel/not-allowed");
+        }
+        const modelName = new model().constructor.name;
+        registeredModels[modelName] = model;
+    });
+}
+function listRegisteredModels() {
+    return Object.keys(registeredModels);
+}
+function modelRegistryLookup(name) {
+    const model = registeredModels[name];
+    if (!name) {
+        throw new FireModelError(`Look failed because the model ${name} was not registered!`, "firemodel/not-allowed");
+    }
+    return model;
+}
+/**
+ * When you are building relationships to other `Model`'s it is often
+ * benefitial to just pass in the name of the `Model` rather than it's
+ * constructor as this avoids the dreaded "circular dependency" problem
+ * that occur when you try to pass in class constructors which depend
+ * on one another.
+ */
+const modelNameLookup = (name) => () => {
+    return modelRegistryLookup(name);
+};
+/**
+ * When you are defining a _relationship_ between `Model`'s it sometimes
+ * useful to just pass in the constructor to the other `Model`. This is in
+ * contrast to just passing a string name of the model.
+ *
+ * The advantage here is that the external model does not need to be
+ * "registered" separately whereas with a string name it would have to be.
+ */
+const modelConstructorLookup = (constructor) => () => {
+    // TODO: remove the "any"
+    return isConstructable(constructor) ? constructor : constructor();
+};
+// tslint:disable-next-line: ban-types
+function isConstructable(fn) {
+    try {
+        const f = new fn();
+        return true;
+    }
+    catch (e) {
+        return false;
+    }
+}
+
+function hasMany(
+/**
+ * either a _string_ representing the Model's class name
+ * or a _constructor_ for the Model class
+ *
+ * In order to support prior implementations we include the
+ * possibility that a user of this API will pass in a _function_
+ * to a _constructor_. This approach is now deprecated.
+ */
+fkClass, inverse) {
+    try {
+        const fkConstructor = typeof fkClass === "string"
+            ? modelNameLookup(fkClass)
+            : modelConstructorLookup(fkClass);
+        let inverseProperty;
+        let directionality;
+        if (Array.isArray(inverse)) {
+            [inverseProperty, directionality] = inverse;
+        }
+        else {
+            inverseProperty = inverse;
+            directionality = inverse ? "bi-directional" : "one-way";
+        }
+        const payload = {
+            isRelationship: true,
+            isProperty: false,
+            relType: "hasMany",
+            directionality,
+            fkConstructor
+        };
+        if (inverseProperty) {
+            payload.inverseProperty = inverseProperty;
+        }
+        return propertyReflector(Object.assign(Object.assign({}, payload), { type: "Object" }), relationshipsByModel);
+    }
+    catch (e) {
+        throw new DecoratorProblem("hasMany", e, { inverse });
+    }
+}
+
+function belongsTo(
+/**
+ * either a _string_ representing the Model's class name
+ * or a _constructor_ for the Model class.
+ *
+ * In order to support prior implementations we include the
+ * possibility that a user of this API will pass in a _function_
+ * to a _constructor_. This approach is now deprecated.
+ */
+fkClass, inverse) {
+    try {
+        const fkConstructor = typeof fkClass === "string"
+            ? modelNameLookup(fkClass)
+            : modelConstructorLookup(fkClass);
+        let inverseProperty;
+        let directionality;
+        if (Array.isArray(inverse)) {
+            [inverseProperty, directionality] = inverse;
+        }
+        else {
+            inverseProperty = inverse;
+            directionality = inverse ? "bi-directional" : "one-way";
+        }
+        const payload = {
+            isRelationship: true,
+            isProperty: false,
+            relType: "hasOne",
+            directionality,
+            fkConstructor
+        };
+        if (inverseProperty) {
+            payload.inverseProperty = inverseProperty;
+        }
+        return propertyReflector(Object.assign(Object.assign({}, payload), { type: "String" }), relationshipsByModel);
+    }
+    catch (e) {
+        throw new DecoratorProblem("hasOne", e, { inverse });
+    }
+}
+const ownedBy = belongsTo;
+const hasOne = belongsTo;
+
+/** DB Indexes accumlated by index decorators */
+const indexesForModel = {};
+/**
+ * Gets all the db indexes for a given model
+ */
+function getDbIndexes(modelKlass) {
+    const modelName = modelKlass.constructor.name;
+    return modelName === "Model"
+        ? hashToArray(indexesForModel[modelName])
+        : (hashToArray(indexesForModel[modelName]) || []).concat(hashToArray(indexesForModel.Model));
+}
+const index = propertyReflector({
+    isIndex: true,
+    isUniqueIndex: false
+}, indexesForModel);
+const uniqueIndex = propertyReflector({
+    isIndex: true,
+    isUniqueIndex: true
+}, indexesForModel);
+
+function mock(value, ...rest) {
+    return propertyReflector({ mockType: value, mockParameters: rest }, propertiesByModel);
 }
 
 const meta = {};
@@ -3707,36 +3763,19 @@ function model(options = {}) {
                 console.log(`You set the audit property to "${options.audit}" which is invalid. Valid properties are true, false, and "server". The audit property will be set to false for now.`);
                 options.audit = false;
             }
-            const meta = {
-                ...options,
-                ...{ isProperty: isProperty(modelOfObject) },
-                ...{ property: getModelProperty(modelOfObject) },
-                ...{ properties: getProperties(modelOfObject) },
-                ...{ isRelationship: isRelationship(modelOfObject) },
-                ...{ relationship: getModelRelationship(modelOfObject) },
-                ...{ relationships: getRelationships(modelOfObject) },
-                ...{ dbIndexes: getDbIndexes(modelOfObject) },
-                ...{ pushKeys: getPushKeys(modelOfObject) },
-                ...{ dbOffset: options.dbOffset ? options.dbOffset : "" },
-                ...{ audit: options.audit ? options.audit : false },
-                ...{ plural: options.plural },
-                ...{
-                    allProperties: [
-                        ...getProperties(modelOfObject).map(p => p.property),
-                        ...getRelationships(modelOfObject).map(p => p.property)
-                    ]
-                },
-                ...{
-                    localPostfix: options.localPostfix === undefined ? "all" : options.localPostfix
-                },
-                ...{
-                    localModelName: options.localModelName === undefined
-                        ? modelOfObject.constructor.name.slice(0, 1).toLowerCase() +
-                            modelOfObject.constructor.name.slice(1)
-                        : options.localModelName
-                },
-                ...{ isDirty }
-            };
+            const meta = Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign({}, options), { isProperty: isProperty(modelOfObject) }), { property: getModelProperty(modelOfObject) }), { properties: getProperties(modelOfObject) }), { isRelationship: isRelationship(modelOfObject) }), { relationship: getModelRelationship(modelOfObject) }), { relationships: getRelationships(modelOfObject) }), { dbIndexes: getDbIndexes(modelOfObject) }), { pushKeys: getPushKeys(modelOfObject) }), { dbOffset: options.dbOffset ? options.dbOffset : "" }), { audit: options.audit ? options.audit : false }), { plural: options.plural }), {
+                allProperties: [
+                    ...getProperties(modelOfObject).map(p => p.property),
+                    ...getRelationships(modelOfObject).map(p => p.property)
+                ]
+            }), {
+                localPostfix: options.localPostfix === undefined ? "all" : options.localPostfix
+            }), {
+                localModelName: options.localModelName === undefined
+                    ? modelOfObject.constructor.name.slice(0, 1).toLowerCase() +
+                        modelOfObject.constructor.name.slice(1)
+                    : options.localModelName
+            }), { isDirty });
             addModelMeta(target.constructor.name.toLowerCase(), meta);
             Object.defineProperty(target.prototype, "META", {
                 get() {
@@ -3765,39 +3804,6 @@ function model(options = {}) {
         return addMetaProperty();
     };
 }
-
-// TODO: make the defaultValue typed
-/**
- * Allows setting a default value for a given property
- */
-function defaultValue(value) {
-    return propertyReflector({ defaultValue: value }, propertiesByModel);
-}
-
-/**
- * A helper method when designing relationships. In most cases when you
- * state a "inverse property" it means that the two entities can be
- * bi-directionly managed. If, however, you either don't want them to be
- * or in some cases the relationship can be "lossy" and automatic bi-directional
- * management is not possible.
- *
- * When you find yourself in this situation you can use this function in the
- * following manner:
-```typescript
-export default MyModel extends Model {
-  @hasMany(Person, OneWay('children')) parent: fk;
-}
-```
- */
-function OneWay(inverseProperty) {
-    return [inverseProperty, "one-way"];
-}
-
-function mock(value, ...rest) {
-    return propertyReflector({ mockType: value, mockParameters: rest }, propertiesByModel);
-}
-
-const encrypt = propertyReflector({ encrypt: true }, propertiesByModel);
 
 /*! *****************************************************************************
 Copyright (c) Microsoft Corporation.
@@ -3897,6 +3903,15 @@ class FireModelProxyError extends FireModelError {
     }
 }
 
+class RecordCrudFailure extends FireModelError {
+    constructor(rec, crudAction, transactionId, e) {
+        super("", e.name !== "Error" ? e.name : `firemodel/record-${crudAction}-failure`);
+        const message = `Attempt to "${crudAction}" "${capitalize(rec.modelName)}::${rec.id}" failed [ ${transactionId} ] ${e ? e.message : "for unknown reasons"}`;
+        this.message = message;
+        this.stack = e.stack;
+    }
+}
+
 class MissingReciprocalInverse extends FireModelError {
     constructor(rec, property) {
         super("", "firemodel/missing-reciprocal-inverse");
@@ -3928,6 +3943,23 @@ class IncorrectReciprocalInverse extends FireModelError {
     }
 }
 
+/**
+ * When the record's META points to a inverse property on the FK; this error
+ * presents when that `FK[inverseProperty]` doesn't exist in the FK's meta.
+ */
+class MissingInverseProperty extends FireModelError {
+    constructor(rec, property) {
+        super("", "firemodel/missing-inverse-property");
+        const fkRecord = Record.create(rec.META.relationship(property).fkConstructor(), { db: rec.db });
+        this.from = capitalize(rec.modelName);
+        this.to = capitalize(fkRecord.modelName);
+        const pkInverse = rec.META.relationship(property).inverseProperty;
+        this.inverseProperty = pkInverse;
+        const message = `Missing Inverse Property: the model "${this.from}" has defined a relationship with the "${this.to}" model where the FK property is "${property}" and it states that the "inverse property" is "${pkInverse}" on the ${this.to} model. Unfortunately the ${this.to} model does NOT define a property called "${this.inverseProperty}".`;
+        this.message = message;
+    }
+}
+
 class NotHasManyRelationship extends FireModelError {
     constructor(rec, property, method) {
         super("", "firemodel/not-hasMany-reln");
@@ -3952,21 +3984,31 @@ class UnknownRelationshipProblem extends FireModelError {
     }
 }
 
+function UnwatchedLocalEvent(rec, event) {
+    const meta = {
+        dynamicPathProperties: rec.dynamicPathComponents,
+        compositeKey: rec.compositeKey,
+        modelConstructor: rec.modelConstructor,
+        modelName: rec.modelName,
+        pluralName: rec.pluralName,
+        localModelName: rec.META.localModelName,
+        localPath: rec.localPath,
+        localPostfix: rec.META.localPostfix
+    };
+    return Object.assign(Object.assign(Object.assign({}, event), meta), { dbPath: rec.dbPath, watcherSource: "unknown" });
+}
+
 /**
- * When the record's META points to a inverse property on the FK; this error
- * presents when that `FK[inverseProperty]` doesn't exist in the FK's meta.
+ * wraps a Vuex function's to Mutation.commit() function so it's
+ * signature looks like a Redux call to dispatch
  */
-class MissingInverseProperty extends FireModelError {
-    constructor(rec, property) {
-        super("", "firemodel/missing-inverse-property");
-        const fkRecord = Record.create(rec.META.relationship(property).fkConstructor(), { db: rec.db });
-        this.from = capitalize(rec.modelName);
-        this.to = capitalize(fkRecord.modelName);
-        const pkInverse = rec.META.relationship(property).inverseProperty;
-        this.inverseProperty = pkInverse;
-        const message = `Missing Inverse Property: the model "${this.from}" has defined a relationship with the "${this.to}" model where the FK property is "${property}" and it states that the "inverse property" is "${pkInverse}" on the ${this.to} model. Unfortunately the ${this.to} model does NOT define a property called "${this.inverseProperty}".`;
-        this.message = message;
-    }
+function VeuxWrapper(vuexDispatch) {
+    /** vuex wrapped redux dispatch function */
+    return async (reduxAction) => {
+        const type = reduxAction.type;
+        delete reduxAction.type;
+        return vuexDispatch(type, reduxAction);
+    };
 }
 
 /** Enumeration of all Firemodel Actions that will be fired */
@@ -4045,19 +4087,6 @@ var FmEvents;
     FmEvents["APP_DISCONNECTED"] = "@firemodel/APP_DISCONNECTED";
     FmEvents["UNEXPECTED_ERROR"] = "@firemodel/UNEXPECTED_ERROR";
 })(FmEvents || (FmEvents = {}));
-
-/**
- * wraps a Vuex function's to Mutation.commit() function so it's
- * signature looks like a Redux call to dispatch
- */
-function VeuxWrapper(vuexDispatch) {
-    /** vuex wrapped redux dispatch function */
-    return async (reduxAction) => {
-        const type = reduxAction.type;
-        delete reduxAction.type;
-        return vuexDispatch(type, reduxAction);
-    };
-}
 
 /**
  * Provides a logical test to see if the passed in event is a LambdaProxy request or just a
@@ -4526,36 +4555,13 @@ class FireModel {
             agg[pathJoin(this.dbPath, curr)] = rec.get(curr);
             return agg;
         }, {});
-        return { ...added, ...removed, ...updated };
+        return Object.assign(Object.assign(Object.assign({}, added), removed), updated);
     }
 }
 FireModel.auditLogs = "/auditing";
 FireModel._dispatchActive = false;
 /** the dispatch function used to interact with frontend frameworks */
 FireModel._dispatch = defaultDispatch;
-
-class RecordCrudFailure extends FireModelError {
-    constructor(rec, crudAction, transactionId, e) {
-        super("", e.name !== "Error" ? e.name : `firemodel/record-${crudAction}-failure`);
-        const message = `Attempt to "${crudAction}" "${capitalize(rec.modelName)}::${rec.id}" failed [ ${transactionId} ] ${e ? e.message : "for unknown reasons"}`;
-        this.message = message;
-        this.stack = e.stack;
-    }
-}
-
-function UnwatchedLocalEvent(rec, event) {
-    const meta = {
-        dynamicPathProperties: rec.dynamicPathComponents,
-        compositeKey: rec.compositeKey,
-        modelConstructor: rec.modelConstructor,
-        modelName: rec.modelName,
-        pluralName: rec.pluralName,
-        localModelName: rec.META.localModelName,
-        localPath: rec.localPath,
-        localPostfix: rec.META.localPostfix
-    };
-    return { ...event, ...meta, dbPath: rec.dbPath, watcherSource: "unknown" };
-}
 
 /**
  * indicates which watcherId's have returned their initial
@@ -4631,12 +4637,11 @@ watcherContext) => {
             if (watcherContext.watcherPaths) {
                 const fullPath = watcherContext.watcherPaths.find(i => i.includes(event.key));
                 const compositeKey = Record.getCompositeKeyFromPath(watcherContext.modelConstructor, fullPath);
-                event.value = { ...(event.value || {}), ...compositeKey };
+                event.value = Object.assign(Object.assign({}, (event.value || {})), compositeKey);
             }
             // record events (both server and local)
             const recordProps = typeof event.value === "object"
-                ? { id: event.key, ...event.value }
-                : { id: event.key };
+                ? Object.assign({ id: event.key }, event.value) : { id: event.key };
             const rec = Record.createWith(watcherContext.modelConstructor, recordProps);
             let type;
             switch (event.kind) {
@@ -4658,11 +4663,7 @@ watcherContext) => {
                 dbPath: rec.dbPath
             };
         }
-        const reduxAction = {
-            ...watcherContext,
-            ...event,
-            ...eventContext
-        };
+        const reduxAction = Object.assign(Object.assign(Object.assign({}, watcherContext), event), eventContext);
         const results = await coreDispatchFn(reduxAction);
         // The mock server and client are now in sync
         hasInitialized(watcherContext.watcherId);
@@ -4833,7 +4834,7 @@ function buildRelationshipPaths(rec, property, fkRef, options = {}) {
 
 var toStringFunction = Function.prototype.toString;
 var create = Object.create, defineProperty$1 = Object.defineProperty, getOwnPropertyDescriptor = Object.getOwnPropertyDescriptor, getOwnPropertyNames = Object.getOwnPropertyNames, getOwnPropertySymbols = Object.getOwnPropertySymbols, getPrototypeOf = Object.getPrototypeOf;
-var _a = Object.prototype, hasOwnProperty$6 = _a.hasOwnProperty, propertyIsEnumerable = _a.propertyIsEnumerable;
+var _a = Object.prototype, hasOwnProperty$9 = _a.hasOwnProperty, propertyIsEnumerable = _a.propertyIsEnumerable;
 /**
  * @enum
  *
@@ -4915,7 +4916,7 @@ var getObjectCloneLoose = function (object, realm, handleCopy, cache) {
     // set in the cache immediately to be able to reuse the object recursively
     cache.set(object, clone);
     for (var key in object) {
-        if (hasOwnProperty$6.call(object, key)) {
+        if (hasOwnProperty$9.call(object, key)) {
             clone[key] = handleCopy(object[key], cache);
         }
     }
@@ -4958,8 +4959,24 @@ var getObjectCloneStrict = function (object, realm, handleCopy, cache) {
             property = properties[index];
             if (property !== 'callee' && property !== 'caller') {
                 descriptor = getOwnPropertyDescriptor(object, property);
-                descriptor.value = handleCopy(object[property], cache);
-                defineProperty$1(clone, property, descriptor);
+                if (descriptor) {
+                    // Only clone the value if actually a value, not a getter / setter.
+                    if (!descriptor.get && !descriptor.set) {
+                        descriptor.value = handleCopy(object[property], cache);
+                    }
+                    try {
+                        defineProperty$1(clone, property, descriptor);
+                    }
+                    catch (error) {
+                        // Tee above can fail on node in edge cases, so fall back to the loose assignment.
+                        clone[property] = descriptor.value;
+                    }
+                }
+                else {
+                    // In extra edge cases where the property descriptor cannot be retrived, fall back to
+                    // the loose assignment.
+                    clone[property] = handleCopy(object[property], cache);
+                }
             }
         }
     }
@@ -5098,6 +5115,11 @@ function copy(object, options) {
             object.forEach(function (value) {
                 clone.add(handleCopy(value, cache));
             });
+            return clone;
+        }
+        // blobs
+        if (realm.Blob && object instanceof realm.Blob) {
+            clone = new Blob([object], { type: object.type });
             return clone;
         }
         // buffers (node-only)
@@ -5298,11 +5320,7 @@ function addTimestamps(obj) {
     const datetime = new Date().getTime();
     const output = {};
     Object.keys(obj).forEach((i) => {
-        output[i] = {
-            ...obj[i],
-            createdAt: datetime,
-            lastUpdated: datetime,
-        };
+        output[i] = Object.assign(Object.assign({}, obj[i]), { createdAt: datetime, lastUpdated: datetime });
     });
     return output;
 }
@@ -5859,16 +5877,10 @@ class WatchBase {
         try {
             addToWatcherPool(watcherItem);
             // dispatch "starting"; no need to wait for promise
-            (this._dispatcher || FireModel.dispatch)({
-                type: FmEvents.WATCHER_STARTING,
-                ...watcherItem,
-            });
+            (this._dispatcher || FireModel.dispatch)(Object.assign({ type: FmEvents.WATCHER_STARTING }, watcherItem));
             await waitForInitialization(watcherItem);
             // console.log("watcher initialized", watcherItem);
-            await (this._dispatcher || FireModel.dispatch)({
-                type: FmEvents.WATCHER_STARTED,
-                ...watcherItem,
-            });
+            await (this._dispatcher || FireModel.dispatch)(Object.assign({ type: FmEvents.WATCHER_STARTED }, watcherItem));
             return watcherItem;
         }
         catch (e) {
@@ -6019,10 +6031,7 @@ class WatchList extends WatchBase {
         }
         for (const id of ids) {
             this._underlyingRecordWatchers.push(this._options.offsets
-                ? Watch.record(this._modelConstructor, {
-                    ...(typeof id === "string" ? { id } : id),
-                    ...this._options.offsets,
-                })
+                ? Watch.record(this._modelConstructor, Object.assign(Object.assign({}, (typeof id === "string" ? { id } : id)), this._options.offsets))
                 : Watch.record(this._modelConstructor, id));
         }
         this._watcherSource = "list-of-records";
@@ -6213,10 +6222,7 @@ class WatchList extends WatchBase {
     setPathDependantProperties() {
         if (this._dynamicProperties.length === 0 ||
             Object.keys(this._offsets).length > 0) {
-            const lst = List.create(this._modelConstructor, {
-                ...this._options,
-                offsets: this._offsets,
-            });
+            const lst = List.create(this._modelConstructor, Object.assign(Object.assign({}, this._options), { offsets: this._offsets }));
             this._query = SerializedQuery.create(this.db, lst.dbPath);
             this._modelName = lst.modelName;
             this._pluralName = lst.pluralName;
@@ -6329,7 +6335,7 @@ class Watch {
         if (!hashCode) {
             const pool = getWatcherPool();
             if (Object.keys(pool).length > 0) {
-                const keysAndPaths = Object.keys(pool).reduce((agg, key) => ({ ...agg, [key]: pool[key].watcherPaths }), {});
+                const keysAndPaths = Object.keys(pool).reduce((agg, key) => (Object.assign(Object.assign({}, agg), { [key]: pool[key].watcherPaths })), {});
                 const dispatch = pool[firstKey(pool)].dispatch;
                 db.unWatch();
                 clearWatcherPool();
@@ -6433,8 +6439,7 @@ function locallyUpdateFkOnRecord(rec, fkId, event) {
         case "add":
             rec._data[event.property] =
                 relnType === "hasMany"
-                    ? { ...rec.data[event.property], ...{ [fkId]: true } }
-                    : fkId;
+                    ? Object.assign(Object.assign({}, rec.data[event.property]), { [fkId]: true }) : fkId;
             return;
         case "remove":
             if (relnType === "hasMany") {
@@ -6563,10 +6568,10 @@ async function localRelnOp(rec, event, type) {
         // locally modify Record's values
         // const ids = extractFksFromPaths(rec, event.property, event.paths);
         event.fks.map((fk) => {
-            locallyUpdateFkOnRecord(rec, fk, { ...event, type });
+            locallyUpdateFkOnRecord(rec, fk, Object.assign(Object.assign({}, event), { type }));
         });
         // local optimistic dispatch
-        rec.dispatch({ ...event, type });
+        rec.dispatch(Object.assign(Object.assign({}, event), { type }));
         const ref = rec.db.ref("/");
         // TODO: replace with multiPathSet/transaction
         await ref.update(event.paths.reduce((acc, curr) => {
@@ -6579,7 +6584,7 @@ async function localRelnOp(rec, event, type) {
     }
 }
 async function relnConfirmation(rec, event, type) {
-    rec.dispatch({ ...event, type });
+    rec.dispatch(Object.assign(Object.assign({}, event), { type }));
 }
 async function relnRollback(rec, event, type) {
     //
@@ -6588,7 +6593,7 @@ async function relnRollback(rec, event, type) {
      * front end framework will need to know as it probably
      * adjusted _optimistically_
      */
-    rec.dispatch({ ...event, type });
+    rec.dispatch(Object.assign(Object.assign({}, event), { type }));
 }
 
 /**
@@ -7110,7 +7115,7 @@ class Record extends FireModel {
         });
         // set firemodel state locally
         const currentState = this.get(property) || {};
-        const newState = { ...currentState, [key$1]: value };
+        const newState = Object.assign(Object.assign({}, currentState), { [key$1]: value });
         await this.set(property, newState);
         return key$1;
     }
@@ -7146,13 +7151,10 @@ class Record extends FireModel {
             throw new FireModelError(`You called update on a hash which has relationships included in it. Please only use "update" for updating properties. The relationships you were attempting to update were: ${relProps.join(", ")}.`, `firemodel/not-allowed`);
         }
         const lastUpdated = new Date().getTime();
-        const changed = {
-            ...props,
-            lastUpdated,
-        };
+        const changed = Object.assign(Object.assign({}, props), { lastUpdated });
         const rollback = copy(this.data);
         // changes local Record to include updates immediately
-        this._data = { ...this.data, ...changed };
+        this._data = Object.assign(Object.assign({}, this.data), changed);
         // performs a two phase commit using dispatch messages
         await this._localCrudOperation("update" /* update */, rollback);
         return;
@@ -7193,7 +7195,7 @@ class Record extends FireModel {
         };
         // locally change Record values
         this.META.isDirty = true;
-        this._data = { ...this._data, ...changed };
+        this._data = Object.assign(Object.assign({}, this._data), changed);
         // dispatch
         if (!silent) {
             await this._localCrudOperation("update" /* update */, rollback, {
@@ -7501,10 +7503,7 @@ class Record extends FireModel {
      * _mocking_
      */
     async _localCrudOperation(crudAction, priorValue, options = {}) {
-        options = {
-            ...{ silent: false, silentAcceptance: false },
-            ...options,
-        };
+        options = Object.assign({ silent: false, silentAcceptance: false }, options);
         const transactionId = "t-" +
             Math.random().toString(36).substr(2, 5) +
             "-" +
@@ -7551,11 +7550,7 @@ class Record extends FireModel {
             if (!options.silent) {
                 // Note: if used on frontend, the mutations must be careful to
                 // set this to the right path considering there is no watcher
-                await this.dispatch(UnwatchedLocalEvent(this, {
-                    type: actionTypeStart,
-                    ...event,
-                    value: withoutMetaOrPrivate(this.data),
-                }));
+                await this.dispatch(UnwatchedLocalEvent(this, Object.assign(Object.assign({ type: actionTypeStart }, event), { value: withoutMetaOrPrivate(this.data) })));
             }
         }
         else {
@@ -7563,7 +7558,7 @@ class Record extends FireModel {
             const dispatch = WatchDispatcher(this.dispatch);
             for (const watcher of watchers) {
                 if (!options.silent) {
-                    await dispatch(watcher)({ type: actionTypeStart, ...event });
+                    await dispatch(watcher)(Object.assign({ type: actionTypeStart }, event));
                 }
             }
         }
@@ -7627,18 +7622,13 @@ class Record extends FireModel {
             // send confirm event
             if (!options.silent && !options.silentAcceptance) {
                 if (watchers.length === 0) {
-                    await this.dispatch(UnwatchedLocalEvent(this, {
-                        type: actionTypeEnd,
-                        ...event,
-                        transactionId,
-                        value: withoutMetaOrPrivate(this.data),
-                    }));
+                    await this.dispatch(UnwatchedLocalEvent(this, Object.assign(Object.assign({ type: actionTypeEnd }, event), { transactionId, value: withoutMetaOrPrivate(this.data) })));
                 }
                 else {
                     const dispatch = WatchDispatcher(this.dispatch);
                     for (const watcher of watchers) {
                         if (!options.silent) {
-                            await dispatch(watcher)({ type: actionTypeEnd, ...event });
+                            await dispatch(watcher)(Object.assign({ type: actionTypeEnd }, event));
                         }
                     }
                 }
@@ -7649,12 +7639,7 @@ class Record extends FireModel {
         }
         catch (e) {
             // send failure event
-            await this.dispatch(UnwatchedLocalEvent(this, {
-                type: actionTypeFailure,
-                ...event,
-                transactionId,
-                value: withoutMetaOrPrivate(this.data),
-            }));
+            await this.dispatch(UnwatchedLocalEvent(this, Object.assign(Object.assign({ type: actionTypeFailure }, event), { transactionId, value: withoutMetaOrPrivate(this.data) })));
             throw new RecordCrudFailure(this, crudAction, transactionId, e);
         }
     }
@@ -10346,7 +10331,7 @@ function fakeIt(helper, type, ...rest) {
     }
     /** for mocks which use a hash-based second param */
     function options(defaultValue = {}) {
-        return rest[0] ? { ...defaultValue, ...rest[0] } : undefined;
+        return rest[0] ? Object.assign(Object.assign({}, defaultValue), rest[0]) : undefined;
     }
     switch (type) {
         case "id":
@@ -10556,7 +10541,7 @@ function mockProperties(db, config = { relationshipBehavior: "ignore" }, excepti
             recProps[p] = await mockValue(db, prop, mh);
         }
         // use mocked values but allow exceptions to override
-        const finalized = { ...recProps, ...exceptions };
+        const finalized = Object.assign(Object.assign({}, recProps), exceptions);
         // write to mock db and retain a reference to same model
         record = await Record.add(record.modelConstructor, finalized, {
             silent: true,
@@ -10722,15 +10707,9 @@ function createCompositeKey(rec) {
         if (!model[key]) {
             throw new FireModelError(`You can not create a composite key on a ${capitalize(rec.modelName)} without first setting the '${key}' property!`, "firemodel/not-ready");
         }
-        return {
-            ...prev,
-            ...{ [key]: model[key] }
-        };
+        return Object.assign(Object.assign({}, prev), { [key]: model[key] });
     }, {});
-    return rec.dynamicPathComponents.reduce((prev, key) => ({
-        ...prev,
-        ...dynamicPathComponents
-    }), { id: rec.id });
+    return rec.dynamicPathComponents.reduce((prev, key) => (Object.assign(Object.assign({}, prev), dynamicPathComponents)), { id: rec.id });
 }
 
 /*
@@ -15333,13 +15312,7 @@ class DexieDb {
         models.forEach((m) => {
             const r = Record.create(m);
             this._constructors[r.pluralName] = m;
-            this._meta[r.pluralName] = {
-                ...r.META,
-                modelName: r.modelName,
-                hasDynamicPath: r.hasDynamicPath,
-                dynamicPathComponents: r.dynamicPathComponents,
-                pluralName: r.pluralName,
-            };
+            this._meta[r.pluralName] = Object.assign(Object.assign({}, r.META), { modelName: r.modelName, hasDynamicPath: r.hasDynamicPath, dynamicPathComponents: r.dynamicPathComponents, pluralName: r.pluralName });
             this._singularToPlural[r.modelName] = r.pluralName;
         });
     }
@@ -15612,5 +15585,5 @@ class DexieDb {
     }
 }
 
-export { AuditLog, DexieDb, DexieList, DexieRecord, FireModel, FmEvents, List, Mock, Model, OneWay, Record, RelationshipCardinality, RelationshipPolicy, VeuxWrapper, Watch, belongsTo, constrain, constrainedProperty, createCompositeKey, defaultValue, desc, encrypt, key as fbKey, hasMany, hasOne, index, isConstructable, length, listRegisteredModels, max, min, mock, model, modelConstructorLookup, modelNameLookup, modelRegister, modelRegistryLookup, ownedBy, pathJoin$1 as pathJoin, property, pushKey, uniqueIndex };
+export { AuditLog, DexieDb, DexieList, DexieRecord, FireModel, FmEvents, List, Mock, Model, OneWay, Record, RelationshipCardinality, RelationshipPolicy, UnwatchedLocalEvent, VeuxWrapper, Watch, addPropertyToModelMeta, addRelationshipToModelMeta, belongsTo, constrain, constrainedProperty, createCompositeKey, defaultValue, desc, encrypt, key as fbKey, getDbIndexes, getModelProperty, getModelRelationship, getProperties, getPushKeys, getRelationships, hasMany, hasOne, index, indexesForModel, isConstructable, isProperty, isRelationship, length, listRegisteredModels, max, min, mock, model, modelConstructorLookup, modelNameLookup, modelRegister, modelRegistryLookup, ownedBy, pathJoin$1 as pathJoin, propertiesByModel, property, propertyDecorator, propertyReflector, pushKey, relationshipsByModel, uniqueIndex };
 //# sourceMappingURL=index.js.map

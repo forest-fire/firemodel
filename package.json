@@ -28,6 +28,7 @@
     "build:typings": "tsc -P tsconfig.typings.json --emitDeclarationOnly",
     "build:rollup": "rollup -c",
     "build:nuclear": "yarn clean:nuclear && yarn build",
+    "autoindex": "yarn do autoindex",
     "test": "jest",
     "deploy": "run-s clean build build:typings",
     "package": "./node_modules/.bin/ts-node ./scripts/package.ts ",

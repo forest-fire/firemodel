@@ -3,4 +3,4 @@ export * from "./firemodel-types";
 export * from "./general";
 export * from "./record-types";
 export * from "./relationships";
-export * from "./optional/dexie";
+export * from "./optional/index";
