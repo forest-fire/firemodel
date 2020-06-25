@@ -1,14 +1,15 @@
 import "reflect-metadata";
 
-import { IFmModelPropertyMeta, IFmModelRelationshipMeta } from "./types";
 import {
+  IFmModelPropertyMeta,
+  IFmModelRelationshipMeta,
+  Model,
   addPropertyToModelMeta,
+  addRelationshipToModelMeta,
   getProperties,
-} from "./model-meta/property-store";
+} from "@/private";
 
 import { IDictionary } from "common-types";
-import { Model } from "../models/Model";
-import { addRelationshipToModelMeta } from "./model-meta/relationship-store";
 import { get } from "lodash-es";
 import { set } from "lodash-es";
 

@@ -1,10 +1,7 @@
 import { FmEvents, IFmLocalEvent } from "./index";
-import { IFmLocalRecordEvent, IFmLocalRelationshipEvent } from "./IFmLocalEvent";
+import { ICompositeKey, IFmLocalRecordEvent, IFmLocalRelationshipEvent, IWatcherEventContext, Model } from "../private";
 import { IPathBasedWatchEvent, IValueBasedWatchEvent } from "universal-fire";
-import { ICompositeKey } from "../@types";
 import { IDictionary } from "common-types";
-import { IWatcherEventContext } from "../state-mgmt";
-import { Model } from "../models/Model";
 export declare type IFmEventType = "value" | "child_added" | "child_moved" | "child_removed" | "child_changed";
 /**
  * An event coming from Firebase; the event property

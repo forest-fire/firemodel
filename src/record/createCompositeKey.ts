@@ -1,6 +1,10 @@
-import { Model, Record, ICompositeKey } from "..";
-import { FireModelError } from "../errors";
-import { capitalize } from "../util";
+import {
+  FireModelError,
+  ICompositeKey,
+  Model,
+  Record,
+  capitalize,
+} from "@/private";
 
 /**
  * Given a `Record` which defines all properties in it's
@@ -29,7 +33,7 @@ export function createCompositeKey<T extends Model = Model>(
       }
       return {
         ...prev,
-        ...{ [key]: model[key as keyof typeof model] }
+        ...{ [key]: model[key as keyof typeof model] },
       };
     },
     {}
@@ -38,7 +42,7 @@ export function createCompositeKey<T extends Model = Model>(
   return rec.dynamicPathComponents.reduce(
     (prev, key) => ({
       ...prev,
-      ...dynamicPathComponents
+      ...dynamicPathComponents,
     }),
     { id: rec.id }
   ) as ICompositeKey<T>;

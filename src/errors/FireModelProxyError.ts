@@ -1,4 +1,4 @@
-import { FireModelError } from ".";
+import { FireModelError } from "@/private";
 
 export class FireModelProxyError extends FireModelError {
   public firemodel = true;

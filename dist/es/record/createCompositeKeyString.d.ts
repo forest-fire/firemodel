@@ -1,4 +1,4 @@
-import { Model, Record } from "..";
+import { Model, Record } from "../private";
 import { IDictionary } from "common-types";
 /**
  * Creates a string based composite key if the passed in record

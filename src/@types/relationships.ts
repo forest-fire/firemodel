@@ -1,4 +1,4 @@
-import { FireModelError } from "../errors";
+import { FireModelError } from "@/private";
 
 /**
  * **IFmRelationshipOperation**

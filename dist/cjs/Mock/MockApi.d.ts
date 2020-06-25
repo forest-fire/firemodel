@@ -1,7 +1,7 @@
 import { IMockResponse } from "./types";
 import { IAbstractedDatabase } from "universal-fire";
 import { IDictionary } from "common-types";
-export default function API<T>(db: IAbstractedDatabase, modelConstructor: new () => T): {
+export declare function MockApi<T>(db: IAbstractedDatabase, modelConstructor: new () => T): {
     /**
      * generate
      *

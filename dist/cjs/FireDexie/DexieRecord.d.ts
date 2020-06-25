@@ -1,8 +1,5 @@
-import { IModelConstructor } from "../index";
-import { IPrimaryKey } from "../@types";
 import { Table } from "dexie";
-import { Model } from "../models/Model";
-import { IDexieModelMeta } from "../@types/optional/dexie";
+import { IDexieModelMeta, IModelConstructor, IPrimaryKey, Model } from "../private";
 /**
  * Provides a simple API to do CRUD operations
  * on Dexie/IndexDB which resembles the Firemodel

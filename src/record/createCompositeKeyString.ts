@@ -1,4 +1,5 @@
-import { Model, Record, createCompositeKey } from "..";
+import { Model, Record, createCompositeKey } from "@/private";
+
 import { IDictionary } from "common-types";
 
 /**
@@ -20,7 +21,7 @@ export function createCompositeRef(cKey: IDictionary & { id: string }) {
   return Object.keys(cKey).length > 1
     ? cKey.id +
         Object.keys(cKey)
-          .filter(k => k !== "id")
-          .map(k => `::${k}:${cKey[k]}`)
+          .filter((k) => k !== "id")
+          .map((k) => `::${k}:${cKey[k]}`)
     : cKey.id;
 }

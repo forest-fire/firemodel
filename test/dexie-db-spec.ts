@@ -1,13 +1,14 @@
+import "./testing/fake-indexeddb";
+
+import { Car } from "./testing/Car";
+import DeepPerson from "./testing/dynamicPaths/DeepPerson";
+import { DeeperPerson } from "./testing/dynamicPaths/DeeperPerson";
 // tslint:disable: no-implicit-dependencies
 // tslint:disable: no-submodule-imports
-import { DexieDb } from "../src/dexie/DexieDb";
-import { Car } from "./testing/Car";
+import { DexieDb } from "../src/FireDexie/DexieDb";
 import { Person } from "./testing/Person";
-import { DeeperPerson } from "./testing/dynamicPaths/DeeperPerson";
-import "./testing/fake-indexeddb";
-import indexedDB from "fake-indexeddb";
 import fdbKeyRange from "fake-indexeddb/lib/FDBKeyRange";
-import DeepPerson from "./testing/dynamicPaths/DeepPerson";
+import indexedDB from "fake-indexeddb";
 
 DexieDb.indexedDB(indexedDB, fdbKeyRange);
 
@@ -18,7 +19,7 @@ const cars = [
     cost: 23000,
     modelYear: 2018,
     lastUpdated: 231231,
-    createAt: 8980
+    createAt: 8980,
   },
   {
     id: "456",
@@ -26,7 +27,7 @@ const cars = [
     cost: 46000,
     modelYear: 2016,
     lastUpdated: 231232,
-    createAt: 8981
+    createAt: 8981,
   },
   {
     id: "789",
@@ -34,8 +35,8 @@ const cars = [
     cost: 50000,
     modelYear: 2019,
     lastUpdated: 231233,
-    createAt: 8982
-  }
+    createAt: 8982,
+  },
 ];
 
 describe("DexieModel => ", () => {
@@ -53,29 +54,23 @@ describe("DexieModel => ", () => {
     expect(d.modelNames).toEqual(expect.arrayContaining(["person"]));
   });
 
-  it(
-    "meta information lookup works with singular and plural model name",
-    async () => {
-      const d = new DexieDb("testing", Car);
-      expect(d.meta("car")).toBeInstanceOf(Object);
-      expect(d.meta("car").allProperties).toBeInstanceOf(Array);
-      expect(d.meta("cars")).toBeInstanceOf(Object);
-      expect(d.meta("cars").allProperties).toBeInstanceOf(Array);
-    }
-  );
+  it("meta information lookup works with singular and plural model name", async () => {
+    const d = new DexieDb("testing", Car);
+    expect(d.meta("car")).toBeInstanceOf(Object);
+    expect(d.meta("car").allProperties).toBeInstanceOf(Array);
+    expect(d.meta("cars")).toBeInstanceOf(Object);
+    expect(d.meta("cars").allProperties).toBeInstanceOf(Array);
+  });
 
-  it(
-    "Dexie model definition works for static pathed model with non-unique index",
-    async () => {
-      const d = new DexieDb("testing", Car);
-      expect(d.models.cars).toBeString();
-      expect(d.models.cars).toContain("&id");
-      expect(d.models.cars).toContain("modelYear");
-      expect(d.models.cars).toEqual(expect.not.arrayContaining(["&modelYear"]));
-      expect(d.models.cars).toContain("lastUpdated");
-      expect(d.models.cars).toContain("createdAt");
-    }
-  );
+  it("Dexie model definition works for static pathed model with non-unique index", async () => {
+    const d = new DexieDb("testing", Car);
+    expect(d.models.cars).toBeString();
+    expect(d.models.cars).toContain("&id");
+    expect(d.models.cars).toContain("modelYear");
+    expect(d.models.cars).toEqual(expect.not.arrayContaining(["&modelYear"]));
+    expect(d.models.cars).toContain("lastUpdated");
+    expect(d.models.cars).toContain("createdAt");
+  });
 
   it("Dexie model definition works for dynamically pathed model", async () => {
     const d = new DexieDb("testing", DeeperPerson);
@@ -120,23 +115,25 @@ describe("DexieModel => ", () => {
     expect(fancyCars.schema.primKey.keyPath).toBe("id");
 
     let uniqueIndexes = fancyCars.schema.indexes
-      .filter(i => i.unique)
-      .map(i => i.name);
+      .filter((i) => i.unique)
+      .map((i) => i.name);
     let nonUniqueIndexes = fancyCars.schema.indexes
-      .filter(i => !i.unique)
-      .map(i => i.name);
+      .filter((i) => !i.unique)
+      .map((i) => i.name);
 
     expect(nonUniqueIndexes).toEqual(expect.arrayContaining(["modelYear"]));
 
     expect(people.schema.primKey.name).toBe("[id+group]");
-    expect(people.schema.primKey.keyPath).toEqual(expect.arrayContaining(["group"]));
+    expect(people.schema.primKey.keyPath).toEqual(
+      expect.arrayContaining(["group"])
+    );
 
     uniqueIndexes = people.schema.indexes
-      .filter(i => i.unique)
-      .map(i => i.name);
+      .filter((i) => i.unique)
+      .map((i) => i.name);
     nonUniqueIndexes = people.schema.indexes
-      .filter(i => !i.unique)
-      .map(i => i.name);
+      .filter((i) => !i.unique)
+      .map((i) => i.name);
 
     expect(nonUniqueIndexes).toEqual(expect.arrayContaining(["createdAt"]));
 
@@ -148,20 +145,20 @@ describe("DexieModel => ", () => {
     if (db.isOpen()) {
       db.close();
     }
-    await db.open().catch(e => {
+    await db.open().catch((e) => {
       console.log(e);
     });
 
     const t = db.table(Car);
-    await t.bulkPut(cars).catch(e => {
+    await t.bulkPut(cars).catch((e) => {
       throw new Error(e);
     });
-    const car: Car = await t.get("123").catch(e => {
+    const car: Car = await t.get("123").catch((e) => {
       throw new Error(e);
     });
 
     expect(car).toBeInstanceOf(Car);
-    const expected = cars.find(i => i.id === "123");
+    const expected = cars.find((i) => i.id === "123");
     expect(car.modelYear).toBe(expected.modelYear);
   });
 });

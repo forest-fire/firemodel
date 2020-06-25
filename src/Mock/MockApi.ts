@@ -9,7 +9,7 @@ import { Record } from "../Record";
 
 let mockPrepared = false;
 
-export default function API<T>(
+export function MockApi<T>(
   db: IAbstractedDatabase,
   modelConstructor: new () => T
 ) {

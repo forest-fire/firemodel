@@ -1,4 +1,4 @@
-import { Model, Record } from "..";
+import { Model, Record } from "../private";
 /**
  * When creating a new record it is sometimes desirable to pass in
  * the "payload" of FK's instead of just the FK. This function facilitates

@@ -1,7 +1,5 @@
-import { IFnToModelConstructor } from "../record/relationships/modelRegistration";
+import { IFnToModelConstructor, Model, NamedFakes } from "../private";
 import { MockHelper } from "firemock";
-import { Model } from "../models/Model";
-import { NamedFakes } from "../Mock/index";
 export declare type FmRelationshipType = "hasMany" | "hasOne";
 /**
  * **IFmModelMeta**

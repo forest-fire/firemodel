@@ -16,10 +16,6 @@ const generalConfig = (moduleSystem) => ({
       tsconfig: `tsconfig.es.json`,
       typescript: require("ttypescript"),
       declaration: moduleSystem === "es" ? true : false,
-      plugins: [
-        { transform: "typescript-transform-paths" },
-        { transform: "typescript-transform-paths", afterDeclarations: true },
-      ],
     }),
   ],
 });

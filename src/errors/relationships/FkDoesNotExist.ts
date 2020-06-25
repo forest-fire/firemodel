@@ -1,6 +1,4 @@
-import { FireModelError } from "../FireModelError";
-import { Record } from "../../Record";
-import { Model } from "../../models/Model";
+import { FireModelError, Model } from "@/private";
 
 export class FkDoesNotExist<
   P extends Model,

@@ -5,27 +5,360 @@ Object.defineProperty(exports, '__esModule', { value: true });
 var universalFire = require('universal-fire');
 var firemock = require('firemock');
 
-/**
- * A helper method when designing relationships. In most cases when you
- * state a "inverse property" it means that the two entities can be
- * bi-directionly managed. If, however, you either don't want them to be
- * or in some cases the relationship can be "lossy" and automatic bi-directional
- * management is not possible.
- *
- * When you find yourself in this situation you can use this function in the
- * following manner:
-```typescript
-export default MyModel extends Model {
-  @hasMany(Person, OneWay('children')) parent: fk;
+class AuditBase {
+    constructor(modelKlass, options = {}) {
+        this._modelKlass = modelKlass;
+        this._record = Record.create(modelKlass);
+        this._db = options.db || FireModel.defaultDb;
+    }
+    get db() {
+        return this._db;
+    }
+    get dbPath() {
+        return pathJoin$1(FireModel.auditLogs, this._record.pluralName);
+    }
 }
-```
+
+class AuditList extends AuditBase {
+    constructor(modelKlass, options = {}) {
+        super(modelKlass, options);
+        this._query = universalFire.SerializedQuery.create(this.db, pathJoin$1(this.dbPath, "all"));
+    }
+    async first(howMany, offset = 0) {
+        this._query = this._query.limitToFirst(howMany).startAt(offset);
+        const log = await this.db.getList(this._query);
+        return log || [];
+    }
+    async last(howMany, offset = 0) {
+        this._query = this._query.limitToLast(howMany).startAt(offset);
+        const log = await this.db.getList(this._query);
+        return log || [];
+    }
+    async since(when) {
+        this._query = this._query.orderByChild("createdAt").startAt(when);
+        const log = await this.db.getList(this._query);
+        return log || [];
+    }
+    async before(when) {
+        this._query = this._query.orderByChild("createdAt").endAt(when);
+        const log = await this.db.getList(this._query);
+        return log || [];
+    }
+    async between(from, to) {
+        this._query = this._query.orderByChild("createdAt").startAt(from).endAt(to);
+        const log = await this.db.getList(this._query);
+        return log || [];
+    }
+}
+
+/**
+ * Provides a logical test to see if the passed in event is a LambdaProxy request or just a
+ * straight JS object response. This is useful when you have both an HTTP event and a Lambda-to-Lambda
+ * or Step-Function-to-Lambda interaction.
+ *
+ * @param message the body of the request (which is either of type T or a LambdaProxy event)
  */
-function OneWay(inverseProperty) {
-    return [inverseProperty, "one-way"];
+
+/** provides a friendly way to pause execution when using async/await symantics */
+async function wait(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+var HttpStatusCodes;
+(function (HttpStatusCodes) {
+    /**
+     * The client SHOULD continue with its request. This interim response is used to inform
+     * the client that the initial part of the request has been received and has not yet
+     * been rejected by the server. The client SHOULD continue by sending the remainder
+     * of the request or, if the request has already been completed, ignore this response.
+     * The server MUST send a final response after the request has been completed.
+     */
+    HttpStatusCodes[HttpStatusCodes["Continue"] = 100] = "Continue";
+    /** The request has succeeded. */
+    HttpStatusCodes[HttpStatusCodes["Success"] = 200] = "Success";
+    /**
+     * The request has been fulfilled and resulted in a new resource being created. The newly
+     * created resource can be referenced by the URI(s) returned in the entity of the response,
+     * with the most specific URI for the resource given by a Location header field. The response
+     * SHOULD include an entity containing a list of resource characteristics and location(s) from
+     * which the user or user agent can choose the one most appropriate. The entity format is
+     * specified by the media type given in the Content-Type header field. The origin server MUST
+     * create the resource before returning the `201` status code. If the action cannot be carried
+     * out immediately, the server SHOULD respond with `202` (Accepted) response instead.
+     *
+     * A `201` response MAY contain an ETag response header field indicating the current value of
+     * the entity tag for the requested variant just created.
+  
+     */
+    HttpStatusCodes[HttpStatusCodes["Created"] = 201] = "Created";
+    /**
+     * The request has been accepted for processing, but the processing has not been completed.
+     * The request might or might not eventually be acted upon, as it might be disallowed when
+     * processing actually takes place. There is no facility for re-sending a status code from an
+     * asynchronous operation such as this.
+     *
+     * The 202 response is intentionally non-committal. Its purpose is to allow a server to accept
+     * a request for some other process (perhaps a batch-oriented process that is only run once
+     * per day) without requiring that the user agent's connection to the server persist until the
+     * process is completed. The entity returned with this response SHOULD include an indication
+     * of the request's current status and either a pointer to a status monitor or some estimate
+     * of when the user can expect the request to be fulfilled.
+     */
+    HttpStatusCodes[HttpStatusCodes["Accepted"] = 202] = "Accepted";
+    /**
+     * The server has fulfilled the request but does not need to return an entity-body, and might
+     * want to return updated meta-information. The response MAY include new or updated
+     * meta-information in the form of entity-headers, which if present SHOULD be associated with
+     * the requested variant.
+     *
+     * If the client is a _user agent_, it **SHOULD NOT** change its document view from that which
+     * caused the request to be sent. This response is primarily intended to allow input for
+     * actions to take place without causing a change to the user agent's active document view,
+     * although any new or updated metainformation **SHOULD** be applied to the document
+     * currently in the user agent's active view.
+     *
+     * The `204` response **MUST NOT** include a `message-body`, and thus is always terminated
+     * by the first empty line after the header fields.
+     */
+    HttpStatusCodes[HttpStatusCodes["NoContent"] = 204] = "NoContent";
+    HttpStatusCodes[HttpStatusCodes["MovedPermenantly"] = 301] = "MovedPermenantly";
+    HttpStatusCodes[HttpStatusCodes["TemporaryRedirect"] = 307] = "TemporaryRedirect";
+    /**
+     * If the client has performed a conditional GET request and access is allowed, but the
+     * document has not been modified, the server SHOULD respond with this status code. The
+     * `304` response MUST NOT contain a _message-body_, and thus is always terminated by the
+     * first empty line after the header fields.
+     */
+    HttpStatusCodes[HttpStatusCodes["NotModified"] = 304] = "NotModified";
+    /**
+     * The request could not be understood by the server due to malformed syntax.
+     * The client SHOULD NOT repeat the request without modifications.
+     */
+    HttpStatusCodes[HttpStatusCodes["BadRequest"] = 400] = "BadRequest";
+    /**
+     * The request requires user authentication. The response MUST include a WWW-Authenticate
+     * header field containing a challenge applicable to the requested resource.
+     * The client MAY repeat the request with a suitable Authorization header field. If the
+     * request already included Authorization credentials, then the `401`
+     * response indicates that authorization has been refused for those credentials. If the `401`
+     * response contains the same challenge as the prior response, and the user agent has already
+     * attempted authentication at least once, then the user SHOULD be presented the entity that
+     * was given in the response, since that entity might include relevant diagnostic information.
+     */
+    HttpStatusCodes[HttpStatusCodes["Unauthorized"] = 401] = "Unauthorized";
+    HttpStatusCodes[HttpStatusCodes["PaymentRequired"] = 402] = "PaymentRequired";
+    /**
+     * The request could not be understood by the server due to malformed syntax. The client
+     * SHOULD NOT repeat the request without modifications.
+     */
+    HttpStatusCodes[HttpStatusCodes["Forbidden"] = 403] = "Forbidden";
+    /**
+     * The server has not found anything matching the Request-URI. No indication is given of
+     * whether the condition is temporary or permanent. The `410` (Gone) status code SHOULD be
+     * used if the server knows, through some internally configurable mechanism, that an old
+     * resource is permanently unavailable and has no forwarding address.
+     *
+     * This status code is commonly used when the server does not wish to reveal exactly
+     * why the request has been refused, or when no other response is applicable.
+     */
+    HttpStatusCodes[HttpStatusCodes["NotFound"] = 404] = "NotFound";
+    /**
+     * The method specified in the Request-Line is not allowed for the resource identified
+     * by the Request-URI. The response MUST include an Allow header containing a list of
+     * valid methods for the requested resource.
+     */
+    HttpStatusCodes[HttpStatusCodes["MethodNotAllowed"] = 405] = "MethodNotAllowed";
+    /**
+     * The client did not produce a request within the time that the server was
+     * prepared to wait. The client MAY repeat the request without modifications
+     * at any later time.
+     */
+    HttpStatusCodes[HttpStatusCodes["RequestTimeout"] = 408] = "RequestTimeout";
+    /**
+     * The request could not be completed due to a conflict with the current state of the
+     * resource. This code is only allowed in situations where it is expected that the
+     * user might be able to resolve the conflict and resubmit the request. The response
+     * body SHOULD include enough information for the user to recognize the source of the
+     * conflict. Ideally, the response entity would include enough information for the
+     * user or user agent to fix the problem; however, that might not be possible and
+     * is not required.
+     *
+     * Conflicts are most likely to occur in response to a PUT request. For example,
+     * if versioning were being used and the entity being PUT included changes to a resource
+     * which conflict with those made by an earlier (third-party) request, the server might
+     * use the 409 response to indicate that it can't complete the request. In this case,
+     * the response entity would likely contain a list of the differences between the
+     * two versions in a format defined by the response Content-Type.
+     */
+    HttpStatusCodes[HttpStatusCodes["Conflict"] = 409] = "Conflict";
+    /**
+     * The requested resource is no longer available at the server and no forwarding address
+     * is known. This condition is expected to be considered permanent. Clients with link
+     * editing capabilities SHOULD delete references to the Request-URI after user approval.
+     * If the server does not know, or has no facility to determine, whether or not the
+     * condition is permanent, the status code 404 (Not Found) SHOULD be used instead.
+     * This response is cacheable unless indicated otherwise.
+     *
+     * The 410 response is primarily intended to assist the task of web maintenance by
+     * notifying the recipient that the resource is intentionally unavailable and that
+     * the server owners desire that remote links to that resource be removed. Such an
+     * event is common for limited-time, promotional services and for resources belonging
+     * to individuals no longer working at the server's site. It is not necessary to mark
+     * all permanently unavailable resources as "gone" or to keep the mark for any length
+     * of time -- that is left to the discretion of the server owner.
+     */
+    HttpStatusCodes[HttpStatusCodes["Gone"] = 410] = "Gone";
+    /**
+     * Indicates that the server refuses to brew coffee because it is, permanently, a teapot.
+     * A combined coffee/tea pot that is temporarily out of coffee should instead return 503.
+     * This error is a reference to Hyper Text Coffee Pot Control Protocol defined in April
+     * Fools' jokes in 1998 and 2014.
+     */
+    HttpStatusCodes[HttpStatusCodes["IAmATeapot"] = 418] = "IAmATeapot";
+    HttpStatusCodes[HttpStatusCodes["UnprocessableEntity"] = 422] = "UnprocessableEntity";
+    /**
+     * The 429 status code indicates that the user has sent too many requests in a given
+     * amount of time ("rate limiting").
+     */
+    HttpStatusCodes[HttpStatusCodes["TooManyRequests"] = 429] = "TooManyRequests";
+    /**
+     * The server encountered an unexpected condition which prevented it from fulfilling
+     * the request.
+     */
+    HttpStatusCodes[HttpStatusCodes["InternalServerError"] = 500] = "InternalServerError";
+    /**
+     * The server does not support the functionality required to fulfill the request. This
+     * is the appropriate response when the server does not recognize the request method
+     * and is not capable of supporting it for any resource.
+     */
+    HttpStatusCodes[HttpStatusCodes["NotImplemented"] = 501] = "NotImplemented";
+    /**
+     * The server, while acting as a gateway or proxy, received an invalid response from
+     * the upstream server it accessed in attempting to fulfill the request.
+     */
+    HttpStatusCodes[HttpStatusCodes["BadGateway"] = 502] = "BadGateway";
+    /**
+     * Indicates that the server is not ready to handle the request.
+     *
+     * Common causes are a server that is down for maintenance or that is overloaded.
+     * This response should be used for temporary conditions and the `Retry-After` HTTP
+     * header should, if possible, contain the estimated time for the recovery of the
+     * service.
+     */
+    HttpStatusCodes[HttpStatusCodes["ServiceUnavailable"] = 503] = "ServiceUnavailable";
+    HttpStatusCodes[HttpStatusCodes["GatewayTimeout"] = 504] = "GatewayTimeout";
+    /**
+     * The 511 status code indicates that the client needs to authenticate to gain
+     * network access.
+     *
+     * The response representation SHOULD contain a link to a resource that allows
+     * the user to submit credentials (e.g. with a HTML form).
+     *
+     * Note that the 511 response SHOULD NOT contain a challenge or the login interface
+     * itself, because browsers would show the login interface as being associated with
+     * the originally requested URL, which may cause confusion.
+     */
+    HttpStatusCodes[HttpStatusCodes["AuthenticationRequired"] = 511] = "AuthenticationRequired";
+})(HttpStatusCodes || (HttpStatusCodes = {}));
+
+class PathJoinError extends Error {
+    constructor(code, message) {
+        super();
+        this.message = `[pathJoin/${code}] ` + message;
+        this.code = code;
+        this.name = `pathJoin/${code}`;
+    }
+}
+
+var moreThanThreePeriods = /\.{3,}/g;
+// polyfill Array.isArray if necessary
+if (!Array.isArray) {
+    Array.isArray = function (arg) {
+        return Object.prototype.toString.call(arg) === "[object Array]";
+    };
+}
+/**
+ * An ISO-morphic path join that works everywhere;
+ * all paths are separated by the `/` character and both
+ * leading and trailing delimiters are stripped
+ */
+function pathJoin(...args) {
+    // strip undefined segments
+    if (!args.every(i => !["undefined"].includes(typeof i))) {
+        args = args.filter(a => a);
+    }
+    // remaining invalid types
+    if (!args.every(i => ["string", "number"].includes(typeof i))) {
+        throw new PathJoinError("invalid-path-part", `Attempt to use pathJoin() failed because some of the path parts were of the wrong type. Path parts must be either a string or an number: ${args.map(i => typeof i)}`);
+    }
+    // JOIN paths
+    try {
+        const reducer = function (agg, pathPart) {
+            let { protocol, parts } = pullOutProtocols(agg);
+            parts.push(typeof pathPart === "number"
+                ? String(pathPart)
+                : stripSlashesAtExtremities(pathPart));
+            return protocol + parts.filter(i => i).join("/");
+        };
+        const result = removeSingleDotExceptToStart(doubleDotOnlyToStart(args.reduce(reducer, "").replace(moreThanThreePeriods, "..")));
+        return result;
+    }
+    catch (e) {
+        if (e.name.includes("pathJoin")) {
+            throw e;
+        }
+        else {
+            throw new PathJoinError(e.name || "unknown", e.message);
+        }
+    }
+}
+function pullOutProtocols(content) {
+    const protocols = ["https://", "http://", "file://", "tel://"];
+    let protocol = "";
+    protocols.forEach(p => {
+        if (content.includes(p)) {
+            protocol = p;
+            content = content.replace(p, "");
+        }
+    });
+    return { protocol, parts: content.split("/") };
+}
+function stripSlashesAtExtremities(pathPart) {
+    const front = pathPart.slice(0, 1) === "/" ? pathPart.slice(1) : pathPart;
+    const back = front.slice(-1) === "/" ? front.slice(0, front.length - 1) : front;
+    return back.slice(0, 1) === "/" || back.slice(-1) === "/"
+        ? stripSlashesAtExtremities(back)
+        : back;
+}
+/**
+ * checks to ensure that a ".." path notation is only employed at the
+ * very start of the path or else throws an error
+ */
+function doubleDotOnlyToStart(path) {
+    if (path.slice(2).includes("..")) {
+        throw new PathJoinError("not-allowed", `The path "${path}" is not allowed because it  has ".." in it. This notation is fine at the beginning of a path but no where else.`);
+    }
+    return path;
+}
+/**
+ * removes `./` in path parts other than leading segment
+ */
+function removeSingleDotExceptToStart(path) {
+    let parts = path.split("/");
+    return (parts[0] +
+        "/" +
+        parts
+            .slice(1)
+            .filter(i => i !== ".")
+            .join("/"));
+}
+/** converts a slash delimited filepath to a dot notation path */
+function dotNotation(input) {
+    return input.replace(/\//g, ".");
 }
 
 /*! *****************************************************************************
-Copyright (C) Microsoft. All rights reserved.
+Copyright (c) Microsoft Corporation. All rights reserved.
 Licensed under the Apache License, Version 2.0 (the "License"); you may not use
 this file except in compliance with the License. You may obtain a copy of the
 License at http://www.apache.org/licenses/LICENSE-2.0
@@ -38,1123 +371,546 @@ MERCHANTABLITY OR NON-INFRINGEMENT.
 See the Apache Version 2.0 License for specific language governing permissions
 and limitations under the License.
 ***************************************************************************** */
-var Reflect$1;
-(function (Reflect) {
-    // Metadata Proposal
-    // https://rbuckton.github.io/reflect-metadata/
-    (function (factory) {
-        var root = typeof global === "object" ? global :
-            typeof self === "object" ? self :
-                typeof this === "object" ? this :
-                    Function("return this;")();
-        var exporter = makeExporter(Reflect);
-        if (typeof root.Reflect === "undefined") {
-            root.Reflect = Reflect;
+
+function __awaiter(thisArg, _arguments, P, generator) {
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+}
+
+const first = require("lodash.first");
+function firstKey(dictionary) {
+    return first(Object.keys(dictionary));
+}
+class ParallelError extends Error {
+    constructor(context) {
+        super();
+        this.name = "ParallelError";
+        const successful = context._get("successful");
+        const failed = context._get("failed");
+        const errors = context._get("errors");
+        const results = context._get("results");
+        const registrations = context._get("registrations");
+        const getFirstErrorLocation = (stack) => {
+            if (!stack) {
+                return "";
+            }
+            const lines = stack.split(/\n/).map(l => l.replace(/^.*at /, "").split("("));
+            lines.shift().filter(i => !i.includes("createError"));
+            let [fn, where] = lines[0];
+            where = where
+                ? where
+                    .split("/")
+                    .slice(-1)[0]
+                    .replace(")", "")
+                : null;
+            fn = fn.trim();
+            return where ? `@ ${fn}::${where}` : `@ ${fn}`;
+        };
+        this.name = "ParallelError";
+        const errorSummary = failed
+            .map((f) => {
+            const inspect = (e) => {
+                const subErrors = [];
+                const subError = e.errors;
+                Object.keys(subError).map(k => subErrors.push(`${k}: ${subError[k].name} ${getFirstErrorLocation(subError[k].stack)}`));
+                return subErrors.join(", ");
+            };
+            return errors[f].name === "ParallelError"
+                ? `\n  - ${f} [ParallelError ${context.title ? context.title : ""} { ${inspect(errors[f])} }]`
+                : `\n  - ${f} [${errors[f].code ? `${errors[f].name}:${errors[f].code}` : errors[f].name} ${getFirstErrorLocation(errors[f].stack)}]`;
+        })
+            .join(", ");
+        this.message = `${context.title ? context.title + ": " : ""}${context._get("failed").length} of ${failed.length +
+            successful.length} parallel tasks failed.\nTasks failing were: ${errorSummary}."`;
+        this.message +=
+            Object.keys(errors).length > 0
+                ? `\n\nFirst error message was: ${(errors[firstKey(errors)].message)}` +
+                    `\n\nStack trace for first error is:\n${errors[firstKey(errors)].stack}`
+                : "";
+        this.errors = errors;
+        this.failed = failed;
+        this.successful = successful;
+        this.results = results;
+        if (context.failFast) {
+            const complete = new Set([...successful, ...failed]);
+            const incomplete = Object.keys(registrations).filter(k => !complete.has(k));
+            this.incomplete = incomplete;
+        }
+    }
+}
+
+class TimeoutError extends Error {
+    constructor(attemptedPromise, duration) {
+        super();
+        this.name = "TimeoutError";
+        this.message = `Timed out after ${duration}ms`;
+    }
+}
+
+function isDelayedPromise(test) {
+    return typeof test === "function" ? true : false;
+}
+function ensureObject(something) {
+    return typeof something === "object" ? something : { value: something };
+}
+class Parallel {
+    constructor(title, options = { throw: true }) {
+        this.title = title;
+        this.options = options;
+        this._tasks = [];
+        this._errors = {};
+        this._results = {};
+        this._successful = [];
+        this._failed = [];
+        this._registrations = {};
+        this._failFast = false;
+        this._failureCallbacks = [];
+        this._successCallbacks = [];
+        if (options.throw === undefined) {
+            options.throw = true;
+        }
+    }
+    static create(title) {
+        const obj = new Parallel(title);
+        return obj;
+    }
+    _get(prop) {
+        const validGets = new Set([
+            "failed",
+            "successful",
+            "errors",
+            "results",
+            "failFast",
+            "registrations",
+            "notifyOnFailure",
+            "notifyOnSuccess"
+        ]);
+        if (!validGets.has(prop)) {
+            throw new Error(`"${prop}" is not a valid property to get.`);
+        }
+        return this[`_${prop}`];
+    }
+    add(name, promise, timeout) {
+        try {
+            this.register(name, promise, { timeout });
+        }
+        catch (e) {
+            if (e.name === "NameAlreadyExists") {
+                if (isDelayedPromise(promise)) {
+                    throw e;
+                }
+                else {
+                    const newName = Math.random()
+                        .toString(36)
+                        .substr(2, 10);
+                    console.error(`wait-in-parallel: The promise just added as "${name}" is a duplicate name to one already being managed but since the Promise is already executing we will give it a new name of "${newName}" and continue to manage it!`);
+                    this.register(newName, promise, { timeout });
+                }
+            }
+        }
+        return this;
+    }
+    clear() {
+        this._tasks = [];
+        this._errors = {};
+        this._results = {};
+        this._successful = [];
+        this._failed = [];
+        this._registrations = {};
+        this._failureCallbacks = [];
+        this._successCallbacks = [];
+        return this;
+    }
+    failFast(flag) {
+        if (flag !== undefined) {
+            this._failFast = flag;
         }
         else {
-            exporter = makeExporter(root.Reflect, exporter);
+            this._failFast = true;
         }
-        factory(exporter);
-        function makeExporter(target, previous) {
-            return function (key, value) {
-                if (typeof target[key] !== "function") {
-                    Object.defineProperty(target, key, { configurable: true, writable: true, value: value });
-                }
-                if (previous)
-                    previous(key, value);
-            };
-        }
-    })(function (exporter) {
-        var hasOwn = Object.prototype.hasOwnProperty;
-        // feature test for Symbol support
-        var supportsSymbol = typeof Symbol === "function";
-        var toPrimitiveSymbol = supportsSymbol && typeof Symbol.toPrimitive !== "undefined" ? Symbol.toPrimitive : "@@toPrimitive";
-        var iteratorSymbol = supportsSymbol && typeof Symbol.iterator !== "undefined" ? Symbol.iterator : "@@iterator";
-        var supportsCreate = typeof Object.create === "function"; // feature test for Object.create support
-        var supportsProto = { __proto__: [] } instanceof Array; // feature test for __proto__ support
-        var downLevel = !supportsCreate && !supportsProto;
-        var HashMap = {
-            // create an object in dictionary mode (a.k.a. "slow" mode in v8)
-            create: supportsCreate
-                ? function () { return MakeDictionary(Object.create(null)); }
-                : supportsProto
-                    ? function () { return MakeDictionary({ __proto__: null }); }
-                    : function () { return MakeDictionary({}); },
-            has: downLevel
-                ? function (map, key) { return hasOwn.call(map, key); }
-                : function (map, key) { return key in map; },
-            get: downLevel
-                ? function (map, key) { return hasOwn.call(map, key) ? map[key] : undefined; }
-                : function (map, key) { return map[key]; },
-        };
-        // Load global or shim versions of Map, Set, and WeakMap
-        var functionPrototype = Object.getPrototypeOf(Function);
-        var usePolyfill = typeof process === "object" && process.env && process.env["REFLECT_METADATA_USE_MAP_POLYFILL"] === "true";
-        var _Map = !usePolyfill && typeof Map === "function" && typeof Map.prototype.entries === "function" ? Map : CreateMapPolyfill();
-        var _Set = !usePolyfill && typeof Set === "function" && typeof Set.prototype.entries === "function" ? Set : CreateSetPolyfill();
-        var _WeakMap = !usePolyfill && typeof WeakMap === "function" ? WeakMap : CreateWeakMapPolyfill();
-        // [[Metadata]] internal slot
-        // https://rbuckton.github.io/reflect-metadata/#ordinary-object-internal-methods-and-internal-slots
-        var Metadata = new _WeakMap();
-        /**
-         * Applies a set of decorators to a property of a target object.
-         * @param decorators An array of decorators.
-         * @param target The target object.
-         * @param propertyKey (Optional) The property key to decorate.
-         * @param attributes (Optional) The property descriptor for the target key.
-         * @remarks Decorators are applied in reverse order.
-         * @example
-         *
-         *     class Example {
-         *         // property declarations are not part of ES6, though they are valid in TypeScript:
-         *         // static staticProperty;
-         *         // property;
-         *
-         *         constructor(p) { }
-         *         static staticMethod(p) { }
-         *         method(p) { }
-         *     }
-         *
-         *     // constructor
-         *     Example = Reflect.decorate(decoratorsArray, Example);
-         *
-         *     // property (on constructor)
-         *     Reflect.decorate(decoratorsArray, Example, "staticProperty");
-         *
-         *     // property (on prototype)
-         *     Reflect.decorate(decoratorsArray, Example.prototype, "property");
-         *
-         *     // method (on constructor)
-         *     Object.defineProperty(Example, "staticMethod",
-         *         Reflect.decorate(decoratorsArray, Example, "staticMethod",
-         *             Object.getOwnPropertyDescriptor(Example, "staticMethod")));
-         *
-         *     // method (on prototype)
-         *     Object.defineProperty(Example.prototype, "method",
-         *         Reflect.decorate(decoratorsArray, Example.prototype, "method",
-         *             Object.getOwnPropertyDescriptor(Example.prototype, "method")));
-         *
-         */
-        function decorate(decorators, target, propertyKey, attributes) {
-            if (!IsUndefined(propertyKey)) {
-                if (!IsArray(decorators))
-                    throw new TypeError();
-                if (!IsObject(target))
-                    throw new TypeError();
-                if (!IsObject(attributes) && !IsUndefined(attributes) && !IsNull(attributes))
-                    throw new TypeError();
-                if (IsNull(attributes))
-                    attributes = undefined;
-                propertyKey = ToPropertyKey(propertyKey);
-                return DecorateProperty(decorators, target, propertyKey, attributes);
+        return this;
+    }
+    isDone() {
+        return __awaiter(this, void 0, void 0, function* () {
+            this.startDelayedTasks();
+            try {
+                yield Promise.all(this._tasks);
             }
-            else {
-                if (!IsArray(decorators))
-                    throw new TypeError();
-                if (!IsConstructor(target))
-                    throw new TypeError();
-                return DecorateConstructor(decorators, target);
+            catch (e) {
+                throw e;
             }
-        }
-        exporter("decorate", decorate);
-        // 4.1.2 Reflect.metadata(metadataKey, metadataValue)
-        // https://rbuckton.github.io/reflect-metadata/#reflect.metadata
-        /**
-         * A default metadata decorator factory that can be used on a class, class member, or parameter.
-         * @param metadataKey The key for the metadata entry.
-         * @param metadataValue The value for the metadata entry.
-         * @returns A decorator function.
-         * @remarks
-         * If `metadataKey` is already defined for the target and target key, the
-         * metadataValue for that key will be overwritten.
-         * @example
-         *
-         *     // constructor
-         *     @Reflect.metadata(key, value)
-         *     class Example {
-         *     }
-         *
-         *     // property (on constructor, TypeScript only)
-         *     class Example {
-         *         @Reflect.metadata(key, value)
-         *         static staticProperty;
-         *     }
-         *
-         *     // property (on prototype, TypeScript only)
-         *     class Example {
-         *         @Reflect.metadata(key, value)
-         *         property;
-         *     }
-         *
-         *     // method (on constructor)
-         *     class Example {
-         *         @Reflect.metadata(key, value)
-         *         static staticMethod() { }
-         *     }
-         *
-         *     // method (on prototype)
-         *     class Example {
-         *         @Reflect.metadata(key, value)
-         *         method() { }
-         *     }
-         *
-         */
-        function metadata(metadataKey, metadataValue) {
-            function decorator(target, propertyKey) {
-                if (!IsObject(target))
-                    throw new TypeError();
-                if (!IsUndefined(propertyKey) && !IsPropertyKey(propertyKey))
-                    throw new TypeError();
-                OrdinaryDefineOwnMetadata(metadataKey, metadataValue, target, propertyKey);
+            const hadErrors = this._failed.length > 0 ? true : false;
+            if (hadErrors) {
+                throw new ParallelError(this);
             }
-            return decorator;
+            return this._results;
+        });
+    }
+    isDoneAsArray(includeTaskIdAs) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const hash = yield this.isDone();
+            const results = [];
+            Object.keys(hash).map(key => {
+                const keyValue = hash[key];
+                results.push(includeTaskIdAs
+                    ? Object.assign({}, ensureObject(keyValue), { [includeTaskIdAs]: key }) : keyValue);
+            });
+            return results;
+        });
+    }
+    notifyOnFailure(fn) {
+        this._failureCallbacks.push(fn);
+        return this;
+    }
+    notifyOnSuccess(fn) {
+        this._successCallbacks.push(fn);
+        return this;
+    }
+    register(name, promise, options) {
+        const existing = new Set(Object.keys(this._registrations));
+        if (existing.has(name)) {
+            const e = new Error(`There is already a registered item using the name "${name}" in your Parallel object. Names must be unique, ignoring new addition.`);
+            e.name = "NameAlreadyExists";
+            throw e;
         }
-        exporter("metadata", metadata);
-        /**
-         * Define a unique metadata entry on the target.
-         * @param metadataKey A key used to store and retrieve metadata.
-         * @param metadataValue A value that contains attached metadata.
-         * @param target The target object on which to define metadata.
-         * @param propertyKey (Optional) The property key for the target.
-         * @example
-         *
-         *     class Example {
-         *         // property declarations are not part of ES6, though they are valid in TypeScript:
-         *         // static staticProperty;
-         *         // property;
-         *
-         *         constructor(p) { }
-         *         static staticMethod(p) { }
-         *         method(p) { }
-         *     }
-         *
-         *     // constructor
-         *     Reflect.defineMetadata("custom:annotation", options, Example);
-         *
-         *     // property (on constructor)
-         *     Reflect.defineMetadata("custom:annotation", options, Example, "staticProperty");
-         *
-         *     // property (on prototype)
-         *     Reflect.defineMetadata("custom:annotation", options, Example.prototype, "property");
-         *
-         *     // method (on constructor)
-         *     Reflect.defineMetadata("custom:annotation", options, Example, "staticMethod");
-         *
-         *     // method (on prototype)
-         *     Reflect.defineMetadata("custom:annotation", options, Example.prototype, "method");
-         *
-         *     // decorator factory as metadata-producing annotation.
-         *     function MyAnnotation(options): Decorator {
-         *         return (target, key?) => Reflect.defineMetadata("custom:annotation", options, target, key);
-         *     }
-         *
-         */
-        function defineMetadata(metadataKey, metadataValue, target, propertyKey) {
-            if (!IsObject(target))
-                throw new TypeError();
-            if (!IsUndefined(propertyKey))
-                propertyKey = ToPropertyKey(propertyKey);
-            return OrdinaryDefineOwnMetadata(metadataKey, metadataValue, target, propertyKey);
+        else {
+            this._registrations[name] = options;
         }
-        exporter("defineMetadata", defineMetadata);
-        /**
-         * Gets a value indicating whether the target object or its prototype chain has the provided metadata key defined.
-         * @param metadataKey A key used to store and retrieve metadata.
-         * @param target The target object on which the metadata is defined.
-         * @param propertyKey (Optional) The property key for the target.
-         * @returns `true` if the metadata key was defined on the target object or its prototype chain; otherwise, `false`.
-         * @example
-         *
-         *     class Example {
-         *         // property declarations are not part of ES6, though they are valid in TypeScript:
-         *         // static staticProperty;
-         *         // property;
-         *
-         *         constructor(p) { }
-         *         static staticMethod(p) { }
-         *         method(p) { }
-         *     }
-         *
-         *     // constructor
-         *     result = Reflect.hasMetadata("custom:annotation", Example);
-         *
-         *     // property (on constructor)
-         *     result = Reflect.hasMetadata("custom:annotation", Example, "staticProperty");
-         *
-         *     // property (on prototype)
-         *     result = Reflect.hasMetadata("custom:annotation", Example.prototype, "property");
-         *
-         *     // method (on constructor)
-         *     result = Reflect.hasMetadata("custom:annotation", Example, "staticMethod");
-         *
-         *     // method (on prototype)
-         *     result = Reflect.hasMetadata("custom:annotation", Example.prototype, "method");
-         *
-         */
-        function hasMetadata(metadataKey, target, propertyKey) {
-            if (!IsObject(target))
-                throw new TypeError();
-            if (!IsUndefined(propertyKey))
-                propertyKey = ToPropertyKey(propertyKey);
-            return OrdinaryHasMetadata(metadataKey, target, propertyKey);
+        if (isDelayedPromise(promise)) {
+            this._registrations[name].deferred = promise;
         }
-        exporter("hasMetadata", hasMetadata);
-        /**
-         * Gets a value indicating whether the target object has the provided metadata key defined.
-         * @param metadataKey A key used to store and retrieve metadata.
-         * @param target The target object on which the metadata is defined.
-         * @param propertyKey (Optional) The property key for the target.
-         * @returns `true` if the metadata key was defined on the target object; otherwise, `false`.
-         * @example
-         *
-         *     class Example {
-         *         // property declarations are not part of ES6, though they are valid in TypeScript:
-         *         // static staticProperty;
-         *         // property;
-         *
-         *         constructor(p) { }
-         *         static staticMethod(p) { }
-         *         method(p) { }
-         *     }
-         *
-         *     // constructor
-         *     result = Reflect.hasOwnMetadata("custom:annotation", Example);
-         *
-         *     // property (on constructor)
-         *     result = Reflect.hasOwnMetadata("custom:annotation", Example, "staticProperty");
-         *
-         *     // property (on prototype)
-         *     result = Reflect.hasOwnMetadata("custom:annotation", Example.prototype, "property");
-         *
-         *     // method (on constructor)
-         *     result = Reflect.hasOwnMetadata("custom:annotation", Example, "staticMethod");
-         *
-         *     // method (on prototype)
-         *     result = Reflect.hasOwnMetadata("custom:annotation", Example.prototype, "method");
-         *
-         */
-        function hasOwnMetadata(metadataKey, target, propertyKey) {
-            if (!IsObject(target))
-                throw new TypeError();
-            if (!IsUndefined(propertyKey))
-                propertyKey = ToPropertyKey(propertyKey);
-            return OrdinaryHasOwnMetadata(metadataKey, target, propertyKey);
+        else {
+            const duration = options.timeout || 0;
+            this._tasks.push(this.promiseOnATimer(promise, name));
         }
-        exporter("hasOwnMetadata", hasOwnMetadata);
-        /**
-         * Gets the metadata value for the provided metadata key on the target object or its prototype chain.
-         * @param metadataKey A key used to store and retrieve metadata.
-         * @param target The target object on which the metadata is defined.
-         * @param propertyKey (Optional) The property key for the target.
-         * @returns The metadata value for the metadata key if found; otherwise, `undefined`.
-         * @example
-         *
-         *     class Example {
-         *         // property declarations are not part of ES6, though they are valid in TypeScript:
-         *         // static staticProperty;
-         *         // property;
-         *
-         *         constructor(p) { }
-         *         static staticMethod(p) { }
-         *         method(p) { }
-         *     }
-         *
-         *     // constructor
-         *     result = Reflect.getMetadata("custom:annotation", Example);
-         *
-         *     // property (on constructor)
-         *     result = Reflect.getMetadata("custom:annotation", Example, "staticProperty");
-         *
-         *     // property (on prototype)
-         *     result = Reflect.getMetadata("custom:annotation", Example.prototype, "property");
-         *
-         *     // method (on constructor)
-         *     result = Reflect.getMetadata("custom:annotation", Example, "staticMethod");
-         *
-         *     // method (on prototype)
-         *     result = Reflect.getMetadata("custom:annotation", Example.prototype, "method");
-         *
-         */
-        function getMetadata(metadataKey, target, propertyKey) {
-            if (!IsObject(target))
-                throw new TypeError();
-            if (!IsUndefined(propertyKey))
-                propertyKey = ToPropertyKey(propertyKey);
-            return OrdinaryGetMetadata(metadataKey, target, propertyKey);
+    }
+    _handleSuccess(name, result) {
+        this._successful.push(name);
+        this._results[name] = result;
+    }
+    _handleFailure(name, err) {
+        this._failed.push(name);
+        this._errors[name] = Object.assign({}, err, { message: err.message, name: err.name, stack: err.stack });
+        if (this._failFast) {
+            throw new ParallelError(this);
         }
-        exporter("getMetadata", getMetadata);
-        /**
-         * Gets the metadata value for the provided metadata key on the target object.
-         * @param metadataKey A key used to store and retrieve metadata.
-         * @param target The target object on which the metadata is defined.
-         * @param propertyKey (Optional) The property key for the target.
-         * @returns The metadata value for the metadata key if found; otherwise, `undefined`.
-         * @example
-         *
-         *     class Example {
-         *         // property declarations are not part of ES6, though they are valid in TypeScript:
-         *         // static staticProperty;
-         *         // property;
-         *
-         *         constructor(p) { }
-         *         static staticMethod(p) { }
-         *         method(p) { }
-         *     }
-         *
-         *     // constructor
-         *     result = Reflect.getOwnMetadata("custom:annotation", Example);
-         *
-         *     // property (on constructor)
-         *     result = Reflect.getOwnMetadata("custom:annotation", Example, "staticProperty");
-         *
-         *     // property (on prototype)
-         *     result = Reflect.getOwnMetadata("custom:annotation", Example.prototype, "property");
-         *
-         *     // method (on constructor)
-         *     result = Reflect.getOwnMetadata("custom:annotation", Example, "staticMethod");
-         *
-         *     // method (on prototype)
-         *     result = Reflect.getOwnMetadata("custom:annotation", Example.prototype, "method");
-         *
-         */
-        function getOwnMetadata(metadataKey, target, propertyKey) {
-            if (!IsObject(target))
-                throw new TypeError();
-            if (!IsUndefined(propertyKey))
-                propertyKey = ToPropertyKey(propertyKey);
-            return OrdinaryGetOwnMetadata(metadataKey, target, propertyKey);
-        }
-        exporter("getOwnMetadata", getOwnMetadata);
-        /**
-         * Gets the metadata keys defined on the target object or its prototype chain.
-         * @param target The target object on which the metadata is defined.
-         * @param propertyKey (Optional) The property key for the target.
-         * @returns An array of unique metadata keys.
-         * @example
-         *
-         *     class Example {
-         *         // property declarations are not part of ES6, though they are valid in TypeScript:
-         *         // static staticProperty;
-         *         // property;
-         *
-         *         constructor(p) { }
-         *         static staticMethod(p) { }
-         *         method(p) { }
-         *     }
-         *
-         *     // constructor
-         *     result = Reflect.getMetadataKeys(Example);
-         *
-         *     // property (on constructor)
-         *     result = Reflect.getMetadataKeys(Example, "staticProperty");
-         *
-         *     // property (on prototype)
-         *     result = Reflect.getMetadataKeys(Example.prototype, "property");
-         *
-         *     // method (on constructor)
-         *     result = Reflect.getMetadataKeys(Example, "staticMethod");
-         *
-         *     // method (on prototype)
-         *     result = Reflect.getMetadataKeys(Example.prototype, "method");
-         *
-         */
-        function getMetadataKeys(target, propertyKey) {
-            if (!IsObject(target))
-                throw new TypeError();
-            if (!IsUndefined(propertyKey))
-                propertyKey = ToPropertyKey(propertyKey);
-            return OrdinaryMetadataKeys(target, propertyKey);
-        }
-        exporter("getMetadataKeys", getMetadataKeys);
-        /**
-         * Gets the unique metadata keys defined on the target object.
-         * @param target The target object on which the metadata is defined.
-         * @param propertyKey (Optional) The property key for the target.
-         * @returns An array of unique metadata keys.
-         * @example
-         *
-         *     class Example {
-         *         // property declarations are not part of ES6, though they are valid in TypeScript:
-         *         // static staticProperty;
-         *         // property;
-         *
-         *         constructor(p) { }
-         *         static staticMethod(p) { }
-         *         method(p) { }
-         *     }
-         *
-         *     // constructor
-         *     result = Reflect.getOwnMetadataKeys(Example);
-         *
-         *     // property (on constructor)
-         *     result = Reflect.getOwnMetadataKeys(Example, "staticProperty");
-         *
-         *     // property (on prototype)
-         *     result = Reflect.getOwnMetadataKeys(Example.prototype, "property");
-         *
-         *     // method (on constructor)
-         *     result = Reflect.getOwnMetadataKeys(Example, "staticMethod");
-         *
-         *     // method (on prototype)
-         *     result = Reflect.getOwnMetadataKeys(Example.prototype, "method");
-         *
-         */
-        function getOwnMetadataKeys(target, propertyKey) {
-            if (!IsObject(target))
-                throw new TypeError();
-            if (!IsUndefined(propertyKey))
-                propertyKey = ToPropertyKey(propertyKey);
-            return OrdinaryOwnMetadataKeys(target, propertyKey);
-        }
-        exporter("getOwnMetadataKeys", getOwnMetadataKeys);
-        /**
-         * Deletes the metadata entry from the target object with the provided key.
-         * @param metadataKey A key used to store and retrieve metadata.
-         * @param target The target object on which the metadata is defined.
-         * @param propertyKey (Optional) The property key for the target.
-         * @returns `true` if the metadata entry was found and deleted; otherwise, false.
-         * @example
-         *
-         *     class Example {
-         *         // property declarations are not part of ES6, though they are valid in TypeScript:
-         *         // static staticProperty;
-         *         // property;
-         *
-         *         constructor(p) { }
-         *         static staticMethod(p) { }
-         *         method(p) { }
-         *     }
-         *
-         *     // constructor
-         *     result = Reflect.deleteMetadata("custom:annotation", Example);
-         *
-         *     // property (on constructor)
-         *     result = Reflect.deleteMetadata("custom:annotation", Example, "staticProperty");
-         *
-         *     // property (on prototype)
-         *     result = Reflect.deleteMetadata("custom:annotation", Example.prototype, "property");
-         *
-         *     // method (on constructor)
-         *     result = Reflect.deleteMetadata("custom:annotation", Example, "staticMethod");
-         *
-         *     // method (on prototype)
-         *     result = Reflect.deleteMetadata("custom:annotation", Example.prototype, "method");
-         *
-         */
-        function deleteMetadata(metadataKey, target, propertyKey) {
-            if (!IsObject(target))
-                throw new TypeError();
-            if (!IsUndefined(propertyKey))
-                propertyKey = ToPropertyKey(propertyKey);
-            var metadataMap = GetOrCreateMetadataMap(target, propertyKey, /*Create*/ false);
-            if (IsUndefined(metadataMap))
-                return false;
-            if (!metadataMap.delete(metadataKey))
-                return false;
-            if (metadataMap.size > 0)
-                return true;
-            var targetMetadata = Metadata.get(target);
-            targetMetadata.delete(propertyKey);
-            if (targetMetadata.size > 0)
-                return true;
-            Metadata.delete(target);
-            return true;
-        }
-        exporter("deleteMetadata", deleteMetadata);
-        function DecorateConstructor(decorators, target) {
-            for (var i = decorators.length - 1; i >= 0; --i) {
-                var decorator = decorators[i];
-                var decorated = decorator(target);
-                if (!IsUndefined(decorated) && !IsNull(decorated)) {
-                    if (!IsConstructor(decorated))
-                        throw new TypeError();
-                    target = decorated;
-                }
-            }
-            return target;
-        }
-        function DecorateProperty(decorators, target, propertyKey, descriptor) {
-            for (var i = decorators.length - 1; i >= 0; --i) {
-                var decorator = decorators[i];
-                var decorated = decorator(target, propertyKey, descriptor);
-                if (!IsUndefined(decorated) && !IsNull(decorated)) {
-                    if (!IsObject(decorated))
-                        throw new TypeError();
-                    descriptor = decorated;
-                }
-            }
-            return descriptor;
-        }
-        function GetOrCreateMetadataMap(O, P, Create) {
-            var targetMetadata = Metadata.get(O);
-            if (IsUndefined(targetMetadata)) {
-                if (!Create)
-                    return undefined;
-                targetMetadata = new _Map();
-                Metadata.set(O, targetMetadata);
-            }
-            var metadataMap = targetMetadata.get(P);
-            if (IsUndefined(metadataMap)) {
-                if (!Create)
-                    return undefined;
-                metadataMap = new _Map();
-                targetMetadata.set(P, metadataMap);
-            }
-            return metadataMap;
-        }
-        // 3.1.1.1 OrdinaryHasMetadata(MetadataKey, O, P)
-        // https://rbuckton.github.io/reflect-metadata/#ordinaryhasmetadata
-        function OrdinaryHasMetadata(MetadataKey, O, P) {
-            var hasOwn = OrdinaryHasOwnMetadata(MetadataKey, O, P);
-            if (hasOwn)
-                return true;
-            var parent = OrdinaryGetPrototypeOf(O);
-            if (!IsNull(parent))
-                return OrdinaryHasMetadata(MetadataKey, parent, P);
-            return false;
-        }
-        // 3.1.2.1 OrdinaryHasOwnMetadata(MetadataKey, O, P)
-        // https://rbuckton.github.io/reflect-metadata/#ordinaryhasownmetadata
-        function OrdinaryHasOwnMetadata(MetadataKey, O, P) {
-            var metadataMap = GetOrCreateMetadataMap(O, P, /*Create*/ false);
-            if (IsUndefined(metadataMap))
-                return false;
-            return ToBoolean(metadataMap.has(MetadataKey));
-        }
-        // 3.1.3.1 OrdinaryGetMetadata(MetadataKey, O, P)
-        // https://rbuckton.github.io/reflect-metadata/#ordinarygetmetadata
-        function OrdinaryGetMetadata(MetadataKey, O, P) {
-            var hasOwn = OrdinaryHasOwnMetadata(MetadataKey, O, P);
-            if (hasOwn)
-                return OrdinaryGetOwnMetadata(MetadataKey, O, P);
-            var parent = OrdinaryGetPrototypeOf(O);
-            if (!IsNull(parent))
-                return OrdinaryGetMetadata(MetadataKey, parent, P);
-            return undefined;
-        }
-        // 3.1.4.1 OrdinaryGetOwnMetadata(MetadataKey, O, P)
-        // https://rbuckton.github.io/reflect-metadata/#ordinarygetownmetadata
-        function OrdinaryGetOwnMetadata(MetadataKey, O, P) {
-            var metadataMap = GetOrCreateMetadataMap(O, P, /*Create*/ false);
-            if (IsUndefined(metadataMap))
-                return undefined;
-            return metadataMap.get(MetadataKey);
-        }
-        // 3.1.5.1 OrdinaryDefineOwnMetadata(MetadataKey, MetadataValue, O, P)
-        // https://rbuckton.github.io/reflect-metadata/#ordinarydefineownmetadata
-        function OrdinaryDefineOwnMetadata(MetadataKey, MetadataValue, O, P) {
-            var metadataMap = GetOrCreateMetadataMap(O, P, /*Create*/ true);
-            metadataMap.set(MetadataKey, MetadataValue);
-        }
-        // 3.1.6.1 OrdinaryMetadataKeys(O, P)
-        // https://rbuckton.github.io/reflect-metadata/#ordinarymetadatakeys
-        function OrdinaryMetadataKeys(O, P) {
-            var ownKeys = OrdinaryOwnMetadataKeys(O, P);
-            var parent = OrdinaryGetPrototypeOf(O);
-            if (parent === null)
-                return ownKeys;
-            var parentKeys = OrdinaryMetadataKeys(parent, P);
-            if (parentKeys.length <= 0)
-                return ownKeys;
-            if (ownKeys.length <= 0)
-                return parentKeys;
-            var set = new _Set();
-            var keys = [];
-            for (var _i = 0, ownKeys_1 = ownKeys; _i < ownKeys_1.length; _i++) {
-                var key = ownKeys_1[_i];
-                var hasKey = set.has(key);
-                if (!hasKey) {
-                    set.add(key);
-                    keys.push(key);
-                }
-            }
-            for (var _a = 0, parentKeys_1 = parentKeys; _a < parentKeys_1.length; _a++) {
-                var key = parentKeys_1[_a];
-                var hasKey = set.has(key);
-                if (!hasKey) {
-                    set.add(key);
-                    keys.push(key);
-                }
-            }
-            return keys;
-        }
-        // 3.1.7.1 OrdinaryOwnMetadataKeys(O, P)
-        // https://rbuckton.github.io/reflect-metadata/#ordinaryownmetadatakeys
-        function OrdinaryOwnMetadataKeys(O, P) {
-            var keys = [];
-            var metadataMap = GetOrCreateMetadataMap(O, P, /*Create*/ false);
-            if (IsUndefined(metadataMap))
-                return keys;
-            var keysObj = metadataMap.keys();
-            var iterator = GetIterator(keysObj);
-            var k = 0;
-            while (true) {
-                var next = IteratorStep(iterator);
-                if (!next) {
-                    keys.length = k;
-                    return keys;
-                }
-                var nextValue = IteratorValue(next);
+    }
+    startDelayedTasks() {
+        Object.keys(this._registrations).map(name => {
+            const registration = this._registrations[name];
+            if (registration.deferred) {
                 try {
-                    keys[k] = nextValue;
+                    this._tasks.push(this.promiseOnATimer(registration.deferred(), name));
                 }
                 catch (e) {
-                    try {
-                        IteratorClose(iterator);
-                    }
-                    finally {
-                        throw e;
-                    }
+                    this._handleFailure(name, e);
                 }
-                k++;
             }
-        }
-        // 6 ECMAScript Data Typ0es and Values
-        // https://tc39.github.io/ecma262/#sec-ecmascript-data-types-and-values
-        function Type(x) {
-            if (x === null)
-                return 1 /* Null */;
-            switch (typeof x) {
-                case "undefined": return 0 /* Undefined */;
-                case "boolean": return 2 /* Boolean */;
-                case "string": return 3 /* String */;
-                case "symbol": return 4 /* Symbol */;
-                case "number": return 5 /* Number */;
-                case "object": return x === null ? 1 /* Null */ : 6 /* Object */;
-                default: return 6 /* Object */;
-            }
-        }
-        // 6.1.1 The Undefined Type
-        // https://tc39.github.io/ecma262/#sec-ecmascript-language-types-undefined-type
-        function IsUndefined(x) {
-            return x === undefined;
-        }
-        // 6.1.2 The Null Type
-        // https://tc39.github.io/ecma262/#sec-ecmascript-language-types-null-type
-        function IsNull(x) {
-            return x === null;
-        }
-        // 6.1.5 The Symbol Type
-        // https://tc39.github.io/ecma262/#sec-ecmascript-language-types-symbol-type
-        function IsSymbol(x) {
-            return typeof x === "symbol";
-        }
-        // 6.1.7 The Object Type
-        // https://tc39.github.io/ecma262/#sec-object-type
-        function IsObject(x) {
-            return typeof x === "object" ? x !== null : typeof x === "function";
-        }
-        // 7.1 Type Conversion
-        // https://tc39.github.io/ecma262/#sec-type-conversion
-        // 7.1.1 ToPrimitive(input [, PreferredType])
-        // https://tc39.github.io/ecma262/#sec-toprimitive
-        function ToPrimitive(input, PreferredType) {
-            switch (Type(input)) {
-                case 0 /* Undefined */: return input;
-                case 1 /* Null */: return input;
-                case 2 /* Boolean */: return input;
-                case 3 /* String */: return input;
-                case 4 /* Symbol */: return input;
-                case 5 /* Number */: return input;
-            }
-            var hint = PreferredType === 3 /* String */ ? "string" : PreferredType === 5 /* Number */ ? "number" : "default";
-            var exoticToPrim = GetMethod(input, toPrimitiveSymbol);
-            if (exoticToPrim !== undefined) {
-                var result = exoticToPrim.call(input, hint);
-                if (IsObject(result))
-                    throw new TypeError();
-                return result;
-            }
-            return OrdinaryToPrimitive(input, hint === "default" ? "number" : hint);
-        }
-        // 7.1.1.1 OrdinaryToPrimitive(O, hint)
-        // https://tc39.github.io/ecma262/#sec-ordinarytoprimitive
-        function OrdinaryToPrimitive(O, hint) {
-            if (hint === "string") {
-                var toString_1 = O.toString;
-                if (IsCallable(toString_1)) {
-                    var result = toString_1.call(O);
-                    if (!IsObject(result))
-                        return result;
-                }
-                var valueOf = O.valueOf;
-                if (IsCallable(valueOf)) {
-                    var result = valueOf.call(O);
-                    if (!IsObject(result))
-                        return result;
-                }
+        });
+    }
+    promiseOnATimer(p, name) {
+        const registration = this._registrations[name];
+        const handleSuccess = (result) => this._handleSuccess(name, result);
+        const handleFailure = (err) => this._handleFailure(name, err);
+        const timeout = (d) => __awaiter(this, void 0, void 0, function* () {
+            yield wait(d);
+            throw new TimeoutError(registration.deferred, d);
+        });
+        const duration = registration.timeout || 0;
+        let timedPromise;
+        try {
+            if (duration > 0) {
+                timedPromise = Promise.race([p, timeout(duration)])
+                    .then(handleSuccess)
+                    .catch(handleFailure);
             }
             else {
-                var valueOf = O.valueOf;
-                if (IsCallable(valueOf)) {
-                    var result = valueOf.call(O);
-                    if (!IsObject(result))
-                        return result;
-                }
-                var toString_2 = O.toString;
-                if (IsCallable(toString_2)) {
-                    var result = toString_2.call(O);
-                    if (!IsObject(result))
-                        return result;
-                }
+                timedPromise = p.then(handleSuccess).catch(handleFailure);
             }
-            throw new TypeError();
+            this._tasks.push(timedPromise);
+            return timedPromise;
         }
-        // 7.1.2 ToBoolean(argument)
-        // https://tc39.github.io/ecma262/2016/#sec-toboolean
-        function ToBoolean(argument) {
-            return !!argument;
+        catch (e) {
+            this._handleFailure(name, e);
         }
-        // 7.1.12 ToString(argument)
-        // https://tc39.github.io/ecma262/#sec-tostring
-        function ToString(argument) {
-            return "" + argument;
+    }
+}
+
+class AuditRecord extends AuditBase {
+    constructor(modelKlass, id, options = {}) {
+        super(modelKlass, options);
+        this._recordId = id;
+        this._query = universalFire.SerializedQuery.create(this.db);
+    }
+    /**
+     * Queries the database for the first _x_ audit records [`howMany`] of
+     * a given Record type. You can also optionally specify an offset to
+     * start at [`startAt`].
+     */
+    async first(howMany, startAt) {
+        this._query = this._query.setPath(this.byId);
+        this._query = this._query.orderByKey().limitToLast(howMany);
+        if (startAt) {
+            this._query = this._query.startAt(startAt);
         }
-        // 7.1.14 ToPropertyKey(argument)
-        // https://tc39.github.io/ecma262/#sec-topropertykey
-        function ToPropertyKey(argument) {
-            var key = ToPrimitive(argument, 3 /* String */);
-            if (IsSymbol(key))
-                return key;
-            return ToString(key);
+        const ids = (await this.db.getList(this._query)).map((i) => pathJoin$1(this.auditLogs, i.id));
+        const p = new Parallel();
+        ids.map((id) => p.add(id, this.db.getValue(id)));
+        const results = await p.isDoneAsArray();
+        return results;
+    }
+    async last(howMany, startAt) {
+        this._query = this._query
+            .setPath(this.byId)
+            .orderByKey()
+            .limitToFirst(howMany);
+        if (startAt) {
+            this._query = this._query.startAt(startAt);
         }
-        // 7.2 Testing and Comparison Operations
-        // https://tc39.github.io/ecma262/#sec-testing-and-comparison-operations
-        // 7.2.2 IsArray(argument)
-        // https://tc39.github.io/ecma262/#sec-isarray
-        function IsArray(argument) {
-            return Array.isArray
-                ? Array.isArray(argument)
-                : argument instanceof Object
-                    ? argument instanceof Array
-                    : Object.prototype.toString.call(argument) === "[object Array]";
+        const ids = (await this.db.getList(this._query)).map((i) => pathJoin$1(this.auditLogs, i.id));
+        const p = new Parallel();
+        ids.map((id) => p.add(id, this.db.getValue(id)));
+        const results = await p.isDoneAsArray();
+        return results;
+    }
+    async since(when) {
+        if (typeof when === "string") {
+            when = new Date(when).getTime();
         }
-        // 7.2.3 IsCallable(argument)
-        // https://tc39.github.io/ecma262/#sec-iscallable
-        function IsCallable(argument) {
-            // NOTE: This is an approximation as we cannot check for [[Call]] internal method.
-            return typeof argument === "function";
+        this._query = this._query
+            .setPath(this.byId)
+            .orderByChild("value")
+            .startAt(when);
+        const qr = await this.db.getList(this._query);
+        const ids = (await this.db.getList(this._query)).map((i) => pathJoin$1(this.auditLogs, i.id));
+        const p = new Parallel();
+        ids.map((id) => {
+            p.add(id, this.db.getValue(id));
+        });
+        const results = await p.isDoneAsArray();
+        return results;
+    }
+    async before(when) {
+        if (typeof when === "string") {
+            when = new Date(when).getTime();
         }
-        // 7.2.4 IsConstructor(argument)
-        // https://tc39.github.io/ecma262/#sec-isconstructor
-        function IsConstructor(argument) {
-            // NOTE: This is an approximation as we cannot check for [[Construct]] internal method.
-            return typeof argument === "function";
+        this._query = this._query
+            .setPath(this.byId)
+            .orderByChild("value")
+            .endAt(when);
+        const qr = await this.db.getList(this._query);
+        const ids = (await this.db.getList(this._query)).map((i) => pathJoin$1(this.auditLogs, i.id));
+        const p = new Parallel();
+        ids.map((id) => {
+            p.add(id, this.db.getValue(id));
+        });
+        const results = await p.isDoneAsArray();
+        return results;
+    }
+    async between(after, before) {
+        if (typeof after === "string") {
+            after = new Date(after).getTime();
         }
-        // 7.2.7 IsPropertyKey(argument)
-        // https://tc39.github.io/ecma262/#sec-ispropertykey
-        function IsPropertyKey(argument) {
-            switch (Type(argument)) {
-                case 3 /* String */: return true;
-                case 4 /* Symbol */: return true;
-                default: return false;
-            }
+        if (typeof before === "string") {
+            before = new Date(before).getTime();
         }
-        // 7.3 Operations on Objects
-        // https://tc39.github.io/ecma262/#sec-operations-on-objects
-        // 7.3.9 GetMethod(V, P)
-        // https://tc39.github.io/ecma262/#sec-getmethod
-        function GetMethod(V, P) {
-            var func = V[P];
-            if (func === undefined || func === null)
-                return undefined;
-            if (!IsCallable(func))
-                throw new TypeError();
-            return func;
+        this._query = this._query
+            .setPath(this.byId)
+            .orderByChild("value")
+            .startAt(after)
+            .endAt(before);
+        const qr = await this.db.getList(this._query);
+        const ids = (await this.db.getList(this._query)).map((i) => pathJoin$1(this.auditLogs, i.id));
+        const p = new Parallel();
+        ids.map((id) => {
+            p.add(id, this.db.getValue(id));
+        });
+        const results = await p.isDoneAsArray();
+        return results;
+    }
+    get auditLogs() {
+        return pathJoin$1(this.dbPath, "all");
+    }
+    get byId() {
+        return pathJoin$1(this.dbPath, "byId", this._recordId, "all");
+    }
+    byProp(prop) {
+        return pathJoin$1(this.dbPath, "byId", this._recordId, "props", prop);
+    }
+}
+
+// tslint:disable-next-line:no-var-requires
+const pluralize = require("pluralize");
+const defaultDispatch = async (context) => "";
+class FireModel {
+    static get defaultDb() {
+        return FireModel._defaultDb;
+    }
+    /**
+     * Any FireModel transaction needs to connect to the database
+     * via a passed-in reference to "abstracted-client" or "abstracted-admin"
+     * database. These references can be done with any/every transaction via
+     * the options hash but it is often more convient to set a "fallback" or
+     * "default" database to use should a given transaction not state a DB
+     * connection explicitly.
+     */
+    static set defaultDb(db) {
+        this._defaultDb = db;
+    }
+    /**
+     * All Watchers and write-based transactions in FireModel offer a way to
+     * call out to a "dispatch" function. This can be done on a per-transaction
+     * basis but more typically it makes sense to just set this once here and then
+     * all subsequent transactions will use this dispatch function unless they are
+     * explicitly passed another.
+     */
+    static set dispatch(fn) {
+        if (!fn) {
+            FireModel._dispatchActive = false;
+            FireModel._dispatch = defaultDispatch;
         }
-        // 7.4 Operations on Iterator Objects
-        // https://tc39.github.io/ecma262/#sec-operations-on-iterator-objects
-        function GetIterator(obj) {
-            var method = GetMethod(obj, iteratorSymbol);
-            if (!IsCallable(method))
-                throw new TypeError(); // from Call
-            var iterator = method.call(obj);
-            if (!IsObject(iterator))
-                throw new TypeError();
-            return iterator;
+        else {
+            FireModel._dispatchActive = true;
+            FireModel._dispatch = fn;
         }
-        // 7.4.4 IteratorValue(iterResult)
-        // https://tc39.github.io/ecma262/2016/#sec-iteratorvalue
-        function IteratorValue(iterResult) {
-            return iterResult.value;
+    }
+    /**
+     * The default dispatch function which should be called/notified whenever
+     * a write based transaction has modified state.
+     */
+    static get dispatch() {
+        return FireModel._dispatch;
+    }
+    //#endregion
+    //#region PUBLIC INTERFACE
+    /**
+     * The name of the model; typically a "sigular" name
+     */
+    get modelName() {
+        const name = this._model.constructor.name;
+        const pascal = name.slice(0, 1).toLowerCase() + name.slice(1);
+        return pascal;
+    }
+    /**
+     * The plural name of the model (which plays a role in storage of state in both
+     * the database as well as the dispatch function's path)
+     */
+    get pluralName() {
+        const explicitPlural = this.META.plural;
+        return explicitPlural || pluralize(this.modelName);
+    }
+    get dbPath() {
+        return "dbPath was not overwritten!";
+    }
+    get localPath() {
+        return "dbPath was not overwritten!";
+    }
+    get META() {
+        return getModelMeta(this._model);
+    }
+    /**
+     * A list of all the properties -- and those properties
+     * meta information -- contained on the given model
+     */
+    get properties() {
+        const meta = getModelMeta(this._model);
+        return meta.properties;
+    }
+    /**
+     * A list of all the realtionships -- and those relationships
+     * meta information -- contained on the given model
+     */
+    get relationships() {
+        const meta = getModelMeta(this._model);
+        return meta.relationships;
+    }
+    get dispatch() {
+        return FireModel.dispatch;
+    }
+    static get isDefaultDispatch() {
+        return FireModel.dispatch === defaultDispatch;
+    }
+    get dispatchIsActive() {
+        return FireModel._dispatchActive;
+    }
+    /** the connected real-time database */
+    get db() {
+        if (!this._db) {
+            this._db = FireModel.defaultDb;
         }
-        // 7.4.5 IteratorStep(iterator)
-        // https://tc39.github.io/ecma262/#sec-iteratorstep
-        function IteratorStep(iterator) {
-            var result = iterator.next();
-            return result.done ? false : result;
+        if (!this._db) {
+            const e = new Error(`Can't get DB as it has not been set yet for this instance and no default database exists [ ${this.modelName} ]!`);
+            e.name = "FireModel::NoDatabase";
+            throw e;
         }
-        // 7.4.6 IteratorClose(iterator, completion)
-        // https://tc39.github.io/ecma262/#sec-iteratorclose
-        function IteratorClose(iterator) {
-            var f = iterator["return"];
-            if (f)
-                f.call(iterator);
-        }
-        // 9.1 Ordinary Object Internal Methods and Internal Slots
-        // https://tc39.github.io/ecma262/#sec-ordinary-object-internal-methods-and-internal-slots
-        // 9.1.1.1 OrdinaryGetPrototypeOf(O)
-        // https://tc39.github.io/ecma262/#sec-ordinarygetprototypeof
-        function OrdinaryGetPrototypeOf(O) {
-            var proto = Object.getPrototypeOf(O);
-            if (typeof O !== "function" || O === functionPrototype)
-                return proto;
-            // TypeScript doesn't set __proto__ in ES5, as it's non-standard.
-            // Try to determine the superclass constructor. Compatible implementations
-            // must either set __proto__ on a subclass constructor to the superclass constructor,
-            // or ensure each class has a valid `constructor` property on its prototype that
-            // points back to the constructor.
-            // If this is not the same as Function.[[Prototype]], then this is definately inherited.
-            // This is the case when in ES6 or when using __proto__ in a compatible browser.
-            if (proto !== functionPrototype)
-                return proto;
-            // If the super prototype is Object.prototype, null, or undefined, then we cannot determine the heritage.
-            var prototype = O.prototype;
-            var prototypeProto = prototype && Object.getPrototypeOf(prototype);
-            if (prototypeProto == null || prototypeProto === Object.prototype)
-                return proto;
-            // If the constructor was not a function, then we cannot determine the heritage.
-            var constructor = prototypeProto.constructor;
-            if (typeof constructor !== "function")
-                return proto;
-            // If we have some kind of self-reference, then we cannot determine the heritage.
-            if (constructor === O)
-                return proto;
-            // we have a pretty good guess at the heritage.
-            return constructor;
-        }
-        // naive Map shim
-        function CreateMapPolyfill() {
-            var cacheSentinel = {};
-            var arraySentinel = [];
-            var MapIterator = /** @class */ (function () {
-                function MapIterator(keys, values, selector) {
-                    this._index = 0;
-                    this._keys = keys;
-                    this._values = values;
-                    this._selector = selector;
-                }
-                MapIterator.prototype["@@iterator"] = function () { return this; };
-                MapIterator.prototype[iteratorSymbol] = function () { return this; };
-                MapIterator.prototype.next = function () {
-                    var index = this._index;
-                    if (index >= 0 && index < this._keys.length) {
-                        var result = this._selector(this._keys[index], this._values[index]);
-                        if (index + 1 >= this._keys.length) {
-                            this._index = -1;
-                            this._keys = arraySentinel;
-                            this._values = arraySentinel;
-                        }
-                        else {
-                            this._index++;
-                        }
-                        return { value: result, done: false };
-                    }
-                    return { value: undefined, done: true };
-                };
-                MapIterator.prototype.throw = function (error) {
-                    if (this._index >= 0) {
-                        this._index = -1;
-                        this._keys = arraySentinel;
-                        this._values = arraySentinel;
-                    }
-                    throw error;
-                };
-                MapIterator.prototype.return = function (value) {
-                    if (this._index >= 0) {
-                        this._index = -1;
-                        this._keys = arraySentinel;
-                        this._values = arraySentinel;
-                    }
-                    return { value: value, done: true };
-                };
-                return MapIterator;
-            }());
-            return /** @class */ (function () {
-                function Map() {
-                    this._keys = [];
-                    this._values = [];
-                    this._cacheKey = cacheSentinel;
-                    this._cacheIndex = -2;
-                }
-                Object.defineProperty(Map.prototype, "size", {
-                    get: function () { return this._keys.length; },
-                    enumerable: true,
-                    configurable: true
-                });
-                Map.prototype.has = function (key) { return this._find(key, /*insert*/ false) >= 0; };
-                Map.prototype.get = function (key) {
-                    var index = this._find(key, /*insert*/ false);
-                    return index >= 0 ? this._values[index] : undefined;
-                };
-                Map.prototype.set = function (key, value) {
-                    var index = this._find(key, /*insert*/ true);
-                    this._values[index] = value;
-                    return this;
-                };
-                Map.prototype.delete = function (key) {
-                    var index = this._find(key, /*insert*/ false);
-                    if (index >= 0) {
-                        var size = this._keys.length;
-                        for (var i = index + 1; i < size; i++) {
-                            this._keys[i - 1] = this._keys[i];
-                            this._values[i - 1] = this._values[i];
-                        }
-                        this._keys.length--;
-                        this._values.length--;
-                        if (key === this._cacheKey) {
-                            this._cacheKey = cacheSentinel;
-                            this._cacheIndex = -2;
-                        }
-                        return true;
-                    }
-                    return false;
-                };
-                Map.prototype.clear = function () {
-                    this._keys.length = 0;
-                    this._values.length = 0;
-                    this._cacheKey = cacheSentinel;
-                    this._cacheIndex = -2;
-                };
-                Map.prototype.keys = function () { return new MapIterator(this._keys, this._values, getKey); };
-                Map.prototype.values = function () { return new MapIterator(this._keys, this._values, getValue); };
-                Map.prototype.entries = function () { return new MapIterator(this._keys, this._values, getEntry); };
-                Map.prototype["@@iterator"] = function () { return this.entries(); };
-                Map.prototype[iteratorSymbol] = function () { return this.entries(); };
-                Map.prototype._find = function (key, insert) {
-                    if (this._cacheKey !== key) {
-                        this._cacheIndex = this._keys.indexOf(this._cacheKey = key);
-                    }
-                    if (this._cacheIndex < 0 && insert) {
-                        this._cacheIndex = this._keys.length;
-                        this._keys.push(key);
-                        this._values.push(undefined);
-                    }
-                    return this._cacheIndex;
-                };
-                return Map;
-            }());
-            function getKey(key, _) {
-                return key;
-            }
-            function getValue(_, value) {
-                return value;
-            }
-            function getEntry(key, value) {
-                return [key, value];
-            }
-        }
-        // naive Set shim
-        function CreateSetPolyfill() {
-            return /** @class */ (function () {
-                function Set() {
-                    this._map = new _Map();
-                }
-                Object.defineProperty(Set.prototype, "size", {
-                    get: function () { return this._map.size; },
-                    enumerable: true,
-                    configurable: true
-                });
-                Set.prototype.has = function (value) { return this._map.has(value); };
-                Set.prototype.add = function (value) { return this._map.set(value, value), this; };
-                Set.prototype.delete = function (value) { return this._map.delete(value); };
-                Set.prototype.clear = function () { this._map.clear(); };
-                Set.prototype.keys = function () { return this._map.keys(); };
-                Set.prototype.values = function () { return this._map.values(); };
-                Set.prototype.entries = function () { return this._map.entries(); };
-                Set.prototype["@@iterator"] = function () { return this.keys(); };
-                Set.prototype[iteratorSymbol] = function () { return this.keys(); };
-                return Set;
-            }());
-        }
-        // naive WeakMap shim
-        function CreateWeakMapPolyfill() {
-            var UUID_SIZE = 16;
-            var keys = HashMap.create();
-            var rootKey = CreateUniqueKey();
-            return /** @class */ (function () {
-                function WeakMap() {
-                    this._key = CreateUniqueKey();
-                }
-                WeakMap.prototype.has = function (target) {
-                    var table = GetOrCreateWeakMapTable(target, /*create*/ false);
-                    return table !== undefined ? HashMap.has(table, this._key) : false;
-                };
-                WeakMap.prototype.get = function (target) {
-                    var table = GetOrCreateWeakMapTable(target, /*create*/ false);
-                    return table !== undefined ? HashMap.get(table, this._key) : undefined;
-                };
-                WeakMap.prototype.set = function (target, value) {
-                    var table = GetOrCreateWeakMapTable(target, /*create*/ true);
-                    table[this._key] = value;
-                    return this;
-                };
-                WeakMap.prototype.delete = function (target) {
-                    var table = GetOrCreateWeakMapTable(target, /*create*/ false);
-                    return table !== undefined ? delete table[this._key] : false;
-                };
-                WeakMap.prototype.clear = function () {
-                    // NOTE: not a real clear, just makes the previous data unreachable
-                    this._key = CreateUniqueKey();
-                };
-                return WeakMap;
-            }());
-            function CreateUniqueKey() {
-                var key;
-                do
-                    key = "@@WeakMap@@" + CreateUUID();
-                while (HashMap.has(keys, key));
-                keys[key] = true;
-                return key;
-            }
-            function GetOrCreateWeakMapTable(target, create) {
-                if (!hasOwn.call(target, rootKey)) {
-                    if (!create)
-                        return undefined;
-                    Object.defineProperty(target, rootKey, { value: HashMap.create() });
-                }
-                return target[rootKey];
-            }
-            function FillRandomBytes(buffer, size) {
-                for (var i = 0; i < size; ++i)
-                    buffer[i] = Math.random() * 0xff | 0;
-                return buffer;
-            }
-            function GenRandomBytes(size) {
-                if (typeof Uint8Array === "function") {
-                    if (typeof crypto !== "undefined")
-                        return crypto.getRandomValues(new Uint8Array(size));
-                    if (typeof msCrypto !== "undefined")
-                        return msCrypto.getRandomValues(new Uint8Array(size));
-                    return FillRandomBytes(new Uint8Array(size), size);
-                }
-                return FillRandomBytes(new Array(size), size);
-            }
-            function CreateUUID() {
-                var data = GenRandomBytes(UUID_SIZE);
-                // mark as random - RFC 4122 § 4.4
-                data[6] = data[6] & 0x4f | 0x40;
-                data[8] = data[8] & 0xbf | 0x80;
-                var result = "";
-                for (var offset = 0; offset < UUID_SIZE; ++offset) {
-                    var byte = data[offset];
-                    if (offset === 4 || offset === 6 || offset === 8)
-                        result += "-";
-                    if (byte < 16)
-                        result += "0";
-                    result += byte.toString(16).toLowerCase();
-                }
-                return result;
-            }
-        }
-        // uses a heuristic used by v8 and chakra to force an object into dictionary mode.
-        function MakeDictionary(obj) {
-            obj.__ = undefined;
-            delete obj.__;
-            return obj;
-        }
-    });
-})(Reflect$1 || (Reflect$1 = {}));
+        return this._db;
+    }
+    get pushKeys() {
+        return this._model.META.pushKeys;
+    }
+    /**
+     * **connect**
+     *
+     * This static initializer facilitates connecting **FireModel** with
+     * the firebase database in a compact and convenient way:
+  ```typescript
+  import { DB } from 'abstracted-xxx';
+  const db = await FireModel.connect(DB, options);
+  ```
+     * This method not only sets **FireModel**'s `defaultDb` property but
+     * also returns a reference to the `abstracted-client`/`abstracted-admin`
+     * object so you can use this externally to FireModel should you choose to.
+     *
+     * Note: each _CRUD_ action in FireModel allows passing
+     * in a DB connection (which opens up the possibility of multiple firebase
+     * databases) but the vast majority of projects only have ONE firebase
+     * database so this just makes the whole process much easier.
+     */
+    static async connect(RTDB, options) {
+        const db = await RTDB.connect(options);
+        FireModel.defaultDb = db;
+        return db;
+    }
+    static register(model) {
+        modelRegister(model);
+    }
+    static listRegisteredModels() {
+        return listRegisteredModels();
+    }
+    static lookupModel(name) {
+        return modelRegistryLookup(name);
+    }
+    //#region STATIC INTERFACE
+    static isBeingWatched(path) {
+        // TODO: implement this!
+        return false;
+    }
+    //#endregion
+    //#region PROTECTED INTERFACE
+    _getPaths(rec, deltas) {
+        const added = (deltas.added || []).reduce((agg, curr) => {
+            agg[pathJoin(this.dbPath, curr)] = rec.get(curr);
+            return agg;
+        }, {});
+        const removed = (deltas.removed || []).reduce((agg, curr) => {
+            agg[pathJoin(this.dbPath, curr)] = null;
+            return agg;
+        }, {});
+        const updated = (deltas.changed || []).reduce((agg, curr) => {
+            agg[pathJoin(this.dbPath, curr)] = rec.get(curr);
+            return agg;
+        }, {});
+        return Object.assign(Object.assign(Object.assign({}, added), removed), updated);
+    }
+}
+FireModel.auditLogs = "/auditing";
+FireModel._dispatchActive = false;
+/** the dispatch function used to interact with frontend frameworks */
+FireModel._dispatch = defaultDispatch;
 
 /** Detect free variable `global` from Node.js. */
 var freeGlobal = typeof global == 'object' && global && global.Object === Object && global;
@@ -2076,3248 +1832,6 @@ function arrayToHash(arr, keyProperty, removeIdProperty = false) {
     return removeIdProperty ? removeIdPropertyFromHash(output) : output;
 }
 
-function isProperty(modelKlass) {
-    return (prop) => {
-        return getModelProperty(modelKlass)(prop) ? true : false;
-    };
-}
-/** Properties accumlated by propertyDecorators  */
-const propertiesByModel = {};
-/** allows the addition of meta information to be added to a model's properties */
-function addPropertyToModelMeta(modelName, property, meta) {
-    if (!propertiesByModel[modelName]) {
-        propertiesByModel[modelName] = {};
-    }
-    // TODO: investigate why we need to genericize to model (from <T>)
-    propertiesByModel[modelName][property] = meta;
-}
-/** lookup meta data for schema properties */
-function getModelProperty(model) {
-    const className = model.constructor.name;
-    const propsForModel = getProperties(model);
-    return (prop) => {
-        return propsForModel.find(value => {
-            return value.property === prop;
-        });
-    };
-}
-/**
- * Gets all the properties for a given model
- *
- * @param modelConstructor the schema object which is being looked up
- */
-function getProperties(model) {
-    const modelName = model.constructor.name;
-    const properties = hashToArray(propertiesByModel[modelName], "property") || [];
-    let parent = Object.getPrototypeOf(model.constructor);
-    while (parent.name) {
-        const subClass = new parent();
-        const subClassName = subClass.constructor.name;
-        properties.push(...hashToArray(propertiesByModel[subClassName], "property"));
-        parent = Object.getPrototypeOf(subClass.constructor);
-    }
-    return properties;
-}
-
-/** Detect free variable `global` from Node.js. */
-var freeGlobal$1 = typeof global == 'object' && global && global.Object === Object && global;
-
-/** Detect free variable `self`. */
-var freeSelf$1 = typeof self == 'object' && self && self.Object === Object && self;
-
-/** Used as a reference to the global object. */
-var root$1 = freeGlobal$1 || freeSelf$1 || Function('return this')();
-
-/** Built-in value references. */
-var Symbol$2 = root$1.Symbol;
-
-/** Used for built-in method references. */
-var objectProto$5 = Object.prototype;
-
-/** Used to check objects for own properties. */
-var hasOwnProperty$4 = objectProto$5.hasOwnProperty;
-
-/**
- * Used to resolve the
- * [`toStringTag`](http://ecma-international.org/ecma-262/7.0/#sec-object.prototype.tostring)
- * of values.
- */
-var nativeObjectToString$2 = objectProto$5.toString;
-
-/** Built-in value references. */
-var symToStringTag$2 = Symbol$2 ? Symbol$2.toStringTag : undefined;
-
-/**
- * A specialized version of `baseGetTag` which ignores `Symbol.toStringTag` values.
- *
- * @private
- * @param {*} value The value to query.
- * @returns {string} Returns the raw `toStringTag`.
- */
-function getRawTag$1(value) {
-  var isOwn = hasOwnProperty$4.call(value, symToStringTag$2),
-      tag = value[symToStringTag$2];
-
-  try {
-    value[symToStringTag$2] = undefined;
-    var unmasked = true;
-  } catch (e) {}
-
-  var result = nativeObjectToString$2.call(value);
-  if (unmasked) {
-    if (isOwn) {
-      value[symToStringTag$2] = tag;
-    } else {
-      delete value[symToStringTag$2];
-    }
-  }
-  return result;
-}
-
-/** Used for built-in method references. */
-var objectProto$6 = Object.prototype;
-
-/**
- * Used to resolve the
- * [`toStringTag`](http://ecma-international.org/ecma-262/7.0/#sec-object.prototype.tostring)
- * of values.
- */
-var nativeObjectToString$3 = objectProto$6.toString;
-
-/**
- * Converts `value` to a string using `Object.prototype.toString`.
- *
- * @private
- * @param {*} value The value to convert.
- * @returns {string} Returns the converted string.
- */
-function objectToString$1(value) {
-  return nativeObjectToString$3.call(value);
-}
-
-/** `Object#toString` result references. */
-var nullTag$1 = '[object Null]',
-    undefinedTag$1 = '[object Undefined]';
-
-/** Built-in value references. */
-var symToStringTag$3 = Symbol$2 ? Symbol$2.toStringTag : undefined;
-
-/**
- * The base implementation of `getTag` without fallbacks for buggy environments.
- *
- * @private
- * @param {*} value The value to query.
- * @returns {string} Returns the `toStringTag`.
- */
-function baseGetTag$1(value) {
-  if (value == null) {
-    return value === undefined ? undefinedTag$1 : nullTag$1;
-  }
-  return (symToStringTag$3 && symToStringTag$3 in Object(value))
-    ? getRawTag$1(value)
-    : objectToString$1(value);
-}
-
-/**
- * Checks if `value` is object-like. A value is object-like if it's not `null`
- * and has a `typeof` result of "object".
- *
- * @static
- * @memberOf _
- * @since 4.0.0
- * @category Lang
- * @param {*} value The value to check.
- * @returns {boolean} Returns `true` if `value` is object-like, else `false`.
- * @example
- *
- * _.isObjectLike({});
- * // => true
- *
- * _.isObjectLike([1, 2, 3]);
- * // => true
- *
- * _.isObjectLike(_.noop);
- * // => false
- *
- * _.isObjectLike(null);
- * // => false
- */
-function isObjectLike(value) {
-  return value != null && typeof value == 'object';
-}
-
-/** `Object#toString` result references. */
-var symbolTag = '[object Symbol]';
-
-/**
- * Checks if `value` is classified as a `Symbol` primitive or object.
- *
- * @static
- * @memberOf _
- * @since 4.0.0
- * @category Lang
- * @param {*} value The value to check.
- * @returns {boolean} Returns `true` if `value` is a symbol, else `false`.
- * @example
- *
- * _.isSymbol(Symbol.iterator);
- * // => true
- *
- * _.isSymbol('abc');
- * // => false
- */
-function isSymbol(value) {
-  return typeof value == 'symbol' ||
-    (isObjectLike(value) && baseGetTag$1(value) == symbolTag);
-}
-
-/**
- * A specialized version of `_.map` for arrays without support for iteratee
- * shorthands.
- *
- * @private
- * @param {Array} [array] The array to iterate over.
- * @param {Function} iteratee The function invoked per iteration.
- * @returns {Array} Returns the new mapped array.
- */
-function arrayMap(array, iteratee) {
-  var index = -1,
-      length = array == null ? 0 : array.length,
-      result = Array(length);
-
-  while (++index < length) {
-    result[index] = iteratee(array[index], index, array);
-  }
-  return result;
-}
-
-/**
- * Checks if `value` is classified as an `Array` object.
- *
- * @static
- * @memberOf _
- * @since 0.1.0
- * @category Lang
- * @param {*} value The value to check.
- * @returns {boolean} Returns `true` if `value` is an array, else `false`.
- * @example
- *
- * _.isArray([1, 2, 3]);
- * // => true
- *
- * _.isArray(document.body.children);
- * // => false
- *
- * _.isArray('abc');
- * // => false
- *
- * _.isArray(_.noop);
- * // => false
- */
-var isArray = Array.isArray;
-
-/** Used as references for various `Number` constants. */
-var INFINITY = 1 / 0;
-
-/** Used to convert symbols to primitives and strings. */
-var symbolProto$1 = Symbol$2 ? Symbol$2.prototype : undefined,
-    symbolToString$1 = symbolProto$1 ? symbolProto$1.toString : undefined;
-
-/**
- * The base implementation of `_.toString` which doesn't convert nullish
- * values to empty strings.
- *
- * @private
- * @param {*} value The value to process.
- * @returns {string} Returns the string.
- */
-function baseToString(value) {
-  // Exit early for strings to avoid a performance hit in some environments.
-  if (typeof value == 'string') {
-    return value;
-  }
-  if (isArray(value)) {
-    // Recursively convert values (susceptible to call stack limits).
-    return arrayMap(value, baseToString) + '';
-  }
-  if (isSymbol(value)) {
-    return symbolToString$1 ? symbolToString$1.call(value) : '';
-  }
-  var result = (value + '');
-  return (result == '0' && (1 / value) == -INFINITY) ? '-0' : result;
-}
-
-/**
- * Checks if `value` is the
- * [language type](http://www.ecma-international.org/ecma-262/7.0/#sec-ecmascript-language-types)
- * of `Object`. (e.g. arrays, functions, objects, regexes, `new Number(0)`, and `new String('')`)
- *
- * @static
- * @memberOf _
- * @since 0.1.0
- * @category Lang
- * @param {*} value The value to check.
- * @returns {boolean} Returns `true` if `value` is an object, else `false`.
- * @example
- *
- * _.isObject({});
- * // => true
- *
- * _.isObject([1, 2, 3]);
- * // => true
- *
- * _.isObject(_.noop);
- * // => true
- *
- * _.isObject(null);
- * // => false
- */
-function isObject$1(value) {
-  var type = typeof value;
-  return value != null && (type == 'object' || type == 'function');
-}
-
-/** `Object#toString` result references. */
-var asyncTag$1 = '[object AsyncFunction]',
-    funcTag$1 = '[object Function]',
-    genTag$1 = '[object GeneratorFunction]',
-    proxyTag$1 = '[object Proxy]';
-
-/**
- * Checks if `value` is classified as a `Function` object.
- *
- * @static
- * @memberOf _
- * @since 0.1.0
- * @category Lang
- * @param {*} value The value to check.
- * @returns {boolean} Returns `true` if `value` is a function, else `false`.
- * @example
- *
- * _.isFunction(_);
- * // => true
- *
- * _.isFunction(/abc/);
- * // => false
- */
-function isFunction$1(value) {
-  if (!isObject$1(value)) {
-    return false;
-  }
-  // The use of `Object#toString` avoids issues with the `typeof` operator
-  // in Safari 9 which returns 'object' for typed arrays and other constructors.
-  var tag = baseGetTag$1(value);
-  return tag == funcTag$1 || tag == genTag$1 || tag == asyncTag$1 || tag == proxyTag$1;
-}
-
-/** Used to detect overreaching core-js shims. */
-var coreJsData$1 = root$1['__core-js_shared__'];
-
-/** Used to detect methods masquerading as native. */
-var maskSrcKey$1 = (function() {
-  var uid = /[^.]+$/.exec(coreJsData$1 && coreJsData$1.keys && coreJsData$1.keys.IE_PROTO || '');
-  return uid ? ('Symbol(src)_1.' + uid) : '';
-}());
-
-/**
- * Checks if `func` has its source masked.
- *
- * @private
- * @param {Function} func The function to check.
- * @returns {boolean} Returns `true` if `func` is masked, else `false`.
- */
-function isMasked$1(func) {
-  return !!maskSrcKey$1 && (maskSrcKey$1 in func);
-}
-
-/** Used for built-in method references. */
-var funcProto$2 = Function.prototype;
-
-/** Used to resolve the decompiled source of functions. */
-var funcToString$2 = funcProto$2.toString;
-
-/**
- * Converts `func` to its source code.
- *
- * @private
- * @param {Function} func The function to convert.
- * @returns {string} Returns the source code.
- */
-function toSource$1(func) {
-  if (func != null) {
-    try {
-      return funcToString$2.call(func);
-    } catch (e) {}
-    try {
-      return (func + '');
-    } catch (e) {}
-  }
-  return '';
-}
-
-/**
- * Used to match `RegExp`
- * [syntax characters](http://ecma-international.org/ecma-262/7.0/#sec-patterns).
- */
-var reRegExpChar$1 = /[\\^$.*+?()[\]{}|]/g;
-
-/** Used to detect host constructors (Safari). */
-var reIsHostCtor$1 = /^\[object .+?Constructor\]$/;
-
-/** Used for built-in method references. */
-var funcProto$3 = Function.prototype,
-    objectProto$7 = Object.prototype;
-
-/** Used to resolve the decompiled source of functions. */
-var funcToString$3 = funcProto$3.toString;
-
-/** Used to check objects for own properties. */
-var hasOwnProperty$5 = objectProto$7.hasOwnProperty;
-
-/** Used to detect if a method is native. */
-var reIsNative$1 = RegExp('^' +
-  funcToString$3.call(hasOwnProperty$5).replace(reRegExpChar$1, '\\$&')
-  .replace(/hasOwnProperty|(function).*?(?=\\\()| for .+?(?=\\\])/g, '$1.*?') + '$'
-);
-
-/**
- * The base implementation of `_.isNative` without bad shim checks.
- *
- * @private
- * @param {*} value The value to check.
- * @returns {boolean} Returns `true` if `value` is a native function,
- *  else `false`.
- */
-function baseIsNative$1(value) {
-  if (!isObject$1(value) || isMasked$1(value)) {
-    return false;
-  }
-  var pattern = isFunction$1(value) ? reIsNative$1 : reIsHostCtor$1;
-  return pattern.test(toSource$1(value));
-}
-
-/**
- * Gets the value at `key` of `object`.
- *
- * @private
- * @param {Object} [object] The object to query.
- * @param {string} key The key of the property to get.
- * @returns {*} Returns the property value.
- */
-function getValue$1(object, key) {
-  return object == null ? undefined : object[key];
-}
-
-/**
- * Gets the native function at `key` of `object`.
- *
- * @private
- * @param {Object} object The object to query.
- * @param {string} key The key of the method to get.
- * @returns {*} Returns the function if it's native, else `undefined`.
- */
-function getNative$1(object, key) {
-  var value = getValue$1(object, key);
-  return baseIsNative$1(value) ? value : undefined;
-}
-
-var defineProperty = (function() {
-  try {
-    var func = getNative$1(Object, 'defineProperty');
-    func({}, '', {});
-    return func;
-  } catch (e) {}
-}());
-
-/** Used as references for various `Number` constants. */
-var MAX_SAFE_INTEGER = 9007199254740991;
-
-/** Used to detect unsigned integer values. */
-var reIsUint = /^(?:0|[1-9]\d*)$/;
-
-/**
- * Checks if `value` is a valid array-like index.
- *
- * @private
- * @param {*} value The value to check.
- * @param {number} [length=MAX_SAFE_INTEGER] The upper bounds of a valid index.
- * @returns {boolean} Returns `true` if `value` is a valid index, else `false`.
- */
-function isIndex(value, length) {
-  var type = typeof value;
-  length = length == null ? MAX_SAFE_INTEGER : length;
-
-  return !!length &&
-    (type == 'number' ||
-      (type != 'symbol' && reIsUint.test(value))) &&
-        (value > -1 && value % 1 == 0 && value < length);
-}
-
-/**
- * The base implementation of `assignValue` and `assignMergeValue` without
- * value checks.
- *
- * @private
- * @param {Object} object The object to modify.
- * @param {string} key The key of the property to assign.
- * @param {*} value The value to assign.
- */
-function baseAssignValue(object, key, value) {
-  if (key == '__proto__' && defineProperty) {
-    defineProperty(object, key, {
-      'configurable': true,
-      'enumerable': true,
-      'value': value,
-      'writable': true
-    });
-  } else {
-    object[key] = value;
-  }
-}
-
-/**
- * Performs a
- * [`SameValueZero`](http://ecma-international.org/ecma-262/7.0/#sec-samevaluezero)
- * comparison between two values to determine if they are equivalent.
- *
- * @static
- * @memberOf _
- * @since 4.0.0
- * @category Lang
- * @param {*} value The value to compare.
- * @param {*} other The other value to compare.
- * @returns {boolean} Returns `true` if the values are equivalent, else `false`.
- * @example
- *
- * var object = { 'a': 1 };
- * var other = { 'a': 1 };
- *
- * _.eq(object, object);
- * // => true
- *
- * _.eq(object, other);
- * // => false
- *
- * _.eq('a', 'a');
- * // => true
- *
- * _.eq('a', Object('a'));
- * // => false
- *
- * _.eq(NaN, NaN);
- * // => true
- */
-function eq$1(value, other) {
-  return value === other || (value !== value && other !== other);
-}
-
-/** Used for built-in method references. */
-var objectProto$8 = Object.prototype;
-
-/** Used to check objects for own properties. */
-var hasOwnProperty$6 = objectProto$8.hasOwnProperty;
-
-/**
- * Assigns `value` to `key` of `object` if the existing value is not equivalent
- * using [`SameValueZero`](http://ecma-international.org/ecma-262/7.0/#sec-samevaluezero)
- * for equality comparisons.
- *
- * @private
- * @param {Object} object The object to modify.
- * @param {string} key The key of the property to assign.
- * @param {*} value The value to assign.
- */
-function assignValue(object, key, value) {
-  var objValue = object[key];
-  if (!(hasOwnProperty$6.call(object, key) && eq$1(objValue, value)) ||
-      (value === undefined && !(key in object))) {
-    baseAssignValue(object, key, value);
-  }
-}
-
-/** Used to match property names within property paths. */
-var reIsDeepProp = /\.|\[(?:[^[\]]*|(["'])(?:(?!\1)[^\\]|\\.)*?\1)\]/,
-    reIsPlainProp = /^\w*$/;
-
-/**
- * Checks if `value` is a property name and not a property path.
- *
- * @private
- * @param {*} value The value to check.
- * @param {Object} [object] The object to query keys on.
- * @returns {boolean} Returns `true` if `value` is a property name, else `false`.
- */
-function isKey(value, object) {
-  if (isArray(value)) {
-    return false;
-  }
-  var type = typeof value;
-  if (type == 'number' || type == 'symbol' || type == 'boolean' ||
-      value == null || isSymbol(value)) {
-    return true;
-  }
-  return reIsPlainProp.test(value) || !reIsDeepProp.test(value) ||
-    (object != null && value in Object(object));
-}
-
-/* Built-in method references that are verified to be native. */
-var nativeCreate$1 = getNative$1(Object, 'create');
-
-/**
- * Removes all key-value entries from the hash.
- *
- * @private
- * @name clear
- * @memberOf Hash
- */
-function hashClear$1() {
-  this.__data__ = nativeCreate$1 ? nativeCreate$1(null) : {};
-  this.size = 0;
-}
-
-/**
- * Removes `key` and its value from the hash.
- *
- * @private
- * @name delete
- * @memberOf Hash
- * @param {Object} hash The hash to modify.
- * @param {string} key The key of the value to remove.
- * @returns {boolean} Returns `true` if the entry was removed, else `false`.
- */
-function hashDelete$1(key) {
-  var result = this.has(key) && delete this.__data__[key];
-  this.size -= result ? 1 : 0;
-  return result;
-}
-
-/** Used to stand-in for `undefined` hash values. */
-var HASH_UNDEFINED$2 = '__lodash_hash_undefined__';
-
-/** Used for built-in method references. */
-var objectProto$9 = Object.prototype;
-
-/** Used to check objects for own properties. */
-var hasOwnProperty$7 = objectProto$9.hasOwnProperty;
-
-/**
- * Gets the hash value for `key`.
- *
- * @private
- * @name get
- * @memberOf Hash
- * @param {string} key The key of the value to get.
- * @returns {*} Returns the entry value.
- */
-function hashGet$1(key) {
-  var data = this.__data__;
-  if (nativeCreate$1) {
-    var result = data[key];
-    return result === HASH_UNDEFINED$2 ? undefined : result;
-  }
-  return hasOwnProperty$7.call(data, key) ? data[key] : undefined;
-}
-
-/** Used for built-in method references. */
-var objectProto$a = Object.prototype;
-
-/** Used to check objects for own properties. */
-var hasOwnProperty$8 = objectProto$a.hasOwnProperty;
-
-/**
- * Checks if a hash value for `key` exists.
- *
- * @private
- * @name has
- * @memberOf Hash
- * @param {string} key The key of the entry to check.
- * @returns {boolean} Returns `true` if an entry for `key` exists, else `false`.
- */
-function hashHas$1(key) {
-  var data = this.__data__;
-  return nativeCreate$1 ? (data[key] !== undefined) : hasOwnProperty$8.call(data, key);
-}
-
-/** Used to stand-in for `undefined` hash values. */
-var HASH_UNDEFINED$3 = '__lodash_hash_undefined__';
-
-/**
- * Sets the hash `key` to `value`.
- *
- * @private
- * @name set
- * @memberOf Hash
- * @param {string} key The key of the value to set.
- * @param {*} value The value to set.
- * @returns {Object} Returns the hash instance.
- */
-function hashSet$1(key, value) {
-  var data = this.__data__;
-  this.size += this.has(key) ? 0 : 1;
-  data[key] = (nativeCreate$1 && value === undefined) ? HASH_UNDEFINED$3 : value;
-  return this;
-}
-
-/**
- * Creates a hash object.
- *
- * @private
- * @constructor
- * @param {Array} [entries] The key-value pairs to cache.
- */
-function Hash$1(entries) {
-  var index = -1,
-      length = entries == null ? 0 : entries.length;
-
-  this.clear();
-  while (++index < length) {
-    var entry = entries[index];
-    this.set(entry[0], entry[1]);
-  }
-}
-
-// Add methods to `Hash`.
-Hash$1.prototype.clear = hashClear$1;
-Hash$1.prototype['delete'] = hashDelete$1;
-Hash$1.prototype.get = hashGet$1;
-Hash$1.prototype.has = hashHas$1;
-Hash$1.prototype.set = hashSet$1;
-
-/**
- * Removes all key-value entries from the list cache.
- *
- * @private
- * @name clear
- * @memberOf ListCache
- */
-function listCacheClear$1() {
-  this.__data__ = [];
-  this.size = 0;
-}
-
-/**
- * Gets the index at which the `key` is found in `array` of key-value pairs.
- *
- * @private
- * @param {Array} array The array to inspect.
- * @param {*} key The key to search for.
- * @returns {number} Returns the index of the matched value, else `-1`.
- */
-function assocIndexOf$1(array, key) {
-  var length = array.length;
-  while (length--) {
-    if (eq$1(array[length][0], key)) {
-      return length;
-    }
-  }
-  return -1;
-}
-
-/** Used for built-in method references. */
-var arrayProto$1 = Array.prototype;
-
-/** Built-in value references. */
-var splice$1 = arrayProto$1.splice;
-
-/**
- * Removes `key` and its value from the list cache.
- *
- * @private
- * @name delete
- * @memberOf ListCache
- * @param {string} key The key of the value to remove.
- * @returns {boolean} Returns `true` if the entry was removed, else `false`.
- */
-function listCacheDelete$1(key) {
-  var data = this.__data__,
-      index = assocIndexOf$1(data, key);
-
-  if (index < 0) {
-    return false;
-  }
-  var lastIndex = data.length - 1;
-  if (index == lastIndex) {
-    data.pop();
-  } else {
-    splice$1.call(data, index, 1);
-  }
-  --this.size;
-  return true;
-}
-
-/**
- * Gets the list cache value for `key`.
- *
- * @private
- * @name get
- * @memberOf ListCache
- * @param {string} key The key of the value to get.
- * @returns {*} Returns the entry value.
- */
-function listCacheGet$1(key) {
-  var data = this.__data__,
-      index = assocIndexOf$1(data, key);
-
-  return index < 0 ? undefined : data[index][1];
-}
-
-/**
- * Checks if a list cache value for `key` exists.
- *
- * @private
- * @name has
- * @memberOf ListCache
- * @param {string} key The key of the entry to check.
- * @returns {boolean} Returns `true` if an entry for `key` exists, else `false`.
- */
-function listCacheHas$1(key) {
-  return assocIndexOf$1(this.__data__, key) > -1;
-}
-
-/**
- * Sets the list cache `key` to `value`.
- *
- * @private
- * @name set
- * @memberOf ListCache
- * @param {string} key The key of the value to set.
- * @param {*} value The value to set.
- * @returns {Object} Returns the list cache instance.
- */
-function listCacheSet$1(key, value) {
-  var data = this.__data__,
-      index = assocIndexOf$1(data, key);
-
-  if (index < 0) {
-    ++this.size;
-    data.push([key, value]);
-  } else {
-    data[index][1] = value;
-  }
-  return this;
-}
-
-/**
- * Creates an list cache object.
- *
- * @private
- * @constructor
- * @param {Array} [entries] The key-value pairs to cache.
- */
-function ListCache$1(entries) {
-  var index = -1,
-      length = entries == null ? 0 : entries.length;
-
-  this.clear();
-  while (++index < length) {
-    var entry = entries[index];
-    this.set(entry[0], entry[1]);
-  }
-}
-
-// Add methods to `ListCache`.
-ListCache$1.prototype.clear = listCacheClear$1;
-ListCache$1.prototype['delete'] = listCacheDelete$1;
-ListCache$1.prototype.get = listCacheGet$1;
-ListCache$1.prototype.has = listCacheHas$1;
-ListCache$1.prototype.set = listCacheSet$1;
-
-/* Built-in method references that are verified to be native. */
-var Map$2 = getNative$1(root$1, 'Map');
-
-/**
- * Removes all key-value entries from the map.
- *
- * @private
- * @name clear
- * @memberOf MapCache
- */
-function mapCacheClear$1() {
-  this.size = 0;
-  this.__data__ = {
-    'hash': new Hash$1,
-    'map': new (Map$2 || ListCache$1),
-    'string': new Hash$1
-  };
-}
-
-/**
- * Checks if `value` is suitable for use as unique object key.
- *
- * @private
- * @param {*} value The value to check.
- * @returns {boolean} Returns `true` if `value` is suitable, else `false`.
- */
-function isKeyable$1(value) {
-  var type = typeof value;
-  return (type == 'string' || type == 'number' || type == 'symbol' || type == 'boolean')
-    ? (value !== '__proto__')
-    : (value === null);
-}
-
-/**
- * Gets the data for `map`.
- *
- * @private
- * @param {Object} map The map to query.
- * @param {string} key The reference key.
- * @returns {*} Returns the map data.
- */
-function getMapData$1(map, key) {
-  var data = map.__data__;
-  return isKeyable$1(key)
-    ? data[typeof key == 'string' ? 'string' : 'hash']
-    : data.map;
-}
-
-/**
- * Removes `key` and its value from the map.
- *
- * @private
- * @name delete
- * @memberOf MapCache
- * @param {string} key The key of the value to remove.
- * @returns {boolean} Returns `true` if the entry was removed, else `false`.
- */
-function mapCacheDelete$1(key) {
-  var result = getMapData$1(this, key)['delete'](key);
-  this.size -= result ? 1 : 0;
-  return result;
-}
-
-/**
- * Gets the map value for `key`.
- *
- * @private
- * @name get
- * @memberOf MapCache
- * @param {string} key The key of the value to get.
- * @returns {*} Returns the entry value.
- */
-function mapCacheGet$1(key) {
-  return getMapData$1(this, key).get(key);
-}
-
-/**
- * Checks if a map value for `key` exists.
- *
- * @private
- * @name has
- * @memberOf MapCache
- * @param {string} key The key of the entry to check.
- * @returns {boolean} Returns `true` if an entry for `key` exists, else `false`.
- */
-function mapCacheHas$1(key) {
-  return getMapData$1(this, key).has(key);
-}
-
-/**
- * Sets the map `key` to `value`.
- *
- * @private
- * @name set
- * @memberOf MapCache
- * @param {string} key The key of the value to set.
- * @param {*} value The value to set.
- * @returns {Object} Returns the map cache instance.
- */
-function mapCacheSet$1(key, value) {
-  var data = getMapData$1(this, key),
-      size = data.size;
-
-  data.set(key, value);
-  this.size += data.size == size ? 0 : 1;
-  return this;
-}
-
-/**
- * Creates a map cache object to store key-value pairs.
- *
- * @private
- * @constructor
- * @param {Array} [entries] The key-value pairs to cache.
- */
-function MapCache$1(entries) {
-  var index = -1,
-      length = entries == null ? 0 : entries.length;
-
-  this.clear();
-  while (++index < length) {
-    var entry = entries[index];
-    this.set(entry[0], entry[1]);
-  }
-}
-
-// Add methods to `MapCache`.
-MapCache$1.prototype.clear = mapCacheClear$1;
-MapCache$1.prototype['delete'] = mapCacheDelete$1;
-MapCache$1.prototype.get = mapCacheGet$1;
-MapCache$1.prototype.has = mapCacheHas$1;
-MapCache$1.prototype.set = mapCacheSet$1;
-
-/** Error message constants. */
-var FUNC_ERROR_TEXT$1 = 'Expected a function';
-
-/**
- * Creates a function that memoizes the result of `func`. If `resolver` is
- * provided, it determines the cache key for storing the result based on the
- * arguments provided to the memoized function. By default, the first argument
- * provided to the memoized function is used as the map cache key. The `func`
- * is invoked with the `this` binding of the memoized function.
- *
- * **Note:** The cache is exposed as the `cache` property on the memoized
- * function. Its creation may be customized by replacing the `_.memoize.Cache`
- * constructor with one whose instances implement the
- * [`Map`](http://ecma-international.org/ecma-262/7.0/#sec-properties-of-the-map-prototype-object)
- * method interface of `clear`, `delete`, `get`, `has`, and `set`.
- *
- * @static
- * @memberOf _
- * @since 0.1.0
- * @category Function
- * @param {Function} func The function to have its output memoized.
- * @param {Function} [resolver] The function to resolve the cache key.
- * @returns {Function} Returns the new memoized function.
- * @example
- *
- * var object = { 'a': 1, 'b': 2 };
- * var other = { 'c': 3, 'd': 4 };
- *
- * var values = _.memoize(_.values);
- * values(object);
- * // => [1, 2]
- *
- * values(other);
- * // => [3, 4]
- *
- * object.a = 2;
- * values(object);
- * // => [1, 2]
- *
- * // Modify the result cache.
- * values.cache.set(object, ['a', 'b']);
- * values(object);
- * // => ['a', 'b']
- *
- * // Replace `_.memoize.Cache`.
- * _.memoize.Cache = WeakMap;
- */
-function memoize$1(func, resolver) {
-  if (typeof func != 'function' || (resolver != null && typeof resolver != 'function')) {
-    throw new TypeError(FUNC_ERROR_TEXT$1);
-  }
-  var memoized = function() {
-    var args = arguments,
-        key = resolver ? resolver.apply(this, args) : args[0],
-        cache = memoized.cache;
-
-    if (cache.has(key)) {
-      return cache.get(key);
-    }
-    var result = func.apply(this, args);
-    memoized.cache = cache.set(key, result) || cache;
-    return result;
-  };
-  memoized.cache = new (memoize$1.Cache || MapCache$1);
-  return memoized;
-}
-
-// Expose `MapCache`.
-memoize$1.Cache = MapCache$1;
-
-/** Used as the maximum memoize cache size. */
-var MAX_MEMOIZE_SIZE$1 = 500;
-
-/**
- * A specialized version of `_.memoize` which clears the memoized function's
- * cache when it exceeds `MAX_MEMOIZE_SIZE`.
- *
- * @private
- * @param {Function} func The function to have its output memoized.
- * @returns {Function} Returns the new memoized function.
- */
-function memoizeCapped$1(func) {
-  var result = memoize$1(func, function(key) {
-    if (cache.size === MAX_MEMOIZE_SIZE$1) {
-      cache.clear();
-    }
-    return key;
-  });
-
-  var cache = result.cache;
-  return result;
-}
-
-/** Used to match property names within property paths. */
-var rePropName$1 = /[^.[\]]+|\[(?:(-?\d+(?:\.\d+)?)|(["'])((?:(?!\2)[^\\]|\\.)*?)\2)\]|(?=(?:\.|\[\])(?:\.|\[\]|$))/g;
-
-/** Used to match backslashes in property paths. */
-var reEscapeChar$1 = /\\(\\)?/g;
-
-/**
- * Converts `string` to a property path array.
- *
- * @private
- * @param {string} string The string to convert.
- * @returns {Array} Returns the property path array.
- */
-var stringToPath$1 = memoizeCapped$1(function(string) {
-  var result = [];
-  if (string.charCodeAt(0) === 46 /* . */) {
-    result.push('');
-  }
-  string.replace(rePropName$1, function(match, number, quote, subString) {
-    result.push(quote ? subString.replace(reEscapeChar$1, '$1') : (number || match));
-  });
-  return result;
-});
-
-/**
- * Converts `value` to a string. An empty string is returned for `null`
- * and `undefined` values. The sign of `-0` is preserved.
- *
- * @static
- * @memberOf _
- * @since 4.0.0
- * @category Lang
- * @param {*} value The value to convert.
- * @returns {string} Returns the converted string.
- * @example
- *
- * _.toString(null);
- * // => ''
- *
- * _.toString(-0);
- * // => '-0'
- *
- * _.toString([1, 2, 3]);
- * // => '1,2,3'
- */
-function toString(value) {
-  return value == null ? '' : baseToString(value);
-}
-
-/**
- * Casts `value` to a path array if it's not one.
- *
- * @private
- * @param {*} value The value to inspect.
- * @param {Object} [object] The object to query keys on.
- * @returns {Array} Returns the cast property path array.
- */
-function castPath(value, object) {
-  if (isArray(value)) {
-    return value;
-  }
-  return isKey(value, object) ? [value] : stringToPath$1(toString(value));
-}
-
-/** Used as references for various `Number` constants. */
-var INFINITY$1 = 1 / 0;
-
-/**
- * Converts `value` to a string key if it's not a string or symbol.
- *
- * @private
- * @param {*} value The value to inspect.
- * @returns {string|symbol} Returns the key.
- */
-function toKey(value) {
-  if (typeof value == 'string' || isSymbol(value)) {
-    return value;
-  }
-  var result = (value + '');
-  return (result == '0' && (1 / value) == -INFINITY$1) ? '-0' : result;
-}
-
-/**
- * The base implementation of `_.get` without support for default values.
- *
- * @private
- * @param {Object} object The object to query.
- * @param {Array|string} path The path of the property to get.
- * @returns {*} Returns the resolved value.
- */
-function baseGet(object, path) {
-  path = castPath(path, object);
-
-  var index = 0,
-      length = path.length;
-
-  while (object != null && index < length) {
-    object = object[toKey(path[index++])];
-  }
-  return (index && index == length) ? object : undefined;
-}
-
-/**
- * Gets the value at `path` of `object`. If the resolved value is
- * `undefined`, the `defaultValue` is returned in its place.
- *
- * @static
- * @memberOf _
- * @since 3.7.0
- * @category Object
- * @param {Object} object The object to query.
- * @param {Array|string} path The path of the property to get.
- * @param {*} [defaultValue] The value returned for `undefined` resolved values.
- * @returns {*} Returns the resolved value.
- * @example
- *
- * var object = { 'a': [{ 'b': { 'c': 3 } }] };
- *
- * _.get(object, 'a[0].b.c');
- * // => 3
- *
- * _.get(object, ['a', '0', 'b', 'c']);
- * // => 3
- *
- * _.get(object, 'a.b.c', 'default');
- * // => 'default'
- */
-function get(object, path, defaultValue) {
-  var result = object == null ? undefined : baseGet(object, path);
-  return result === undefined ? defaultValue : result;
-}
-
-/**
- * The base implementation of `_.set`.
- *
- * @private
- * @param {Object} object The object to modify.
- * @param {Array|string} path The path of the property to set.
- * @param {*} value The value to set.
- * @param {Function} [customizer] The function to customize path creation.
- * @returns {Object} Returns `object`.
- */
-function baseSet(object, path, value, customizer) {
-  if (!isObject$1(object)) {
-    return object;
-  }
-  path = castPath(path, object);
-
-  var index = -1,
-      length = path.length,
-      lastIndex = length - 1,
-      nested = object;
-
-  while (nested != null && ++index < length) {
-    var key = toKey(path[index]),
-        newValue = value;
-
-    if (index != lastIndex) {
-      var objValue = nested[key];
-      newValue = customizer ? customizer(objValue, key, nested) : undefined;
-      if (newValue === undefined) {
-        newValue = isObject$1(objValue)
-          ? objValue
-          : (isIndex(path[index + 1]) ? [] : {});
-      }
-    }
-    assignValue(nested, key, newValue);
-    nested = nested[key];
-  }
-  return object;
-}
-
-/**
- * Sets the value at `path` of `object`. If a portion of `path` doesn't exist,
- * it's created. Arrays are created for missing index properties while objects
- * are created for all other missing properties. Use `_.setWith` to customize
- * `path` creation.
- *
- * **Note:** This method mutates `object`.
- *
- * @static
- * @memberOf _
- * @since 3.7.0
- * @category Object
- * @param {Object} object The object to modify.
- * @param {Array|string} path The path of the property to set.
- * @param {*} value The value to set.
- * @returns {Object} Returns `object`.
- * @example
- *
- * var object = { 'a': [{ 'b': { 'c': 3 } }] };
- *
- * _.set(object, 'a[0].b.c', 4);
- * console.log(object.a[0].b.c);
- * // => 4
- *
- * _.set(object, ['x', '0', 'y', 'z'], 5);
- * console.log(object.x[0].y.z);
- * // => 5
- */
-function set(object, path, value) {
-  return object == null ? object : baseSet(object, path, value);
-}
-
-const equal = require("fast-deep-equal/es6");
-function firstKey(thingy) {
-    return Object.keys(thingy)[0];
-}
-function compareHashes(from, to, 
-/**
- * optionally explicitly state properties so that relationships
- * can be filtered away
- */
-modelProps) {
-    const results = {
-        added: [],
-        changed: [],
-        removed: [],
-    };
-    from = from ? from : {};
-    to = to ? to : {};
-    let keys = Array.from(new Set([
-        ...Object.keys(from),
-        ...Object.keys(to),
-    ]))
-        // META should never be part of comparison
-        .filter((i) => i !== "META")
-        // neither should private properties indicated by underscore
-        .filter((i) => i.slice(0, 1) !== "_");
-    if (modelProps) {
-        keys = keys.filter((i) => modelProps.includes(i));
-    }
-    keys.forEach((i) => {
-        if (!to[i]) {
-            results.added.push(i);
-        }
-        else if (from[i] === null) {
-            results.removed.push(i);
-        }
-        else if (!equal(from[i], to[i])) {
-            results.changed.push(i);
-        }
-    });
-    return results;
-}
-function getAllPropertiesFromClassStructure(model) {
-    const modelName = model.constructor.name;
-    const properties = hashToArray(propertiesByModel[modelName], "property") || [];
-    let parent = Object.getPrototypeOf(model.constructor);
-    while (parent.name) {
-        const subClass = new parent();
-        const subClassName = subClass.constructor.name;
-        properties.push(...hashToArray(propertiesByModel[subClassName], "property"));
-        parent = Object.getPrototypeOf(subClass.constructor);
-    }
-    return properties.map((p) => p.property);
-}
-function withoutMetaOrPrivate(model) {
-    if (model && model.META) {
-        model = Object.assign({}, model);
-        delete model.META;
-    }
-    return model;
-}
-function capitalize(str) {
-    return str ? str.slice(0, 1).toUpperCase() + str.slice(1) : "";
-}
-function lowercase(str) {
-    return str ? str.slice(0, 1).toLowerCase() + str.slice(1) : "";
-}
-
-/**
- * Adds meta data to a given "property" on a model. In this
- * case we mean property to be either a strict property or
- * a relationship.
- *
- * @param context The meta information as a dictionary/hash
- * @param modelRollup a collection object which maintains
- * a dictionary of properties
- */
-const propertyReflector = (context = {}, 
-/**
- * if you want this to be rollup up as an dictionary by prop;
- * to be exposed in the model (or otherwise)
- */
-modelRollup) => (modelKlass, key) => {
-    const modelName = modelKlass.constructor.name;
-    const reflect = Reflect.getMetadata("design:type", modelKlass, key) || {};
-    const meta = Object.assign(Object.assign(Object.assign(Object.assign({}, (Reflect.getMetadata(key, modelKlass) || {})), { type: lowercase(reflect.name) }), context), { property: key });
-    Reflect.defineMetadata(key, meta, modelKlass);
-    if (modelRollup) {
-        const modelAndProp = modelName + "." + key;
-        set(modelRollup, modelAndProp, Object.assign(Object.assign({}, get(modelRollup, modelAndProp)), meta));
-    }
-};
-
-function constrainedProperty(options = {}) {
-    return propertyReflector(Object.assign(Object.assign({}, options), { isRelationship: false, isProperty: true }), propertiesByModel);
-}
-/** allows the introduction of a new constraint to the metadata of a property */
-function constrain(prop, value) {
-    return propertyReflector({ [prop]: value }, propertiesByModel);
-}
-function desc(value) {
-    return propertyReflector({ desc: value }, propertiesByModel);
-}
-function min(value) {
-    return propertyReflector({ min: value }, propertiesByModel);
-}
-function max(value) {
-    return propertyReflector({ max: value }, propertiesByModel);
-}
-function length(value) {
-    return propertyReflector({ length: value }, propertiesByModel);
-}
-const property = propertyReflector({
-    isRelationship: false,
-    isProperty: true,
-}, propertiesByModel);
-const pushKey = propertyReflector({ pushKey: true }, propertiesByModel);
-
-const relationshipsByModel = {};
-/** allows the addition of meta information to be added to a model's relationships */
-function addRelationshipToModelMeta(modelName, property, meta) {
-    if (!relationshipsByModel[modelName]) {
-        relationshipsByModel[modelName] = {};
-    }
-    // TODO: investigate why we need to genericize to model (from <T>)
-    relationshipsByModel[modelName][property] = meta;
-}
-function isRelationship(modelKlass) {
-    return (prop) => {
-        return getModelRelationship(modelKlass)(prop) ? true : false;
-    };
-}
-function getModelRelationship(model) {
-    const relnsForModel = getRelationships(model);
-    const className = model.constructor.name;
-    return (prop) => {
-        return relnsForModel.find(value => {
-            return value.property === prop;
-        });
-    };
-}
-/**
- * Gets all the relationships for a given model
- */
-function getRelationships(model) {
-    const modelName = model.constructor.name;
-    const properties = hashToArray(relationshipsByModel[modelName], "property") || [];
-    let parent = Object.getPrototypeOf(model.constructor);
-    while (parent.name) {
-        const subClass = new parent();
-        const subClassName = subClass.constructor.name;
-        properties.push(...hashToArray(relationshipsByModel[subClassName], "property"));
-        parent = Object.getPrototypeOf(subClass.constructor);
-    }
-    return properties;
-}
-
-const propertyDecorator = (nameValuePairs = {}, 
-/**
- * if you want to set the property being decorated's name
- * as property on meta specify the meta properties name here
- */
-property) => (target, key) => {
-    const reflect = Reflect.getMetadata("design:type", target, key) || {};
-    if (nameValuePairs.isProperty) {
-        const meta = Object.assign(Object.assign(Object.assign({}, Reflect.getMetadata(key, target)), { type: reflect.name }), nameValuePairs);
-        Reflect.defineMetadata(key, meta, target);
-        addPropertyToModelMeta(target.constructor.name, property, meta);
-    }
-    if (nameValuePairs.isRelationship) {
-        const meta = Object.assign(Object.assign(Object.assign({}, Reflect.getMetadata(key, target)), { type: reflect.name }), nameValuePairs);
-        Reflect.defineMetadata(key, meta, target);
-        addRelationshipToModelMeta(target.constructor.name, property, meta);
-    }
-};
-function getPushKeys(target) {
-    const props = getProperties(target);
-    return props.filter((p) => p.pushKey).map((p) => p.property);
-}
-
-// TODO: make the defaultValue typed
-/**
- * Allows setting a default value for a given property
- */
-function defaultValue(value) {
-    return propertyReflector({ defaultValue: value }, propertiesByModel);
-}
-
-const encrypt = propertyReflector({ encrypt: true }, propertiesByModel);
-
-/**
- * Base **Error** for **FireModel**. Takes _message_ and _type/subtype_ as
- * parameters. The code will be the `subtype`; the name is both.
- */
-class FireModelError extends Error {
-    constructor(message, classification = "firemodel/error") {
-        super(message);
-        this.firemodel = true;
-        const parts = classification.split("/");
-        const [type, subType] = parts.length === 1 ? ["firemodel", parts[0]] : parts;
-        this.name = `${type}/${subType}`;
-        this.code = subType;
-    }
-}
-
-class DecoratorProblem extends FireModelError {
-    constructor(decorator, e, context) {
-        super("", "firemodel/decorator-problem");
-        const errText = typeof e === "string" ? e : e.message;
-        this.message = `There was a problem in the "${decorator}" decorator. ${errText}\n${context}`;
-    }
-}
-
-const registeredModels = {};
-/**
- * Registered a model's constructor so that it can be used by name. This
- * is sometime necessary due to circular dependencies.
- *
- * @param model a class constructor derived from `Model`
- */
-function modelRegister(...models) {
-    models.forEach(model => {
-        if (!model) {
-            throw new FireModelError(`An attempt was made to register a Model subclass but the passed in constructor was undefined!${models.length > 0
-                ? ` [ ${models.length} models being registed during this call ]`
-                : ""}`, "firemodel/not-allowed");
-        }
-        if (typeof model !== "function" || !model.constructor) {
-            throw new FireModelError(`An attempt was made to register a Model subclass but the passed in constructor was the wrong type [ ${typeof model} ]!\nmodel passed was: ${model}`, "firemodel/not-allowed");
-        }
-        const modelName = new model().constructor.name;
-        registeredModels[modelName] = model;
-    });
-}
-function listRegisteredModels() {
-    return Object.keys(registeredModels);
-}
-function modelRegistryLookup(name) {
-    const model = registeredModels[name];
-    if (!name) {
-        throw new FireModelError(`Look failed because the model ${name} was not registered!`, "firemodel/not-allowed");
-    }
-    return model;
-}
-/**
- * When you are building relationships to other `Model`'s it is often
- * benefitial to just pass in the name of the `Model` rather than it's
- * constructor as this avoids the dreaded "circular dependency" problem
- * that occur when you try to pass in class constructors which depend
- * on one another.
- */
-const modelNameLookup = (name) => () => {
-    return modelRegistryLookup(name);
-};
-/**
- * When you are defining a _relationship_ between `Model`'s it sometimes
- * useful to just pass in the constructor to the other `Model`. This is in
- * contrast to just passing a string name of the model.
- *
- * The advantage here is that the external model does not need to be
- * "registered" separately whereas with a string name it would have to be.
- */
-const modelConstructorLookup = (constructor) => () => {
-    // TODO: remove the "any"
-    return isConstructable(constructor) ? constructor : constructor();
-};
-// tslint:disable-next-line: ban-types
-function isConstructable(fn) {
-    try {
-        const f = new fn();
-        return true;
-    }
-    catch (e) {
-        return false;
-    }
-}
-
-function hasMany(
-/**
- * either a _string_ representing the Model's class name
- * or a _constructor_ for the Model class
- *
- * In order to support prior implementations we include the
- * possibility that a user of this API will pass in a _function_
- * to a _constructor_. This approach is now deprecated.
- */
-fkClass, inverse) {
-    try {
-        const fkConstructor = typeof fkClass === "string"
-            ? modelNameLookup(fkClass)
-            : modelConstructorLookup(fkClass);
-        let inverseProperty;
-        let directionality;
-        if (Array.isArray(inverse)) {
-            [inverseProperty, directionality] = inverse;
-        }
-        else {
-            inverseProperty = inverse;
-            directionality = inverse ? "bi-directional" : "one-way";
-        }
-        const payload = {
-            isRelationship: true,
-            isProperty: false,
-            relType: "hasMany",
-            directionality,
-            fkConstructor
-        };
-        if (inverseProperty) {
-            payload.inverseProperty = inverseProperty;
-        }
-        return propertyReflector(Object.assign(Object.assign({}, payload), { type: "Object" }), relationshipsByModel);
-    }
-    catch (e) {
-        throw new DecoratorProblem("hasMany", e, { inverse });
-    }
-}
-
-function belongsTo(
-/**
- * either a _string_ representing the Model's class name
- * or a _constructor_ for the Model class.
- *
- * In order to support prior implementations we include the
- * possibility that a user of this API will pass in a _function_
- * to a _constructor_. This approach is now deprecated.
- */
-fkClass, inverse) {
-    try {
-        const fkConstructor = typeof fkClass === "string"
-            ? modelNameLookup(fkClass)
-            : modelConstructorLookup(fkClass);
-        let inverseProperty;
-        let directionality;
-        if (Array.isArray(inverse)) {
-            [inverseProperty, directionality] = inverse;
-        }
-        else {
-            inverseProperty = inverse;
-            directionality = inverse ? "bi-directional" : "one-way";
-        }
-        const payload = {
-            isRelationship: true,
-            isProperty: false,
-            relType: "hasOne",
-            directionality,
-            fkConstructor
-        };
-        if (inverseProperty) {
-            payload.inverseProperty = inverseProperty;
-        }
-        return propertyReflector(Object.assign(Object.assign({}, payload), { type: "String" }), relationshipsByModel);
-    }
-    catch (e) {
-        throw new DecoratorProblem("hasOne", e, { inverse });
-    }
-}
-const ownedBy = belongsTo;
-const hasOne = belongsTo;
-
-/** DB Indexes accumlated by index decorators */
-const indexesForModel = {};
-/**
- * Gets all the db indexes for a given model
- */
-function getDbIndexes(modelKlass) {
-    const modelName = modelKlass.constructor.name;
-    return modelName === "Model"
-        ? hashToArray(indexesForModel[modelName])
-        : (hashToArray(indexesForModel[modelName]) || []).concat(hashToArray(indexesForModel.Model));
-}
-const index = propertyReflector({
-    isIndex: true,
-    isUniqueIndex: false
-}, indexesForModel);
-const uniqueIndex = propertyReflector({
-    isIndex: true,
-    isUniqueIndex: true
-}, indexesForModel);
-
-function mock(value, ...rest) {
-    return propertyReflector({ mockType: value, mockParameters: rest }, propertiesByModel);
-}
-
-const meta = {};
-function addModelMeta(modelName, props) {
-    meta[modelName] = props;
-}
-/**
- * Returns the META info for a given model, it will attempt to resolve
- * it locally first but if that is not available (as is the case with
- * self-reflexify relationships) then it will leverage the ModelMeta store
- * to get the meta information.
- *
- * @param modelKlass a model or record which exposes META property
- */
-function getModelMeta(modelKlass) {
-    const localMeta = modelKlass.META;
-    const modelMeta = meta[modelKlass.modelName];
-    return localMeta && localMeta.properties ? localMeta : modelMeta || {};
-}
-
-function model(options = {}) {
-    let isDirty = false;
-    return function decorateModel(target) {
-        // Function to add META to the model
-        function addMetaProperty() {
-            const modelOfObject = new target();
-            if (options.audit === undefined) {
-                options.audit = false;
-            }
-            if (!(options.audit === true ||
-                options.audit === false ||
-                options.audit === "server")) {
-                console.log(`You set the audit property to "${options.audit}" which is invalid. Valid properties are true, false, and "server". The audit property will be set to false for now.`);
-                options.audit = false;
-            }
-            const meta = Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign({}, options), { isProperty: isProperty(modelOfObject) }), { property: getModelProperty(modelOfObject) }), { properties: getProperties(modelOfObject) }), { isRelationship: isRelationship(modelOfObject) }), { relationship: getModelRelationship(modelOfObject) }), { relationships: getRelationships(modelOfObject) }), { dbIndexes: getDbIndexes(modelOfObject) }), { pushKeys: getPushKeys(modelOfObject) }), { dbOffset: options.dbOffset ? options.dbOffset : "" }), { audit: options.audit ? options.audit : false }), { plural: options.plural }), {
-                allProperties: [
-                    ...getProperties(modelOfObject).map(p => p.property),
-                    ...getRelationships(modelOfObject).map(p => p.property)
-                ]
-            }), {
-                localPostfix: options.localPostfix === undefined ? "all" : options.localPostfix
-            }), {
-                localModelName: options.localModelName === undefined
-                    ? modelOfObject.constructor.name.slice(0, 1).toLowerCase() +
-                        modelOfObject.constructor.name.slice(1)
-                    : options.localModelName
-            }), { isDirty });
-            addModelMeta(target.constructor.name.toLowerCase(), meta);
-            Object.defineProperty(target.prototype, "META", {
-                get() {
-                    return meta;
-                },
-                set(prop) {
-                    if (typeof prop === "object" && prop.isDirty !== undefined) {
-                        isDirty = prop.isDirty;
-                    }
-                    else {
-                        throw new Error("The META properties should only be set with the @model decorator at design time!");
-                    }
-                },
-                configurable: false,
-                enumerable: false
-            });
-            if (target) {
-                // register the constructor so name based lookups will succeed
-                modelRegister(target);
-            }
-            return target;
-        }
-        // copy prototype so intanceof operator still works
-        addMetaProperty.prototype = target.prototype;
-        // return new constructor (will override original)
-        return addMetaProperty();
-    };
-}
-
-/*! *****************************************************************************
-Copyright (c) Microsoft Corporation.
-
-Permission to use, copy, modify, and/or distribute this software for any
-purpose with or without fee is hereby granted.
-
-THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH
-REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
-AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT,
-INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM
-LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
-OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
-PERFORMANCE OF THIS SOFTWARE.
-***************************************************************************** */
-
-function __decorate(decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-}
-
-function __metadata(metadataKey, metadataValue) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(metadataKey, metadataValue);
-}
-
-exports.Model = class Model {
-};
-__decorate([
-    property,
-    __metadata("design:type", String)
-], exports.Model.prototype, "id", void 0);
-__decorate([
-    property,
-    mock("dateRecentMiliseconds"),
-    index,
-    __metadata("design:type", Number)
-], exports.Model.prototype, "lastUpdated", void 0);
-__decorate([
-    property,
-    mock("datePastMiliseconds"),
-    index,
-    __metadata("design:type", Number)
-], exports.Model.prototype, "createdAt", void 0);
-exports.Model = __decorate([
-    model()
-], exports.Model);
-
-exports.AuditLog = class AuditLog extends exports.Model {
-};
-__decorate([
-    property,
-    index,
-    __metadata("design:type", String)
-], exports.AuditLog.prototype, "modelName", void 0);
-__decorate([
-    property,
-    index,
-    __metadata("design:type", String)
-], exports.AuditLog.prototype, "modelId", void 0);
-__decorate([
-    property,
-    __metadata("design:type", Array)
-], exports.AuditLog.prototype, "changes", void 0);
-__decorate([
-    property,
-    __metadata("design:type", String)
-], exports.AuditLog.prototype, "action", void 0);
-exports.AuditLog = __decorate([
-    model({ dbOffset: "_auditing" })
-], exports.AuditLog);
-
-/**
- * An error deriving from the **Dexie** integration with **Firemodel**.
- * Takes _message_ and _type/subtype_ as
- * parameters. The code will be the `subtype`; the name is both.
- */
-class DexieError extends Error {
-    constructor(message, classification = "firemodel/dexie") {
-        super(message);
-        this.firemodel = true;
-        const parts = classification.split("/");
-        const [type, subType] = parts.length === 1 ? ["firemodel", parts[0]] : parts;
-        this.name = `${type}/${subType}`;
-        this.code = subType;
-    }
-}
-
-class FireModelProxyError extends FireModelError {
-    constructor(e, context = "", name = "") {
-        super("", !name ? `firemodel/${e.name}` : name);
-        this.firemodel = true;
-        this.originalError = e;
-        this.message = context ? `${context}.\n\n${e.message}.` : e.message;
-        this.stack = e.stack;
-    }
-}
-
-class RecordCrudFailure extends FireModelError {
-    constructor(rec, crudAction, transactionId, e) {
-        super("", e.name !== "Error" ? e.name : `firemodel/record-${crudAction}-failure`);
-        const message = `Attempt to "${crudAction}" "${capitalize(rec.modelName)}::${rec.id}" failed [ ${transactionId} ] ${e ? e.message : "for unknown reasons"}`;
-        this.message = message;
-        this.stack = e.stack;
-    }
-}
-
-class MissingReciprocalInverse extends FireModelError {
-    constructor(rec, property) {
-        super("", "firemodel/missing-reciprocal-inverse");
-        const fkRecord = Record.create(rec.META.relationship(property).fkConstructor(), { db: rec.db });
-        const pkInverse = rec.META.relationship(property).inverseProperty;
-        const fkInverse = (fkRecord.META.relationship(pkInverse) || {})
-            .inverseProperty || "undefined";
-        const message = `The model "${capitalize(rec.modelName)}" is trying to leverage it's relationship with the model "${capitalize(fkRecord.modelName)}" through the property "${property}" but it appears these two models are in conflict. ${capitalize(rec.modelName)} has been defined to look for an inverse property of "${capitalize(rec.modelName)}.${rec.META.relationship(property).inverseProperty}" but it is missing [ ${fkInverse} ]! Look at your model definitions and make sure this is addressed.`;
-        this.message = message;
-    }
-}
-
-class IncorrectReciprocalInverse extends FireModelError {
-    constructor(rec, property) {
-        super("", "firemodel/missing-reciprocal-inverse");
-        let message;
-        const fkRecord = Record.create(rec.META.relationship(property).fkConstructor(), { db: rec.db });
-        const inverseProperty = rec.META.relationship(property).inverseProperty;
-        const fkInverse = fkRecord.META.relationship(inverseProperty);
-        if (!fkInverse) {
-            const e = new MissingReciprocalInverse(rec, property);
-            throw e;
-        }
-        else {
-            const recipricalInverse = fkInverse.inverseProperty;
-            message = `The model ${rec.modelName} is trying to leverage it's relationship with ${fkRecord.modelName} but it appears these two models are in conflict! ${rec.modelName} has been defined to look for an inverse property of "${inverseProperty}" but on ${fkRecord.modelName} model the inverse property points back to a property of "${recipricalInverse}"! Look at your model definitions and make sure this is addressed.`;
-        }
-        this.message = message;
-    }
-}
-
-/**
- * When the record's META points to a inverse property on the FK; this error
- * presents when that `FK[inverseProperty]` doesn't exist in the FK's meta.
- */
-class MissingInverseProperty extends FireModelError {
-    constructor(rec, property) {
-        super("", "firemodel/missing-inverse-property");
-        const fkRecord = Record.create(rec.META.relationship(property).fkConstructor(), { db: rec.db });
-        this.from = capitalize(rec.modelName);
-        this.to = capitalize(fkRecord.modelName);
-        const pkInverse = rec.META.relationship(property).inverseProperty;
-        this.inverseProperty = pkInverse;
-        const message = `Missing Inverse Property: the model "${this.from}" has defined a relationship with the "${this.to}" model where the FK property is "${property}" and it states that the "inverse property" is "${pkInverse}" on the ${this.to} model. Unfortunately the ${this.to} model does NOT define a property called "${this.inverseProperty}".`;
-        this.message = message;
-    }
-}
-
-class NotHasManyRelationship extends FireModelError {
-    constructor(rec, property, method) {
-        super("", "firemodel/not-hasMany-reln");
-        this.message = `attempt to call ${rec.modelName}::${method}() with property "${property}" failed because ${property} does not have a hasMany relationship`;
-    }
-}
-
-class NotHasOneRelationship extends FireModelError {
-    constructor(rec, property, method) {
-        super("", "firemodel/not-hasOne-reln");
-        this.message = `attempt to call ${rec.modelName}::${method}() with property "${property}" failed because ${property} does not have a hasOne relationship`;
-    }
-}
-
-class UnknownRelationshipProblem extends FireModelError {
-    constructor(err, rec, property, operation = "n/a", whileDoing) {
-        const message = `An unexpected error occurred while working with a "${operation}" operation on ${rec.modelName}::${property}. ${whileDoing
-            ? `This error was encounted while working on ${whileDoing}. `
-            : ""}The error reported was [${err.name}]: ${err.message}`;
-        super(message, "firemodel/unknown-relationship-problem");
-        this.stack = err.stack;
-    }
-}
-
-function UnwatchedLocalEvent(rec, event) {
-    const meta = {
-        dynamicPathProperties: rec.dynamicPathComponents,
-        compositeKey: rec.compositeKey,
-        modelConstructor: rec.modelConstructor,
-        modelName: rec.modelName,
-        pluralName: rec.pluralName,
-        localModelName: rec.META.localModelName,
-        localPath: rec.localPath,
-        localPostfix: rec.META.localPostfix
-    };
-    return Object.assign(Object.assign(Object.assign({}, event), meta), { dbPath: rec.dbPath, watcherSource: "unknown" });
-}
-
-/**
- * wraps a Vuex function's to Mutation.commit() function so it's
- * signature looks like a Redux call to dispatch
- */
-function VeuxWrapper(vuexDispatch) {
-    /** vuex wrapped redux dispatch function */
-    return async (reduxAction) => {
-        const type = reduxAction.type;
-        delete reduxAction.type;
-        return vuexDispatch(type, reduxAction);
-    };
-}
-
-/** Enumeration of all Firemodel Actions that will be fired */
-(function (FmEvents) {
-    /** A record has been added locally */
-    FmEvents["RECORD_ADDED_LOCALLY"] = "@firemodel/RECORD_ADDED_LOCALLY";
-    /** A record which was added locally has now been confirmed by Firebase */
-    FmEvents["RECORD_ADDED_CONFIRMATION"] = "@firemodel/RECORD_ADDED_CONFIRMATION";
-    /** A record added locally failed to be saved to Firebase */
-    FmEvents["RECORD_ADDED_ROLLBACK"] = "@firemodel/RECORD_ADDED_ROLLBACK";
-    /** A record has been added to a given Model list being watched (external event) */
-    FmEvents["RECORD_ADDED"] = "@firemodel/RECORD_ADDED";
-    /** A record has been updated locally */
-    FmEvents["RECORD_CHANGED_LOCALLY"] = "@firemodel/RECORD_CHANGED_LOCALLY";
-    /** a record changed locally has now been confirmed by Firebase */
-    FmEvents["RECORD_CHANGED_CONFIRMATION"] = "@firemodel/RECORD_CHANGED_CONFIRMATION";
-    /** A record changed locally failed to be saved to Firebase */
-    FmEvents["RECORD_CHANGED_ROLLBACK"] = "@firemodel/RECORD_CHANGED_ROLLBACK";
-    /** A record has been updated on Firebase (external event) */
-    FmEvents["RECORD_CHANGED"] = "@firemodel/RECORD_CHANGED";
-    /**
-     * for client originated events touching relationships (as external events would come back as an event per model)
-     */
-    FmEvents["RECORD_MOVED"] = "@firemodel/RECORD_MOVED";
-    /** A record has been removed from a given Model list being watched */
-    FmEvents["RECORD_REMOVED_LOCALLY"] = "@firemodel/RECORD_REMOVED_LOCALLY";
-    /** a record removed locally has now been confirmed by Firebase */
-    FmEvents["RECORD_REMOVED_CONFIRMATION"] = "@firemodel/RECORD_REMOVED_CONFIRMATION";
-    /** A record removed locally failed to be saved to Firebase */
-    FmEvents["RECORD_REMOVED_ROLLBACK"] = "@firemodel/RECORD_REMOVED_LOCALLY";
-    /** A record has been removed from a given Model list being watched */
-    FmEvents["RECORD_REMOVED"] = "@firemodel/RECORD_REMOVED";
-    /** An attempt to access the database was refused to lack of permissions */
-    FmEvents["PERMISSION_DENIED"] = "@firemodel/PERMISSION_DENIED";
-    /** The optimistic local change now needs to be rolled back due to failure in Firebase */
-    FmEvents["RECORD_LOCAL_ROLLBACK"] = "@firemodel/RECORD_LOCAL_ROLLBACK";
-    /** Indicates that a given model's "since" property has been updated */
-    FmEvents["SINCE_UPDATED"] = "@firemodel/SINCE_UPDATED";
-    /** Watcher has started request to watch; waiting for initial SYNC event */
-    FmEvents["WATCHER_STARTING"] = "@firemodel/WATCHER_STARTING";
-    /** Watcher has established connection with Firebase */
-    FmEvents["WATCHER_STARTED"] = "@firemodel/WATCHER_STARTED";
-    /**
-     * The watcher started with "largePayload" will send a sync event with the
-     * whole payload so data synchronization can happen in one mutation
-     */
-    FmEvents["WATCHER_SYNC"] = "@firemodel/WATCHER_SYNC";
-    /** Watcher failed to start */
-    FmEvents["WATCHER_FAILED"] = "@firemodel/WATCHER_FAILED";
-    /** Watcher has disconnected an event stream from Firebase */
-    FmEvents["WATCHER_STOPPED"] = "@firemodel/WATCHER_STOPPED";
-    /** Watcher has disconnected all event streams from Firebase */
-    FmEvents["WATCHER_STOPPED_ALL"] = "@firemodel/WATCHER_STOPPED_ALL";
-    /** Relationship(s) have been removed locally */
-    FmEvents["RELATIONSHIP_REMOVED_LOCALLY"] = "@firemodel/RELATIONSHIP_REMOVED_LOCALLY";
-    /** Relationship removal has been confirmed by database */
-    FmEvents["RELATIONSHIP_REMOVED_CONFIRMATION"] = "@firemodel/RELATIONSHIP_REMOVED_CONFIRMATION";
-    /** Relationship removal failed and must be rolled back if client updated optimistically */
-    FmEvents["RELATIONSHIP_REMOVED_ROLLBACK"] = "@firemodel/RELATIONSHIP_REMOVED_ROLLBACK";
-    /** Relationship has been added locally */
-    FmEvents["RELATIONSHIP_ADDED_LOCALLY"] = "@firemodel/RELATIONSHIP_ADDED_LOCALLY";
-    /** Relationship add has been confirmed by database */
-    FmEvents["RELATIONSHIP_ADDED_CONFIRMATION"] = "@firemodel/RELATIONSHIP_ADDED_CONFIRMATION";
-    /** Relationship add failed and must be rolled back if client updated optimistically */
-    FmEvents["RELATIONSHIP_ADDED_ROLLBACK"] = "@firemodel/RELATIONSHIP_ADDED_ROLLBACK";
-    /** Relationship has been set locally (relating to a hasOne event) */
-    FmEvents["RELATIONSHIP_SET_LOCALLY"] = "@firemodel/RELATIONSHIP_SET_LOCALLY";
-    /** Relationship set has been confirmed by database */
-    FmEvents["RELATIONSHIP_SET_CONFIRMATION"] = "@firemodel/RELATIONSHIP_SET_CONFIRMATION";
-    /** Relationship set failed and must be rolled back if client updated optimistically */
-    FmEvents["RELATIONSHIP_SET_ROLLBACK"] = "@firemodel/RELATIONSHIP_ADDED_ROLLBACK";
-    /** A relationship was "added" but it already existed; this is typically non-action oriented */
-    FmEvents["RELATIONSHIP_DUPLICATE_ADD"] = "@firemodel/RELATIONSHIP_DUPLICATE_ADD";
-    FmEvents["APP_CONNECTED"] = "@firemodel/APP_CONNECTED";
-    FmEvents["APP_DISCONNECTED"] = "@firemodel/APP_DISCONNECTED";
-    FmEvents["UNEXPECTED_ERROR"] = "@firemodel/UNEXPECTED_ERROR";
-})(exports.FmEvents || (exports.FmEvents = {}));
-
-/**
- * Provides a logical test to see if the passed in event is a LambdaProxy request or just a
- * straight JS object response. This is useful when you have both an HTTP event and a Lambda-to-Lambda
- * or Step-Function-to-Lambda interaction.
- *
- * @param message the body of the request (which is either of type T or a LambdaProxy event)
- */
-
-/** provides a friendly way to pause execution when using async/await symantics */
-async function wait(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
-}
-
-var HttpStatusCodes;
-(function (HttpStatusCodes) {
-    /**
-     * The client SHOULD continue with its request. This interim response is used to inform
-     * the client that the initial part of the request has been received and has not yet
-     * been rejected by the server. The client SHOULD continue by sending the remainder
-     * of the request or, if the request has already been completed, ignore this response.
-     * The server MUST send a final response after the request has been completed.
-     */
-    HttpStatusCodes[HttpStatusCodes["Continue"] = 100] = "Continue";
-    /** The request has succeeded. */
-    HttpStatusCodes[HttpStatusCodes["Success"] = 200] = "Success";
-    /**
-     * The request has been fulfilled and resulted in a new resource being created. The newly
-     * created resource can be referenced by the URI(s) returned in the entity of the response,
-     * with the most specific URI for the resource given by a Location header field. The response
-     * SHOULD include an entity containing a list of resource characteristics and location(s) from
-     * which the user or user agent can choose the one most appropriate. The entity format is
-     * specified by the media type given in the Content-Type header field. The origin server MUST
-     * create the resource before returning the `201` status code. If the action cannot be carried
-     * out immediately, the server SHOULD respond with `202` (Accepted) response instead.
-     *
-     * A `201` response MAY contain an ETag response header field indicating the current value of
-     * the entity tag for the requested variant just created.
-  
-     */
-    HttpStatusCodes[HttpStatusCodes["Created"] = 201] = "Created";
-    /**
-     * The request has been accepted for processing, but the processing has not been completed.
-     * The request might or might not eventually be acted upon, as it might be disallowed when
-     * processing actually takes place. There is no facility for re-sending a status code from an
-     * asynchronous operation such as this.
-     *
-     * The 202 response is intentionally non-committal. Its purpose is to allow a server to accept
-     * a request for some other process (perhaps a batch-oriented process that is only run once
-     * per day) without requiring that the user agent's connection to the server persist until the
-     * process is completed. The entity returned with this response SHOULD include an indication
-     * of the request's current status and either a pointer to a status monitor or some estimate
-     * of when the user can expect the request to be fulfilled.
-     */
-    HttpStatusCodes[HttpStatusCodes["Accepted"] = 202] = "Accepted";
-    /**
-     * The server has fulfilled the request but does not need to return an entity-body, and might
-     * want to return updated meta-information. The response MAY include new or updated
-     * meta-information in the form of entity-headers, which if present SHOULD be associated with
-     * the requested variant.
-     *
-     * If the client is a _user agent_, it **SHOULD NOT** change its document view from that which
-     * caused the request to be sent. This response is primarily intended to allow input for
-     * actions to take place without causing a change to the user agent's active document view,
-     * although any new or updated metainformation **SHOULD** be applied to the document
-     * currently in the user agent's active view.
-     *
-     * The `204` response **MUST NOT** include a `message-body`, and thus is always terminated
-     * by the first empty line after the header fields.
-     */
-    HttpStatusCodes[HttpStatusCodes["NoContent"] = 204] = "NoContent";
-    HttpStatusCodes[HttpStatusCodes["MovedPermenantly"] = 301] = "MovedPermenantly";
-    HttpStatusCodes[HttpStatusCodes["TemporaryRedirect"] = 307] = "TemporaryRedirect";
-    /**
-     * If the client has performed a conditional GET request and access is allowed, but the
-     * document has not been modified, the server SHOULD respond with this status code. The
-     * `304` response MUST NOT contain a _message-body_, and thus is always terminated by the
-     * first empty line after the header fields.
-     */
-    HttpStatusCodes[HttpStatusCodes["NotModified"] = 304] = "NotModified";
-    /**
-     * The request could not be understood by the server due to malformed syntax.
-     * The client SHOULD NOT repeat the request without modifications.
-     */
-    HttpStatusCodes[HttpStatusCodes["BadRequest"] = 400] = "BadRequest";
-    /**
-     * The request requires user authentication. The response MUST include a WWW-Authenticate
-     * header field containing a challenge applicable to the requested resource.
-     * The client MAY repeat the request with a suitable Authorization header field. If the
-     * request already included Authorization credentials, then the `401`
-     * response indicates that authorization has been refused for those credentials. If the `401`
-     * response contains the same challenge as the prior response, and the user agent has already
-     * attempted authentication at least once, then the user SHOULD be presented the entity that
-     * was given in the response, since that entity might include relevant diagnostic information.
-     */
-    HttpStatusCodes[HttpStatusCodes["Unauthorized"] = 401] = "Unauthorized";
-    HttpStatusCodes[HttpStatusCodes["PaymentRequired"] = 402] = "PaymentRequired";
-    /**
-     * The request could not be understood by the server due to malformed syntax. The client
-     * SHOULD NOT repeat the request without modifications.
-     */
-    HttpStatusCodes[HttpStatusCodes["Forbidden"] = 403] = "Forbidden";
-    /**
-     * The server has not found anything matching the Request-URI. No indication is given of
-     * whether the condition is temporary or permanent. The `410` (Gone) status code SHOULD be
-     * used if the server knows, through some internally configurable mechanism, that an old
-     * resource is permanently unavailable and has no forwarding address.
-     *
-     * This status code is commonly used when the server does not wish to reveal exactly
-     * why the request has been refused, or when no other response is applicable.
-     */
-    HttpStatusCodes[HttpStatusCodes["NotFound"] = 404] = "NotFound";
-    /**
-     * The method specified in the Request-Line is not allowed for the resource identified
-     * by the Request-URI. The response MUST include an Allow header containing a list of
-     * valid methods for the requested resource.
-     */
-    HttpStatusCodes[HttpStatusCodes["MethodNotAllowed"] = 405] = "MethodNotAllowed";
-    /**
-     * The client did not produce a request within the time that the server was
-     * prepared to wait. The client MAY repeat the request without modifications
-     * at any later time.
-     */
-    HttpStatusCodes[HttpStatusCodes["RequestTimeout"] = 408] = "RequestTimeout";
-    /**
-     * The request could not be completed due to a conflict with the current state of the
-     * resource. This code is only allowed in situations where it is expected that the
-     * user might be able to resolve the conflict and resubmit the request. The response
-     * body SHOULD include enough information for the user to recognize the source of the
-     * conflict. Ideally, the response entity would include enough information for the
-     * user or user agent to fix the problem; however, that might not be possible and
-     * is not required.
-     *
-     * Conflicts are most likely to occur in response to a PUT request. For example,
-     * if versioning were being used and the entity being PUT included changes to a resource
-     * which conflict with those made by an earlier (third-party) request, the server might
-     * use the 409 response to indicate that it can't complete the request. In this case,
-     * the response entity would likely contain a list of the differences between the
-     * two versions in a format defined by the response Content-Type.
-     */
-    HttpStatusCodes[HttpStatusCodes["Conflict"] = 409] = "Conflict";
-    /**
-     * The requested resource is no longer available at the server and no forwarding address
-     * is known. This condition is expected to be considered permanent. Clients with link
-     * editing capabilities SHOULD delete references to the Request-URI after user approval.
-     * If the server does not know, or has no facility to determine, whether or not the
-     * condition is permanent, the status code 404 (Not Found) SHOULD be used instead.
-     * This response is cacheable unless indicated otherwise.
-     *
-     * The 410 response is primarily intended to assist the task of web maintenance by
-     * notifying the recipient that the resource is intentionally unavailable and that
-     * the server owners desire that remote links to that resource be removed. Such an
-     * event is common for limited-time, promotional services and for resources belonging
-     * to individuals no longer working at the server's site. It is not necessary to mark
-     * all permanently unavailable resources as "gone" or to keep the mark for any length
-     * of time -- that is left to the discretion of the server owner.
-     */
-    HttpStatusCodes[HttpStatusCodes["Gone"] = 410] = "Gone";
-    /**
-     * Indicates that the server refuses to brew coffee because it is, permanently, a teapot.
-     * A combined coffee/tea pot that is temporarily out of coffee should instead return 503.
-     * This error is a reference to Hyper Text Coffee Pot Control Protocol defined in April
-     * Fools' jokes in 1998 and 2014.
-     */
-    HttpStatusCodes[HttpStatusCodes["IAmATeapot"] = 418] = "IAmATeapot";
-    HttpStatusCodes[HttpStatusCodes["UnprocessableEntity"] = 422] = "UnprocessableEntity";
-    /**
-     * The 429 status code indicates that the user has sent too many requests in a given
-     * amount of time ("rate limiting").
-     */
-    HttpStatusCodes[HttpStatusCodes["TooManyRequests"] = 429] = "TooManyRequests";
-    /**
-     * The server encountered an unexpected condition which prevented it from fulfilling
-     * the request.
-     */
-    HttpStatusCodes[HttpStatusCodes["InternalServerError"] = 500] = "InternalServerError";
-    /**
-     * The server does not support the functionality required to fulfill the request. This
-     * is the appropriate response when the server does not recognize the request method
-     * and is not capable of supporting it for any resource.
-     */
-    HttpStatusCodes[HttpStatusCodes["NotImplemented"] = 501] = "NotImplemented";
-    /**
-     * The server, while acting as a gateway or proxy, received an invalid response from
-     * the upstream server it accessed in attempting to fulfill the request.
-     */
-    HttpStatusCodes[HttpStatusCodes["BadGateway"] = 502] = "BadGateway";
-    /**
-     * Indicates that the server is not ready to handle the request.
-     *
-     * Common causes are a server that is down for maintenance or that is overloaded.
-     * This response should be used for temporary conditions and the `Retry-After` HTTP
-     * header should, if possible, contain the estimated time for the recovery of the
-     * service.
-     */
-    HttpStatusCodes[HttpStatusCodes["ServiceUnavailable"] = 503] = "ServiceUnavailable";
-    HttpStatusCodes[HttpStatusCodes["GatewayTimeout"] = 504] = "GatewayTimeout";
-    /**
-     * The 511 status code indicates that the client needs to authenticate to gain
-     * network access.
-     *
-     * The response representation SHOULD contain a link to a resource that allows
-     * the user to submit credentials (e.g. with a HTML form).
-     *
-     * Note that the 511 response SHOULD NOT contain a challenge or the login interface
-     * itself, because browsers would show the login interface as being associated with
-     * the originally requested URL, which may cause confusion.
-     */
-    HttpStatusCodes[HttpStatusCodes["AuthenticationRequired"] = 511] = "AuthenticationRequired";
-})(HttpStatusCodes || (HttpStatusCodes = {}));
-
-class PathJoinError extends Error {
-    constructor(code, message) {
-        super();
-        this.message = `[pathJoin/${code}] ` + message;
-        this.code = code;
-        this.name = `pathJoin/${code}`;
-    }
-}
-
-var moreThanThreePeriods = /\.{3,}/g;
-// polyfill Array.isArray if necessary
-if (!Array.isArray) {
-    Array.isArray = function (arg) {
-        return Object.prototype.toString.call(arg) === "[object Array]";
-    };
-}
-/**
- * An ISO-morphic path join that works everywhere;
- * all paths are separated by the `/` character and both
- * leading and trailing delimiters are stripped
- */
-function pathJoin(...args) {
-    // strip undefined segments
-    if (!args.every(i => !["undefined"].includes(typeof i))) {
-        args = args.filter(a => a);
-    }
-    // remaining invalid types
-    if (!args.every(i => ["string", "number"].includes(typeof i))) {
-        throw new PathJoinError("invalid-path-part", `Attempt to use pathJoin() failed because some of the path parts were of the wrong type. Path parts must be either a string or an number: ${args.map(i => typeof i)}`);
-    }
-    // JOIN paths
-    try {
-        const reducer = function (agg, pathPart) {
-            let { protocol, parts } = pullOutProtocols(agg);
-            parts.push(typeof pathPart === "number"
-                ? String(pathPart)
-                : stripSlashesAtExtremities(pathPart));
-            return protocol + parts.filter(i => i).join("/");
-        };
-        const result = removeSingleDotExceptToStart(doubleDotOnlyToStart(args.reduce(reducer, "").replace(moreThanThreePeriods, "..")));
-        return result;
-    }
-    catch (e) {
-        if (e.name.includes("pathJoin")) {
-            throw e;
-        }
-        else {
-            throw new PathJoinError(e.name || "unknown", e.message);
-        }
-    }
-}
-function pullOutProtocols(content) {
-    const protocols = ["https://", "http://", "file://", "tel://"];
-    let protocol = "";
-    protocols.forEach(p => {
-        if (content.includes(p)) {
-            protocol = p;
-            content = content.replace(p, "");
-        }
-    });
-    return { protocol, parts: content.split("/") };
-}
-function stripSlashesAtExtremities(pathPart) {
-    const front = pathPart.slice(0, 1) === "/" ? pathPart.slice(1) : pathPart;
-    const back = front.slice(-1) === "/" ? front.slice(0, front.length - 1) : front;
-    return back.slice(0, 1) === "/" || back.slice(-1) === "/"
-        ? stripSlashesAtExtremities(back)
-        : back;
-}
-/**
- * checks to ensure that a ".." path notation is only employed at the
- * very start of the path or else throws an error
- */
-function doubleDotOnlyToStart(path) {
-    if (path.slice(2).includes("..")) {
-        throw new PathJoinError("not-allowed", `The path "${path}" is not allowed because it  has ".." in it. This notation is fine at the beginning of a path but no where else.`);
-    }
-    return path;
-}
-/**
- * removes `./` in path parts other than leading segment
- */
-function removeSingleDotExceptToStart(path) {
-    let parts = path.split("/");
-    return (parts[0] +
-        "/" +
-        parts
-            .slice(1)
-            .filter(i => i !== ".")
-            .join("/"));
-}
-/** converts a slash delimited filepath to a dot notation path */
-function dotNotation(input) {
-    return input.replace(/\//g, ".");
-}
-
-// tslint:disable-next-line:no-var-requires
-const pluralize = require("pluralize");
-const defaultDispatch = async (context) => "";
-class FireModel {
-    static get defaultDb() {
-        return FireModel._defaultDb;
-    }
-    /**
-     * Any FireModel transaction needs to connect to the database
-     * via a passed-in reference to "abstracted-client" or "abstracted-admin"
-     * database. These references can be done with any/every transaction via
-     * the options hash but it is often more convient to set a "fallback" or
-     * "default" database to use should a given transaction not state a DB
-     * connection explicitly.
-     */
-    static set defaultDb(db) {
-        this._defaultDb = db;
-    }
-    /**
-     * All Watchers and write-based transactions in FireModel offer a way to
-     * call out to a "dispatch" function. This can be done on a per-transaction
-     * basis but more typically it makes sense to just set this once here and then
-     * all subsequent transactions will use this dispatch function unless they are
-     * explicitly passed another.
-     */
-    static set dispatch(fn) {
-        if (!fn) {
-            FireModel._dispatchActive = false;
-            FireModel._dispatch = defaultDispatch;
-        }
-        else {
-            FireModel._dispatchActive = true;
-            FireModel._dispatch = fn;
-        }
-    }
-    /**
-     * The default dispatch function which should be called/notified whenever
-     * a write based transaction has modified state.
-     */
-    static get dispatch() {
-        return FireModel._dispatch;
-    }
-    //#endregion
-    //#region PUBLIC INTERFACE
-    /**
-     * The name of the model; typically a "sigular" name
-     */
-    get modelName() {
-        const name = this._model.constructor.name;
-        const pascal = name.slice(0, 1).toLowerCase() + name.slice(1);
-        return pascal;
-    }
-    /**
-     * The plural name of the model (which plays a role in storage of state in both
-     * the database as well as the dispatch function's path)
-     */
-    get pluralName() {
-        const explicitPlural = this.META.plural;
-        return explicitPlural || pluralize(this.modelName);
-    }
-    get dbPath() {
-        return "dbPath was not overwritten!";
-    }
-    get localPath() {
-        return "dbPath was not overwritten!";
-    }
-    get META() {
-        return getModelMeta(this._model);
-    }
-    /**
-     * A list of all the properties -- and those properties
-     * meta information -- contained on the given model
-     */
-    get properties() {
-        const meta = getModelMeta(this._model);
-        return meta.properties;
-    }
-    /**
-     * A list of all the realtionships -- and those relationships
-     * meta information -- contained on the given model
-     */
-    get relationships() {
-        const meta = getModelMeta(this._model);
-        return meta.relationships;
-    }
-    get dispatch() {
-        return FireModel.dispatch;
-    }
-    static get isDefaultDispatch() {
-        return FireModel.dispatch === defaultDispatch;
-    }
-    get dispatchIsActive() {
-        return FireModel._dispatchActive;
-    }
-    /** the connected real-time database */
-    get db() {
-        if (!this._db) {
-            this._db = FireModel.defaultDb;
-        }
-        if (!this._db) {
-            const e = new Error(`Can't get DB as it has not been set yet for this instance and no default database exists [ ${this.modelName} ]!`);
-            e.name = "FireModel::NoDatabase";
-            throw e;
-        }
-        return this._db;
-    }
-    get pushKeys() {
-        return this._model.META.pushKeys;
-    }
-    /**
-     * **connect**
-     *
-     * This static initializer facilitates connecting **FireModel** with
-     * the firebase database in a compact and convenient way:
-  ```typescript
-  import { DB } from 'abstracted-xxx';
-  const db = await FireModel.connect(DB, options);
-  ```
-     * This method not only sets **FireModel**'s `defaultDb` property but
-     * also returns a reference to the `abstracted-client`/`abstracted-admin`
-     * object so you can use this externally to FireModel should you choose to.
-     *
-     * Note: each _CRUD_ action in FireModel allows passing
-     * in a DB connection (which opens up the possibility of multiple firebase
-     * databases) but the vast majority of projects only have ONE firebase
-     * database so this just makes the whole process much easier.
-     */
-    static async connect(RTDB, options) {
-        const db = await RTDB.connect(options);
-        FireModel.defaultDb = db;
-        return db;
-    }
-    static register(model) {
-        modelRegister(model);
-    }
-    static listRegisteredModels() {
-        return listRegisteredModels();
-    }
-    static lookupModel(name) {
-        return modelRegistryLookup(name);
-    }
-    //#region STATIC INTERFACE
-    static isBeingWatched(path) {
-        // TODO: implement this!
-        return false;
-    }
-    //#endregion
-    //#region PROTECTED INTERFACE
-    _getPaths(rec, deltas) {
-        const added = (deltas.added || []).reduce((agg, curr) => {
-            agg[pathJoin(this.dbPath, curr)] = rec.get(curr);
-            return agg;
-        }, {});
-        const removed = (deltas.removed || []).reduce((agg, curr) => {
-            agg[pathJoin(this.dbPath, curr)] = null;
-            return agg;
-        }, {});
-        const updated = (deltas.changed || []).reduce((agg, curr) => {
-            agg[pathJoin(this.dbPath, curr)] = rec.get(curr);
-            return agg;
-        }, {});
-        return Object.assign(Object.assign(Object.assign({}, added), removed), updated);
-    }
-}
-FireModel.auditLogs = "/auditing";
-FireModel._dispatchActive = false;
-/** the dispatch function used to interact with frontend frameworks */
-FireModel._dispatch = defaultDispatch;
-
-/**
- * indicates which watcherId's have returned their initial
- * value.
- */
-const _hasInitialized = {};
-const hasInitialized = (watcherId, value = true) => {
-    if (watcherId) {
-        _hasInitialized[watcherId] = value;
-    }
-    return _hasInitialized;
-};
-/**
- * Waits for a newly started watcher to get back the first
- * data from the watcher. This indicates that the frontend
- * and Firebase DB are now in sync.
- */
-async function waitForInitialization(watcher, timeout = 750) {
-    setTimeout(() => {
-        if (!ready(watcher)) {
-            console.info(`A watcher [ ${watcher.watcherId} ] has not returned an event in the timeout window  [ ${timeout}ms ]. This might represent an issue but can also happen when a watcher starts listening to a path [ ${watcher.watcherPaths.join(", ")} ] which has no data yet.`);
-        }
-        hasInitialized(watcher.watcherId, "timed-out");
-    }, timeout);
-    while (!ready(watcher)) {
-        await wait(50);
-    }
-}
-function ready(watcher) {
-    return hasInitialized()[watcher.watcherId] ? true : false;
-}
-
-/**
- * **watchDispatcher**
- *
- * Wraps both start-time _watcher context_ and combines that with
- * event information (like the `key` and `dbPath`) to provide a rich
- * data environment for the `dispatch` function to operate with.
- */
-const WatchDispatcher = (
-/**
- * a base/generic redux dispatch function; typically provided
- * by the frontend state management framework
- */
-coreDispatchFn) => (
-/** context provided by the watcher at the time in which the watcher was setup */
-watcherContext) => {
-    if (typeof coreDispatchFn !== "function") {
-        throw new FireModelError(`A watcher is being setup but the dispatch function is not a valid function!`, "firemodel/not-allowed");
-    }
-    // Handle incoming events ...
-    return async (event) => {
-        const typeLookup = {
-            child_added: exports.FmEvents.RECORD_ADDED,
-            child_removed: exports.FmEvents.RECORD_REMOVED,
-            child_changed: exports.FmEvents.RECORD_CHANGED,
-            child_moved: exports.FmEvents.RECORD_MOVED,
-            value: exports.FmEvents.RECORD_CHANGED
-        };
-        let eventContext;
-        let errorMessage;
-        if (event.kind === "relationship") {
-            eventContext = {
-                type: event.type,
-                dbPath: "not-relevant, use toLocal and fromLocal"
-            };
-        }
-        else if (event.kind === "watcher") ;
-        else {
-            // in the case of a watcher list-of records; when the database has no
-            // records yet there is no way to fulfill the dynamic path segments without
-            // reaching into the watcher context
-            if (watcherContext.watcherPaths) {
-                const fullPath = watcherContext.watcherPaths.find(i => i.includes(event.key));
-                const compositeKey = Record.getCompositeKeyFromPath(watcherContext.modelConstructor, fullPath);
-                event.value = Object.assign(Object.assign({}, (event.value || {})), compositeKey);
-            }
-            // record events (both server and local)
-            const recordProps = typeof event.value === "object"
-                ? Object.assign({ id: event.key }, event.value) : { id: event.key };
-            const rec = Record.createWith(watcherContext.modelConstructor, recordProps);
-            let type;
-            switch (event.kind) {
-                case "record":
-                    type = event.type;
-                    break;
-                case "server-event":
-                    type =
-                        event.value === null
-                            ? exports.FmEvents.RECORD_REMOVED
-                            : typeLookup[event.eventType];
-                    break;
-                default:
-                    type = exports.FmEvents.UNEXPECTED_ERROR;
-                    errorMessage = `The "kind" of event was not recognized [ ${event.kind} ]`;
-            }
-            eventContext = {
-                type,
-                dbPath: rec.dbPath
-            };
-        }
-        const reduxAction = Object.assign(Object.assign(Object.assign({}, watcherContext), event), eventContext);
-        const results = await coreDispatchFn(reduxAction);
-        // The mock server and client are now in sync
-        hasInitialized(watcherContext.watcherId);
-        return results;
-    };
-};
-
-/**
- * When creating a new record it is sometimes desirable to pass in
- * the "payload" of FK's instead of just the FK. This function facilitates
- * that.
- */
-async function buildDeepRelationshipLinks(rec, property) {
-    const meta = getModelMeta(rec).property(property);
-    return meta.relType === "hasMany"
-        ? processHasMany(rec, property)
-        : processBelongsTo(rec, property);
-}
-async function processHasMany(rec, property) {
-    const meta = getModelMeta(rec).property(property);
-    const fks = rec.get(property);
-    for (const key of Object.keys(fks)) {
-        const fk = fks[key];
-        if (fk !== true) {
-            const fkRecord = await Record.add(meta.fkConstructor(), fk, {
-                setDeepRelationships: true
-            });
-            await rec.addToRelationship(property, fkRecord.compositeKeyRef);
-        }
-    }
-    // strip out object FK's
-    const newFks = Object.keys(rec.get(property)).reduce((foreignKeys, curr) => {
-        const fk = fks[curr];
-        if (fk !== true) {
-            delete foreignKeys[curr];
-        }
-        return foreignKeys;
-    }, {});
-    // TODO: maybe there's a better way than writing private property?
-    // ambition is to remove the bullshit FKs objects; this record will
-    // not have been saved yet so we're just getting it back to a good
-    // state before it's saved.
-    rec._data[property] = newFks;
-    return;
-}
-async function processBelongsTo(rec, property) {
-    const fk = rec.get(property);
-    const meta = getModelMeta(rec).property(property);
-    if (fk && typeof fk === "object") {
-        const fkRecord = Record.add(meta.fkConstructor(), fk, {
-            setDeepRelationships: true
-        });
-    }
-}
-
-/**
- * Creates a string based composite key if the passed in record
- * has dynamic path segments; if not it will just return the "id"
- */
-function createCompositeKeyRefFromRecord(rec) {
-    const cKey = createCompositeKey(rec);
-    return rec.hasDynamicPath ? createCompositeRef(cKey) : rec.id;
-}
-/**
- * Given a hash/dictionary (with an `id` prop), will generate a "composite
- * reference" in string form.
- */
-function createCompositeRef(cKey) {
-    return Object.keys(cKey).length > 1
-        ? cKey.id +
-            Object.keys(cKey)
-                .filter(k => k !== "id")
-                .map(k => `::${k}:${cKey[k]}`)
-        : cKey.id;
-}
-
-/**
- * Builds all the DB paths needed to update a pairing of a PK:FK. It is intended
- * to be used by the `Record`'s transactional API as a first step of specifying
- * the FULL atomic transaction that will be executed as a "multi-path set" on
- * Firebase.
- *
- * If the operation requires the removal o relationship then set this in the
- * optional hash.
- *
- * @param rec the `Record` which holds the FK reference to an external entity
- * @param property the _property_ on the `Record` which holds the FK id
- * @param fkRef the "id" for the FK which is being worked on
- */
-function buildRelationshipPaths(rec, property, fkRef, options = {}) {
-    try {
-        const meta = getModelMeta(rec);
-        const now = options.now || new Date().getTime();
-        const operation = options.operation || "add";
-        const altHasManyValue = options.altHasManyValue || true;
-        const fkModelConstructor = meta.relationship(property).fkConstructor();
-        const inverseProperty = meta.relationship(property).inverseProperty;
-        const fkRecord = Record.createWith(fkModelConstructor, fkRef, { db: rec.db });
-        const results = [];
-        /**
-         * Normalize to a composite key format
-         */
-        const fkCompositeKey = typeof fkRef === "object" ? fkRef : fkRecord.compositeKey;
-        const fkId = createCompositeKeyRefFromRecord(fkRecord);
-        /**
-         * boolean flag indicating whether current model has a **hasMany** relationship
-         * with the FK.
-         */
-        const hasManyReln = meta.isRelationship(property) &&
-            meta.relationship(property).relType === "hasMany";
-        const pathToRecordsFkReln = pathJoin(rec.dbPath, // this includes dynamic segments for originating model
-        property, 
-        // we must add the fk id to path (versus value) to make the write non-destructive
-        // to other hasMany keys which already exist
-        hasManyReln ? fkId : "");
-        // Add paths for current record
-        results.push({
-            path: pathToRecordsFkReln,
-            value: operation === "remove" ? null : hasManyReln ? altHasManyValue : fkId
-        });
-        results.push({ path: pathJoin(rec.dbPath, "lastUpdated"), value: now });
-        // INVERSE RELATIONSHIP
-        if (inverseProperty) {
-            const fkMeta = getModelMeta(fkRecord);
-            const inverseReln = fkMeta.relationship(inverseProperty);
-            if (!inverseReln) {
-                throw new MissingInverseProperty(rec, property);
-            }
-            if (!inverseReln.inverseProperty &&
-                inverseReln.directionality === "bi-directional") {
-                throw new MissingReciprocalInverse(rec, property);
-            }
-            if (inverseReln.inverseProperty !== property &&
-                inverseReln.directionality === "bi-directional") {
-                throw new IncorrectReciprocalInverse(rec, property);
-            }
-            const fkInverseIsHasManyReln = inverseProperty
-                ? fkMeta.relationship(inverseProperty).relType === "hasMany"
-                : false;
-            const pathToInverseFkReln = fkInverseIsHasManyReln
-                ? pathJoin(fkRecord.dbPath, inverseProperty, rec.compositeKeyRef)
-                : pathJoin(fkRecord.dbPath, inverseProperty);
-            // Inverse paths
-            results.push({
-                path: pathToInverseFkReln,
-                value: operation === "remove"
-                    ? null
-                    : fkInverseIsHasManyReln
-                        ? altHasManyValue
-                        : rec.compositeKeyRef
-            });
-            results.push({
-                path: pathJoin(fkRecord.dbPath, "lastUpdated"),
-                value: now
-            });
-        }
-        // TODO: add validation of FK paths if option is set
-        return results;
-    }
-    catch (e) {
-        if (e.firemodel) {
-            console.log(e);
-            throw e;
-        }
-        throw new UnknownRelationshipProblem(e, rec, property);
-    }
-}
-
-var toStringFunction = Function.prototype.toString;
-var create = Object.create, defineProperty$1 = Object.defineProperty, getOwnPropertyDescriptor = Object.getOwnPropertyDescriptor, getOwnPropertyNames = Object.getOwnPropertyNames, getOwnPropertySymbols = Object.getOwnPropertySymbols, getPrototypeOf = Object.getPrototypeOf;
-var _a = Object.prototype, hasOwnProperty$9 = _a.hasOwnProperty, propertyIsEnumerable = _a.propertyIsEnumerable;
-/**
- * @enum
- *
- * @const {Object} SUPPORTS
- *
- * @property {boolean} SYMBOL_PROPERTIES are symbol properties supported
- * @property {boolean} WEAKMAP is WeakMap supported
- */
-var SUPPORTS = {
-    SYMBOL_PROPERTIES: typeof getOwnPropertySymbols === 'function',
-    WEAKMAP: typeof WeakMap === 'function',
-};
-/**
- * @function createCache
- *
- * @description
- * get a new cache object to prevent circular references
- *
- * @returns the new cache object
- */
-var createCache = function () {
-    if (SUPPORTS.WEAKMAP) {
-        return new WeakMap();
-    }
-    // tiny implementation of WeakMap
-    var object = create({
-        has: function (key) { return !!~object._keys.indexOf(key); },
-        set: function (key, value) {
-            object._keys.push(key);
-            object._values.push(value);
-        },
-        get: function (key) { return object._values[object._keys.indexOf(key)]; },
-    });
-    object._keys = [];
-    object._values = [];
-    return object;
-};
-/**
- * @function getCleanClone
- *
- * @description
- * get an empty version of the object with the same prototype it has
- *
- * @param object the object to build a clean clone from
- * @param realm the realm the object resides in
- * @returns the empty cloned object
- */
-var getCleanClone = function (object, realm) {
-    if (!object.constructor) {
-        return create(null);
-    }
-    var Constructor = object.constructor;
-    var prototype = object.__proto__ || getPrototypeOf(object);
-    if (Constructor === realm.Object) {
-        return prototype === realm.Object.prototype ? {} : create(prototype);
-    }
-    if (~toStringFunction.call(Constructor).indexOf('[native code]')) {
-        try {
-            return new Constructor();
-        }
-        catch (_a) { }
-    }
-    return create(prototype);
-};
-/**
- * @function getObjectCloneLoose
- *
- * @description
- * get a copy of the object based on loose rules, meaning all enumerable keys
- * and symbols are copied, but property descriptors are not considered
- *
- * @param object the object to clone
- * @param realm the realm the object resides in
- * @param handleCopy the function that handles copying the object
- * @returns the copied object
- */
-var getObjectCloneLoose = function (object, realm, handleCopy, cache) {
-    var clone = getCleanClone(object, realm);
-    // set in the cache immediately to be able to reuse the object recursively
-    cache.set(object, clone);
-    for (var key in object) {
-        if (hasOwnProperty$9.call(object, key)) {
-            clone[key] = handleCopy(object[key], cache);
-        }
-    }
-    if (SUPPORTS.SYMBOL_PROPERTIES) {
-        var symbols = getOwnPropertySymbols(object);
-        var length_1 = symbols.length;
-        if (length_1) {
-            for (var index = 0, symbol = void 0; index < length_1; index++) {
-                symbol = symbols[index];
-                if (propertyIsEnumerable.call(object, symbol)) {
-                    clone[symbol] = handleCopy(object[symbol], cache);
-                }
-            }
-        }
-    }
-    return clone;
-};
-/**
- * @function getObjectCloneStrict
- *
- * @description
- * get a copy of the object based on strict rules, meaning all keys and symbols
- * are copied based on the original property descriptors
- *
- * @param object the object to clone
- * @param realm the realm the object resides in
- * @param handleCopy the function that handles copying the object
- * @returns the copied object
- */
-var getObjectCloneStrict = function (object, realm, handleCopy, cache) {
-    var clone = getCleanClone(object, realm);
-    // set in the cache immediately to be able to reuse the object recursively
-    cache.set(object, clone);
-    var properties = SUPPORTS.SYMBOL_PROPERTIES
-        ? getOwnPropertyNames(object).concat(getOwnPropertySymbols(object))
-        : getOwnPropertyNames(object);
-    var length = properties.length;
-    if (length) {
-        for (var index = 0, property = void 0, descriptor = void 0; index < length; index++) {
-            property = properties[index];
-            if (property !== 'callee' && property !== 'caller') {
-                descriptor = getOwnPropertyDescriptor(object, property);
-                if (descriptor) {
-                    // Only clone the value if actually a value, not a getter / setter.
-                    if (!descriptor.get && !descriptor.set) {
-                        descriptor.value = handleCopy(object[property], cache);
-                    }
-                    try {
-                        defineProperty$1(clone, property, descriptor);
-                    }
-                    catch (error) {
-                        // Tee above can fail on node in edge cases, so fall back to the loose assignment.
-                        clone[property] = descriptor.value;
-                    }
-                }
-                else {
-                    // In extra edge cases where the property descriptor cannot be retrived, fall back to
-                    // the loose assignment.
-                    clone[property] = handleCopy(object[property], cache);
-                }
-            }
-        }
-    }
-    return clone;
-};
-/**
- * @function getRegExpFlags
- *
- * @description
- * get the flags to apply to the copied regexp
- *
- * @param regExp the regexp to get the flags of
- * @returns the flags for the regexp
- */
-var getRegExpFlags = function (regExp) {
-    var flags = '';
-    if (regExp.global) {
-        flags += 'g';
-    }
-    if (regExp.ignoreCase) {
-        flags += 'i';
-    }
-    if (regExp.multiline) {
-        flags += 'm';
-    }
-    if (regExp.unicode) {
-        flags += 'u';
-    }
-    if (regExp.sticky) {
-        flags += 'y';
-    }
-    return flags;
-};
-
-// utils
-var isArray$1 = Array.isArray;
-var GLOBAL_THIS = (function () {
-    if (typeof self !== 'undefined') {
-        return self;
-    }
-    if (typeof window !== 'undefined') {
-        return window;
-    }
-    if (typeof global !== 'undefined') {
-        return global;
-    }
-    if (console && console.error) {
-        console.error('Unable to locate global object, returning "this".');
-    }
-})();
-/**
- * @function copy
- *
- * @description
- * copy an object deeply as much as possible
- *
- * If `strict` is applied, then all properties (including non-enumerable ones)
- * are copied with their original property descriptors on both objects and arrays.
- *
- * The object is compared to the global constructors in the `realm` provided,
- * and the native constructor is always used to ensure that extensions of native
- * objects (allows in ES2015+) are maintained.
- *
- * @param object the object to copy
- * @param [options] the options for copying with
- * @param [options.isStrict] should the copy be strict
- * @param [options.realm] the realm (this) object the object is copied from
- * @returns the copied object
- */
-function copy(object, options) {
-    // manually coalesced instead of default parameters for performance
-    var isStrict = !!(options && options.isStrict);
-    var realm = (options && options.realm) || GLOBAL_THIS;
-    var getObjectClone = isStrict
-        ? getObjectCloneStrict
-        : getObjectCloneLoose;
-    /**
-     * @function handleCopy
-     *
-     * @description
-     * copy the object recursively based on its type
-     *
-     * @param object the object to copy
-     * @returns the copied object
-     */
-    var handleCopy = function (object, cache) {
-        if (!object || typeof object !== 'object') {
-            return object;
-        }
-        if (cache.has(object)) {
-            return cache.get(object);
-        }
-        var Constructor = object.constructor;
-        // plain objects
-        if (Constructor === realm.Object) {
-            return getObjectClone(object, realm, handleCopy, cache);
-        }
-        var clone;
-        // arrays
-        if (isArray$1(object)) {
-            // if strict, include non-standard properties
-            if (isStrict) {
-                return getObjectCloneStrict(object, realm, handleCopy, cache);
-            }
-            var length_1 = object.length;
-            clone = new Constructor();
-            cache.set(object, clone);
-            for (var index = 0; index < length_1; index++) {
-                clone[index] = handleCopy(object[index], cache);
-            }
-            return clone;
-        }
-        // dates
-        if (object instanceof realm.Date) {
-            return new Constructor(object.getTime());
-        }
-        // regexps
-        if (object instanceof realm.RegExp) {
-            clone = new Constructor(object.source, object.flags || getRegExpFlags(object));
-            clone.lastIndex = object.lastIndex;
-            return clone;
-        }
-        // maps
-        if (realm.Map && object instanceof realm.Map) {
-            clone = new Constructor();
-            cache.set(object, clone);
-            object.forEach(function (value, key) {
-                clone.set(key, handleCopy(value, cache));
-            });
-            return clone;
-        }
-        // sets
-        if (realm.Set && object instanceof realm.Set) {
-            clone = new Constructor();
-            cache.set(object, clone);
-            object.forEach(function (value) {
-                clone.add(handleCopy(value, cache));
-            });
-            return clone;
-        }
-        // blobs
-        if (realm.Blob && object instanceof realm.Blob) {
-            clone = new Blob([object], { type: object.type });
-            return clone;
-        }
-        // buffers (node-only)
-        if (realm.Buffer && realm.Buffer.isBuffer(object)) {
-            clone = realm.Buffer.allocUnsafe
-                ? realm.Buffer.allocUnsafe(object.length)
-                : new Constructor(object.length);
-            cache.set(object, clone);
-            object.copy(clone);
-            return clone;
-        }
-        // arraybuffers / dataviews
-        if (realm.ArrayBuffer) {
-            // dataviews
-            if (realm.ArrayBuffer.isView(object)) {
-                clone = new Constructor(object.buffer.slice(0));
-                cache.set(object, clone);
-                return clone;
-            }
-            // arraybuffers
-            if (object instanceof realm.ArrayBuffer) {
-                clone = object.slice(0);
-                cache.set(object, clone);
-                return clone;
-            }
-        }
-        // if the object cannot / should not be cloned, don't
-        if (
-        // promise-like
-        typeof object.then === 'function' ||
-            // errors
-            object instanceof Error ||
-            // weakmaps
-            (realm.WeakMap && object instanceof realm.WeakMap) ||
-            // weaksets
-            (realm.WeakSet && object instanceof realm.WeakSet)) {
-            return object;
-        }
-        // assume anything left is a custom constructor
-        return getObjectClone(object, realm, handleCopy, cache);
-    };
-    return handleCopy(object, createCache());
-}
-/**
- * @function strictCopy
- *
- * @description
- * copy the object with `strict` option pre-applied
- *
- * @param object the object to copy
- * @param [options] the options for copying with
- * @param [options.realm] the realm (this) object the object is copied from
- * @returns the copied object
- */
-copy.strict = function strictCopy(object, options) {
-    return copy(object, {
-        isStrict: true,
-        realm: options ? options.realm : void 0,
-    });
-};
-
-function createCompositeKeyFromFkString(fkCompositeRef, modelConstructor) {
-    const [id, ...paramsHash] = fkCompositeRef.split("::");
-    const model = modelConstructor ? new modelConstructor() : undefined;
-    return paramsHash
-        .map(i => i.split(":"))
-        .reduce((acc, curr) => {
-        const [prop, value] = curr;
-        acc[prop] = model
-            ? setWithType(prop, value, model)
-            : value;
-        return acc;
-    }, { id });
-}
-function setWithType(prop, value, model) {
-    if (!model.META.property(prop)) {
-        throw new FireModelError(`When building a "typed" composite key based on the model ${capitalize(model.constructor.name)}, the property "${prop}" was presented but this property doesn't exist on this model!`, "firemodel/property-does-not-exist");
-    }
-    const type = model.META.property(prop).type;
-    switch (type) {
-        case "number":
-            return Number(value);
-        case "boolean":
-            return Boolean(value);
-        default:
-            return value;
-    }
-}
-
-var alphabet = "-0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz";
-
-function randomString(alphabet, length) {
-    var buffer = [];
-    length = length | 0;
-    while (length) {
-        var r = (Math.random() * alphabet.length) | 0;
-        buffer.push(alphabet.charAt(r));
-        length -= 1;
-    }
-    return buffer.join("");
-}
-
-var lastTimestamp = 0;
-function key(timestamp, as) {
-    if (timestamp === undefined) {
-        timestamp = Date.now();
-        if (timestamp <= lastTimestamp) {
-            timestamp = lastTimestamp + 1;
-        }
-        lastTimestamp = timestamp;
-    }
-    if (timestamp instanceof Date) {
-        timestamp = timestamp.getTime();
-    }
-    var result = new Array(9);
-    for (var i = 7; i >= 0; --i) {
-        result[i] = alphabet.charAt(timestamp % 64);
-        timestamp = Math.floor(timestamp / 64);
-    }
-    if (timestamp !== 0) {
-        throw new Error("Unexpected timestamp.");
-    }
-    switch (as) {
-        case "max":
-            result[8] = "zzzzzzzzzzzz";
-            break;
-        case "min":
-            result[8] = "------------";
-            break;
-        default:
-            result[8] = randomString(alphabet, 12);
-    }
-    return result.join("");
-}
-
-/** a cache of all the watched  */
-let watcherPool = {};
-function getWatcherPool() {
-    return watcherPool;
-}
-function getWatcherPoolList() {
-    return hashToArray(getWatcherPool());
-}
-function addToWatcherPool(item) {
-    watcherPool[item.watcherId] = item;
-}
-function clearWatcherPool() {
-    watcherPool = {};
-}
-function removeFromWatcherPool(code) {
-    delete watcherPool[code];
-    return watcherPool;
-}
-
-const moreThanThreePeriods$1 = /\.{3,}/g;
-// polyfill Array.isArray if necessary
-if (!Array.isArray) {
-    Array.isArray = (arg) => {
-        return Object.prototype.toString.call(arg) === "[object Array]";
-    };
-}
-const errorStr = (type) => {
-    return `tried to join something other than undefined, a string or an array [${type}], it was ignored in pathJoin's result`;
-};
-/** An ISO-morphic path join that works everywhere */
-function pathJoin$1(...args) {
-    return args
-        .reduce((prev, val) => {
-        if (typeof prev === "undefined") {
-            return;
-        }
-        if (val === undefined) {
-            return prev;
-        }
-        return typeof val === "string" || typeof val === "number"
-            ? joinStringsWithSlash(prev, "" + val) // if string or number just keep as is
-            : Array.isArray(val)
-                ? joinStringsWithSlash(prev, pathJoin$1.apply(null, val)) // handle array with recursion
-                : console.error(errorStr(typeof val));
-    }, "")
-        .replace(moreThanThreePeriods$1, ".."); // join the resulting array together
-}
-function joinStringsWithSlash(str1, str2) {
-    const str1isEmpty = !str1.length;
-    const str1EndsInSlash = str1[str1.length - 1] === "/";
-    const str2StartsWithSlash = str2[0] === "/";
-    const res = (str1EndsInSlash && str2StartsWithSlash && str1 + str2.slice(1)) ||
-        (!str1EndsInSlash &&
-            !str2StartsWithSlash &&
-            !str1isEmpty &&
-            str1 + "/" + str2) ||
-        str1 + str2;
-    return res;
-}
-
 const DEFAULT_IF_NOT_FOUND = "__DO_NOT_USE__";
 function addTimestamps(obj) {
     const datetime = new Date().getTime();
@@ -5801,1961 +2315,6 @@ class List extends FireModel {
     }
 }
 
-/**
- * The base class which both `WatchList` and `WatchRecord` derive.
- */
-class WatchBase {
-    constructor() {
-        /**
-         * this is only to accomodate the list watcher using `ids` which is an aggregate of
-         * `record` watchers.
-         */
-        this._underlyingRecordWatchers = [];
-    }
-    /**
-     * **start**
-     *
-     * executes the watcher (`WatchList` or `WatchRecord`) so that it becomes
-     * actively watched
-     */
-    async start(options = {}) {
-        const isListOfRecords = this._watcherSource === "list-of-records";
-        const watchIdPrefix = isListOfRecords ? "wlr" : "w";
-        let watchHashCode;
-        try {
-            watchHashCode = isListOfRecords
-                ? String(this._underlyingRecordWatchers[0]._query.hashCode())
-                : String(this._query.hashCode());
-        }
-        catch (e) {
-            throw new FireModelProxyError(e, `An error occured trying to start a watcher. The source was "${this._watcherSource}" and had a query of: ${this._query}\n\nThe underlying error was: ${e.message}`, "watcher/not-allowed");
-        }
-        const watcherId = watchIdPrefix + "-" + watchHashCode;
-        this._watcherName = options.name || `${watcherId}`;
-        const watcherName = options.name || this._watcherName || `${watcherId}`;
-        const watcherItem = this.buildWatcherItem(watcherName);
-        // The dispatcher will now have all the context it needs to publish events
-        // in a consistent fashion; this dispatch function will be used both by
-        // both locally originated events AND server based events.
-        const dispatch = WatchDispatcher(watcherItem.dispatch)(watcherItem);
-        if (!this.db) {
-            throw new FireModelError(`Attempt to start a watcher before the database connection has been established!`);
-        }
-        try {
-            if (this._eventType === "value") {
-                if (this._watcherSource === "list-of-records") {
-                    // Watch all "ids" added to the list of records
-                    this._underlyingRecordWatchers.forEach((r) => {
-                        this.db.watch(r._query, ["value"], dispatch);
-                    });
-                }
-                else {
-                    this.db.watch(this._query, ["value"], dispatch);
-                }
-            }
-            else {
-                if (options.largePayload) {
-                    const payload = await List.fromQuery(this._modelConstructor, this._query, { offsets: this._options.offsets || {} });
-                    await dispatch({
-                        type: exports.FmEvents.WATCHER_SYNC,
-                        kind: "watcher",
-                        modelConstructor: this._modelConstructor,
-                        key: this._query.path.split("/").pop(),
-                        value: payload.data,
-                        offsets: this._options.offsets || {},
-                    });
-                }
-                this.db.watch(this._query, ["child_added", "child_changed", "child_moved", "child_removed"], dispatch);
-            }
-        }
-        catch (e) {
-            console.log(`Problem starting watcher [${watcherId}]: `, e);
-            (this._dispatcher || FireModel.dispatch)({
-                type: exports.FmEvents.WATCHER_FAILED,
-                errorMessage: e.message,
-                errorCode: e.code || e.name || "firemodel/watcher-failed",
-            });
-            throw e;
-        }
-        try {
-            addToWatcherPool(watcherItem);
-            // dispatch "starting"; no need to wait for promise
-            (this._dispatcher || FireModel.dispatch)(Object.assign({ type: exports.FmEvents.WATCHER_STARTING }, watcherItem));
-            await waitForInitialization(watcherItem);
-            // console.log("watcher initialized", watcherItem);
-            await (this._dispatcher || FireModel.dispatch)(Object.assign({ type: exports.FmEvents.WATCHER_STARTED }, watcherItem));
-            return watcherItem;
-        }
-        catch (e) {
-            throw new FireModelError(`The watcher "${watcherId}" failed to initialize`, "firemodel/watcher-initialization");
-        }
-    }
-    /**
-     * **dispatch**
-     *
-     * allows you to state an explicit dispatch function which will be called
-     * when this watcher detects a change; by default it will use the "default dispatch"
-     * set on FireModel.dispatch.
-     */
-    dispatch(d) {
-        this._dispatcher = d;
-        return this;
-    }
-    toString() {
-        return `Watching path "${this._query.path}" for "${this._eventType}" event(s) [ hashcode: ${String(this._query.hashCode())} ]`;
-    }
-    /**
-     * Allows you to use the properties of the watcher to build a
-     * `watcherContext` dictionary; this is intended to be used as
-     * part of the initialization of the `dispatch` function for
-     * local state management.
-     *
-     * **Note:** that while used here as part of the `start()` method
-     * it is also used externally by locally triggered events as well
-     */
-    buildWatcherItem(name) {
-        const dispatch = this.getCoreDispatch();
-        const isListOfRecords = this._watcherSource === "list-of-records";
-        const watchIdPrefix = isListOfRecords ? "wlr" : "w";
-        const watchHashCode = isListOfRecords
-            ? String(this._underlyingRecordWatchers[0]._query.hashCode())
-            : String(this._query.hashCode());
-        const watcherId = watchIdPrefix + "-" + watchHashCode;
-        const watcherName = name || `${watcherId}`;
-        const eventFamily = this._watcherSource === "list" ? "child" : "value";
-        const watcherPaths = this._watcherSource === "list-of-records"
-            ? this._underlyingRecordWatchers.map((i) => i._query.path)
-            : [this._query.path];
-        // TODO: fix this bullshit typing; should be: SerializedQuery<T> | Array<SerializedQuery<T>>
-        const query = this._watcherSource === "list-of-records"
-            ? this._underlyingRecordWatchers.map((i) => i._query)
-            : this._query;
-        const watchContext = {
-            watcherId,
-            watcherName,
-            eventFamily,
-            dispatch,
-            modelConstructor: this._modelConstructor,
-            query,
-            dynamicPathProperties: this._dynamicProperties,
-            compositeKey: this._compositeKey,
-            localPath: this._localPath,
-            localPostfix: this._localPostfix,
-            modelName: this._modelName,
-            localModelName: this._localModelName || "not-relevant",
-            pluralName: this._pluralName,
-            watcherPaths,
-            // TODO: Fix this typing ... the error is nonsensical atm
-            watcherSource: this._watcherSource,
-            createdAt: new Date().getTime(),
-        };
-        return watchContext;
-    }
-    getCoreDispatch() {
-        // Use the bespoke dispatcher for this class if it's available;
-        // if not then fall back to the default Firemodel dispatch
-        const coreDispatch = this._dispatcher || FireModel.dispatch;
-        if (coreDispatch.name === "defaultDispatch") {
-            throw new FireModelError(`Attempt to start a ${this._watcherSource} watcher on "${this._query.path}" but no dispatcher has been assigned. Make sure to explicitly set the dispatch function or use "FireModel.dispatch = xxx" to setup a default dispatch function.`, `firemodel/invalid-dispatch`);
-        }
-        return coreDispatch;
-    }
-    get db() {
-        if (!this._db) {
-            if (FireModel.defaultDb) {
-                this._db = FireModel.defaultDb;
-            }
-        }
-        return this._db;
-    }
-}
-
-class WatchList extends WatchBase {
-    constructor() {
-        super(...arguments);
-        this._offsets = {};
-        this._options = {};
-    }
-    static list(
-    /**
-     * The `Model` underlying the **List**
-     */
-    modelConstructor, 
-    /**
-     * optionally state the _dynamic path_ properties which offset the **dbPath**
-     */
-    options = {}) {
-        const obj = new WatchList();
-        obj.list(modelConstructor, options);
-        return obj;
-    }
-    list(modelConstructor, options = {}) {
-        this._watcherSource = "list";
-        this._eventType = "child";
-        this._options = options;
-        if (options.offsets) {
-            this._offsets = options.offsets;
-        }
-        const lst = List.create(modelConstructor, options);
-        this._modelConstructor = modelConstructor;
-        this._classProperties = getAllPropertiesFromClassStructure(new this._modelConstructor());
-        this._dynamicProperties = Record.dynamicPathProperties(modelConstructor);
-        this.setPathDependantProperties();
-        return this;
-    }
-    /**
-     *
-     * @param offsetDict
-     */
-    offsets(offsetDict) {
-        this._offsets = offsetDict;
-        const lst = List.create(this._modelConstructor, this._options);
-        this.setPathDependantProperties();
-        return this;
-    }
-    /**
-     * **ids**
-     *
-     * There are times where you know an array of IDs which you want to watch as a `list`
-     * and calling a series of **record** watchers would not work because -- for a given model
-     * -- you can only watch one (this is due to the fact that a _record_ watcher does not
-     * offset the record by it's ID). This is the intended use-case for this type of _list_
-     * watcher.
-     *
-     * It is worth noting that with this watcher the frontend will indeed get an array of
-     * records but from a **Firebase** standpoint this is not a "list watcher" but instead
-     * a series of "record watchers".
-     *
-     * @param ids the list of FK references (simple or composite)
-     */
-    ids(...ids) {
-        if (ids.length === 0) {
-            throw new FireModelError(`You attempted to setup a watcher list on a given set of ID's of "${this._modelName}" but the list of ID's was empty!`, "firemodel/not-ready");
-        }
-        for (const id of ids) {
-            this._underlyingRecordWatchers.push(this._options.offsets
-                ? Watch.record(this._modelConstructor, Object.assign(Object.assign({}, (typeof id === "string" ? { id } : id)), this._options.offsets))
-                : Watch.record(this._modelConstructor, id));
-        }
-        this._watcherSource = "list-of-records";
-        this._eventType = "value";
-        return this;
-    }
-    /**
-     * **since**
-     *
-     * Watch for all records that have changed since a given date
-     *
-     * @param when  the datetime in milliseconds or a string format that works with new Date(x)
-     * @param limit  optionally limit the records returned to a max number
-     */
-    since(when, limit) {
-        this._query = this._query.orderByChild("lastUpdated").startAt(when);
-        if (limit) {
-            this._query = this._query.limitToFirst(limit);
-        }
-        return this;
-    }
-    /**
-     * **dormantSince**
-     *
-     * Watch for all records that have NOT changed since a given date (opposite of "since")
-     *
-     * @param when  the datetime in milliseconds or a string format that works with new Date(x)
-     * @param limit  optionally limit the records returned to a max number
-     */
-    dormantSince(when, limit) {
-        this._query = this._query.orderByChild("lastUpdated").endAt(when);
-        if (limit) {
-            this._query = this._query.limitToFirst(limit);
-        }
-        return this;
-    }
-    /**
-     * **after**
-     *
-     * Watch all records that were created after a given date
-     *
-     * @param when  the datetime in milliseconds or a string format that works with new Date(x)
-     * @param limit  optionally limit the records returned to a max number
-     */
-    after(when, limit) {
-        this._query = this._query.orderByChild("createdAt").startAt(when);
-        if (limit) {
-            this._query = this._query.limitToFirst(limit);
-        }
-        return this;
-    }
-    /**
-     * **before**
-     *
-     * Watch all records that were created before a given date
-     *
-     * @param when  the datetime in milliseconds or a string format that works with new Date(x)
-     * @param limit  optionally limit the records returned to a max number
-     */
-    before(when, limit) {
-        this._query = this._query.orderByChild("createdAt").endAt(when);
-        if (limit) {
-            this._query = this._query.limitToFirst(limit);
-        }
-        return this;
-    }
-    /**
-     * **first**
-     *
-     * Watch for a given number of records; starting with the first/earliest records (createdAt).
-     * Optionally you can state an ID from which to start from. This is useful for a pagination
-     * strategy.
-     *
-     * @param howMany  the datetime in milliseconds or a string format that works with new Date(x)
-     * @param startAt  the ID reference to a record in the list (if used for pagination, add the last record in the list to this value)
-     */
-    first(howMany, startAt) {
-        this._query = this._query.orderByChild("createdAt").limitToFirst(howMany);
-        if (startAt) {
-            this._query = this._query.startAt(startAt);
-        }
-        return this;
-    }
-    /**
-     * **last**
-     *
-     * Watch for a given number of records; starting with the last/most-recently added records
-     * (e.g., createdAt). Optionally you can state an ID from which to start from.
-     * This is useful for a pagination strategy.
-     *
-     * @param howMany  the datetime in milliseconds or a string format that works with new Date(x)
-     * @param startAt  the ID reference to a record in the list (if used for pagination, add the last record in the list to this value)
-     */
-    last(howMany, startAt) {
-        this._query = this._query.orderByChild("createdAt").limitToLast(howMany);
-        if (startAt) {
-            this._query = this._query.endAt(startAt);
-        }
-        return this;
-    }
-    /**
-     * **recent**
-     *
-     * Watch for a given number of records; starting with the recent/most-recently updated records
-     * (e.g., lastUpdated). Optionally you can state an ID from which to start from.
-     * This is useful for a pagination strategy.
-     *
-     * @param howMany  the datetime in milliseconds or a string format that works with new Date(x)
-     * @param startAt  the ID reference to a record in the list (if used for pagination, add the recent record in the list to this value)
-     */
-    recent(howMany, startAt) {
-        this._query = this._query.orderByChild("lastUpdated").limitToFirst(howMany);
-        if (startAt) {
-            this._query = this._query.startAt(startAt);
-        }
-        return this;
-    }
-    /**
-     * **inactive**
-     *
-     * Watch for a given number of records; starting with the inactive/most-inactively added records
-     * (e.g., lastUpdated). Optionally you can state an ID from which to start from.
-     * This is useful for a pagination strategy.
-     *
-     * @param howMany  the datetime in milliseconds or a string format that works with new Date(x)
-     * @param startAt  the ID reference to a record in the list (if used for pagination, add the inactive record in the list to this value)
-     */
-    inactive(howMany, startAt) {
-        this._query = this._query.orderByChild("lastUpdated").limitToLast(howMany);
-        if (startAt) {
-            this._query = this._query.endAt(startAt);
-        }
-        return this;
-    }
-    /**
-     * **fromQuery**
-     *
-     * Watch for all records that conform to a passed in query
-     *
-     * @param query
-     */
-    fromQuery(inputQuery) {
-        this._query = inputQuery;
-        return this;
-    }
-    /**
-     * **all**
-     *
-     * Watch for all records of a given type
-     *
-     * @param limit it you want to limit the results a max number of records
-     */
-    all(limit) {
-        if (limit) {
-            this._query = this._query.limitToLast(limit);
-        }
-        return this;
-    }
-    /**
-     * **where**
-     *
-     * Watch for all records where a specified property is
-     * equal, less-than, or greater-than a certain value
-     *
-     * @param property the property which the comparison operater is being compared to
-     * @param value either just a value (in which case "equality" is the operator), or a tuple with operator followed by value (e.g., [">", 34])
-     */
-    where(property, value) {
-        let operation = "=";
-        let val;
-        if (Array.isArray(value)) {
-            val = value[1];
-            operation = value[0];
-        }
-        else {
-            val = value;
-        }
-        this._query = universalFire.SerializedQuery.create(this.db, this._query.path)
-            .orderByChild(property)
-            // TODO: fix typing issue here.
-            // @ts-ignore
-            .where(operation, val);
-        return this;
-    }
-    /**
-     * Sets properties that could be effected by _dynamic paths_
-     */
-    setPathDependantProperties() {
-        if (this._dynamicProperties.length === 0 ||
-            Object.keys(this._offsets).length > 0) {
-            const lst = List.create(this._modelConstructor, Object.assign(Object.assign({}, this._options), { offsets: this._offsets }));
-            this._query = universalFire.SerializedQuery.create(this.db, lst.dbPath);
-            this._modelName = lst.modelName;
-            this._pluralName = lst.pluralName;
-            this._localPath = lst.localPath;
-            this._localPostfix = lst.localPostfix;
-        }
-    }
-}
-
-class WatchRecord extends WatchBase {
-    static record(modelConstructor, pk, options = {}) {
-        if (!pk) {
-            throw new FireModelError(`Attempt made to watch a RECORD but no primary key was provided!`, "firemodel/no-pk");
-        }
-        const o = new WatchRecord();
-        // if options hash has a DB reference; use it
-        if (o.db) {
-            o._db = options.db;
-        }
-        o._eventType = "value";
-        o._watcherSource = "record";
-        const r = Record.createWith(modelConstructor, pk, options.db ? { db: options.db } : {});
-        o._query = universalFire.SerializedQuery.create(options.db || FireModel.defaultDb, `${r.dbPath}`);
-        o._modelConstructor = modelConstructor;
-        o._modelName = r.modelName;
-        o._localModelName = r.META.localModelName;
-        o._pluralName = r.pluralName;
-        o._localPath = r.localPath;
-        o._localPostfix = r.META.localPostfix;
-        o._dynamicProperties = r.dynamicPathComponents;
-        o._compositeKey = r.compositeKey;
-        return o;
-    }
-}
-
-/**
- * A static library for interacting with _watchers_. It
- * provides the entry point into the watcher API and then
- * hands off to either `WatchList` or `WatchRecord`.
- */
-class Watch {
-    /**
-     * Sets the default database for all Firemodel
-     * classes such as `FireModel`, `Record`, and `List`
-     */
-    static set defaultDb(db) {
-        FireModel.defaultDb = db;
-    }
-    /**
-     * Sets the default dispatch for all Firemodel
-     * classes such as `FireModel`, `Record`, and `List`
-     */
-    static set dispatch(d) {
-        FireModel.dispatch = d;
-    }
-    /**
-     * returns a full list of all watchers
-     */
-    static get inventory() {
-        return getWatcherPool();
-    }
-    static toJSON() {
-        return Watch.inventory;
-    }
-    /**
-     * lookup
-     *
-     * Allows the lookup of details regarding the actively watched
-     * objects in the Firebase database
-     *
-     * @param hashCode the unique hashcode given for each watcher
-     */
-    static lookup(hashCode) {
-        const codes = new Set(Object.keys(getWatcherPool()));
-        if (!codes.has(hashCode)) {
-            const e = new Error(`You looked up an invalid watcher hashcode [${hashCode}].`);
-            e.name = "FireModel::InvalidHashcode";
-            throw e;
-        }
-        return getWatcherPool()[hashCode];
-    }
-    static get watchCount() {
-        return Object.keys(getWatcherPool()).length;
-    }
-    static reset() {
-        clearWatcherPool();
-    }
-    /**
-     * Finds the watcher by a given name and returns the ID of the
-     * first match
-     */
-    static findByName(name) {
-        const pool = getWatcherPool();
-        return Object.keys(pool).find((i) => pool[i].watcherName === name);
-    }
-    /**
-     * stops watching either a specific watcher or ALL if no hash code is provided
-     */
-    static stop(hashCode, oneOffDB) {
-        const codes = new Set(Object.keys(getWatcherPool()));
-        const db = oneOffDB || FireModel.defaultDb;
-        if (!db) {
-            throw new FireModelError(`There is no established way to connect to the database; either set the default DB or pass the DB in as the second parameter to Watch.stop()!`, `firemodel/no-database`);
-        }
-        if (hashCode && !codes.has(hashCode)) {
-            const e = new FireModelError(`The hashcode passed into the stop() method [ ${hashCode} ] is not actively being watched!`);
-            e.name = "firemodel/missing-hashcode";
-            throw e;
-        }
-        if (!hashCode) {
-            const pool = getWatcherPool();
-            if (Object.keys(pool).length > 0) {
-                const keysAndPaths = Object.keys(pool).reduce((agg, key) => (Object.assign(Object.assign({}, agg), { [key]: pool[key].watcherPaths })), {});
-                const dispatch = pool[firstKey(pool)].dispatch;
-                db.unWatch();
-                clearWatcherPool();
-                dispatch({
-                    type: exports.FmEvents.WATCHER_STOPPED_ALL,
-                    stopped: keysAndPaths,
-                });
-            }
-        }
-        else {
-            const registry = getWatcherPool()[hashCode];
-            const events = registry.eventFamily === "child"
-                ? "value"
-                : ["child_added", "child_changed", "child_moved", "child_removed"];
-            db.unWatch(events, registry.dispatch);
-            // tslint:disable-next-line: no-object-literal-type-assertion
-            registry.dispatch({
-                type: exports.FmEvents.WATCHER_STOPPED,
-                watcherId: hashCode,
-                remaining: getWatcherPoolList().map((i) => ({
-                    id: i.watcherId,
-                    name: i.watcherName,
-                })),
-            });
-            removeFromWatcherPool(hashCode);
-        }
-    }
-    /**
-     * Configures the watcher to be a `value` watcher on Firebase
-     * which is only concerned with changes to a singular Record.
-     *
-     * @param pk the _primary key_ for a given record. This can be a string
-     * represention of the `id` property, a string represention of
-     * the composite key, or an object representation of the composite
-     * key.
-     */
-    static record(modelConstructor, pk, options = {}) {
-        return WatchRecord.record(modelConstructor, pk, options);
-    }
-    static list(
-    /**
-     * The **Model** subType which this list watcher will watch
-     */
-    modelConstructor, 
-    /**
-     * optionally state the _dynamic path_ properties which offset the **dbPath**
-     */
-    offsets) {
-        return WatchList.list(modelConstructor, { offsets });
-    }
-}
-
-/**
- * **findWatchers**
- *
- * Given a database path, finds all the watchers which are watching this
- * path or a parent of this path. This must consider a normal **list** or
- * **record** watcher but also a **list-of-records** where instead of a
- * `1:1` relationship between "watcher" and Firebase listener there is instead
- * a `1:M` relationship.
- */
-function findWatchers(
-/** the database path where change was detected */
-dbPath) {
-    const inspectListofRecords = (watcher) => {
-        const paths = watcher.watcherPaths;
-        let found = false;
-        paths.forEach(p => {
-            if (dbPath.includes(p)) {
-                found = true;
-            }
-        });
-        return found;
-    };
-    return hashToArray(Watch.inventory).filter(i => i.watcherSource === "list-of-records"
-        ? /** handles the "list-of-records" use case */
-            inspectListofRecords(i)
-        : /** handles the standard use case */
-            dbPath.includes(i.query.path));
-}
-
-function isHasManyRelationship(rec, property) {
-    return rec.META.relationship(property).relType === "hasMany" ? true : false;
-}
-
-/**
- * sets the `Record` property to the optimistic values set
- * with the relationship CRUD event.
- *
- * This function has no concern with dispatch or the FK model
- * and any updates that may need to take place there.
- */
-function locallyUpdateFkOnRecord(rec, fkId, event) {
-    const relnType = rec.META.relationship(event.property).relType;
-    // update lastUpdated but quietly as it will be updated again
-    // once server responds
-    rec.set("lastUpdated", new Date().getTime(), true);
-    // now work on a per-op basis
-    switch (event.operation) {
-        case "set":
-        case "add":
-            rec._data[event.property] =
-                relnType === "hasMany"
-                    ? Object.assign(Object.assign({}, rec.data[event.property]), { [fkId]: true }) : fkId;
-            return;
-        case "remove":
-            if (relnType === "hasMany") {
-                delete rec._data[event.property][fkId];
-            }
-            else {
-                rec._data[event.property] = "";
-            }
-            return;
-    }
-}
-
-/**
- * **relationshipOperation**
- *
- * updates the current Record while also executing the appropriate two-phased commit
- * with the `dispatch()` function; looking to associate with watchers wherever possible
- */
-async function relationshipOperation(rec, 
-/**
- * **operation**
- *
- * The relationship operation that is being executed
- */
-operation, 
-/**
- * **property**
- *
- * The property on this model which changing its relationship status in some way
- */
-property, 
-/**
- * The array of _foreign keys_ (of the "from" model) which will be operated on
- */
-fkRefs, 
-/**
- * **paths**
- *
- * a set of name value pairs where the `name` is the DB path that needs updating
- * and the value is the value to set.
- */
-paths, options = {}) {
-    // make sure all FK's are strings
-    const fks = fkRefs.map((fk) => {
-        return typeof fk === "object" ? createCompositeRef(fk) : fk;
-    });
-    const dispatchEvents = {
-        set: [
-            exports.FmEvents.RELATIONSHIP_SET_LOCALLY,
-            exports.FmEvents.RELATIONSHIP_SET_CONFIRMATION,
-            exports.FmEvents.RELATIONSHIP_SET_ROLLBACK,
-        ],
-        clear: [
-            exports.FmEvents.RELATIONSHIP_REMOVED_LOCALLY,
-            exports.FmEvents.RELATIONSHIP_REMOVED_CONFIRMATION,
-            exports.FmEvents.RELATIONSHIP_REMOVED_ROLLBACK,
-        ],
-        // update: [
-        //   FMEvents.RELATIONSHIP_UPDATED_LOCALLY,
-        //   FMEvents.RELATIONSHIP_UPDATED_CONFIRMATION,
-        //   FMEvents.RELATIONSHIP_UPDATED_ROLLBACK
-        // ],
-        add: [
-            exports.FmEvents.RELATIONSHIP_ADDED_LOCALLY,
-            exports.FmEvents.RELATIONSHIP_ADDED_CONFIRMATION,
-            exports.FmEvents.RELATIONSHIP_ADDED_ROLLBACK,
-        ],
-        remove: [
-            exports.FmEvents.RELATIONSHIP_REMOVED_LOCALLY,
-            exports.FmEvents.RELATIONSHIP_REMOVED_CONFIRMATION,
-            exports.FmEvents.RELATIONSHIP_REMOVED_ROLLBACK,
-        ],
-    };
-    try {
-        const [localEvent, confirmEvent, rollbackEvent] = dispatchEvents[operation];
-        const fkConstructor = rec.META.relationship(property).fkConstructor;
-        // TODO: fix the typing here to make sure fkConstructor knows it's type
-        const fkRecord = new Record(fkConstructor());
-        const fkMeta = getModelMeta(fkRecord.data);
-        const transactionId = "t-reln-" +
-            Math.random().toString(36).substr(2, 5) +
-            "-" +
-            Math.random().toString(36).substr(2, 5);
-        const event = {
-            key: rec.compositeKeyRef,
-            operation,
-            property,
-            kind: "relationship",
-            eventType: "local",
-            transactionId,
-            fks,
-            paths,
-            from: capitalize(rec.modelName),
-            to: capitalize(fkRecord.modelName),
-            fromLocal: rec.localPath,
-            toLocal: fkRecord.localPath,
-            fromConstructor: rec.modelConstructor,
-            toConstructor: fkRecord.modelConstructor,
-        };
-        const inverseProperty = rec.META.relationship(property).inverseProperty;
-        if (inverseProperty) {
-            event.inverseProperty = inverseProperty;
-        }
-        try {
-            await localRelnOp(rec, event, localEvent);
-            await relnConfirmation(rec, event, confirmEvent);
-        }
-        catch (e) {
-            await relnRollback(rec, event, rollbackEvent);
-            throw new FireModelProxyError(e, `Encountered an error executing a relationship operation between the "${event.from}" model and "${event.to}". The paths that were being modified were: ${event.paths
-                .map((i) => i.path)
-                .join("- \n")}\n A dispatch for a rollback event has been issued.`);
-        }
-    }
-    catch (e) {
-        if (e.firemodel) {
-            throw e;
-        }
-        else {
-            throw new UnknownRelationshipProblem(e, rec, property, operation);
-        }
-    }
-}
-async function localRelnOp(rec, event, type) {
-    try {
-        // locally modify Record's values
-        // const ids = extractFksFromPaths(rec, event.property, event.paths);
-        event.fks.map((fk) => {
-            locallyUpdateFkOnRecord(rec, fk, Object.assign(Object.assign({}, event), { type }));
-        });
-        // local optimistic dispatch
-        rec.dispatch(Object.assign(Object.assign({}, event), { type }));
-        const ref = rec.db.ref("/");
-        // TODO: replace with multiPathSet/transaction
-        await ref.update(event.paths.reduce((acc, curr) => {
-            acc[curr.path] = curr.value;
-            return acc;
-        }, {}));
-    }
-    catch (e) {
-        throw new FireModelProxyError(e, `While operating doing a local relationship operation ran into an error. Note that the "paths" passed in were:\n${JSON.stringify(event.paths)}.\n\nThe underlying error message was:`);
-    }
-}
-async function relnConfirmation(rec, event, type) {
-    rec.dispatch(Object.assign(Object.assign({}, event), { type }));
-}
-async function relnRollback(rec, event, type) {
-    //
-    /**
-     * no writes will have actually been done to DB but
-     * front end framework will need to know as it probably
-     * adjusted _optimistically_
-     */
-    rec.dispatch(Object.assign(Object.assign({}, event), { type }));
-}
-
-/**
- * writeAudit
- *
- * Allows for a consistent way of writing audit records to the database
- *
- * @param recordId the ID of the record which is changing
- * @param pluralName the plural name of the Model type
- * @param action CRUD action
- * @param changes array of changes
- * @param options
- */
-async function writeAudit(record, action, changes, options = {}) {
-    const db = options.db || FireModel.defaultDb;
-    await Record.add(exports.AuditLog, {
-        modelName: capitalize(record.modelName),
-        modelId: record.id,
-        action,
-        changes
-    }, { db });
-}
-
-class Record extends FireModel {
-    constructor(model, options = {}) {
-        super();
-        this.options = options;
-        //#endregion STATIC: Relationships
-        //#endregion
-        //#region INSTANCE DEFINITION
-        this._existsOnDB = false;
-        this._writeOperations = [];
-        this._data = {};
-        if (!model) {
-            throw new FireModelError(`You are trying to instantiate a Record but the "model constructor" passed in is empty!`, `firemodel/not-allowed`);
-        }
-        if (!model.constructor) {
-            console.log(`The "model" property passed into the Record constructor is NOT a Model constructor! It is of type "${typeof model}": `, model);
-            if (typeof model === "string") {
-                model = FireModel.lookupModel(model);
-                if (!model) {
-                    throw new FireModelError(`Attempted to lookup the model in the registry but it was not found!`);
-                }
-            }
-            else {
-                throw new FireModelError(`Can not instantiate a Record without a valid Model constructor`);
-            }
-        }
-        this._modelConstructor = model;
-        this._model = new model();
-        this._data = new model();
-    }
-    //#region STATIC INTERFACE
-    static set defaultDb(db) {
-        FireModel.defaultDb = db;
-    }
-    static get defaultDb() {
-        return FireModel.defaultDb;
-    }
-    static set dispatch(fn) {
-        FireModel.dispatch = fn;
-    }
-    /**
-     * **dynamicPathProperties**
-     *
-     * An array of "dynamic properties" that are derived fom the "dbOffset" to
-     * produce the "dbPath". Note: this does NOT include the `id` property.
-     */
-    static dynamicPathProperties(
-    /**
-     * the **Model** who's properties are being interogated
-     */
-    model) {
-        return Record.create(model).dynamicPathComponents;
-    }
-    /**
-     * create
-     *
-     * creates a new -- and empty -- Record object; often used in
-     * conjunction with the Record's initialize() method
-     */
-    static create(model, options = {}) {
-        const r = new Record(model, options);
-        if (options.silent && !r.db.isMockDb) {
-            throw new FireModelError(`You can only add new records to the DB silently when using a Mock database!`, "forbidden");
-        }
-        return r;
-    }
-    /**
-     * Creates an empty record and then inserts all values
-     * provided along with default values provided in META.
-     */
-    static local(model, values, options = {}) {
-        const rec = Record.create(model, options);
-        if (!options.ignoreEmptyValues &&
-            (!values || Object.keys(values).length === 0)) {
-            throw new FireModelError("You used the static Record.local() method but passed nothing into the 'values' property! If you just want to skip this error then you can set the options to { ignoreEmptyValues: true } or just use the Record.create() method.", `firemodel/record::local`);
-        }
-        if (values) {
-            const defaultValues = rec.META.properties.filter((i) => i.defaultValue !== undefined);
-            // also include "default values"
-            defaultValues.forEach((i) => {
-                if (rec.get(i.property) === undefined) {
-                    rec.set(i.property, i.defaultValue, true);
-                }
-            });
-        }
-        return rec;
-    }
-    /**
-     * add
-     *
-     * Adds a new record to the database
-     *
-     * @param schema the schema of the record
-     * @param payload the data for the new record; this optionally can include the "id" but if left off the new record will use a firebase pushkey
-     * @param options
-     */
-    static async add(model, payload, options = {}) {
-        let r;
-        if (typeof model === "string") {
-            model = FireModel.lookupModel(model);
-        }
-        try {
-            if (!model) {
-                throw new FireModelError(`The model passed into the Record.add() static initializer was not defined! This is often the result of a circular dependency. Note that the "payload" sent into Record.add() was:\n\n${JSON.stringify(payload, null, 2)}`);
-            }
-            r = Record.createWith(model, payload, options);
-            if (!payload.id) {
-                const path = List.dbPath(model, payload);
-                payload.id = await r.db.getPushKey(path);
-            }
-            await r._initialize(payload, options);
-            const defaultValues = r.META.properties.filter((i) => i.defaultValue !== undefined);
-            defaultValues.forEach((i) => {
-                if (r.get(i.property) === undefined) {
-                    r.set(i.property, i.defaultValue, true);
-                }
-            });
-            await r._adding(options);
-        }
-        catch (e) {
-            if (e.code === "permission-denied") {
-                const rec = Record.createWith(model, payload);
-                throw new FireModelError(`Permission error while trying to add the ${capitalize(rec.modelName)} to the database path ${rec.dbPath}`, "firemodel/permission-denied");
-            }
-            if (e.name.includes("firemodel")) {
-                throw e;
-            }
-            throw new FireModelProxyError(e, "Failed to add new record ");
-        }
-        return r;
-    }
-    /**
-     * **update**
-     *
-     * update an existing record in the database with a dictionary of prop/value pairs
-     *
-     * @param model the _model_ type being updated
-     * @param id the `id` for the model being updated
-     * @param updates properties to update; this is a non-destructive operation so properties not expressed will remain unchanged. Also, because values are _nullable_ you can set a property to `null` to REMOVE it from the database.
-     * @param options
-     */
-    static async update(model, id, updates, options = {}) {
-        let r;
-        try {
-            r = await Record.get(model, id, options);
-            await r.update(updates);
-        }
-        catch (e) {
-            const err = new Error(`Problem adding new Record: ${e.message}`);
-            err.name = e.name !== "Error" ? e.name : "FireModel";
-            throw e;
-        }
-        return r;
-    }
-    /**
-     * Pushes a new item into a property that is setup as a "pushKey"
-     *
-     * @param model the model being operated on
-     * @param id  `id` or `composite-key` that uniquely identifies a record
-     * @param property the property on the record
-     * @param payload the new payload you want to push into the array
-     */
-    static async pushKey(model, id, property, payload, options = {}) {
-        const obj = await Record.get(model, id, options);
-        return obj.pushKey(property, payload);
-    }
-    /**
-     * **createWith**
-     *
-     * A static initializer that creates a Record of a given class
-     * and then initializes the state with either a Model payload
-     * or a CompositeKeyString (aka, '[id]::[prop]:[value]').
-     *
-     * You should be careful in using this initializer; the expected
-     * _intents_ include:
-     *
-     * 1. to initialize an in-memory record of something which is already
-     * in the DB
-     * 2. to get all the "composite key" attributes into the record so
-     * all META queries are possible
-     *
-     * If you want to add this record to the database then use `add()`
-     * initializer instead.
-     *
-     * @prop model a constructor for the underlying model
-     * @payload either a string representing an `id` or Composite Key or alternatively
-     * a hash/dictionary of attributes that are to be set as a starting point
-     */
-    static createWith(model, payload, options = {}) {
-        const rec = Record.create(model, options);
-        if (options.setDeepRelationships === true) {
-            throw new FireModelError(`Trying to create a ${capitalize(rec.modelName)} with the "setDeepRelationships" property set. This is NOT allowed; consider the 'Record.add()' method instead.`, "not-allowed");
-        }
-        const properties = typeof payload === "string"
-            ? createCompositeKeyFromFkString(payload, rec.modelConstructor)
-            : payload;
-        // TODO: build some tests to ensure that ...
-        // the async possibilites of this method (only if `options.setDeepRelationships`)
-        // are not negatively impacting this method
-        rec._initialize(properties, options);
-        return rec;
-    }
-    /**
-     * get (static initializer)
-     *
-     * Allows the retrieval of records based on the record's id (and dynamic path prefixes
-     * in cases where that applies)
-     *
-     * @param model the model definition you are retrieving
-     * @param id either just an "id" string or in the case of models with dynamic path prefixes you can pass in an object with the id and all dynamic prefixes
-     * @param options
-     */
-    static async get(model, id, options = {}) {
-        const record = Record.create(model, options);
-        await record._getFromDB(id);
-        return record;
-    }
-    static async remove(model, id, 
-    /** if there is a known current state of this model you can avoid a DB call to get it */
-    currentState) {
-        // TODO: add lookup in local state to see if we can avoid DB call
-        const record = currentState ? currentState : await Record.get(model, id);
-        await record.remove();
-        return record;
-    }
-    //#region STATIC: Relationships
-    /**
-     * Associates a new FK to a relationship on the given `Model`; returning
-     * the primary model as a return value
-     */
-    static async associate(model, id, property, refs) {
-        const obj = await Record.get(model, id);
-        await obj.associate(property, refs);
-        return obj;
-    }
-    /**
-     * Given a database _path_ and a `Model`, pull out the composite key from
-     * the path. This works for Models that do and _do not_ have dynamic segments
-     * and in both cases the `id` property will be returned as part of the composite
-     * so long as the path does indeed have the `id` at the end of the path.
-     */
-    static getCompositeKeyFromPath(model, path) {
-        if (!path) {
-            return {};
-        }
-        const r = Record.create(model);
-        const pathParts = dotNotation(path).split(".");
-        const compositeKey = {};
-        const segments = dotNotation(r.dbOffset).split(".");
-        if (segments.length > pathParts.length ||
-            pathParts.length - 2 > segments.length) {
-            throw new FireModelError(`Attempt to get the composite key from a path failed due to the diparity of segments in the path [ ${pathParts.length} ] versus the dynamic path [ ${segments.length} ]`, "firemodel/not-allowed");
-        }
-        segments.forEach((segment, idx) => {
-            if (segment.slice(0, 1) === ":") {
-                const name = segment.slice(1);
-                const value = pathParts[idx];
-                compositeKey[name] = value;
-            }
-            else {
-                if (segment !== pathParts[idx]) {
-                    throw new FireModelError(`The attempt to build a composite key for the model ${capitalize(r.modelName)} failed because the static parts of the path did not match up. Specifically where the "dbOffset" states the segment "${segment}" the path passed in had "${pathParts[idx]}" instead.`);
-                }
-            }
-            if (pathParts.length - 1 === segments.length) {
-                compositeKey.id = pathParts.slice(-1);
-            }
-        });
-        return compositeKey;
-    }
-    /**
-     * Given a Model and a partial representation of that model, this will generate
-     * a composite key (in _object_ form) that conforms to the `ICompositeKey` interface
-     * and uniquely identifies the given record.
-     *
-     * @param model the class definition of the model you want the CompositeKey for
-     * @param object the data which will be used to generate the Composite key from
-     */
-    static compositeKey(model, obj) {
-        const dynamicSegments = Record.dynamicPathProperties(model).concat("id");
-        return dynamicSegments.reduce((agg, prop) => {
-            if (obj[prop] === undefined) {
-                throw new FireModelError(`You used attempted to generate a composite key of the model ${Record.modelName(model)} but the property "${prop}" is part of they dynamic path and the data passed in did not have a value for this property.`, "firemodel/not-ready");
-            }
-            agg[prop] = obj[prop];
-            return agg;
-        }, {});
-    }
-    /**
-     * Given a Model and a partial representation of that model, this will generate
-     * a composite key in _string_ form that conforms to the `IPrimaryKey` interface
-     * and uniquely identifies the given record.
-     *
-     * @param model the class definition of the model you want the CompositeKey for
-     * @param object the data which will be used to generate the Composite key from
-     */
-    static compositeKeyRef(model, 
-    /** either a partial model or just the `id` of the model if model is not a dynamic path */
-    object) {
-        if (Record.dynamicPathProperties(model).length === 0) {
-            return typeof object === "string" ? object : object.id;
-        }
-        if (typeof object === "string") {
-            if (object.includes(":")) {
-                // Forward strings which already appear to be composite key reference
-                return object;
-            }
-            else {
-                throw new FireModelError(`Attempt to get a compositeKeyRef() but passed in a string/id value instead of a composite key for a model [ ${Record.modelName(model)}, "${object}" ] which HAS dynamic properties! Required props are: ${Record.dynamicPathProperties(model).join(", ")}`, "not-allowed");
-            }
-        }
-        const compositeKey = Record.compositeKey(model, object);
-        const nonIdKeys = Object.keys(compositeKey).reduce((agg, prop) => prop === "id" ? agg : agg.concat({ prop, value: compositeKey[prop] }), []);
-        return `${compositeKey.id}::${nonIdKeys
-            .map((tuple) => `${tuple.prop}:${tuple.value}`)
-            .join("::")}`;
-    }
-    /**
-     * Returns the name of the name of the `Model`.
-     *
-     * Note: it returns the name in PascalCase _not_
-     * camelCase.
-     */
-    static modelName(model) {
-        const r = Record.create(model);
-        return capitalize(r.modelName);
-    }
-    get data() {
-        return this._data;
-    }
-    get isDirty() {
-        return this.META.isDirty ? true : false;
-    }
-    /**
-     * deprecated
-     */
-    set isDirty(value) {
-        if (!this._data.META) {
-            this._data.META = { isDirty: value };
-        }
-        this._data.META.isDirty = value;
-    }
-    /**
-     * returns the fully qualified name in the database to this record;
-     * this of course includes the record id so if that's not set yet calling
-     * this getter will result in an error
-     */
-    get dbPath() {
-        if (this.data.id ? false : true) {
-            throw new FireModelError(`you can not ask for the dbPath before setting an "id" property [ ${this.modelName} ]`, "record/not-ready");
-        }
-        return [
-            this._injectDynamicPathProperties(this.dbOffset),
-            this.pluralName,
-            this.data.id,
-        ].join("/");
-    }
-    /**
-     * provides a boolean flag which indicates whether the underlying
-     * model has a "dynamic path" which ultimately comes from a dynamic
-     * component in the "dbOffset" property defined in the model decorator
-     */
-    get hasDynamicPath() {
-        return this.META.dbOffset.includes(":");
-    }
-    /**
-     * **dynamicPathComponents**
-     *
-     * An array of "dynamic properties" that are derived fom the "dbOffset" to
-     * produce the "dbPath"
-     */
-    get dynamicPathComponents() {
-        return this._findDynamicComponents(this.META.dbOffset);
-    }
-    /**
-     * the list of dynamic properties in the "localPrefix"
-     * which must be resolved to achieve the "localPath"
-     */
-    get localDynamicComponents() {
-        return this._findDynamicComponents(this.META.localPrefix);
-    }
-    /**
-     * A hash of values -- including at least "id" -- which represent
-     * the composite key of a model.
-     */
-    get compositeKey() {
-        return createCompositeKey(this);
-    }
-    /**
-     * a string value which is used in relationships to fully qualify
-     * a composite string (aka, a model which has a dynamic dbOffset)
-     */
-    get compositeKeyRef() {
-        return createCompositeKeyRefFromRecord(this);
-    }
-    /**
-     * The Record's primary key; this is the `id` property only. Not
-     * the composite key.
-     */
-    get id() {
-        return this.data.id;
-    }
-    /**
-     * Allows setting the Record's `id` if it hasn't been set before.
-     * Resetting the `id` is not allowed.
-     */
-    set id(val) {
-        if (this.data.id) {
-            throw new FireModelError(`You may not re-set the ID of a record [ ${this.modelName}.id ${this.data.id} => ${val} ].`, "firemodel/not-allowed");
-        }
-        this._data.id = val;
-    }
-    /**
-     * Returns the record's database _offset_ without the ID or any dynamic properties
-     * yet interjected. The _dynamic properties_ however, will be show with a `:` prefix
-     * to indicate where the the values will go.
-     */
-    get dbOffset() {
-        return getModelMeta(this).dbOffset;
-    }
-    /**
-     * returns the record's location in the frontend state management framework;
-     * this can include dynamic properties characterized in the path string by
-     * leading ":" character.
-     */
-    get localPath() {
-        let prefix = this.localPrefix;
-        this.localDynamicComponents.forEach((prop) => {
-            // TODO: another example of impossible typing coming off of a get()
-            prefix = prefix.replace(`:${prop}`, this.get(prop));
-        });
-        return pathJoin$1(prefix, this.META.localModelName !== this.modelName
-            ? this.META.localModelName
-            : this.options.pluralizeLocalPath
-                ? this.pluralName
-                : this.modelName);
-    }
-    /**
-     * The path in the local state tree that brings you to
-     * the record; this is differnt when retrieved from a
-     * Record versus a List.
-     */
-    get localPrefix() {
-        return getModelMeta(this).localPrefix;
-    }
-    get existsOnDB() {
-        return this.data && this.data.id ? true : false;
-    }
-    /** indicates whether this record is already being watched locally */
-    get isBeingWatched() {
-        return FireModel.isBeingWatched(this.dbPath);
-    }
-    get modelConstructor() {
-        return this._modelConstructor;
-    }
-    /**
-     * Goes out to the database and reloads this record
-     */
-    async reload() {
-        const reloaded = await Record.get(this._modelConstructor, this.compositeKeyRef);
-        return reloaded;
-    }
-    /**
-     * addAnother
-     *
-     * Allows a simple way to add another record to the database
-     * without needing the model's constructor fuction. Note, that
-     * the payload of the existing record is ignored in the creation
-     * of the new.
-     *
-     * @param payload the payload of the new record
-     */
-    async addAnother(payload, options = {}) {
-        const newRecord = await Record.add(this._modelConstructor, payload, options);
-        return newRecord;
-    }
-    isSameModelAs(model) {
-        return this._modelConstructor === model;
-    }
-    /**
-     * Pushes new values onto properties on the record
-     * which have been stated to be a "pushKey"
-     */
-    async pushKey(property, value) {
-        if (this.META.pushKeys.indexOf(property) === -1) {
-            throw new FireModelError(`Invalid Operation: you can not push to property "${property}" as it has not been declared a pushKey property in the schema`, "invalid-operation/not-pushkey");
-        }
-        if (!this.existsOnDB) {
-            throw new FireModelError(`Invalid Operation: you can not push to property "${property}" before saving the record to the database`, "invalid-operation/not-on-db");
-        }
-        const key$1 = this.db.isMockDb
-            ? key()
-            : await this.db.getPushKey(pathJoin$1(this.dbPath, property));
-        await this.db.update(pathJoin$1(this.dbPath, property), {
-            [pathJoin$1(this.dbPath, property, key$1)]: value,
-            [pathJoin$1(this.dbPath, "lastUpdated")]: new Date().getTime(),
-        });
-        // set firemodel state locally
-        const currentState = this.get(property) || {};
-        const newState = Object.assign(Object.assign({}, currentState), { [key$1]: value });
-        await this.set(property, newState);
-        return key$1;
-    }
-    /**
-     * **update**
-     *
-     * Updates a set of properties on a given model atomically (aka, all at once);
-     * will automatically include the "lastUpdated" property. Does NOT
-     * allow relationships to be included, this should be done separately.
-     *
-     * If you want to remove a particular property but otherwise leave the object
-     * unchanged, you can set that values(s) to NULL and it will be removed without
-     * impact to other properties.
-     *
-     * @param props a hash of name value pairs which represent the props being
-     * updated and their new values
-     */
-    async update(props) {
-        const meta = getModelMeta(this);
-        if (!meta.property) {
-            throw new FireModelError(`There is a problem with this record's META information [ model: ${capitalize(this.modelName)}, id: ${this.id} ]. The property() method -- used to dig into properties on any given model appears to be missing!`, "firemodel/meta-missing");
-        }
-        // can not update relationship properties
-        if (Object.keys(props).some((key) => {
-            const root = key.split(".")[0];
-            const rootProperties = meta.property(root);
-            if (!rootProperties) {
-                throw new FireModelError(`While this record [ model: ${capitalize(this.modelName)}, id: ${this.id} ] does return a "META.property" function, looking up the property "${root}" has resulted in an invalid response [${typeof rootProperties}]`);
-            }
-            return rootProperties.isRelationship;
-        })) {
-            const relProps = Object.keys(props).filter((p) => meta.property(p).isRelationship);
-            throw new FireModelError(`You called update on a hash which has relationships included in it. Please only use "update" for updating properties. The relationships you were attempting to update were: ${relProps.join(", ")}.`, `firemodel/not-allowed`);
-        }
-        const lastUpdated = new Date().getTime();
-        const changed = Object.assign(Object.assign({}, props), { lastUpdated });
-        const rollback = copy(this.data);
-        // changes local Record to include updates immediately
-        this._data = Object.assign(Object.assign({}, this.data), changed);
-        // performs a two phase commit using dispatch messages
-        await this._localCrudOperation("update" /* update */, rollback);
-        return;
-    }
-    /**
-     * **remove**
-     *
-     * Removes the active record from the database and dispatches the change to
-     * FE State Mgmt.
-     */
-    async remove() {
-        this.isDirty = true;
-        await this._localCrudOperation("remove" /* remove */, copy(this.data));
-        this.isDirty = false;
-        // TODO: handle dynamic paths and also consider removing relationships
-    }
-    /**
-     * Changes the local state of a property on the record
-     *
-     * @param prop the property on the record to be changed
-     * @param value the new value to set to
-     * @param silent a flag to indicate whether the change to the prop should be updated
-     * to the database or not
-     */
-    async set(prop, value, silent = false) {
-        const rollback = copy(this.data);
-        const meta = this.META.property(prop);
-        if (!meta) {
-            throw new FireModelError(`There was a problem getting the meta data for the model ${capitalize(this.modelName)} while attempting to set the "${prop}" property to: ${value}`);
-        }
-        if (meta.isRelationship) {
-            throw new FireModelError(`You can not "set" the property "${prop}" because it is configured as a relationship!`, "firemodel/not-allowed");
-        }
-        const lastUpdated = new Date().getTime();
-        const changed = {
-            [prop]: value,
-            lastUpdated,
-        };
-        // locally change Record values
-        this.META.isDirty = true;
-        this._data = Object.assign(Object.assign({}, this._data), changed);
-        // dispatch
-        if (!silent) {
-            await this._localCrudOperation("update" /* update */, rollback, {
-                silent,
-            });
-            this.META.isDirty = false;
-        }
-        return;
-    }
-    /**
-     * **associate**
-     *
-     * Associates the current model with another entity
-     * regardless if the cardinality
-     */
-    async associate(property, 
-    // TODO: ideally stronger typing
-    refs, options = {}) {
-        const meta = getModelMeta(this);
-        if (!meta.relationship(property)) {
-            throw new FireModelError(`Attempt to associate the property "${property}" can not be done on model ${capitalize(this.modelName)} because the property is not defined!`, `firemodel/not-allowed`);
-        }
-        if (!meta.relationship(property).relType) {
-            throw new FireModelError(`For some reason the property "${property}" on the model ${capitalize(this.modelName)} doesn't have cardinality assigned to the "relType" (aka, hasMany, hasOne).\n\nThe META for relationships on the model are: ${JSON.stringify(meta.relationships, null, 2)}`, `firemodel/unknown`);
-        }
-        const relType = meta.relationship(property).relType;
-        if (relType === "hasMany") {
-            await this.addToRelationship(property, refs, options);
-        }
-        else {
-            if (Array.isArray(refs)) {
-                if (refs.length === 1) {
-                    refs = refs.pop();
-                }
-                else {
-                    throw new FireModelError(`Attempt to use "associate()" with a "hasOne" relationship [ ${property}] on the model ${capitalize(this.modelName)}.`, "firemodel/invalid-cardinality");
-                }
-            }
-            await this.setRelationship(property, refs, options);
-        }
-    }
-    /**
-     * **disassociate**
-     *
-     * Removes an association between the current model and another entity
-     * (regardless of the cardinality in the relationship)
-     */
-    async disassociate(property, 
-    // TODO: ideally stronger typing below
-    refs, options = {}) {
-        const relType = this.META.relationship(property).relType;
-        if (relType === "hasMany") {
-            await this.removeFromRelationship(property, refs, options);
-        }
-        else {
-            await this.clearRelationship(property, options);
-        }
-    }
-    /**
-     * Adds one or more fk's to a hasMany relationship.
-     *
-     * Every relationship will be added as a "single transaction", meaning that ALL
-     * or NONE of the relationshiop transactions will succeed. If you want to
-     * take a more optimistic approach that accepts each relationship pairing (PK/FK)
-     * then you should manage the iteration outside of this call and let this call
-     * only manage the invidual PK/FK transactions (which should ALWAYS be atomic).
-     *
-     * @param property the property which is acting as a foreign key (array)
-     * @param fkRefs FK reference (or array of FKs) that should be added to reln
-     * @param options change the behavior of this relationship transaction
-     */
-    async addToRelationship(property, fkRefs, options = {}) {
-        const altHasManyValue = options.altHasManyValue || true;
-        if (!isHasManyRelationship(this, property)) {
-            throw new NotHasManyRelationship(this, property, "addToRelationship");
-        }
-        fkRefs = Array.isArray(fkRefs) ? fkRefs : [fkRefs];
-        let paths = [];
-        const now = new Date().getTime();
-        fkRefs.map((ref) => {
-            paths = [
-                ...buildRelationshipPaths(this, property, ref, {
-                    now,
-                    altHasManyValue,
-                }),
-                ...paths,
-            ];
-        });
-        await relationshipOperation(this, "add", property, fkRefs, paths, options);
-    }
-    /**
-     * removeFromRelationship
-     *
-     * remove one or more FK's from a `hasMany` relationship
-     *
-     * @param property the property which is acting as a FK
-     * @param fkRefs the FK's on the property which should be removed
-     */
-    async removeFromRelationship(property, fkRefs, options = {}) {
-        if (!isHasManyRelationship(this, property)) {
-            throw new NotHasManyRelationship(this, property, "removeFromRelationship");
-        }
-        fkRefs = Array.isArray(fkRefs) ? fkRefs : [fkRefs];
-        let paths = [];
-        const now = new Date().getTime();
-        fkRefs.map((ref) => {
-            paths = [
-                ...buildRelationshipPaths(this, property, ref, {
-                    now,
-                    operation: "remove",
-                }),
-                ...paths,
-            ];
-        });
-        await relationshipOperation(this, "remove", property, fkRefs, paths, options);
-    }
-    /**
-     * **clearRelationship**
-     *
-     * clears an existing FK on a `hasOne` relationship or _all_ FK's on a
-     * `hasMany` relationship
-     *
-     * @param property the property containing the relationship to an external
-     * entity
-     */
-    async clearRelationship(property, options = {}) {
-        const relType = this.META.relationship(property).relType;
-        const fkRefs = relType === "hasMany"
-            ? this._data[property]
-                ? Object.keys(this.get(property))
-                : []
-            : this._data[property]
-                ? [this.get(property)]
-                : [];
-        let paths = [];
-        const now = new Date().getTime();
-        fkRefs.map((ref) => {
-            paths = [
-                ...buildRelationshipPaths(this, property, ref, {
-                    now,
-                    operation: "remove",
-                }),
-                ...paths,
-            ];
-        });
-        await relationshipOperation(this, "clear", property, fkRefs, paths, options);
-    }
-    /**
-     * **setRelationship**
-     *
-     * sets up an FK relationship for a _hasOne_ relationship
-     *
-     * @param property the property containing the hasOne FK
-     * @param ref the FK
-     */
-    async setRelationship(property, fkId, options = {}) {
-        if (!fkId) {
-            throw new FireModelError(`Failed to set the relationship ${this.modelName}.${property} because no FK was passed in!`, "firemodel/not-allowed");
-        }
-        if (isHasManyRelationship(this, property)) {
-            throw new NotHasOneRelationship(this, property, "setRelationship");
-        }
-        const paths = buildRelationshipPaths(this, property, fkId);
-        await relationshipOperation(this, "set", property, [fkId], paths, options);
-    }
-    //#endregion INSTANCE DEFINITION
-    /**
-     * get a property value from the record
-     *
-     * @param prop the property being retrieved
-     */
-    get(prop) {
-        return this.data[prop];
-    }
-    toString() {
-        return `Record::${this.modelName}@${this.id || "undefined"}`;
-    }
-    toJSON() {
-        return {
-            dbPath: this.dbPath,
-            modelName: this.modelName,
-            pluralName: this.pluralName,
-            key: this.id,
-            compositeKey: this.compositeKey,
-            localPath: this.localPath,
-            data: this.data.toString(),
-        };
-    }
-    //#endregion
-    //#region PRIVATE METHODS
-    /**
-     * Allows an empty Record to be initialized to a known state.
-     * This is not intended to allow for mass property manipulation other
-     * than at time of initialization
-     *
-     * @param data the initial state you want to start with
-     */
-    async _initialize(data, options = {}) {
-        if (data) {
-            Object.keys(data).map((key) => {
-                this._data[key] = data[key];
-            });
-        }
-        const relationships = getModelMeta(this).relationships;
-        const hasOneRels = (relationships || [])
-            .filter((r) => r.relType === "hasOne")
-            .map((r) => r.property);
-        const hasManyRels = (relationships || [])
-            .filter((r) => r.relType === "hasMany")
-            .map((r) => r.property);
-        const promises = [];
-        /**
-         * Sets hasMany to default `{}` if nothing was set.
-         * Also, if the option `deepRelationships` is set to `true`,
-         * it will look for relationships hashes instead of the typical
-         * `fk: true` pairing.
-         */
-        for (const oneToManyProp of hasManyRels) {
-            if (!this._data[oneToManyProp]) {
-                this._data[oneToManyProp] = {};
-            }
-            if (options.setDeepRelationships) {
-                if (this._data[oneToManyProp]) {
-                    promises.push(buildDeepRelationshipLinks(this, oneToManyProp));
-                }
-            }
-        }
-        await Promise.all(promises);
-        const now = new Date().getTime();
-        if (!this._data.lastUpdated) {
-            this._data.lastUpdated = now;
-        }
-        if (!this._data.createdAt) {
-            this._data.createdAt = now;
-        }
-    }
-    /**
-     * **_writeAudit**
-     *
-     * Writes an audit log if the record is configured for audit logs
-     */
-    async _writeAudit(action, currentValue, priorValue) {
-        currentValue = currentValue ? currentValue : {};
-        priorValue = priorValue ? priorValue : {};
-        try {
-            if (this.META.audit) {
-                const deltas = compareHashes(currentValue, priorValue);
-                const auditLogEntries = [];
-                const added = deltas.added.forEach((a) => auditLogEntries.push({
-                    action: "added",
-                    property: a,
-                    before: null,
-                    after: currentValue[a],
-                }));
-                deltas.changed.forEach((c) => auditLogEntries.push({
-                    action: "updated",
-                    property: c,
-                    before: priorValue[c],
-                    after: currentValue[c],
-                }));
-                const removed = deltas.removed.forEach((r) => auditLogEntries.push({
-                    action: "removed",
-                    property: r,
-                    before: priorValue[r],
-                    after: null,
-                }));
-                const pastTense = {
-                    add: "added",
-                    update: "updated",
-                    remove: "removed",
-                };
-                await writeAudit(this, pastTense[action], auditLogEntries, { db: this.db });
-            }
-        }
-        catch (e) {
-            throw new FireModelProxyError(e);
-        }
-    }
-    /**
-     * **_localCrudOperation**
-     *
-     * updates properties on a given Record while firing
-     * two-phase commit EVENTs to dispatch:
-     *
-     *  local: `RECORD_[ADDED,CHANGED,REMOVED]_LOCALLY`
-     *  server: `RECORD_[ADDED,CHANGED,REMOVED]_CONFIRMATION`
-     *
-     * Note: if there is an error a
-     * `RECORD_[ADDED,CHANGED,REMOVED]_ROLLBACK` event will be sent
-     * to dispatch instead of the server dispatch message
-     * illustrated above.
-     *
-     * Another concept that is sometimes not clear ... when a
-     * successful transaction is achieved you will by default get
-     * both sides of the two-phase commit. If you have a watcher
-     * watching this same path then that watcher will also get
-     * a dispatch message sent (e.g., RECORD_ADDED, RECORD_REMOVED, etc).
-     *
-     * If you only want to hear about Firebase's acceptance of the
-     * record from a watcher then you can opt-out by setting the
-     * { silentAcceptance: true } parameter in options. If you don't
-     * want either side of the two phase commit sent to dispatch
-     * you can mute both with { silent: true }. This option is not
-     * typically a great idea but it can be useful in situations like
-     * _mocking_
-     */
-    async _localCrudOperation(crudAction, priorValue, options = {}) {
-        options = Object.assign({ silent: false, silentAcceptance: false }, options);
-        const transactionId = "t-" +
-            Math.random().toString(36).substr(2, 5) +
-            "-" +
-            Math.random().toString(36).substr(2, 5);
-        const lookup = {
-            add: [
-                exports.FmEvents.RECORD_ADDED_LOCALLY,
-                exports.FmEvents.RECORD_ADDED_CONFIRMATION,
-                exports.FmEvents.RECORD_ADDED_ROLLBACK,
-            ],
-            update: [
-                exports.FmEvents.RECORD_CHANGED_LOCALLY,
-                exports.FmEvents.RECORD_CHANGED_CONFIRMATION,
-                exports.FmEvents.RECORD_CHANGED_ROLLBACK,
-            ],
-            remove: [
-                exports.FmEvents.RECORD_REMOVED_LOCALLY,
-                exports.FmEvents.RECORD_REMOVED_CONFIRMATION,
-                exports.FmEvents.RECORD_REMOVED_ROLLBACK,
-            ],
-        };
-        const [actionTypeStart, actionTypeEnd, actionTypeFailure] = lookup[crudAction];
-        this.isDirty = true;
-        // Set aside prior value
-        const { changed, added, removed } = compareHashes(withoutMetaOrPrivate(this.data), withoutMetaOrPrivate(priorValue));
-        const watchers = findWatchers(this.dbPath);
-        const event = {
-            transactionId,
-            modelConstructor: this.modelConstructor,
-            kind: "record",
-            operation: crudAction,
-            eventType: "local",
-            key: this.id,
-            value: withoutMetaOrPrivate(this.data),
-            priorValue,
-        };
-        if (crudAction === "update") {
-            event.priorValue = priorValue;
-            event.added = added;
-            event.changed = changed;
-            event.removed = removed;
-        }
-        if (watchers.length === 0) {
-            if (!options.silent) {
-                // Note: if used on frontend, the mutations must be careful to
-                // set this to the right path considering there is no watcher
-                await this.dispatch(UnwatchedLocalEvent(this, Object.assign(Object.assign({ type: actionTypeStart }, event), { value: withoutMetaOrPrivate(this.data) })));
-            }
-        }
-        else {
-            // For each watcher watching this DB path ...
-            const dispatch = WatchDispatcher(this.dispatch);
-            for (const watcher of watchers) {
-                if (!options.silent) {
-                    await dispatch(watcher)(Object.assign({ type: actionTypeStart }, event));
-                }
-            }
-        }
-        // Send CRUD to Firebase
-        try {
-            if (this.db.isMockDb && this.db.mock && options.silent) {
-                this.db.mock.silenceEvents();
-            }
-            this._data.lastUpdated = new Date().getTime();
-            const path = this.dbPath;
-            switch (crudAction) {
-                case "remove":
-                    try {
-                        const test = this.dbPath;
-                    }
-                    catch (e) {
-                        throw new FireModelProxyError(e, `The attempt to "remove" the ${capitalize(this.modelName)} with ID of "${this.id}" has been aborted. This is often because you don't have the right properties set for the dynamic path. This model requires the following dynamic properties to uniquely define (and remove) it: ${this.dynamicPathComponents.join(", ")}`);
-                    }
-                    // Check for relationship props and dis-associate
-                    // before removing the actual record
-                    // TODO: need to add tests for this!
-                    for (const rel of this.relationships) {
-                        const relProperty = this.get(rel.property);
-                        try {
-                            if (rel.relType === "hasOne" && relProperty) {
-                                await this.disassociate(rel.property, this.get(rel.property));
-                            }
-                            else if (rel.relType === "hasMany" && relProperty) {
-                                for (const relFk of Object.keys(relProperty)) {
-                                    await this.disassociate(rel.property, relFk);
-                                }
-                            }
-                        }
-                        catch (e) {
-                            throw new FireModelProxyError(e, `While trying to remove ${capitalize(this.modelName)}.${this.id} from the database, problems were encountered removing the relationship defined by the "${rel.property} property (which relates to the model ${rel.fkModelName}). This relationship has a cardinality of "${rel.relType}" and the value(s) were: ${rel.relType === "hasOne"
-                                ? Object.keys(this.get(rel.property))
-                                : this.get(rel.property)}`);
-                        }
-                    }
-                    await this.db.remove(this.dbPath);
-                    break;
-                case "add":
-                    try {
-                        await this.db.set(path, this.data);
-                    }
-                    catch (e) {
-                        throw new FireModelProxyError(e, `Problem setting the "${path}" database path. Data passed in was of type ${typeof this
-                            .data}. Error message encountered was: ${e.message}`, `firemodel/${(e.code = "PERMISSION_DENIED"
-                            ? "permission-denied"
-                            : "set-db")}`);
-                    }
-                    break;
-                case "update":
-                    const paths = this._getPaths(this, { changed, added, removed });
-                    this.db.update("/", paths);
-                    break;
-            }
-            this.isDirty = false;
-            // write audit if option is turned on
-            this._writeAudit(crudAction, this.data, priorValue);
-            // send confirm event
-            if (!options.silent && !options.silentAcceptance) {
-                if (watchers.length === 0) {
-                    await this.dispatch(UnwatchedLocalEvent(this, Object.assign(Object.assign({ type: actionTypeEnd }, event), { transactionId, value: withoutMetaOrPrivate(this.data) })));
-                }
-                else {
-                    const dispatch = WatchDispatcher(this.dispatch);
-                    for (const watcher of watchers) {
-                        if (!options.silent) {
-                            await dispatch(watcher)(Object.assign({ type: actionTypeEnd }, event));
-                        }
-                    }
-                }
-            }
-            if (this.db.isMockDb && this.db.mock && options.silent) {
-                this.db.mock.restoreEvents();
-            }
-        }
-        catch (e) {
-            // send failure event
-            await this.dispatch(UnwatchedLocalEvent(this, Object.assign(Object.assign({ type: actionTypeFailure }, event), { transactionId, value: withoutMetaOrPrivate(this.data) })));
-            throw new RecordCrudFailure(this, crudAction, transactionId, e);
-        }
-    }
-    _findDynamicComponents(path = "") {
-        if (!path.includes(":")) {
-            return [];
-        }
-        const results = [];
-        let remaining = path;
-        let index = remaining.indexOf(":");
-        while (index !== -1) {
-            remaining = remaining.slice(index);
-            const prop = remaining.replace(/\:(\w+).*/, "$1");
-            results.push(prop);
-            remaining = remaining.replace(`:${prop}`, "");
-            index = remaining.indexOf(":");
-        }
-        return results;
-    }
-    /**
-     * looks for ":name" property references within the dbOffset or localPrefix and expands them
-     */
-    _injectDynamicPathProperties(path, forProp = "dbOffset") {
-        this.dynamicPathComponents.forEach((prop) => {
-            const value = this.data[prop];
-            if (value ? false : true) {
-                throw new FireModelError(`You can not ask for the ${forProp} on a model like "${this.modelName}" which has a dynamic property of "${prop}" before setting that property [ data: ${JSON.stringify(this.data)} ].`, "record/not-ready");
-            }
-            if (!["string", "number"].includes(typeof value)) {
-                throw new FireModelError(`The path is using the property "${prop}" on ${this.modelName} as a part of the route path but that property must be either a string or a number and instead was a ${typeof prop}`, "record/not-allowed");
-            }
-            path = path.replace(`:${prop}`, String(this.get(prop)));
-        });
-        return path;
-    }
-    /**
-     * Load data from a record in database; works with `get` static initializer
-     */
-    async _getFromDB(id) {
-        const keys = typeof id === "string"
-            ? createCompositeKeyFromFkString(id, this.modelConstructor)
-            : id;
-        // load composite key into props so the dbPath() will evaluate
-        Object.keys(keys).map((key) => {
-            // TODO: fix up typing
-            this._data[key] = keys[key];
-        });
-        const data = await this.db.getRecord(this.dbPath);
-        if (data && data.id) {
-            await this._initialize(data);
-        }
-        else {
-            throw new FireModelError(`Failed to load the Record "${this.modelName}::${this.id}" with composite key of:\n ${JSON.stringify(keys, null, 2)}`, "firebase/invalid-composite-key");
-        }
-        return this;
-    }
-    /**
-     * Allows for the static "add" method to add a record
-     */
-    async _adding(options) {
-        if (!this.id) {
-            this.id = key();
-        }
-        const now = new Date().getTime();
-        if (!this.get("createdAt")) {
-            this._data.createdAt = now;
-        }
-        this._data.lastUpdated = now;
-        // TODO: need to ensure that relationship which are set
-        // are updated using the _relationship_ based methods associate/disassociate
-        // so that bi-lateral relationships are established/maintained
-        if (!this.db) {
-            throw new FireModelError(`An attempt to add a ${capitalize(this.modelName)} record failed as the Database has not been connected yet. Try setting FireModel's defaultDb first.`, "firemodel/db-not-ready");
-        }
-        await this._localCrudOperation("add" /* add */, undefined, options);
-        // now that the record has been added we need to follow-up with any relationship fk's that
-        // were part of this record. For these we must run an `associate` over them to ensure that
-        // inverse properties are established in the inverse direction
-        const relationshipsTouched = this.relationships
-            .reduce((agg, rel) => {
-            if (rel.relType === "hasMany" &&
-                Object.keys(this.data[rel.property]).length > 0) {
-                return agg.concat(rel.property);
-            }
-            else if (rel.relType === "hasOne" && this.data[rel.property]) {
-                return agg.concat(rel.property);
-            }
-            else {
-                return agg;
-            }
-        }, [])
-            .filter((prop) => this.META.relationship(prop).inverseProperty);
-        const promises = [];
-        try {
-            for (const prop of relationshipsTouched) {
-                const meta = this.META.relationship(prop);
-                if (meta.relType === "hasOne") {
-                    // TODO: why is this damn typing so difficult?
-                    promises.push(this.associate(prop, this.get(prop)));
-                }
-                if (meta.relType === "hasMany") {
-                    Object.keys(this.get(prop)).forEach((fkRef) => promises.push(this.associate(prop, fkRef)));
-                }
-            }
-            await Promise.all(promises);
-        }
-        catch (e) {
-            throw new FireModelProxyError(e, `An ${capitalize(this.modelName)} [${this.id}] model was being added but when attempting to add in the relationships which were inferred by the record payload it ran into problems. The relationship(s) which had properties defined -- and which had a bi-lateral FK relationship (e.g., both models will track the relationship versus just the ${capitalize(this.modelName)} [${this.id} model) --  were: ${relationshipsTouched.join(", ")}`);
-        }
-        return this;
-    }
-}
-
 const NamedFakes = {
     /** produces an "id" that looks/behaves like a Firebase key */
     id: true,
@@ -7852,34 +2411,6 @@ const PropertyNamePatterns = {
     phoneNumber: "phoneNumber",
 };
 
-async function processHasMany$1(record, rel, config, db) {
-    // by creating a mock we are giving any dynamic path segments
-    // an opportunity to be mocked (this is best practice)
-    const fkMockMeta = (await Mock(rel.fkConstructor(), db).generate(1)).pop();
-    const prop = rel.property;
-    await record.addToRelationship(prop, fkMockMeta.compositeKey);
-    if (config.relationshipBehavior === "link") {
-        await db.remove(fkMockMeta.dbPath);
-        return;
-    }
-    return fkMockMeta;
-}
-
-async function processHasOne(source, rel, config, db) {
-    const fkMock = Mock(rel.fkConstructor(), db);
-    const fkMockMeta = (await fkMock.generate(1)).pop();
-    const prop = rel.property;
-    source.setRelationship(prop, fkMockMeta.compositeKey);
-    if (config.relationshipBehavior === "link") {
-        const predecessors = fkMockMeta.dbPath
-            .replace(fkMockMeta.id, "")
-            .split("/")
-            .filter((i) => i);
-        await db.remove(fkMockMeta.dbPath);
-    }
-    return fkMockMeta;
-}
-
 /**
  * Adds relationships to mocked records
  */
@@ -7904,7 +2435,7 @@ function addRelationships(db, config, exceptions = {}) {
                                 : NumberBetween(config.cardinality[rel.property])
                             : 2;
                         for (const i of Array(cardinality)) {
-                            const fkRec = await processHasMany$1(record, rel, config, db);
+                            const fkRec = await processHasMany(record, rel, config, db);
                             if (config.relationshipBehavior === "follow") {
                                 relnResults.push(fkRec);
                             }
@@ -10301,6 +4832,8 @@ function cleanEscapedString(input) {
   return input.match(escapedStringRegExp)[1].replace(doubleQuoteRegExp, "'");
 }
 
+// TODO: bring in this functionality again
+// import { fbKey } from "../index";
 const sequence = {};
 function getDistribution(...distribution) {
     const num = Math.floor(Math.random() * 100) + 1;
@@ -10339,7 +4872,8 @@ function fakeIt(helper, type, ...rest) {
     switch (type) {
         case "id":
         case "fbKey":
-            return key();
+            // return fbKey();
+            return "asdafsfsasdf";
         case "String":
             return helper.faker.lorem.words(5);
         case "number":
@@ -10571,8 +5105,1739 @@ function mockValue(db, propMeta, mockHelper, ...rest) {
     }
 }
 
+async function processHasMany(record, rel, config, db) {
+    // by creating a mock we are giving any dynamic path segments
+    // an opportunity to be mocked (this is best practice)
+    const fkMockMeta = (await Mock(rel.fkConstructor(), db).generate(1)).pop();
+    const prop = rel.property;
+    await record.addToRelationship(prop, fkMockMeta.compositeKey);
+    if (config.relationshipBehavior === "link") {
+        await db.remove(fkMockMeta.dbPath);
+        return;
+    }
+    return fkMockMeta;
+}
+
+async function processHasOne(source, rel, config, db) {
+    const fkMock = Mock(rel.fkConstructor(), db);
+    const fkMockMeta = (await fkMock.generate(1)).pop();
+    const prop = rel.property;
+    source.setRelationship(prop, fkMockMeta.compositeKey);
+    if (config.relationshipBehavior === "link") {
+        const predecessors = fkMockMeta.dbPath
+            .replace(fkMockMeta.id, "")
+            .split("/")
+            .filter((i) => i);
+        await db.remove(fkMockMeta.dbPath);
+    }
+    return fkMockMeta;
+}
+
+/**
+ * An error deriving from the **Dexie** integration with **Firemodel**.
+ * Takes _message_ and _type/subtype_ as
+ * parameters. The code will be the `subtype`; the name is both.
+ */
+class DexieError extends Error {
+    constructor(message, classification = "firemodel/dexie") {
+        super(message);
+        this.firemodel = true;
+        const parts = classification.split("/");
+        const [type, subType] = parts.length === 1 ? ["firemodel", parts[0]] : parts;
+        this.name = `${type}/${subType}`;
+        this.code = subType;
+    }
+}
+
+class DynamicPropertiesNotReady extends FireModelError {
+    constructor(rec, message) {
+        message = message
+            ? message
+            : `An attempt to interact with the record ${rec.modelName} in a way that requires that the fully composite key be specified. The required parameters for this model to be ready for this are: ${rec.dynamicPathComponents.join(", ")}.`;
+        super(message, "firemodel/dynamic-properties-not-ready");
+    }
+}
+
+/**
+ * Base **Error** for **FireModel**. Takes _message_ and _type/subtype_ as
+ * parameters. The code will be the `subtype`; the name is both.
+ */
+class FireModelError extends Error {
+    constructor(message, classification = "firemodel/error") {
+        super(message);
+        this.firemodel = true;
+        const parts = classification.split("/");
+        const [type, subType] = parts.length === 1 ? ["firemodel", parts[0]] : parts;
+        this.name = `${type}/${subType}`;
+        this.code = subType;
+    }
+}
+
+class FireModelProxyError extends FireModelError {
+    constructor(e, context = "", name = "") {
+        super("", !name ? `firemodel/${e.name}` : name);
+        this.firemodel = true;
+        this.originalError = e;
+        this.message = context ? `${context}.\n\n${e.message}.` : e.message;
+        this.stack = e.stack;
+    }
+}
+
+class DecoratorProblem extends FireModelError {
+    constructor(decorator, e, context) {
+        super("", "firemodel/decorator-problem");
+        const errText = typeof e === "string" ? e : e.message;
+        this.message = `There was a problem in the "${decorator}" decorator. ${errText}\n${context}`;
+    }
+}
+
+/**
+ * A mocking error originated within FireModel
+ */
+class MockError extends Error {
+    constructor(message, classification = "firemodel/error") {
+        super(message);
+        this.firemodel = true;
+        const parts = classification.split("/");
+        const [type, subType] = parts.length === 1 ? ["firemodel", parts[0]] : parts;
+        this.name = `${type}/${subType}`;
+        this.code = subType;
+    }
+}
+
+class RecordCrudFailure extends FireModelError {
+    constructor(rec, crudAction, transactionId, e) {
+        super("", e.name !== "Error" ? e.name : `firemodel/record-${crudAction}-failure`);
+        const message = `Attempt to "${crudAction}" "${capitalize(rec.modelName)}::${rec.id}" failed [ ${transactionId} ] ${e ? e.message : "for unknown reasons"}`;
+        this.message = message;
+        this.stack = e.stack;
+    }
+}
+
+class DuplicateRelationship extends FireModelError {
+    constructor(pk, property, fkId) {
+        const fkConstructor = pk.META.relationship("property").fkConstructor();
+        const fkModel = new fkConstructor();
+        const message = `Attempt add a FK on of "${pk.constructor.name}::${fkId}" failed because the model "${fkModel.constructor.name}::${fkId}" already had that relationship defined! You can either set the "duplicationIsError" to "false" (the default) or treat this as an error and fix`;
+        super(message, "firemodel/duplicate-relationship");
+    }
+}
+
+class FkDoesNotExist extends FireModelError {
+    constructor(pk, property, fkId) {
+        // TODO: is this typing right for constructor?
+        const fkConstructor = pk.META.relationship("property").fkConstructor();
+        const fkModel = new fkConstructor();
+        const message = `Attempt add a FK on of "${pk.constructor.name}::${fkId}" failed because the model "${fkModel.constructor.name}::${fkId}" doesn't exist!`;
+        super(message, "firemodel/fk-does-not-exist");
+    }
+}
+
+class IncorrectReciprocalInverse extends FireModelError {
+    constructor(rec, property) {
+        super("", "firemodel/missing-reciprocal-inverse");
+        let message;
+        const fkRecord = Record.create(rec.META.relationship(property).fkConstructor(), { db: rec.db });
+        const inverseProperty = rec.META.relationship(property).inverseProperty;
+        const fkInverse = fkRecord.META.relationship(inverseProperty);
+        if (!fkInverse) {
+            const e = new MissingReciprocalInverse(rec, property);
+            throw e;
+        }
+        else {
+            const recipricalInverse = fkInverse.inverseProperty;
+            message = `The model ${rec.modelName} is trying to leverage it's relationship with ${fkRecord.modelName} but it appears these two models are in conflict! ${rec.modelName} has been defined to look for an inverse property of "${inverseProperty}" but on ${fkRecord.modelName} model the inverse property points back to a property of "${recipricalInverse}"! Look at your model definitions and make sure this is addressed.`;
+        }
+        this.message = message;
+    }
+}
+
+/**
+ * When the record's META points to a inverse property on the FK; this error
+ * presents when that `FK[inverseProperty]` doesn't exist in the FK's meta.
+ */
+class MissingInverseProperty extends FireModelError {
+    constructor(rec, property) {
+        super("", "firemodel/missing-inverse-property");
+        const fkRecord = Record.create(rec.META.relationship(property).fkConstructor(), { db: rec.db });
+        this.from = capitalize(rec.modelName);
+        this.to = capitalize(fkRecord.modelName);
+        const pkInverse = rec.META.relationship(property).inverseProperty;
+        this.inverseProperty = pkInverse;
+        const message = `Missing Inverse Property: the model "${this.from}" has defined a relationship with the "${this.to}" model where the FK property is "${property}" and it states that the "inverse property" is "${pkInverse}" on the ${this.to} model. Unfortunately the ${this.to} model does NOT define a property called "${this.inverseProperty}".`;
+        this.message = message;
+    }
+}
+
+class MissingReciprocalInverse extends FireModelError {
+    constructor(rec, property) {
+        super("", "firemodel/missing-reciprocal-inverse");
+        const fkRecord = Record.create(rec.META.relationship(property).fkConstructor(), { db: rec.db });
+        const pkInverse = rec.META.relationship(property).inverseProperty;
+        const fkInverse = (fkRecord.META.relationship(pkInverse) || {})
+            .inverseProperty || "undefined";
+        const message = `The model "${capitalize(rec.modelName)}" is trying to leverage it's relationship with the model "${capitalize(fkRecord.modelName)}" through the property "${property}" but it appears these two models are in conflict. ${capitalize(rec.modelName)} has been defined to look for an inverse property of "${capitalize(rec.modelName)}.${rec.META.relationship(property).inverseProperty}" but it is missing [ ${fkInverse} ]! Look at your model definitions and make sure this is addressed.`;
+        this.message = message;
+    }
+}
+
+class NotHasManyRelationship extends FireModelError {
+    constructor(rec, property, method) {
+        super("", "firemodel/not-hasMany-reln");
+        this.message = `attempt to call ${rec.modelName}::${method}() with property "${property}" failed because ${property} does not have a hasMany relationship`;
+    }
+}
+
+class NotHasOneRelationship extends FireModelError {
+    constructor(rec, property, method) {
+        super("", "firemodel/not-hasOne-reln");
+        this.message = `attempt to call ${rec.modelName}::${method}() with property "${property}" failed because ${property} does not have a hasOne relationship`;
+    }
+}
+
+class UnknownRelationshipProblem extends FireModelError {
+    constructor(err, rec, property, operation = "n/a", whileDoing) {
+        const message = `An unexpected error occurred while working with a "${operation}" operation on ${rec.modelName}::${property}. ${whileDoing
+            ? `This error was encounted while working on ${whileDoing}. `
+            : ""}The error reported was [${err.name}]: ${err.message}`;
+        super(message, "firemodel/unknown-relationship-problem");
+        this.stack = err.stack;
+    }
+}
+
+var toStringFunction = Function.prototype.toString;
+var create = Object.create, defineProperty = Object.defineProperty, getOwnPropertyDescriptor = Object.getOwnPropertyDescriptor, getOwnPropertyNames = Object.getOwnPropertyNames, getOwnPropertySymbols = Object.getOwnPropertySymbols, getPrototypeOf = Object.getPrototypeOf;
+var _a = Object.prototype, hasOwnProperty$4 = _a.hasOwnProperty, propertyIsEnumerable = _a.propertyIsEnumerable;
+/**
+ * @enum
+ *
+ * @const {Object} SUPPORTS
+ *
+ * @property {boolean} SYMBOL_PROPERTIES are symbol properties supported
+ * @property {boolean} WEAKMAP is WeakMap supported
+ */
+var SUPPORTS = {
+    SYMBOL_PROPERTIES: typeof getOwnPropertySymbols === 'function',
+    WEAKMAP: typeof WeakMap === 'function',
+};
+/**
+ * @function createCache
+ *
+ * @description
+ * get a new cache object to prevent circular references
+ *
+ * @returns the new cache object
+ */
+var createCache = function () {
+    if (SUPPORTS.WEAKMAP) {
+        return new WeakMap();
+    }
+    // tiny implementation of WeakMap
+    var object = create({
+        has: function (key) { return !!~object._keys.indexOf(key); },
+        set: function (key, value) {
+            object._keys.push(key);
+            object._values.push(value);
+        },
+        get: function (key) { return object._values[object._keys.indexOf(key)]; },
+    });
+    object._keys = [];
+    object._values = [];
+    return object;
+};
+/**
+ * @function getCleanClone
+ *
+ * @description
+ * get an empty version of the object with the same prototype it has
+ *
+ * @param object the object to build a clean clone from
+ * @param realm the realm the object resides in
+ * @returns the empty cloned object
+ */
+var getCleanClone = function (object, realm) {
+    if (!object.constructor) {
+        return create(null);
+    }
+    var Constructor = object.constructor;
+    var prototype = object.__proto__ || getPrototypeOf(object);
+    if (Constructor === realm.Object) {
+        return prototype === realm.Object.prototype ? {} : create(prototype);
+    }
+    if (~toStringFunction.call(Constructor).indexOf('[native code]')) {
+        try {
+            return new Constructor();
+        }
+        catch (_a) { }
+    }
+    return create(prototype);
+};
+/**
+ * @function getObjectCloneLoose
+ *
+ * @description
+ * get a copy of the object based on loose rules, meaning all enumerable keys
+ * and symbols are copied, but property descriptors are not considered
+ *
+ * @param object the object to clone
+ * @param realm the realm the object resides in
+ * @param handleCopy the function that handles copying the object
+ * @returns the copied object
+ */
+var getObjectCloneLoose = function (object, realm, handleCopy, cache) {
+    var clone = getCleanClone(object, realm);
+    // set in the cache immediately to be able to reuse the object recursively
+    cache.set(object, clone);
+    for (var key in object) {
+        if (hasOwnProperty$4.call(object, key)) {
+            clone[key] = handleCopy(object[key], cache);
+        }
+    }
+    if (SUPPORTS.SYMBOL_PROPERTIES) {
+        var symbols = getOwnPropertySymbols(object);
+        var length_1 = symbols.length;
+        if (length_1) {
+            for (var index = 0, symbol = void 0; index < length_1; index++) {
+                symbol = symbols[index];
+                if (propertyIsEnumerable.call(object, symbol)) {
+                    clone[symbol] = handleCopy(object[symbol], cache);
+                }
+            }
+        }
+    }
+    return clone;
+};
+/**
+ * @function getObjectCloneStrict
+ *
+ * @description
+ * get a copy of the object based on strict rules, meaning all keys and symbols
+ * are copied based on the original property descriptors
+ *
+ * @param object the object to clone
+ * @param realm the realm the object resides in
+ * @param handleCopy the function that handles copying the object
+ * @returns the copied object
+ */
+var getObjectCloneStrict = function (object, realm, handleCopy, cache) {
+    var clone = getCleanClone(object, realm);
+    // set in the cache immediately to be able to reuse the object recursively
+    cache.set(object, clone);
+    var properties = SUPPORTS.SYMBOL_PROPERTIES
+        ? getOwnPropertyNames(object).concat(getOwnPropertySymbols(object))
+        : getOwnPropertyNames(object);
+    var length = properties.length;
+    if (length) {
+        for (var index = 0, property = void 0, descriptor = void 0; index < length; index++) {
+            property = properties[index];
+            if (property !== 'callee' && property !== 'caller') {
+                descriptor = getOwnPropertyDescriptor(object, property);
+                if (descriptor) {
+                    // Only clone the value if actually a value, not a getter / setter.
+                    if (!descriptor.get && !descriptor.set) {
+                        descriptor.value = handleCopy(object[property], cache);
+                    }
+                    try {
+                        defineProperty(clone, property, descriptor);
+                    }
+                    catch (error) {
+                        // Tee above can fail on node in edge cases, so fall back to the loose assignment.
+                        clone[property] = descriptor.value;
+                    }
+                }
+                else {
+                    // In extra edge cases where the property descriptor cannot be retrived, fall back to
+                    // the loose assignment.
+                    clone[property] = handleCopy(object[property], cache);
+                }
+            }
+        }
+    }
+    return clone;
+};
+/**
+ * @function getRegExpFlags
+ *
+ * @description
+ * get the flags to apply to the copied regexp
+ *
+ * @param regExp the regexp to get the flags of
+ * @returns the flags for the regexp
+ */
+var getRegExpFlags = function (regExp) {
+    var flags = '';
+    if (regExp.global) {
+        flags += 'g';
+    }
+    if (regExp.ignoreCase) {
+        flags += 'i';
+    }
+    if (regExp.multiline) {
+        flags += 'm';
+    }
+    if (regExp.unicode) {
+        flags += 'u';
+    }
+    if (regExp.sticky) {
+        flags += 'y';
+    }
+    return flags;
+};
+
+// utils
+var isArray = Array.isArray;
+var GLOBAL_THIS = (function () {
+    if (typeof self !== 'undefined') {
+        return self;
+    }
+    if (typeof window !== 'undefined') {
+        return window;
+    }
+    if (typeof global !== 'undefined') {
+        return global;
+    }
+    if (console && console.error) {
+        console.error('Unable to locate global object, returning "this".');
+    }
+})();
+/**
+ * @function copy
+ *
+ * @description
+ * copy an object deeply as much as possible
+ *
+ * If `strict` is applied, then all properties (including non-enumerable ones)
+ * are copied with their original property descriptors on both objects and arrays.
+ *
+ * The object is compared to the global constructors in the `realm` provided,
+ * and the native constructor is always used to ensure that extensions of native
+ * objects (allows in ES2015+) are maintained.
+ *
+ * @param object the object to copy
+ * @param [options] the options for copying with
+ * @param [options.isStrict] should the copy be strict
+ * @param [options.realm] the realm (this) object the object is copied from
+ * @returns the copied object
+ */
+function copy(object, options) {
+    // manually coalesced instead of default parameters for performance
+    var isStrict = !!(options && options.isStrict);
+    var realm = (options && options.realm) || GLOBAL_THIS;
+    var getObjectClone = isStrict
+        ? getObjectCloneStrict
+        : getObjectCloneLoose;
+    /**
+     * @function handleCopy
+     *
+     * @description
+     * copy the object recursively based on its type
+     *
+     * @param object the object to copy
+     * @returns the copied object
+     */
+    var handleCopy = function (object, cache) {
+        if (!object || typeof object !== 'object') {
+            return object;
+        }
+        if (cache.has(object)) {
+            return cache.get(object);
+        }
+        var Constructor = object.constructor;
+        // plain objects
+        if (Constructor === realm.Object) {
+            return getObjectClone(object, realm, handleCopy, cache);
+        }
+        var clone;
+        // arrays
+        if (isArray(object)) {
+            // if strict, include non-standard properties
+            if (isStrict) {
+                return getObjectCloneStrict(object, realm, handleCopy, cache);
+            }
+            var length_1 = object.length;
+            clone = new Constructor();
+            cache.set(object, clone);
+            for (var index = 0; index < length_1; index++) {
+                clone[index] = handleCopy(object[index], cache);
+            }
+            return clone;
+        }
+        // dates
+        if (object instanceof realm.Date) {
+            return new Constructor(object.getTime());
+        }
+        // regexps
+        if (object instanceof realm.RegExp) {
+            clone = new Constructor(object.source, object.flags || getRegExpFlags(object));
+            clone.lastIndex = object.lastIndex;
+            return clone;
+        }
+        // maps
+        if (realm.Map && object instanceof realm.Map) {
+            clone = new Constructor();
+            cache.set(object, clone);
+            object.forEach(function (value, key) {
+                clone.set(key, handleCopy(value, cache));
+            });
+            return clone;
+        }
+        // sets
+        if (realm.Set && object instanceof realm.Set) {
+            clone = new Constructor();
+            cache.set(object, clone);
+            object.forEach(function (value) {
+                clone.add(handleCopy(value, cache));
+            });
+            return clone;
+        }
+        // blobs
+        if (realm.Blob && object instanceof realm.Blob) {
+            clone = new Blob([object], { type: object.type });
+            return clone;
+        }
+        // buffers (node-only)
+        if (realm.Buffer && realm.Buffer.isBuffer(object)) {
+            clone = realm.Buffer.allocUnsafe
+                ? realm.Buffer.allocUnsafe(object.length)
+                : new Constructor(object.length);
+            cache.set(object, clone);
+            object.copy(clone);
+            return clone;
+        }
+        // arraybuffers / dataviews
+        if (realm.ArrayBuffer) {
+            // dataviews
+            if (realm.ArrayBuffer.isView(object)) {
+                clone = new Constructor(object.buffer.slice(0));
+                cache.set(object, clone);
+                return clone;
+            }
+            // arraybuffers
+            if (object instanceof realm.ArrayBuffer) {
+                clone = object.slice(0);
+                cache.set(object, clone);
+                return clone;
+            }
+        }
+        // if the object cannot / should not be cloned, don't
+        if (
+        // promise-like
+        typeof object.then === 'function' ||
+            // errors
+            object instanceof Error ||
+            // weakmaps
+            (realm.WeakMap && object instanceof realm.WeakMap) ||
+            // weaksets
+            (realm.WeakSet && object instanceof realm.WeakSet)) {
+            return object;
+        }
+        // assume anything left is a custom constructor
+        return getObjectClone(object, realm, handleCopy, cache);
+    };
+    return handleCopy(object, createCache());
+}
+/**
+ * @function strictCopy
+ *
+ * @description
+ * copy the object with `strict` option pre-applied
+ *
+ * @param object the object to copy
+ * @param [options] the options for copying with
+ * @param [options.realm] the realm (this) object the object is copied from
+ * @returns the copied object
+ */
+copy.strict = function strictCopy(object, options) {
+    return copy(object, {
+        isStrict: true,
+        realm: options ? options.realm : void 0,
+    });
+};
+
+var alphabet = "-0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz";
+
+function randomString(alphabet, length) {
+    var buffer = [];
+    length = length | 0;
+    while (length) {
+        var r = (Math.random() * alphabet.length) | 0;
+        buffer.push(alphabet.charAt(r));
+        length -= 1;
+    }
+    return buffer.join("");
+}
+
+var lastTimestamp = 0;
+function key(timestamp, as) {
+    if (timestamp === undefined) {
+        timestamp = Date.now();
+        if (timestamp <= lastTimestamp) {
+            timestamp = lastTimestamp + 1;
+        }
+        lastTimestamp = timestamp;
+    }
+    if (timestamp instanceof Date) {
+        timestamp = timestamp.getTime();
+    }
+    var result = new Array(9);
+    for (var i = 7; i >= 0; --i) {
+        result[i] = alphabet.charAt(timestamp % 64);
+        timestamp = Math.floor(timestamp / 64);
+    }
+    if (timestamp !== 0) {
+        throw new Error("Unexpected timestamp.");
+    }
+    switch (as) {
+        case "max":
+            result[8] = "zzzzzzzzzzzz";
+            break;
+        case "min":
+            result[8] = "------------";
+            break;
+        default:
+            result[8] = randomString(alphabet, 12);
+    }
+    return result.join("");
+}
+
+class Record extends FireModel {
+    constructor(model, options = {}) {
+        super();
+        this.options = options;
+        //#endregion STATIC: Relationships
+        //#endregion
+        //#region INSTANCE DEFINITION
+        this._existsOnDB = false;
+        this._writeOperations = [];
+        this._data = {};
+        if (!model) {
+            throw new FireModelError(`You are trying to instantiate a Record but the "model constructor" passed in is empty!`, `firemodel/not-allowed`);
+        }
+        if (!model.constructor) {
+            console.log(`The "model" property passed into the Record constructor is NOT a Model constructor! It is of type "${typeof model}": `, model);
+            if (typeof model === "string") {
+                model = FireModel.lookupModel(model);
+                if (!model) {
+                    throw new FireModelError(`Attempted to lookup the model in the registry but it was not found!`);
+                }
+            }
+            else {
+                throw new FireModelError(`Can not instantiate a Record without a valid Model constructor`);
+            }
+        }
+        this._modelConstructor = model;
+        this._model = new model();
+        this._data = new model();
+    }
+    //#region STATIC INTERFACE
+    static set defaultDb(db) {
+        FireModel.defaultDb = db;
+    }
+    static get defaultDb() {
+        return FireModel.defaultDb;
+    }
+    static set dispatch(fn) {
+        FireModel.dispatch = fn;
+    }
+    /**
+     * **dynamicPathProperties**
+     *
+     * An array of "dynamic properties" that are derived fom the "dbOffset" to
+     * produce the "dbPath". Note: this does NOT include the `id` property.
+     */
+    static dynamicPathProperties(
+    /**
+     * the **Model** who's properties are being interogated
+     */
+    model) {
+        return Record.create(model).dynamicPathComponents;
+    }
+    /**
+     * create
+     *
+     * creates a new -- and empty -- Record object; often used in
+     * conjunction with the Record's initialize() method
+     */
+    static create(model, options = {}) {
+        const r = new Record(model, options);
+        if (options.silent && !r.db.isMockDb) {
+            throw new FireModelError(`You can only add new records to the DB silently when using a Mock database!`, "forbidden");
+        }
+        return r;
+    }
+    /**
+     * Creates an empty record and then inserts all values
+     * provided along with default values provided in META.
+     */
+    static local(model, values, options = {}) {
+        const rec = Record.create(model, options);
+        if (!options.ignoreEmptyValues &&
+            (!values || Object.keys(values).length === 0)) {
+            throw new FireModelError("You used the static Record.local() method but passed nothing into the 'values' property! If you just want to skip this error then you can set the options to { ignoreEmptyValues: true } or just use the Record.create() method.", `firemodel/record::local`);
+        }
+        if (values) {
+            const defaultValues = rec.META.properties.filter((i) => i.defaultValue !== undefined);
+            // also include "default values"
+            defaultValues.forEach((i) => {
+                if (rec.get(i.property) === undefined) {
+                    rec.set(i.property, i.defaultValue, true);
+                }
+            });
+        }
+        return rec;
+    }
+    /**
+     * add
+     *
+     * Adds a new record to the database
+     *
+     * @param schema the schema of the record
+     * @param payload the data for the new record; this optionally can include the "id" but if left off the new record will use a firebase pushkey
+     * @param options
+     */
+    static async add(model, payload, options = {}) {
+        let r;
+        if (typeof model === "string") {
+            model = FireModel.lookupModel(model);
+        }
+        try {
+            if (!model) {
+                throw new FireModelError(`The model passed into the Record.add() static initializer was not defined! This is often the result of a circular dependency. Note that the "payload" sent into Record.add() was:\n\n${JSON.stringify(payload, null, 2)}`);
+            }
+            r = Record.createWith(model, payload, options);
+            if (!payload.id) {
+                const path = List.dbPath(model, payload);
+                payload.id = await r.db.getPushKey(path);
+            }
+            await r._initialize(payload, options);
+            const defaultValues = r.META.properties.filter((i) => i.defaultValue !== undefined);
+            defaultValues.forEach((i) => {
+                if (r.get(i.property) === undefined) {
+                    r.set(i.property, i.defaultValue, true);
+                }
+            });
+            await r._adding(options);
+        }
+        catch (e) {
+            if (e.code === "permission-denied") {
+                const rec = Record.createWith(model, payload);
+                throw new FireModelError(`Permission error while trying to add the ${capitalize(rec.modelName)} to the database path ${rec.dbPath}`, "firemodel/permission-denied");
+            }
+            if (e.name.includes("firemodel")) {
+                throw e;
+            }
+            throw new FireModelProxyError(e, "Failed to add new record ");
+        }
+        return r;
+    }
+    /**
+     * **update**
+     *
+     * update an existing record in the database with a dictionary of prop/value pairs
+     *
+     * @param model the _model_ type being updated
+     * @param id the `id` for the model being updated
+     * @param updates properties to update; this is a non-destructive operation so properties not expressed will remain unchanged. Also, because values are _nullable_ you can set a property to `null` to REMOVE it from the database.
+     * @param options
+     */
+    static async update(model, id, updates, options = {}) {
+        let r;
+        try {
+            r = await Record.get(model, id, options);
+            await r.update(updates);
+        }
+        catch (e) {
+            const err = new Error(`Problem adding new Record: ${e.message}`);
+            err.name = e.name !== "Error" ? e.name : "FireModel";
+            throw e;
+        }
+        return r;
+    }
+    /**
+     * Pushes a new item into a property that is setup as a "pushKey"
+     *
+     * @param model the model being operated on
+     * @param id  `id` or `composite-key` that uniquely identifies a record
+     * @param property the property on the record
+     * @param payload the new payload you want to push into the array
+     */
+    static async pushKey(model, id, property, payload, options = {}) {
+        const obj = await Record.get(model, id, options);
+        return obj.pushKey(property, payload);
+    }
+    /**
+     * **createWith**
+     *
+     * A static initializer that creates a Record of a given class
+     * and then initializes the state with either a Model payload
+     * or a CompositeKeyString (aka, '[id]::[prop]:[value]').
+     *
+     * You should be careful in using this initializer; the expected
+     * _intents_ include:
+     *
+     * 1. to initialize an in-memory record of something which is already
+     * in the DB
+     * 2. to get all the "composite key" attributes into the record so
+     * all META queries are possible
+     *
+     * If you want to add this record to the database then use `add()`
+     * initializer instead.
+     *
+     * @prop model a constructor for the underlying model
+     * @payload either a string representing an `id` or Composite Key or alternatively
+     * a hash/dictionary of attributes that are to be set as a starting point
+     */
+    static createWith(model, payload, options = {}) {
+        const rec = Record.create(model, options);
+        if (options.setDeepRelationships === true) {
+            throw new FireModelError(`Trying to create a ${capitalize(rec.modelName)} with the "setDeepRelationships" property set. This is NOT allowed; consider the 'Record.add()' method instead.`, "not-allowed");
+        }
+        const properties = typeof payload === "string"
+            ? createCompositeKeyFromFkString(payload, rec.modelConstructor)
+            : payload;
+        // TODO: build some tests to ensure that ...
+        // the async possibilites of this method (only if `options.setDeepRelationships`)
+        // are not negatively impacting this method
+        rec._initialize(properties, options);
+        return rec;
+    }
+    /**
+     * get (static initializer)
+     *
+     * Allows the retrieval of records based on the record's id (and dynamic path prefixes
+     * in cases where that applies)
+     *
+     * @param model the model definition you are retrieving
+     * @param id either just an "id" string or in the case of models with dynamic path prefixes you can pass in an object with the id and all dynamic prefixes
+     * @param options
+     */
+    static async get(model, id, options = {}) {
+        const record = Record.create(model, options);
+        await record._getFromDB(id);
+        return record;
+    }
+    static async remove(model, id, 
+    /** if there is a known current state of this model you can avoid a DB call to get it */
+    currentState) {
+        // TODO: add lookup in local state to see if we can avoid DB call
+        const record = currentState ? currentState : await Record.get(model, id);
+        await record.remove();
+        return record;
+    }
+    //#region STATIC: Relationships
+    /**
+     * Associates a new FK to a relationship on the given `Model`; returning
+     * the primary model as a return value
+     */
+    static async associate(model, id, property, refs) {
+        const obj = await Record.get(model, id);
+        await obj.associate(property, refs);
+        return obj;
+    }
+    /**
+     * Given a database _path_ and a `Model`, pull out the composite key from
+     * the path. This works for Models that do and _do not_ have dynamic segments
+     * and in both cases the `id` property will be returned as part of the composite
+     * so long as the path does indeed have the `id` at the end of the path.
+     */
+    static getCompositeKeyFromPath(model, path) {
+        if (!path) {
+            return {};
+        }
+        const r = Record.create(model);
+        const pathParts = dotNotation(path).split(".");
+        const compositeKey = {};
+        const segments = dotNotation(r.dbOffset).split(".");
+        if (segments.length > pathParts.length ||
+            pathParts.length - 2 > segments.length) {
+            throw new FireModelError(`Attempt to get the composite key from a path failed due to the diparity of segments in the path [ ${pathParts.length} ] versus the dynamic path [ ${segments.length} ]`, "firemodel/not-allowed");
+        }
+        segments.forEach((segment, idx) => {
+            if (segment.slice(0, 1) === ":") {
+                const name = segment.slice(1);
+                const value = pathParts[idx];
+                compositeKey[name] = value;
+            }
+            else {
+                if (segment !== pathParts[idx]) {
+                    throw new FireModelError(`The attempt to build a composite key for the model ${capitalize(r.modelName)} failed because the static parts of the path did not match up. Specifically where the "dbOffset" states the segment "${segment}" the path passed in had "${pathParts[idx]}" instead.`);
+                }
+            }
+            if (pathParts.length - 1 === segments.length) {
+                compositeKey.id = pathParts.slice(-1);
+            }
+        });
+        return compositeKey;
+    }
+    /**
+     * Given a Model and a partial representation of that model, this will generate
+     * a composite key (in _object_ form) that conforms to the `ICompositeKey` interface
+     * and uniquely identifies the given record.
+     *
+     * @param model the class definition of the model you want the CompositeKey for
+     * @param object the data which will be used to generate the Composite key from
+     */
+    static compositeKey(model, obj) {
+        const dynamicSegments = Record.dynamicPathProperties(model).concat("id");
+        return dynamicSegments.reduce((agg, prop) => {
+            if (obj[prop] === undefined) {
+                throw new FireModelError(`You used attempted to generate a composite key of the model ${Record.modelName(model)} but the property "${prop}" is part of they dynamic path and the data passed in did not have a value for this property.`, "firemodel/not-ready");
+            }
+            agg[prop] = obj[prop];
+            return agg;
+        }, {});
+    }
+    /**
+     * Given a Model and a partial representation of that model, this will generate
+     * a composite key in _string_ form that conforms to the `IPrimaryKey` interface
+     * and uniquely identifies the given record.
+     *
+     * @param model the class definition of the model you want the CompositeKey for
+     * @param object the data which will be used to generate the Composite key from
+     */
+    static compositeKeyRef(model, 
+    /** either a partial model or just the `id` of the model if model is not a dynamic path */
+    object) {
+        if (Record.dynamicPathProperties(model).length === 0) {
+            return typeof object === "string" ? object : object.id;
+        }
+        if (typeof object === "string") {
+            if (object.includes(":")) {
+                // Forward strings which already appear to be composite key reference
+                return object;
+            }
+            else {
+                throw new FireModelError(`Attempt to get a compositeKeyRef() but passed in a string/id value instead of a composite key for a model [ ${Record.modelName(model)}, "${object}" ] which HAS dynamic properties! Required props are: ${Record.dynamicPathProperties(model).join(", ")}`, "not-allowed");
+            }
+        }
+        const compositeKey = Record.compositeKey(model, object);
+        const nonIdKeys = Object.keys(compositeKey).reduce((agg, prop) => prop === "id" ? agg : agg.concat({ prop, value: compositeKey[prop] }), []);
+        return `${compositeKey.id}::${nonIdKeys
+            .map((tuple) => `${tuple.prop}:${tuple.value}`)
+            .join("::")}`;
+    }
+    /**
+     * Returns the name of the name of the `Model`.
+     *
+     * Note: it returns the name in PascalCase _not_
+     * camelCase.
+     */
+    static modelName(model) {
+        const r = Record.create(model);
+        return capitalize(r.modelName);
+    }
+    get data() {
+        return this._data;
+    }
+    get isDirty() {
+        return this.META.isDirty ? true : false;
+    }
+    /**
+     * deprecated
+     */
+    set isDirty(value) {
+        if (!this._data.META) {
+            this._data.META = { isDirty: value };
+        }
+        this._data.META.isDirty = value;
+    }
+    /**
+     * returns the fully qualified name in the database to this record;
+     * this of course includes the record id so if that's not set yet calling
+     * this getter will result in an error
+     */
+    get dbPath() {
+        if (this.data.id ? false : true) {
+            throw new FireModelError(`you can not ask for the dbPath before setting an "id" property [ ${this.modelName} ]`, "record/not-ready");
+        }
+        return [
+            this._injectDynamicPathProperties(this.dbOffset),
+            this.pluralName,
+            this.data.id,
+        ].join("/");
+    }
+    /**
+     * provides a boolean flag which indicates whether the underlying
+     * model has a "dynamic path" which ultimately comes from a dynamic
+     * component in the "dbOffset" property defined in the model decorator
+     */
+    get hasDynamicPath() {
+        return this.META.dbOffset.includes(":");
+    }
+    /**
+     * **dynamicPathComponents**
+     *
+     * An array of "dynamic properties" that are derived fom the "dbOffset" to
+     * produce the "dbPath"
+     */
+    get dynamicPathComponents() {
+        return this._findDynamicComponents(this.META.dbOffset);
+    }
+    /**
+     * the list of dynamic properties in the "localPrefix"
+     * which must be resolved to achieve the "localPath"
+     */
+    get localDynamicComponents() {
+        return this._findDynamicComponents(this.META.localPrefix);
+    }
+    /**
+     * A hash of values -- including at least "id" -- which represent
+     * the composite key of a model.
+     */
+    get compositeKey() {
+        return createCompositeKey(this);
+    }
+    /**
+     * a string value which is used in relationships to fully qualify
+     * a composite string (aka, a model which has a dynamic dbOffset)
+     */
+    get compositeKeyRef() {
+        return createCompositeKeyRefFromRecord(this);
+    }
+    /**
+     * The Record's primary key; this is the `id` property only. Not
+     * the composite key.
+     */
+    get id() {
+        return this.data.id;
+    }
+    /**
+     * Allows setting the Record's `id` if it hasn't been set before.
+     * Resetting the `id` is not allowed.
+     */
+    set id(val) {
+        if (this.data.id) {
+            throw new FireModelError(`You may not re-set the ID of a record [ ${this.modelName}.id ${this.data.id} => ${val} ].`, "firemodel/not-allowed");
+        }
+        this._data.id = val;
+    }
+    /**
+     * Returns the record's database _offset_ without the ID or any dynamic properties
+     * yet interjected. The _dynamic properties_ however, will be show with a `:` prefix
+     * to indicate where the the values will go.
+     */
+    get dbOffset() {
+        return getModelMeta(this).dbOffset;
+    }
+    /**
+     * returns the record's location in the frontend state management framework;
+     * this can include dynamic properties characterized in the path string by
+     * leading ":" character.
+     */
+    get localPath() {
+        let prefix = this.localPrefix;
+        this.localDynamicComponents.forEach((prop) => {
+            // TODO: another example of impossible typing coming off of a get()
+            prefix = prefix.replace(`:${prop}`, this.get(prop));
+        });
+        return pathJoin$1(prefix, this.META.localModelName !== this.modelName
+            ? this.META.localModelName
+            : this.options.pluralizeLocalPath
+                ? this.pluralName
+                : this.modelName);
+    }
+    /**
+     * The path in the local state tree that brings you to
+     * the record; this is differnt when retrieved from a
+     * Record versus a List.
+     */
+    get localPrefix() {
+        return getModelMeta(this).localPrefix;
+    }
+    get existsOnDB() {
+        return this.data && this.data.id ? true : false;
+    }
+    /** indicates whether this record is already being watched locally */
+    get isBeingWatched() {
+        return FireModel.isBeingWatched(this.dbPath);
+    }
+    get modelConstructor() {
+        return this._modelConstructor;
+    }
+    /**
+     * Goes out to the database and reloads this record
+     */
+    async reload() {
+        const reloaded = await Record.get(this._modelConstructor, this.compositeKeyRef);
+        return reloaded;
+    }
+    /**
+     * addAnother
+     *
+     * Allows a simple way to add another record to the database
+     * without needing the model's constructor fuction. Note, that
+     * the payload of the existing record is ignored in the creation
+     * of the new.
+     *
+     * @param payload the payload of the new record
+     */
+    async addAnother(payload, options = {}) {
+        const newRecord = await Record.add(this._modelConstructor, payload, options);
+        return newRecord;
+    }
+    isSameModelAs(model) {
+        return this._modelConstructor === model;
+    }
+    /**
+     * Pushes new values onto properties on the record
+     * which have been stated to be a "pushKey"
+     */
+    async pushKey(property, value) {
+        if (this.META.pushKeys.indexOf(property) === -1) {
+            throw new FireModelError(`Invalid Operation: you can not push to property "${property}" as it has not been declared a pushKey property in the schema`, "invalid-operation/not-pushkey");
+        }
+        if (!this.existsOnDB) {
+            throw new FireModelError(`Invalid Operation: you can not push to property "${property}" before saving the record to the database`, "invalid-operation/not-on-db");
+        }
+        const key$1 = this.db.isMockDb
+            ? key()
+            : await this.db.getPushKey(pathJoin$1(this.dbPath, property));
+        await this.db.update(pathJoin$1(this.dbPath, property), {
+            [pathJoin$1(this.dbPath, property, key$1)]: value,
+            [pathJoin$1(this.dbPath, "lastUpdated")]: new Date().getTime(),
+        });
+        // set firemodel state locally
+        const currentState = this.get(property) || {};
+        const newState = Object.assign(Object.assign({}, currentState), { [key$1]: value });
+        await this.set(property, newState);
+        return key$1;
+    }
+    /**
+     * **update**
+     *
+     * Updates a set of properties on a given model atomically (aka, all at once);
+     * will automatically include the "lastUpdated" property. Does NOT
+     * allow relationships to be included, this should be done separately.
+     *
+     * If you want to remove a particular property but otherwise leave the object
+     * unchanged, you can set that values(s) to NULL and it will be removed without
+     * impact to other properties.
+     *
+     * @param props a hash of name value pairs which represent the props being
+     * updated and their new values
+     */
+    async update(props) {
+        const meta = getModelMeta(this);
+        if (!meta.property) {
+            throw new FireModelError(`There is a problem with this record's META information [ model: ${capitalize(this.modelName)}, id: ${this.id} ]. The property() method -- used to dig into properties on any given model appears to be missing!`, "firemodel/meta-missing");
+        }
+        // can not update relationship properties
+        if (Object.keys(props).some((key) => {
+            const root = key.split(".")[0];
+            const rootProperties = meta.property(root);
+            if (!rootProperties) {
+                throw new FireModelError(`While this record [ model: ${capitalize(this.modelName)}, id: ${this.id} ] does return a "META.property" function, looking up the property "${root}" has resulted in an invalid response [${typeof rootProperties}]`);
+            }
+            return rootProperties.isRelationship;
+        })) {
+            const relProps = Object.keys(props).filter((p) => meta.property(p).isRelationship);
+            throw new FireModelError(`You called update on a hash which has relationships included in it. Please only use "update" for updating properties. The relationships you were attempting to update were: ${relProps.join(", ")}.`, `firemodel/not-allowed`);
+        }
+        const lastUpdated = new Date().getTime();
+        const changed = Object.assign(Object.assign({}, props), { lastUpdated });
+        const rollback = copy(this.data);
+        // changes local Record to include updates immediately
+        this._data = Object.assign(Object.assign({}, this.data), changed);
+        // performs a two phase commit using dispatch messages
+        await this._localCrudOperation("update" /* update */, rollback);
+        return;
+    }
+    /**
+     * **remove**
+     *
+     * Removes the active record from the database and dispatches the change to
+     * FE State Mgmt.
+     */
+    async remove() {
+        this.isDirty = true;
+        await this._localCrudOperation("remove" /* remove */, copy(this.data));
+        this.isDirty = false;
+        // TODO: handle dynamic paths and also consider removing relationships
+    }
+    /**
+     * Changes the local state of a property on the record
+     *
+     * @param prop the property on the record to be changed
+     * @param value the new value to set to
+     * @param silent a flag to indicate whether the change to the prop should be updated
+     * to the database or not
+     */
+    async set(prop, value, silent = false) {
+        const rollback = copy(this.data);
+        const meta = this.META.property(prop);
+        if (!meta) {
+            throw new FireModelError(`There was a problem getting the meta data for the model ${capitalize(this.modelName)} while attempting to set the "${prop}" property to: ${value}`);
+        }
+        if (meta.isRelationship) {
+            throw new FireModelError(`You can not "set" the property "${prop}" because it is configured as a relationship!`, "firemodel/not-allowed");
+        }
+        const lastUpdated = new Date().getTime();
+        const changed = {
+            [prop]: value,
+            lastUpdated,
+        };
+        // locally change Record values
+        this.META.isDirty = true;
+        this._data = Object.assign(Object.assign({}, this._data), changed);
+        // dispatch
+        if (!silent) {
+            await this._localCrudOperation("update" /* update */, rollback, {
+                silent,
+            });
+            this.META.isDirty = false;
+        }
+        return;
+    }
+    /**
+     * **associate**
+     *
+     * Associates the current model with another entity
+     * regardless if the cardinality
+     */
+    async associate(property, 
+    // TODO: ideally stronger typing
+    refs, options = {}) {
+        const meta = getModelMeta(this);
+        if (!meta.relationship(property)) {
+            throw new FireModelError(`Attempt to associate the property "${property}" can not be done on model ${capitalize(this.modelName)} because the property is not defined!`, `firemodel/not-allowed`);
+        }
+        if (!meta.relationship(property).relType) {
+            throw new FireModelError(`For some reason the property "${property}" on the model ${capitalize(this.modelName)} doesn't have cardinality assigned to the "relType" (aka, hasMany, hasOne).\n\nThe META for relationships on the model are: ${JSON.stringify(meta.relationships, null, 2)}`, `firemodel/unknown`);
+        }
+        const relType = meta.relationship(property).relType;
+        if (relType === "hasMany") {
+            await this.addToRelationship(property, refs, options);
+        }
+        else {
+            if (Array.isArray(refs)) {
+                if (refs.length === 1) {
+                    refs = refs.pop();
+                }
+                else {
+                    throw new FireModelError(`Attempt to use "associate()" with a "hasOne" relationship [ ${property}] on the model ${capitalize(this.modelName)}.`, "firemodel/invalid-cardinality");
+                }
+            }
+            await this.setRelationship(property, refs, options);
+        }
+    }
+    /**
+     * **disassociate**
+     *
+     * Removes an association between the current model and another entity
+     * (regardless of the cardinality in the relationship)
+     */
+    async disassociate(property, 
+    // TODO: ideally stronger typing below
+    refs, options = {}) {
+        const relType = this.META.relationship(property).relType;
+        if (relType === "hasMany") {
+            await this.removeFromRelationship(property, refs, options);
+        }
+        else {
+            await this.clearRelationship(property, options);
+        }
+    }
+    /**
+     * Adds one or more fk's to a hasMany relationship.
+     *
+     * Every relationship will be added as a "single transaction", meaning that ALL
+     * or NONE of the relationshiop transactions will succeed. If you want to
+     * take a more optimistic approach that accepts each relationship pairing (PK/FK)
+     * then you should manage the iteration outside of this call and let this call
+     * only manage the invidual PK/FK transactions (which should ALWAYS be atomic).
+     *
+     * @param property the property which is acting as a foreign key (array)
+     * @param fkRefs FK reference (or array of FKs) that should be added to reln
+     * @param options change the behavior of this relationship transaction
+     */
+    async addToRelationship(property, fkRefs, options = {}) {
+        const altHasManyValue = options.altHasManyValue || true;
+        if (!isHasManyRelationship(this, property)) {
+            throw new NotHasManyRelationship(this, property, "addToRelationship");
+        }
+        fkRefs = Array.isArray(fkRefs) ? fkRefs : [fkRefs];
+        let paths = [];
+        const now = new Date().getTime();
+        fkRefs.map((ref) => {
+            paths = [
+                ...buildRelationshipPaths(this, property, ref, {
+                    now,
+                    altHasManyValue,
+                }),
+                ...paths,
+            ];
+        });
+        await relationshipOperation(this, "add", property, fkRefs, paths, options);
+    }
+    /**
+     * removeFromRelationship
+     *
+     * remove one or more FK's from a `hasMany` relationship
+     *
+     * @param property the property which is acting as a FK
+     * @param fkRefs the FK's on the property which should be removed
+     */
+    async removeFromRelationship(property, fkRefs, options = {}) {
+        if (!isHasManyRelationship(this, property)) {
+            throw new NotHasManyRelationship(this, property, "removeFromRelationship");
+        }
+        fkRefs = Array.isArray(fkRefs) ? fkRefs : [fkRefs];
+        let paths = [];
+        const now = new Date().getTime();
+        fkRefs.map((ref) => {
+            paths = [
+                ...buildRelationshipPaths(this, property, ref, {
+                    now,
+                    operation: "remove",
+                }),
+                ...paths,
+            ];
+        });
+        await relationshipOperation(this, "remove", property, fkRefs, paths, options);
+    }
+    /**
+     * **clearRelationship**
+     *
+     * clears an existing FK on a `hasOne` relationship or _all_ FK's on a
+     * `hasMany` relationship
+     *
+     * @param property the property containing the relationship to an external
+     * entity
+     */
+    async clearRelationship(property, options = {}) {
+        const relType = this.META.relationship(property).relType;
+        const fkRefs = relType === "hasMany"
+            ? this._data[property]
+                ? Object.keys(this.get(property))
+                : []
+            : this._data[property]
+                ? [this.get(property)]
+                : [];
+        let paths = [];
+        const now = new Date().getTime();
+        fkRefs.map((ref) => {
+            paths = [
+                ...buildRelationshipPaths(this, property, ref, {
+                    now,
+                    operation: "remove",
+                }),
+                ...paths,
+            ];
+        });
+        await relationshipOperation(this, "clear", property, fkRefs, paths, options);
+    }
+    /**
+     * **setRelationship**
+     *
+     * sets up an FK relationship for a _hasOne_ relationship
+     *
+     * @param property the property containing the hasOne FK
+     * @param ref the FK
+     */
+    async setRelationship(property, fkId, options = {}) {
+        if (!fkId) {
+            throw new FireModelError(`Failed to set the relationship ${this.modelName}.${property} because no FK was passed in!`, "firemodel/not-allowed");
+        }
+        if (isHasManyRelationship(this, property)) {
+            throw new NotHasOneRelationship(this, property, "setRelationship");
+        }
+        const paths = buildRelationshipPaths(this, property, fkId);
+        await relationshipOperation(this, "set", property, [fkId], paths, options);
+    }
+    //#endregion INSTANCE DEFINITION
+    /**
+     * get a property value from the record
+     *
+     * @param prop the property being retrieved
+     */
+    get(prop) {
+        return this.data[prop];
+    }
+    toString() {
+        return `Record::${this.modelName}@${this.id || "undefined"}`;
+    }
+    toJSON() {
+        return {
+            dbPath: this.dbPath,
+            modelName: this.modelName,
+            pluralName: this.pluralName,
+            key: this.id,
+            compositeKey: this.compositeKey,
+            localPath: this.localPath,
+            data: this.data.toString(),
+        };
+    }
+    //#endregion
+    //#region PRIVATE METHODS
+    /**
+     * Allows an empty Record to be initialized to a known state.
+     * This is not intended to allow for mass property manipulation other
+     * than at time of initialization
+     *
+     * @param data the initial state you want to start with
+     */
+    async _initialize(data, options = {}) {
+        if (data) {
+            Object.keys(data).map((key) => {
+                this._data[key] = data[key];
+            });
+        }
+        const relationships = getModelMeta(this).relationships;
+        const hasOneRels = (relationships || [])
+            .filter((r) => r.relType === "hasOne")
+            .map((r) => r.property);
+        const hasManyRels = (relationships || [])
+            .filter((r) => r.relType === "hasMany")
+            .map((r) => r.property);
+        const promises = [];
+        /**
+         * Sets hasMany to default `{}` if nothing was set.
+         * Also, if the option `deepRelationships` is set to `true`,
+         * it will look for relationships hashes instead of the typical
+         * `fk: true` pairing.
+         */
+        for (const oneToManyProp of hasManyRels) {
+            if (!this._data[oneToManyProp]) {
+                this._data[oneToManyProp] = {};
+            }
+            if (options.setDeepRelationships) {
+                if (this._data[oneToManyProp]) {
+                    promises.push(buildDeepRelationshipLinks(this, oneToManyProp));
+                }
+            }
+        }
+        await Promise.all(promises);
+        const now = new Date().getTime();
+        if (!this._data.lastUpdated) {
+            this._data.lastUpdated = now;
+        }
+        if (!this._data.createdAt) {
+            this._data.createdAt = now;
+        }
+    }
+    /**
+     * **_writeAudit**
+     *
+     * Writes an audit log if the record is configured for audit logs
+     */
+    async _writeAudit(action, currentValue, priorValue) {
+        currentValue = currentValue ? currentValue : {};
+        priorValue = priorValue ? priorValue : {};
+        try {
+            if (this.META.audit) {
+                const deltas = compareHashes(currentValue, priorValue);
+                const auditLogEntries = [];
+                const added = deltas.added.forEach((a) => auditLogEntries.push({
+                    action: "added",
+                    property: a,
+                    before: null,
+                    after: currentValue[a],
+                }));
+                deltas.changed.forEach((c) => auditLogEntries.push({
+                    action: "updated",
+                    property: c,
+                    before: priorValue[c],
+                    after: currentValue[c],
+                }));
+                const removed = deltas.removed.forEach((r) => auditLogEntries.push({
+                    action: "removed",
+                    property: r,
+                    before: priorValue[r],
+                    after: null,
+                }));
+                const pastTense = {
+                    add: "added",
+                    update: "updated",
+                    remove: "removed",
+                };
+                await writeAudit(this, pastTense[action], auditLogEntries, { db: this.db });
+            }
+        }
+        catch (e) {
+            throw new FireModelProxyError(e);
+        }
+    }
+    /**
+     * **_localCrudOperation**
+     *
+     * updates properties on a given Record while firing
+     * two-phase commit EVENTs to dispatch:
+     *
+     *  local: `RECORD_[ADDED,CHANGED,REMOVED]_LOCALLY`
+     *  server: `RECORD_[ADDED,CHANGED,REMOVED]_CONFIRMATION`
+     *
+     * Note: if there is an error a
+     * `RECORD_[ADDED,CHANGED,REMOVED]_ROLLBACK` event will be sent
+     * to dispatch instead of the server dispatch message
+     * illustrated above.
+     *
+     * Another concept that is sometimes not clear ... when a
+     * successful transaction is achieved you will by default get
+     * both sides of the two-phase commit. If you have a watcher
+     * watching this same path then that watcher will also get
+     * a dispatch message sent (e.g., RECORD_ADDED, RECORD_REMOVED, etc).
+     *
+     * If you only want to hear about Firebase's acceptance of the
+     * record from a watcher then you can opt-out by setting the
+     * { silentAcceptance: true } parameter in options. If you don't
+     * want either side of the two phase commit sent to dispatch
+     * you can mute both with { silent: true }. This option is not
+     * typically a great idea but it can be useful in situations like
+     * _mocking_
+     */
+    async _localCrudOperation(crudAction, priorValue, options = {}) {
+        options = Object.assign({ silent: false, silentAcceptance: false }, options);
+        const transactionId = "t-" +
+            Math.random().toString(36).substr(2, 5) +
+            "-" +
+            Math.random().toString(36).substr(2, 5);
+        const lookup = {
+            add: [
+                exports.FmEvents.RECORD_ADDED_LOCALLY,
+                exports.FmEvents.RECORD_ADDED_CONFIRMATION,
+                exports.FmEvents.RECORD_ADDED_ROLLBACK,
+            ],
+            update: [
+                exports.FmEvents.RECORD_CHANGED_LOCALLY,
+                exports.FmEvents.RECORD_CHANGED_CONFIRMATION,
+                exports.FmEvents.RECORD_CHANGED_ROLLBACK,
+            ],
+            remove: [
+                exports.FmEvents.RECORD_REMOVED_LOCALLY,
+                exports.FmEvents.RECORD_REMOVED_CONFIRMATION,
+                exports.FmEvents.RECORD_REMOVED_ROLLBACK,
+            ],
+        };
+        const [actionTypeStart, actionTypeEnd, actionTypeFailure] = lookup[crudAction];
+        this.isDirty = true;
+        // Set aside prior value
+        const { changed, added, removed } = compareHashes(withoutMetaOrPrivate(this.data), withoutMetaOrPrivate(priorValue));
+        const watchers = findWatchers(this.dbPath);
+        const event = {
+            transactionId,
+            modelConstructor: this.modelConstructor,
+            kind: "record",
+            operation: crudAction,
+            eventType: "local",
+            key: this.id,
+            value: withoutMetaOrPrivate(this.data),
+            priorValue,
+        };
+        if (crudAction === "update") {
+            event.priorValue = priorValue;
+            event.added = added;
+            event.changed = changed;
+            event.removed = removed;
+        }
+        if (watchers.length === 0) {
+            if (!options.silent) {
+                // Note: if used on frontend, the mutations must be careful to
+                // set this to the right path considering there is no watcher
+                await this.dispatch(UnwatchedLocalEvent(this, Object.assign(Object.assign({ type: actionTypeStart }, event), { value: withoutMetaOrPrivate(this.data) })));
+            }
+        }
+        else {
+            // For each watcher watching this DB path ...
+            const dispatch = WatchDispatcher(this.dispatch);
+            for (const watcher of watchers) {
+                if (!options.silent) {
+                    await dispatch(watcher)(Object.assign({ type: actionTypeStart }, event));
+                }
+            }
+        }
+        // Send CRUD to Firebase
+        try {
+            if (this.db.isMockDb && this.db.mock && options.silent) {
+                this.db.mock.silenceEvents();
+            }
+            this._data.lastUpdated = new Date().getTime();
+            const path = this.dbPath;
+            switch (crudAction) {
+                case "remove":
+                    try {
+                        const test = this.dbPath;
+                    }
+                    catch (e) {
+                        throw new FireModelProxyError(e, `The attempt to "remove" the ${capitalize(this.modelName)} with ID of "${this.id}" has been aborted. This is often because you don't have the right properties set for the dynamic path. This model requires the following dynamic properties to uniquely define (and remove) it: ${this.dynamicPathComponents.join(", ")}`);
+                    }
+                    // Check for relationship props and dis-associate
+                    // before removing the actual record
+                    // TODO: need to add tests for this!
+                    for (const rel of this.relationships) {
+                        const relProperty = this.get(rel.property);
+                        try {
+                            if (rel.relType === "hasOne" && relProperty) {
+                                await this.disassociate(rel.property, this.get(rel.property));
+                            }
+                            else if (rel.relType === "hasMany" && relProperty) {
+                                for (const relFk of Object.keys(relProperty)) {
+                                    await this.disassociate(rel.property, relFk);
+                                }
+                            }
+                        }
+                        catch (e) {
+                            throw new FireModelProxyError(e, `While trying to remove ${capitalize(this.modelName)}.${this.id} from the database, problems were encountered removing the relationship defined by the "${rel.property} property (which relates to the model ${rel.fkModelName}). This relationship has a cardinality of "${rel.relType}" and the value(s) were: ${rel.relType === "hasOne"
+                                ? Object.keys(this.get(rel.property))
+                                : this.get(rel.property)}`);
+                        }
+                    }
+                    await this.db.remove(this.dbPath);
+                    break;
+                case "add":
+                    try {
+                        await this.db.set(path, this.data);
+                    }
+                    catch (e) {
+                        throw new FireModelProxyError(e, `Problem setting the "${path}" database path. Data passed in was of type ${typeof this
+                            .data}. Error message encountered was: ${e.message}`, `firemodel/${(e.code = "PERMISSION_DENIED"
+                            ? "permission-denied"
+                            : "set-db")}`);
+                    }
+                    break;
+                case "update":
+                    const paths = this._getPaths(this, { changed, added, removed });
+                    this.db.update("/", paths);
+                    break;
+            }
+            this.isDirty = false;
+            // write audit if option is turned on
+            this._writeAudit(crudAction, this.data, priorValue);
+            // send confirm event
+            if (!options.silent && !options.silentAcceptance) {
+                if (watchers.length === 0) {
+                    await this.dispatch(UnwatchedLocalEvent(this, Object.assign(Object.assign({ type: actionTypeEnd }, event), { transactionId, value: withoutMetaOrPrivate(this.data) })));
+                }
+                else {
+                    const dispatch = WatchDispatcher(this.dispatch);
+                    for (const watcher of watchers) {
+                        if (!options.silent) {
+                            await dispatch(watcher)(Object.assign({ type: actionTypeEnd }, event));
+                        }
+                    }
+                }
+            }
+            if (this.db.isMockDb && this.db.mock && options.silent) {
+                this.db.mock.restoreEvents();
+            }
+        }
+        catch (e) {
+            // send failure event
+            await this.dispatch(UnwatchedLocalEvent(this, Object.assign(Object.assign({ type: actionTypeFailure }, event), { transactionId, value: withoutMetaOrPrivate(this.data) })));
+            throw new RecordCrudFailure(this, crudAction, transactionId, e);
+        }
+    }
+    _findDynamicComponents(path = "") {
+        if (!path.includes(":")) {
+            return [];
+        }
+        const results = [];
+        let remaining = path;
+        let index = remaining.indexOf(":");
+        while (index !== -1) {
+            remaining = remaining.slice(index);
+            const prop = remaining.replace(/\:(\w+).*/, "$1");
+            results.push(prop);
+            remaining = remaining.replace(`:${prop}`, "");
+            index = remaining.indexOf(":");
+        }
+        return results;
+    }
+    /**
+     * looks for ":name" property references within the dbOffset or localPrefix and expands them
+     */
+    _injectDynamicPathProperties(path, forProp = "dbOffset") {
+        this.dynamicPathComponents.forEach((prop) => {
+            const value = this.data[prop];
+            if (value ? false : true) {
+                throw new FireModelError(`You can not ask for the ${forProp} on a model like "${this.modelName}" which has a dynamic property of "${prop}" before setting that property [ data: ${JSON.stringify(this.data)} ].`, "record/not-ready");
+            }
+            if (!["string", "number"].includes(typeof value)) {
+                throw new FireModelError(`The path is using the property "${prop}" on ${this.modelName} as a part of the route path but that property must be either a string or a number and instead was a ${typeof prop}`, "record/not-allowed");
+            }
+            path = path.replace(`:${prop}`, String(this.get(prop)));
+        });
+        return path;
+    }
+    /**
+     * Load data from a record in database; works with `get` static initializer
+     */
+    async _getFromDB(id) {
+        const keys = typeof id === "string"
+            ? createCompositeKeyFromFkString(id, this.modelConstructor)
+            : id;
+        // load composite key into props so the dbPath() will evaluate
+        Object.keys(keys).map((key) => {
+            // TODO: fix up typing
+            this._data[key] = keys[key];
+        });
+        const data = await this.db.getRecord(this.dbPath);
+        if (data && data.id) {
+            await this._initialize(data);
+        }
+        else {
+            throw new FireModelError(`Failed to load the Record "${this.modelName}::${this.id}" with composite key of:\n ${JSON.stringify(keys, null, 2)}`, "firebase/invalid-composite-key");
+        }
+        return this;
+    }
+    /**
+     * Allows for the static "add" method to add a record
+     */
+    async _adding(options) {
+        if (!this.id) {
+            this.id = key();
+        }
+        const now = new Date().getTime();
+        if (!this.get("createdAt")) {
+            this._data.createdAt = now;
+        }
+        this._data.lastUpdated = now;
+        // TODO: need to ensure that relationship which are set
+        // are updated using the _relationship_ based methods associate/disassociate
+        // so that bi-lateral relationships are established/maintained
+        if (!this.db) {
+            throw new FireModelError(`An attempt to add a ${capitalize(this.modelName)} record failed as the Database has not been connected yet. Try setting FireModel's defaultDb first.`, "firemodel/db-not-ready");
+        }
+        await this._localCrudOperation("add" /* add */, undefined, options);
+        // now that the record has been added we need to follow-up with any relationship fk's that
+        // were part of this record. For these we must run an `associate` over them to ensure that
+        // inverse properties are established in the inverse direction
+        const relationshipsTouched = this.relationships
+            .reduce((agg, rel) => {
+            if (rel.relType === "hasMany" &&
+                Object.keys(this.data[rel.property]).length > 0) {
+                return agg.concat(rel.property);
+            }
+            else if (rel.relType === "hasOne" && this.data[rel.property]) {
+                return agg.concat(rel.property);
+            }
+            else {
+                return agg;
+            }
+        }, [])
+            .filter((prop) => this.META.relationship(prop).inverseProperty);
+        const promises = [];
+        try {
+            for (const prop of relationshipsTouched) {
+                const meta = this.META.relationship(prop);
+                if (meta.relType === "hasOne") {
+                    // TODO: why is this damn typing so difficult?
+                    promises.push(this.associate(prop, this.get(prop)));
+                }
+                if (meta.relType === "hasMany") {
+                    Object.keys(this.get(prop)).forEach((fkRef) => promises.push(this.associate(prop, fkRef)));
+                }
+            }
+            await Promise.all(promises);
+        }
+        catch (e) {
+            throw new FireModelProxyError(e, `An ${capitalize(this.modelName)} [${this.id}] model was being added but when attempting to add in the relationships which were inferred by the record payload it ran into problems. The relationship(s) which had properties defined -- and which had a bi-lateral FK relationship (e.g., both models will track the relationship versus just the ${capitalize(this.modelName)} [${this.id} model) --  were: ${relationshipsTouched.join(", ")}`);
+        }
+        return this;
+    }
+}
+
 let mockPrepared = false;
-function API(db, modelConstructor) {
+function MockApi(db, modelConstructor) {
     const config = {
         relationshipBehavior: "ignore",
         exceptionPassthrough: false,
@@ -10681,7 +6946,369 @@ function Mock(modelConstructor, db) {
     if (!db.isMockDb) {
         console.warn("You are using Mock() with a real database; typically a mock database is preferred");
     }
-    return API(db, modelConstructor);
+    return MockApi(db, modelConstructor);
+}
+
+const meta = {};
+function addModelMeta(modelName, props) {
+    meta[modelName] = props;
+}
+/**
+ * Returns the META info for a given model, it will attempt to resolve
+ * it locally first but if that is not available (as is the case with
+ * self-reflexify relationships) then it will leverage the ModelMeta store
+ * to get the meta information.
+ *
+ * @param modelKlass a model or record which exposes META property
+ */
+function getModelMeta(modelKlass) {
+    const localMeta = modelKlass.META;
+    const modelMeta = meta[modelKlass.modelName];
+    return localMeta && localMeta.properties ? localMeta : modelMeta || {};
+}
+function modelsWithMeta() {
+    return Object.keys(meta);
+}
+
+let chalk;
+class VerboseError extends Error {
+    constructor(err, ...args) {
+        super(...args);
+        this.code = err.code;
+        this.message = err.message;
+        this.module = err.module;
+        this.function = err.function;
+        if (VerboseError.useColor) {
+            // tslint:disable-next-line:no-implicit-dependencies
+            chalk = require("chalk");
+        }
+        const stackFrames = VerboseError.stackParser(this);
+        if (stackFrames) {
+            this.stackFrames = stackFrames.filter(frame => (frame.getFileName() || "").indexOf("common-types") === -1);
+            this.function = stackFrames[0].getMethodName();
+            this.stack =
+                this.message +
+                    "\n\n" +
+                    this.stackFrames
+                        .map(frame => {
+                        const isNative = typeof frame.isNative === "function" ? frame.isNative() : frame.isNative;
+                        const colorize = (content) => VerboseError.useColor && isNative ? chalk.grey.italic(content) : content;
+                        const className = frame.getTypeName() ? frame.getTypeName() + " → " : "";
+                        const functionName = frame.getMethodName() || frame.getFunctionName() || "<anonymous>";
+                        const classAndFunction = VerboseError.useColor
+                            ? chalk.bold(`${className}${functionName}`)
+                            : `${className}${functionName}`;
+                        const fileName = (frame.getFileName() || "")
+                            .split("/")
+                            .slice(-1 * VerboseError.filePathDepth)
+                            .join("/");
+                        const details = isNative
+                            ? "( native function )"
+                            : `[ line ${frame.getLineNumber()}, col ${frame.getColumnNumber()} in ${fileName} ]`;
+                        return colorize(`\t at ${classAndFunction} ${details}`);
+                    })
+                        .join("\n");
+        }
+        else {
+            this.stack = this.stack
+                .split("\n")
+                .filter(line => line.indexOf("VerboseError") === -1)
+                .join("\n");
+        }
+    }
+    /**
+     * If you want to use a library like stack-trace(node) or stacktrace-js(client) add in the "get"
+     * function that they provide
+     */
+    static setStackParser(fn) {
+        VerboseError.stackParser = fn;
+    }
+    static stackParser(err) {
+        return undefined;
+    }
+    toString() {
+        return this.message + this.stack;
+    }
+    toJSON() {
+        return JSON.stringify(this.toObject(), null, 2);
+    }
+    toObject() {
+        return {
+            code: this.code,
+            message: this.message,
+            module: this.module
+        };
+    }
+}
+
+/**
+ * A static library for interacting with _watchers_. It
+ * provides the entry point into the watcher API and then
+ * hands off to either `WatchList` or `WatchRecord`.
+ */
+class Watch {
+    /**
+     * Sets the default database for all Firemodel
+     * classes such as `FireModel`, `Record`, and `List`
+     */
+    static set defaultDb(db) {
+        FireModel.defaultDb = db;
+    }
+    /**
+     * Sets the default dispatch for all Firemodel
+     * classes such as `FireModel`, `Record`, and `List`
+     */
+    static set dispatch(d) {
+        FireModel.dispatch = d;
+    }
+    /**
+     * returns a full list of all watchers
+     */
+    static get inventory() {
+        return getWatcherPool();
+    }
+    static toJSON() {
+        return Watch.inventory;
+    }
+    /**
+     * lookup
+     *
+     * Allows the lookup of details regarding the actively watched
+     * objects in the Firebase database
+     *
+     * @param hashCode the unique hashcode given for each watcher
+     */
+    static lookup(hashCode) {
+        const codes = new Set(Object.keys(getWatcherPool()));
+        if (!codes.has(hashCode)) {
+            const e = new Error(`You looked up an invalid watcher hashcode [${hashCode}].`);
+            e.name = "FireModel::InvalidHashcode";
+            throw e;
+        }
+        return getWatcherPool()[hashCode];
+    }
+    static get watchCount() {
+        return Object.keys(getWatcherPool()).length;
+    }
+    static reset() {
+        clearWatcherPool();
+    }
+    /**
+     * Finds the watcher by a given name and returns the ID of the
+     * first match
+     */
+    static findByName(name) {
+        const pool = getWatcherPool();
+        return Object.keys(pool).find((i) => pool[i].watcherName === name);
+    }
+    /**
+     * stops watching either a specific watcher or ALL if no hash code is provided
+     */
+    static stop(hashCode, oneOffDB) {
+        const codes = new Set(Object.keys(getWatcherPool()));
+        const db = oneOffDB || FireModel.defaultDb;
+        if (!db) {
+            throw new FireModelError(`There is no established way to connect to the database; either set the default DB or pass the DB in as the second parameter to Watch.stop()!`, `firemodel/no-database`);
+        }
+        if (hashCode && !codes.has(hashCode)) {
+            const e = new FireModelError(`The hashcode passed into the stop() method [ ${hashCode} ] is not actively being watched!`);
+            e.name = "firemodel/missing-hashcode";
+            throw e;
+        }
+        if (!hashCode) {
+            const pool = getWatcherPool();
+            if (Object.keys(pool).length > 0) {
+                const keysAndPaths = Object.keys(pool).reduce((agg, key) => (Object.assign(Object.assign({}, agg), { [key]: pool[key].watcherPaths })), {});
+                const dispatch = pool[firstKey$1(pool)].dispatch;
+                db.unWatch();
+                clearWatcherPool();
+                dispatch({
+                    type: exports.FmEvents.WATCHER_STOPPED_ALL,
+                    stopped: keysAndPaths,
+                });
+            }
+        }
+        else {
+            const registry = getWatcherPool()[hashCode];
+            const events = registry.eventFamily === "child"
+                ? "value"
+                : ["child_added", "child_changed", "child_moved", "child_removed"];
+            db.unWatch(events, registry.dispatch);
+            // tslint:disable-next-line: no-object-literal-type-assertion
+            registry.dispatch({
+                type: exports.FmEvents.WATCHER_STOPPED,
+                watcherId: hashCode,
+                remaining: getWatcherPoolList().map((i) => ({
+                    id: i.watcherId,
+                    name: i.watcherName,
+                })),
+            });
+            removeFromWatcherPool(hashCode);
+        }
+    }
+    /**
+     * Configures the watcher to be a `value` watcher on Firebase
+     * which is only concerned with changes to a singular Record.
+     *
+     * @param pk the _primary key_ for a given record. This can be a string
+     * represention of the `id` property, a string represention of
+     * the composite key, or an object representation of the composite
+     * key.
+     */
+    static record(modelConstructor, pk, options = {}) {
+        return WatchRecord.record(modelConstructor, pk, options);
+    }
+    static list(
+    /**
+     * The **Model** subType which this list watcher will watch
+     */
+    modelConstructor, 
+    /**
+     * optionally state the _dynamic path_ properties which offset the **dbPath**
+     */
+    offsets) {
+        return WatchList.list(modelConstructor, { offsets });
+    }
+}
+
+const moreThanThreePeriods$1 = /\.{3,}/g;
+// polyfill Array.isArray if necessary
+if (!Array.isArray) {
+    Array.isArray = (arg) => {
+        return Object.prototype.toString.call(arg) === "[object Array]";
+    };
+}
+const errorStr = (type) => {
+    return `tried to join something other than undefined, a string or an array [${type}], it was ignored in pathJoin's result`;
+};
+/** An ISO-morphic path join that works everywhere */
+function pathJoin$1(...args) {
+    return args
+        .reduce((prev, val) => {
+        if (typeof prev === "undefined") {
+            return;
+        }
+        if (val === undefined) {
+            return prev;
+        }
+        return typeof val === "string" || typeof val === "number"
+            ? joinStringsWithSlash(prev, "" + val) // if string or number just keep as is
+            : Array.isArray(val)
+                ? joinStringsWithSlash(prev, pathJoin$1.apply(null, val)) // handle array with recursion
+                : console.error(errorStr(typeof val));
+    }, "")
+        .replace(moreThanThreePeriods$1, ".."); // join the resulting array together
+}
+function joinStringsWithSlash(str1, str2) {
+    const str1isEmpty = !str1.length;
+    const str1EndsInSlash = str1[str1.length - 1] === "/";
+    const str2StartsWithSlash = str2[0] === "/";
+    const res = (str1EndsInSlash && str2StartsWithSlash && str1 + str2.slice(1)) ||
+        (!str1EndsInSlash &&
+            !str2StartsWithSlash &&
+            !str1isEmpty &&
+            str1 + "/" + str2) ||
+        str1 + str2;
+    return res;
+}
+
+const equal = require("fast-deep-equal/es6");
+function normalized(...args) {
+    return args
+        .filter((a) => a)
+        .map((a) => a.replace(/$[\.\/]/, "").replace(/[\.\/]^/, ""))
+        .map((a) => a.replace(/\./g, "/"));
+}
+function slashNotation(...args) {
+    return normalized(...args).join("/");
+}
+function firstKey$1(thingy) {
+    return Object.keys(thingy)[0];
+}
+function dotNotation$1(...args) {
+    return normalized(...args)
+        .join(".")
+        .replace("/", ".");
+}
+function updateToAuditChanges(changed, prior) {
+    return Object.keys(changed).reduce((prev, curr) => {
+        const after = changed[curr];
+        const before = prior[curr];
+        const propertyAction = !before ? "added" : !after ? "removed" : "updated";
+        const payload = {
+            before,
+            after,
+            property: curr,
+            action: propertyAction,
+        };
+        prev.push(payload);
+        return prev;
+    }, []);
+}
+function compareHashes(from, to, 
+/**
+ * optionally explicitly state properties so that relationships
+ * can be filtered away
+ */
+modelProps) {
+    const results = {
+        added: [],
+        changed: [],
+        removed: [],
+    };
+    from = from ? from : {};
+    to = to ? to : {};
+    let keys = Array.from(new Set([
+        ...Object.keys(from),
+        ...Object.keys(to),
+    ]))
+        // META should never be part of comparison
+        .filter((i) => i !== "META")
+        // neither should private properties indicated by underscore
+        .filter((i) => i.slice(0, 1) !== "_");
+    if (modelProps) {
+        keys = keys.filter((i) => modelProps.includes(i));
+    }
+    keys.forEach((i) => {
+        if (!to[i]) {
+            results.added.push(i);
+        }
+        else if (from[i] === null) {
+            results.removed.push(i);
+        }
+        else if (!equal(from[i], to[i])) {
+            results.changed.push(i);
+        }
+    });
+    return results;
+}
+function getAllPropertiesFromClassStructure(model) {
+    const modelName = model.constructor.name;
+    const properties = hashToArray(propertiesByModel[modelName], "property") || [];
+    let parent = Object.getPrototypeOf(model.constructor);
+    while (parent.name) {
+        const subClass = new parent();
+        const subClassName = subClass.constructor.name;
+        properties.push(...hashToArray(propertiesByModel[subClassName], "property"));
+        parent = Object.getPrototypeOf(subClass.constructor);
+    }
+    return properties.map((p) => p.property);
+}
+function withoutMetaOrPrivate(model) {
+    if (model && model.META) {
+        model = Object.assign({}, model);
+        delete model.META;
+    }
+    return model;
+}
+function capitalize(str) {
+    return str ? str.slice(0, 1).toUpperCase() + str.slice(1) : "";
+}
+function lowercase(str) {
+    return str ? str.slice(0, 1).toLowerCase() + str.slice(1) : "";
+}
+function stripLeadingSlash(str) {
+    return str.slice(0, 1) === "/" ? str.slice(1) : str;
 }
 
 (function (RelationshipPolicy) {
@@ -10693,25 +7320,6 @@ function Mock(modelConstructor, db) {
     RelationshipCardinality["hasMany"] = "hasMany";
     RelationshipCardinality["belongsTo"] = "belongsTo";
 })(exports.RelationshipCardinality || (exports.RelationshipCardinality = {}));
-
-/**
- * Given a `Record` which defines all properties in it's
- * "dynamic segments" as well as an `id`; this function returns
- * an object representation of the composite key.
- */
-function createCompositeKey(rec) {
-    const model = rec.data;
-    if (!rec.id) {
-        throw new FireModelError(`You can not create a composite key without first setting the 'id' property!`, "firemodel/not-ready");
-    }
-    const dynamicPathComponents = rec.dynamicPathComponents.reduce((prev, key) => {
-        if (!model[key]) {
-            throw new FireModelError(`You can not create a composite key on a ${capitalize(rec.modelName)} without first setting the '${key}' property!`, "firemodel/not-ready");
-        }
-        return Object.assign(Object.assign({}, prev), { [key]: model[key] });
-    }, {});
-    return rec.dynamicPathComponents.reduce((prev, key) => (Object.assign(Object.assign({}, prev), dynamicPathComponents)), { id: rec.id });
-}
 
 /*
  * Dexie.js - a minimalistic wrapper for IndexedDB
@@ -10755,7 +7363,7 @@ function __spreadArrays() {
 }
 
 var keys = Object.keys;
-var isArray$2 = Array.isArray;
+var isArray$1 = Array.isArray;
 var _global = typeof self !== 'undefined' ? self :
     typeof window !== 'undefined' ? window :
         global;
@@ -10782,9 +7390,9 @@ function props(proto, extension) {
         setProp(proto, key, extension[key]);
     });
 }
-var defineProperty$2 = Object.defineProperty;
+var defineProperty$1 = Object.defineProperty;
 function setProp(obj, prop, functionOrGetSet, options) {
-    defineProperty$2(obj, prop, extend(functionOrGetSet && hasOwn(functionOrGetSet, "get") && typeof functionOrGetSet.get === 'function' ?
+    defineProperty$1(obj, prop, extend(functionOrGetSet && hasOwn(functionOrGetSet, "get") && typeof functionOrGetSet.get === 'function' ?
         { get: functionOrGetSet.get, set: functionOrGetSet.set, configurable: true } :
         { value: functionOrGetSet, configurable: true, writable: true }, options));
 }
@@ -10878,7 +7486,7 @@ function setByKeyPath(obj, keyPath, value) {
             var remainingKeyPath = keyPath.substr(period + 1);
             if (remainingKeyPath === "")
                 if (value === undefined) {
-                    if (isArray$2(obj) && !isNaN(parseInt(currentKeyPath)))
+                    if (isArray$1(obj) && !isNaN(parseInt(currentKeyPath)))
                         obj.splice(currentKeyPath, 1);
                     else
                         delete obj[currentKeyPath];
@@ -10894,7 +7502,7 @@ function setByKeyPath(obj, keyPath, value) {
         }
         else {
             if (value === undefined) {
-                if (isArray$2(obj) && !isNaN(parseInt(keyPath)))
+                if (isArray$1(obj) && !isNaN(parseInt(keyPath)))
                     obj.splice(keyPath, 1);
                 else
                     delete obj[keyPath];
@@ -10932,7 +7540,7 @@ function deepClone(any) {
     if (!any || typeof any !== 'object')
         return any;
     var rv;
-    if (isArray$2(any)) {
+    if (isArray$1(any)) {
         rv = [];
         for (var i = 0, l = any.length; i < l; ++i) {
             rv.push(deepClone(any[i]));
@@ -10951,9 +7559,9 @@ function deepClone(any) {
     }
     return rv;
 }
-var toString$1 = {}.toString;
+var toString = {}.toString;
 function toStringTag(o) {
-    return toString$1.call(o).slice(8, -1);
+    return toString.call(o).slice(8, -1);
 }
 var getValueOf = function (val, type) {
     return type === "Array" ? '' + val.map(function (v) { return getValueOf(v, toStringTag(v)); }) :
@@ -11007,7 +7615,7 @@ var NO_CHAR_ARRAY = {};
 function getArrayOf(arrayLike) {
     var i, a, x, it;
     if (arguments.length === 1) {
-        if (isArray$2(arrayLike))
+        if (isArray$1(arrayLike))
             return arrayLike.slice();
         if (this === NO_CHAR_ARRAY && typeof arrayLike === 'string')
             return [arrayLike];
@@ -12080,7 +8688,7 @@ var Table =               (function () {
     Table.prototype.where = function (indexOrCrit) {
         if (typeof indexOrCrit === 'string')
             return new this.db.WhereClause(this, indexOrCrit);
-        if (isArray$2(indexOrCrit))
+        if (isArray$1(indexOrCrit))
             return new this.db.WhereClause(this, "[" + indexOrCrit.join('+') + "]");
         var keyPaths = keys(indexOrCrit);
         if (keyPaths.length === 1)
@@ -12119,7 +8727,7 @@ var Table =               (function () {
                     combine(prevFilterFn, index && index.multi ?
                         function (x) {
                             var prop = getByKeyPath(x, keyPath);
-                            return isArray$2(prop) && prop.some(function (item) { return equals(value, item); });
+                            return isArray$1(prop) && prop.some(function (item) { return equals(value, item); });
                         } : function (x) { return equals(value, getByKeyPath(x, keyPath)); })
                     : prevFilterFn
             ];
@@ -12153,7 +8761,7 @@ var Table =               (function () {
         return new this.db.Collection(new this.db.WhereClause(this));
     };
     Table.prototype.orderBy = function (index) {
-        return new this.db.Collection(new this.db.WhereClause(this, isArray$2(index) ?
+        return new this.db.Collection(new this.db.WhereClause(this, isArray$1(index) ?
             "[" + index.join('+') + "]" :
             index));
     };
@@ -12205,9 +8813,9 @@ var Table =               (function () {
         });
     };
     Table.prototype.update = function (keyOrObject, modifications) {
-        if (typeof modifications !== 'object' || isArray$2(modifications))
+        if (typeof modifications !== 'object' || isArray$1(modifications))
             throw new exceptions.InvalidArgument("Modifications must be an object.");
-        if (typeof keyOrObject === 'object' && !isArray$2(keyOrObject)) {
+        if (typeof keyOrObject === 'object' && !isArray$1(keyOrObject)) {
             keys(modifications).forEach(function (keyPath) {
                 setByKeyPath(keyOrObject, keyPath, modifications[keyPath]);
             });
@@ -12359,7 +8967,7 @@ function Events(ctx) {
     function addConfiguredEvents(cfg) {
         keys(cfg).forEach(function (eventName) {
             var args = cfg[eventName];
-            if (isArray$2(args)) {
+            if (isArray$1(args)) {
                 add(eventName, cfg[eventName][0], cfg[eventName][1]);
             }
             else if (args === 'asap') {
@@ -13551,7 +10159,7 @@ function createDBCore(db, indexedDB, IdbKeyRange, tmpTrans) {
                 name: db.name,
                 tables: tables.map(function (table) { return trans.objectStore(table); }).map(function (store) {
                     var keyPath = store.keyPath, autoIncrement = store.autoIncrement;
-                    var compound = isArray$2(keyPath);
+                    var compound = isArray$1(keyPath);
                     var outbound = keyPath == null;
                     var indexByKeyPath = {};
                     var result = {
@@ -13569,7 +10177,7 @@ function createDBCore(db, indexedDB, IdbKeyRange, tmpTrans) {
                         indexes: arrayify(store.indexNames).map(function (indexName) { return store.index(indexName); })
                             .map(function (index) {
                             var name = index.name, unique = index.unique, multiEntry = index.multiEntry, keyPath = index.keyPath;
-                            var compound = isArray$2(keyPath);
+                            var compound = isArray$1(keyPath);
                             var result = {
                                 name: name,
                                 compound: compound,
@@ -13937,7 +10545,7 @@ function setApiOnPlace(db, objs, tableNames, dbschema) {
                     setProp(obj, tableName, {
                         get: function () { return this.table(tableName); },
                         set: function (value) {
-                            defineProperty$2(this, tableName, { value: value, writable: true, configurable: true, enumerable: true });
+                            defineProperty$1(this, tableName, { value: value, writable: true, configurable: true, enumerable: true });
                         }
                     });
                 }
@@ -14193,7 +10801,7 @@ function parseIndexSyntax(primKeyAndIndexes) {
         index = index.trim();
         var name = index.replace(/([&*]|\+\+)/g, "");
         var keyPath = /^\[/.test(name) ? name.match(/^\[(.*)\]$/)[1].split('+') : name;
-        return createIndexSpec(name, keyPath || null, /\&/.test(index), /\*/.test(index), /\+\+/.test(index), isArray$2(keyPath), indexNum === 0);
+        return createIndexSpec(name, keyPath || null, /\&/.test(index), /\*/.test(index), /\+\+/.test(index), isArray$1(keyPath), indexNum === 0);
     });
 }
 
@@ -14399,7 +11007,7 @@ function awaitIterator(iterator) {
             var next = getNext(val), value = next.value;
             return next.done ? value :
                 (!value || typeof value.then !== 'function' ?
-                    isArray$2(value) ? Promise.all(value).then(onSuccess, onError) : onSuccess(value) :
+                    isArray$1(value) ? Promise.all(value).then(onSuccess, onError) : onSuccess(value) :
                     value.then(onSuccess, onError));
         };
     }
@@ -14464,7 +11072,7 @@ function enterTransactionScope(db, mode, storeNames, parentTransaction, scopeFun
 }
 
 function pad(a, value, count) {
-    var result = isArray$2(a) ? a.slice() : [a];
+    var result = isArray$1(a) ? a.slice() : [a];
     for (var i = 0; i < count; ++i)
         result.push(value);
     return result;
@@ -15083,201 +11691,6 @@ DexiePromise.rejectionMapper = mapError;
 setDebug(debug, dexieStackFrameFilter);
 
 /**
- * Provides a simple API to do CRUD operations
- * on Dexie/IndexDB which resembles the Firemodel
- * API.
- */
-class DexieRecord {
-    constructor(modelConstructor, table, meta) {
-        this.modelConstructor = modelConstructor;
-        this.table = table;
-        this.meta = meta;
-    }
-    /**
-     * Gets a specific record from the **IndexDB**; if record is not found the
-     * `dexie/record-not-found` error is thrown.
-     *
-     * @param pk the primary key for the record; which is just the `id` in many cases
-     * but becomes a `CompositeKey` if the model has a dynamic path.
-     */
-    async get(pk) {
-        return this.table.get(pk).catch((e) => {
-            throw new DexieError(`DexieRecord: problem getting record ${JSON.stringify(pk)} of model ${capitalize(this.meta.modelName)}: ${e.message}`, `dexie/${e.code || e.name || "get"}`);
-        });
-    }
-    /**
-     * Adds a new record of _model_ `T`; if an `id` is provided it is used otherwise
-     * it will generate an id using the client-side library 'firebase-key'.
-     *
-     * @param record the dictionary representing the new record
-     */
-    async add(record) {
-        if (this.meta.hasDynamicPath) {
-            if (!this.meta.dynamicPathComponents.every((i) => record[i])) {
-                throw new DexieError(`The model ${capitalize(this.meta.modelName)} is based on a dynamic path [ ${this.meta.dynamicPathComponents.join(", ")} ] and every part of this path is therefore a required field but the record hash passed in did not define values for all these properties. The properties which WERE pass in included: ${Object.keys(record).join(", ")}`, "dexie/missing-property");
-            }
-        }
-        if (!record.id) {
-            record.id = key();
-        }
-        const now = new Date().getTime();
-        record.createdAt = now;
-        record.lastUpdated = now;
-        const pk = await this.table
-            .add(record)
-            .catch((e) => {
-            throw new DexieError(`DexieRecord: Problem adding record to ${capitalize(this.meta.modelName)}: ${e.message}`, `dexie/${e.code || e.name || "add"}`);
-        });
-        return this.get(pk);
-    }
-    /**
-     * Update an existing record in the **IndexDB**
-     */
-    async update(pk, updateHash) {
-        const now = new Date().getTime();
-        updateHash.lastUpdated = now;
-        const result = await this.table
-            .update(pk, updateHash)
-            .catch((e) => {
-            throw new DexieError(`DexieRecord: Problem updating ${capitalize(this.meta.modelName)}.${typeof pk === "string" ? pk : pk.id}: ${e.message}`, `dexie/${e.code || e.name || "update"}`);
-        });
-        if (result === 0) {
-            throw new DexieError(`The primary key passed in to record.update(${JSON.stringify(pk)}) was NOT found in the IndexedDB!`, "dexie/record-not-found");
-        }
-        if (result > 1) {
-            throw new DexieError(`While calling record.update(${JSON.stringify(pk)}) MORE than one record was updated!`, "dexie/unexpected-error");
-        }
-    }
-    async remove(id) {
-        return this.table.delete(id).catch((e) => {
-            throw new DexieError(`Problem removing record ${JSON.stringify(id)} from the ${capitalize(this.meta.modelName)}: ${e.message}`, `dexie/${e.code || e.name || "remove"}`);
-        });
-    }
-}
-
-/**
- * Provides a simple API for list based queries that resembles the Firemodel `List` API
- * but which works on the IndexDB using Dexie under the hood.
- */
-class DexieList {
-    constructor(modelConstructor, table, meta) {
-        this.modelConstructor = modelConstructor;
-        this.table = table;
-        this.meta = meta;
-    }
-    /**
-     * Get a full list of _all_ records of a given model type
-     */
-    async all(options = {
-        orderBy: "lastUpdated",
-    }) {
-        // TODO: had to remove the `orderBy` for models with a composite key; no idea why!
-        const c = this.meta.hasDynamicPath
-            ? this.table
-            : this.table.orderBy(options.orderBy);
-        if (options.limit) {
-            c.limit(options.limit);
-        }
-        if (options.offset) {
-            c.offset(options.offset);
-        }
-        const results = c.toArray().catch((e) => {
-            if (e.code === "NotFoundError" || e.name === "NotFoundError") {
-                console.info(`No records for model ${capitalize(this.meta.modelName)} found!`);
-                return [];
-            }
-            else {
-                throw new DexieError(`Problem with list(${capitalize(this.meta.modelName)}).all(${JSON.stringify(options)}): ${e.message}`, `dexie/${e.code || e.name || "list.all"}`);
-            }
-        });
-        return results || [];
-    }
-    /**
-     * Limit the list of records based on the evaluation of a single
-     * properties value. Default comparison is equality but you can
-     * change the `value` to a Tuple and include the `<` or `>` operator
-     * as the first param to get other comparison operators.
-     */
-    async where(prop, value, options = {}) {
-        // const c = this.table.orderBy(options.orderBy || "lastUpdated");
-        const [op, val] = Array.isArray(value) && ["=", ">", "<"].includes(value[0])
-            ? value
-            : ["=", value];
-        let query = op === "="
-            ? this.table.where(prop).equals(val)
-            : op === ">"
-                ? this.table.where(prop).above(val)
-                : this.table.where(prop).below(val);
-        if (options.limit) {
-            query = query.limit(options.limit);
-        }
-        if (options.offset) {
-            query = query.offset(options.offset);
-        }
-        const results = query.toArray().catch((e) => {
-            if (e.code === "NotFoundError" || e.name === "NotFoundError") {
-                console.info(`No records for model ${capitalize(this.meta.modelName)} found!`);
-                return [];
-            }
-            else {
-                throw new DexieError(`list.where("${prop}", ${JSON.stringify(value)}, ${JSON.stringify(options)}) failed to execute: ${e.message}`, `dexie/${e.code || e.name || "list.where"}`);
-            }
-        });
-        return results || [];
-    }
-    /**
-     * Get the "_x_" most recent records of a given type (based on the
-     * `lastUpdated` property).
-     */
-    async recent(limit, skip) {
-        const c = skip
-            ? this.table.orderBy("lastUpdated").reverse().limit(limit).offset(skip)
-            : this.table.orderBy("lastUpdated").reverse().limit(limit);
-        return c.toArray();
-    }
-    /**
-     * Get all records updated since a given timestamp.
-     */
-    async since(datetime, options = {}) {
-        return this.where("lastUpdated", [">", datetime]);
-    }
-    /**
-     * Get the _last_ "x" records which were created.
-     */
-    async last(limit, skip) {
-        const c = skip
-            ? this.table.orderBy("createdAt").reverse().limit(limit).offset(skip)
-            : this.table.orderBy("createdAt").reverse().limit(limit);
-        return c.toArray().catch((e) => {
-            if (e.code === "NotFoundError" || e.name === "NotFoundError") {
-                console.info(`No records for model ${capitalize(this.meta.modelName)} found!`);
-                return [];
-            }
-            else {
-                throw new DexieError(`list.last(${limit}${skip ? `, skip: ${skip}` : ""}) failed to execute: ${e.message}`, `dexie/${e.code || e.name || "list.last"}`);
-            }
-        });
-    }
-    /**
-     * Get the _first_ "x" records which were created (aka, the earliest records created)
-     */
-    async first(limit, skip) {
-        const c = skip
-            ? this.table.orderBy("createdAt").limit(limit).offset(skip)
-            : this.table.orderBy("createdAt").limit(limit);
-        return c.toArray().catch((e) => {
-            if (e.code === "NotFoundError" || e.name === "NotFoundError") {
-                console.info(`No records for model ${capitalize(this.meta.modelName)} found!`);
-                return [];
-            }
-            else {
-                throw new DexieError(`list.first(${limit}${skip ? `, skip: ${skip}` : ""}) failed to execute: ${e.message}`, `dexie/${e.code || e.name || "list.first"}`);
-            }
-        });
-    }
-}
-
-/**
  * Provides a simple API to convert to/work with **Dexie** models
  * from a **Firemodel** model definition.
  */
@@ -15586,57 +11999,4393 @@ class DexieDb {
     }
 }
 
+/**
+ * Provides a simple API for list based queries that resembles the Firemodel `List` API
+ * but which works on the IndexDB using Dexie under the hood.
+ */
+class DexieList {
+    constructor(modelConstructor, table, meta) {
+        this.modelConstructor = modelConstructor;
+        this.table = table;
+        this.meta = meta;
+    }
+    /**
+     * Get a full list of _all_ records of a given model type
+     */
+    async all(options = {
+        orderBy: "lastUpdated",
+    }) {
+        // TODO: had to remove the `orderBy` for models with a composite key; no idea why!
+        const c = this.meta.hasDynamicPath
+            ? this.table
+            : this.table.orderBy(options.orderBy);
+        if (options.limit) {
+            c.limit(options.limit);
+        }
+        if (options.offset) {
+            c.offset(options.offset);
+        }
+        const results = c.toArray().catch((e) => {
+            if (e.code === "NotFoundError" || e.name === "NotFoundError") {
+                console.info(`No records for model ${capitalize(this.meta.modelName)} found!`);
+                return [];
+            }
+            else {
+                throw new DexieError(`Problem with list(${capitalize(this.meta.modelName)}).all(${JSON.stringify(options)}): ${e.message}`, `dexie/${e.code || e.name || "list.all"}`);
+            }
+        });
+        return results || [];
+    }
+    /**
+     * Limit the list of records based on the evaluation of a single
+     * properties value. Default comparison is equality but you can
+     * change the `value` to a Tuple and include the `<` or `>` operator
+     * as the first param to get other comparison operators.
+     */
+    async where(prop, value, options = {}) {
+        // const c = this.table.orderBy(options.orderBy || "lastUpdated");
+        const [op, val] = Array.isArray(value) && ["=", ">", "<"].includes(value[0])
+            ? value
+            : ["=", value];
+        let query = op === "="
+            ? this.table.where(prop).equals(val)
+            : op === ">"
+                ? this.table.where(prop).above(val)
+                : this.table.where(prop).below(val);
+        if (options.limit) {
+            query = query.limit(options.limit);
+        }
+        if (options.offset) {
+            query = query.offset(options.offset);
+        }
+        const results = query.toArray().catch((e) => {
+            if (e.code === "NotFoundError" || e.name === "NotFoundError") {
+                console.info(`No records for model ${capitalize(this.meta.modelName)} found!`);
+                return [];
+            }
+            else {
+                throw new DexieError(`list.where("${prop}", ${JSON.stringify(value)}, ${JSON.stringify(options)}) failed to execute: ${e.message}`, `dexie/${e.code || e.name || "list.where"}`);
+            }
+        });
+        return results || [];
+    }
+    /**
+     * Get the "_x_" most recent records of a given type (based on the
+     * `lastUpdated` property).
+     */
+    async recent(limit, skip) {
+        const c = skip
+            ? this.table.orderBy("lastUpdated").reverse().limit(limit).offset(skip)
+            : this.table.orderBy("lastUpdated").reverse().limit(limit);
+        return c.toArray();
+    }
+    /**
+     * Get all records updated since a given timestamp.
+     */
+    async since(datetime, options = {}) {
+        return this.where("lastUpdated", [">", datetime]);
+    }
+    /**
+     * Get the _last_ "x" records which were created.
+     */
+    async last(limit, skip) {
+        const c = skip
+            ? this.table.orderBy("createdAt").reverse().limit(limit).offset(skip)
+            : this.table.orderBy("createdAt").reverse().limit(limit);
+        return c.toArray().catch((e) => {
+            if (e.code === "NotFoundError" || e.name === "NotFoundError") {
+                console.info(`No records for model ${capitalize(this.meta.modelName)} found!`);
+                return [];
+            }
+            else {
+                throw new DexieError(`list.last(${limit}${skip ? `, skip: ${skip}` : ""}) failed to execute: ${e.message}`, `dexie/${e.code || e.name || "list.last"}`);
+            }
+        });
+    }
+    /**
+     * Get the _first_ "x" records which were created (aka, the earliest records created)
+     */
+    async first(limit, skip) {
+        const c = skip
+            ? this.table.orderBy("createdAt").limit(limit).offset(skip)
+            : this.table.orderBy("createdAt").limit(limit);
+        return c.toArray().catch((e) => {
+            if (e.code === "NotFoundError" || e.name === "NotFoundError") {
+                console.info(`No records for model ${capitalize(this.meta.modelName)} found!`);
+                return [];
+            }
+            else {
+                throw new DexieError(`list.first(${limit}${skip ? `, skip: ${skip}` : ""}) failed to execute: ${e.message}`, `dexie/${e.code || e.name || "list.first"}`);
+            }
+        });
+    }
+}
+
+/**
+ * Provides a simple API to do CRUD operations
+ * on Dexie/IndexDB which resembles the Firemodel
+ * API.
+ */
+class DexieRecord {
+    constructor(modelConstructor, table, meta) {
+        this.modelConstructor = modelConstructor;
+        this.table = table;
+        this.meta = meta;
+    }
+    /**
+     * Gets a specific record from the **IndexDB**; if record is not found the
+     * `dexie/record-not-found` error is thrown.
+     *
+     * @param pk the primary key for the record; which is just the `id` in many cases
+     * but becomes a `CompositeKey` if the model has a dynamic path.
+     */
+    async get(pk) {
+        return this.table.get(pk).catch((e) => {
+            throw new DexieError(`DexieRecord: problem getting record ${JSON.stringify(pk)} of model ${capitalize(this.meta.modelName)}: ${e.message}`, `dexie/${e.code || e.name || "get"}`);
+        });
+    }
+    /**
+     * Adds a new record of _model_ `T`; if an `id` is provided it is used otherwise
+     * it will generate an id using the client-side library 'firebase-key'.
+     *
+     * @param record the dictionary representing the new record
+     */
+    async add(record) {
+        if (this.meta.hasDynamicPath) {
+            if (!this.meta.dynamicPathComponents.every((i) => record[i])) {
+                throw new DexieError(`The model ${capitalize(this.meta.modelName)} is based on a dynamic path [ ${this.meta.dynamicPathComponents.join(", ")} ] and every part of this path is therefore a required field but the record hash passed in did not define values for all these properties. The properties which WERE pass in included: ${Object.keys(record).join(", ")}`, "dexie/missing-property");
+            }
+        }
+        if (!record.id) {
+            record.id = key();
+        }
+        const now = new Date().getTime();
+        record.createdAt = now;
+        record.lastUpdated = now;
+        const pk = await this.table
+            .add(record)
+            .catch((e) => {
+            throw new DexieError(`DexieRecord: Problem adding record to ${capitalize(this.meta.modelName)}: ${e.message}`, `dexie/${e.code || e.name || "add"}`);
+        });
+        return this.get(pk);
+    }
+    /**
+     * Update an existing record in the **IndexDB**
+     */
+    async update(pk, updateHash) {
+        const now = new Date().getTime();
+        updateHash.lastUpdated = now;
+        const result = await this.table
+            .update(pk, updateHash)
+            .catch((e) => {
+            throw new DexieError(`DexieRecord: Problem updating ${capitalize(this.meta.modelName)}.${typeof pk === "string" ? pk : pk.id}: ${e.message}`, `dexie/${e.code || e.name || "update"}`);
+        });
+        if (result === 0) {
+            throw new DexieError(`The primary key passed in to record.update(${JSON.stringify(pk)}) was NOT found in the IndexedDB!`, "dexie/record-not-found");
+        }
+        if (result > 1) {
+            throw new DexieError(`While calling record.update(${JSON.stringify(pk)}) MORE than one record was updated!`, "dexie/unexpected-error");
+        }
+    }
+    async remove(id) {
+        return this.table.delete(id).catch((e) => {
+            throw new DexieError(`Problem removing record ${JSON.stringify(id)} from the ${capitalize(this.meta.modelName)}: ${e.message}`, `dexie/${e.code || e.name || "remove"}`);
+        });
+    }
+}
+
+/**
+ * A helper method when designing relationships. In most cases when you
+ * state a "inverse property" it means that the two entities can be
+ * bi-directionly managed. If, however, you either don't want them to be
+ * or in some cases the relationship can be "lossy" and automatic bi-directional
+ * management is not possible.
+ *
+ * When you find yourself in this situation you can use this function in the
+ * following manner:
+```typescript
+export default MyModel extends Model {
+  @hasMany(Person, OneWay('children')) parent: fk;
+}
+```
+ */
+function OneWay(inverseProperty) {
+    return [inverseProperty, "one-way"];
+}
+
+/*! *****************************************************************************
+Copyright (C) Microsoft. All rights reserved.
+Licensed under the Apache License, Version 2.0 (the "License"); you may not use
+this file except in compliance with the License. You may obtain a copy of the
+License at http://www.apache.org/licenses/LICENSE-2.0
+
+THIS CODE IS PROVIDED ON AN *AS IS* BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+KIND, EITHER EXPRESS OR IMPLIED, INCLUDING WITHOUT LIMITATION ANY IMPLIED
+WARRANTIES OR CONDITIONS OF TITLE, FITNESS FOR A PARTICULAR PURPOSE,
+MERCHANTABLITY OR NON-INFRINGEMENT.
+
+See the Apache Version 2.0 License for specific language governing permissions
+and limitations under the License.
+***************************************************************************** */
+var Reflect$1;
+(function (Reflect) {
+    // Metadata Proposal
+    // https://rbuckton.github.io/reflect-metadata/
+    (function (factory) {
+        var root = typeof global === "object" ? global :
+            typeof self === "object" ? self :
+                typeof this === "object" ? this :
+                    Function("return this;")();
+        var exporter = makeExporter(Reflect);
+        if (typeof root.Reflect === "undefined") {
+            root.Reflect = Reflect;
+        }
+        else {
+            exporter = makeExporter(root.Reflect, exporter);
+        }
+        factory(exporter);
+        function makeExporter(target, previous) {
+            return function (key, value) {
+                if (typeof target[key] !== "function") {
+                    Object.defineProperty(target, key, { configurable: true, writable: true, value: value });
+                }
+                if (previous)
+                    previous(key, value);
+            };
+        }
+    })(function (exporter) {
+        var hasOwn = Object.prototype.hasOwnProperty;
+        // feature test for Symbol support
+        var supportsSymbol = typeof Symbol === "function";
+        var toPrimitiveSymbol = supportsSymbol && typeof Symbol.toPrimitive !== "undefined" ? Symbol.toPrimitive : "@@toPrimitive";
+        var iteratorSymbol = supportsSymbol && typeof Symbol.iterator !== "undefined" ? Symbol.iterator : "@@iterator";
+        var supportsCreate = typeof Object.create === "function"; // feature test for Object.create support
+        var supportsProto = { __proto__: [] } instanceof Array; // feature test for __proto__ support
+        var downLevel = !supportsCreate && !supportsProto;
+        var HashMap = {
+            // create an object in dictionary mode (a.k.a. "slow" mode in v8)
+            create: supportsCreate
+                ? function () { return MakeDictionary(Object.create(null)); }
+                : supportsProto
+                    ? function () { return MakeDictionary({ __proto__: null }); }
+                    : function () { return MakeDictionary({}); },
+            has: downLevel
+                ? function (map, key) { return hasOwn.call(map, key); }
+                : function (map, key) { return key in map; },
+            get: downLevel
+                ? function (map, key) { return hasOwn.call(map, key) ? map[key] : undefined; }
+                : function (map, key) { return map[key]; },
+        };
+        // Load global or shim versions of Map, Set, and WeakMap
+        var functionPrototype = Object.getPrototypeOf(Function);
+        var usePolyfill = typeof process === "object" && process.env && process.env["REFLECT_METADATA_USE_MAP_POLYFILL"] === "true";
+        var _Map = !usePolyfill && typeof Map === "function" && typeof Map.prototype.entries === "function" ? Map : CreateMapPolyfill();
+        var _Set = !usePolyfill && typeof Set === "function" && typeof Set.prototype.entries === "function" ? Set : CreateSetPolyfill();
+        var _WeakMap = !usePolyfill && typeof WeakMap === "function" ? WeakMap : CreateWeakMapPolyfill();
+        // [[Metadata]] internal slot
+        // https://rbuckton.github.io/reflect-metadata/#ordinary-object-internal-methods-and-internal-slots
+        var Metadata = new _WeakMap();
+        /**
+         * Applies a set of decorators to a property of a target object.
+         * @param decorators An array of decorators.
+         * @param target The target object.
+         * @param propertyKey (Optional) The property key to decorate.
+         * @param attributes (Optional) The property descriptor for the target key.
+         * @remarks Decorators are applied in reverse order.
+         * @example
+         *
+         *     class Example {
+         *         // property declarations are not part of ES6, though they are valid in TypeScript:
+         *         // static staticProperty;
+         *         // property;
+         *
+         *         constructor(p) { }
+         *         static staticMethod(p) { }
+         *         method(p) { }
+         *     }
+         *
+         *     // constructor
+         *     Example = Reflect.decorate(decoratorsArray, Example);
+         *
+         *     // property (on constructor)
+         *     Reflect.decorate(decoratorsArray, Example, "staticProperty");
+         *
+         *     // property (on prototype)
+         *     Reflect.decorate(decoratorsArray, Example.prototype, "property");
+         *
+         *     // method (on constructor)
+         *     Object.defineProperty(Example, "staticMethod",
+         *         Reflect.decorate(decoratorsArray, Example, "staticMethod",
+         *             Object.getOwnPropertyDescriptor(Example, "staticMethod")));
+         *
+         *     // method (on prototype)
+         *     Object.defineProperty(Example.prototype, "method",
+         *         Reflect.decorate(decoratorsArray, Example.prototype, "method",
+         *             Object.getOwnPropertyDescriptor(Example.prototype, "method")));
+         *
+         */
+        function decorate(decorators, target, propertyKey, attributes) {
+            if (!IsUndefined(propertyKey)) {
+                if (!IsArray(decorators))
+                    throw new TypeError();
+                if (!IsObject(target))
+                    throw new TypeError();
+                if (!IsObject(attributes) && !IsUndefined(attributes) && !IsNull(attributes))
+                    throw new TypeError();
+                if (IsNull(attributes))
+                    attributes = undefined;
+                propertyKey = ToPropertyKey(propertyKey);
+                return DecorateProperty(decorators, target, propertyKey, attributes);
+            }
+            else {
+                if (!IsArray(decorators))
+                    throw new TypeError();
+                if (!IsConstructor(target))
+                    throw new TypeError();
+                return DecorateConstructor(decorators, target);
+            }
+        }
+        exporter("decorate", decorate);
+        // 4.1.2 Reflect.metadata(metadataKey, metadataValue)
+        // https://rbuckton.github.io/reflect-metadata/#reflect.metadata
+        /**
+         * A default metadata decorator factory that can be used on a class, class member, or parameter.
+         * @param metadataKey The key for the metadata entry.
+         * @param metadataValue The value for the metadata entry.
+         * @returns A decorator function.
+         * @remarks
+         * If `metadataKey` is already defined for the target and target key, the
+         * metadataValue for that key will be overwritten.
+         * @example
+         *
+         *     // constructor
+         *     @Reflect.metadata(key, value)
+         *     class Example {
+         *     }
+         *
+         *     // property (on constructor, TypeScript only)
+         *     class Example {
+         *         @Reflect.metadata(key, value)
+         *         static staticProperty;
+         *     }
+         *
+         *     // property (on prototype, TypeScript only)
+         *     class Example {
+         *         @Reflect.metadata(key, value)
+         *         property;
+         *     }
+         *
+         *     // method (on constructor)
+         *     class Example {
+         *         @Reflect.metadata(key, value)
+         *         static staticMethod() { }
+         *     }
+         *
+         *     // method (on prototype)
+         *     class Example {
+         *         @Reflect.metadata(key, value)
+         *         method() { }
+         *     }
+         *
+         */
+        function metadata(metadataKey, metadataValue) {
+            function decorator(target, propertyKey) {
+                if (!IsObject(target))
+                    throw new TypeError();
+                if (!IsUndefined(propertyKey) && !IsPropertyKey(propertyKey))
+                    throw new TypeError();
+                OrdinaryDefineOwnMetadata(metadataKey, metadataValue, target, propertyKey);
+            }
+            return decorator;
+        }
+        exporter("metadata", metadata);
+        /**
+         * Define a unique metadata entry on the target.
+         * @param metadataKey A key used to store and retrieve metadata.
+         * @param metadataValue A value that contains attached metadata.
+         * @param target The target object on which to define metadata.
+         * @param propertyKey (Optional) The property key for the target.
+         * @example
+         *
+         *     class Example {
+         *         // property declarations are not part of ES6, though they are valid in TypeScript:
+         *         // static staticProperty;
+         *         // property;
+         *
+         *         constructor(p) { }
+         *         static staticMethod(p) { }
+         *         method(p) { }
+         *     }
+         *
+         *     // constructor
+         *     Reflect.defineMetadata("custom:annotation", options, Example);
+         *
+         *     // property (on constructor)
+         *     Reflect.defineMetadata("custom:annotation", options, Example, "staticProperty");
+         *
+         *     // property (on prototype)
+         *     Reflect.defineMetadata("custom:annotation", options, Example.prototype, "property");
+         *
+         *     // method (on constructor)
+         *     Reflect.defineMetadata("custom:annotation", options, Example, "staticMethod");
+         *
+         *     // method (on prototype)
+         *     Reflect.defineMetadata("custom:annotation", options, Example.prototype, "method");
+         *
+         *     // decorator factory as metadata-producing annotation.
+         *     function MyAnnotation(options): Decorator {
+         *         return (target, key?) => Reflect.defineMetadata("custom:annotation", options, target, key);
+         *     }
+         *
+         */
+        function defineMetadata(metadataKey, metadataValue, target, propertyKey) {
+            if (!IsObject(target))
+                throw new TypeError();
+            if (!IsUndefined(propertyKey))
+                propertyKey = ToPropertyKey(propertyKey);
+            return OrdinaryDefineOwnMetadata(metadataKey, metadataValue, target, propertyKey);
+        }
+        exporter("defineMetadata", defineMetadata);
+        /**
+         * Gets a value indicating whether the target object or its prototype chain has the provided metadata key defined.
+         * @param metadataKey A key used to store and retrieve metadata.
+         * @param target The target object on which the metadata is defined.
+         * @param propertyKey (Optional) The property key for the target.
+         * @returns `true` if the metadata key was defined on the target object or its prototype chain; otherwise, `false`.
+         * @example
+         *
+         *     class Example {
+         *         // property declarations are not part of ES6, though they are valid in TypeScript:
+         *         // static staticProperty;
+         *         // property;
+         *
+         *         constructor(p) { }
+         *         static staticMethod(p) { }
+         *         method(p) { }
+         *     }
+         *
+         *     // constructor
+         *     result = Reflect.hasMetadata("custom:annotation", Example);
+         *
+         *     // property (on constructor)
+         *     result = Reflect.hasMetadata("custom:annotation", Example, "staticProperty");
+         *
+         *     // property (on prototype)
+         *     result = Reflect.hasMetadata("custom:annotation", Example.prototype, "property");
+         *
+         *     // method (on constructor)
+         *     result = Reflect.hasMetadata("custom:annotation", Example, "staticMethod");
+         *
+         *     // method (on prototype)
+         *     result = Reflect.hasMetadata("custom:annotation", Example.prototype, "method");
+         *
+         */
+        function hasMetadata(metadataKey, target, propertyKey) {
+            if (!IsObject(target))
+                throw new TypeError();
+            if (!IsUndefined(propertyKey))
+                propertyKey = ToPropertyKey(propertyKey);
+            return OrdinaryHasMetadata(metadataKey, target, propertyKey);
+        }
+        exporter("hasMetadata", hasMetadata);
+        /**
+         * Gets a value indicating whether the target object has the provided metadata key defined.
+         * @param metadataKey A key used to store and retrieve metadata.
+         * @param target The target object on which the metadata is defined.
+         * @param propertyKey (Optional) The property key for the target.
+         * @returns `true` if the metadata key was defined on the target object; otherwise, `false`.
+         * @example
+         *
+         *     class Example {
+         *         // property declarations are not part of ES6, though they are valid in TypeScript:
+         *         // static staticProperty;
+         *         // property;
+         *
+         *         constructor(p) { }
+         *         static staticMethod(p) { }
+         *         method(p) { }
+         *     }
+         *
+         *     // constructor
+         *     result = Reflect.hasOwnMetadata("custom:annotation", Example);
+         *
+         *     // property (on constructor)
+         *     result = Reflect.hasOwnMetadata("custom:annotation", Example, "staticProperty");
+         *
+         *     // property (on prototype)
+         *     result = Reflect.hasOwnMetadata("custom:annotation", Example.prototype, "property");
+         *
+         *     // method (on constructor)
+         *     result = Reflect.hasOwnMetadata("custom:annotation", Example, "staticMethod");
+         *
+         *     // method (on prototype)
+         *     result = Reflect.hasOwnMetadata("custom:annotation", Example.prototype, "method");
+         *
+         */
+        function hasOwnMetadata(metadataKey, target, propertyKey) {
+            if (!IsObject(target))
+                throw new TypeError();
+            if (!IsUndefined(propertyKey))
+                propertyKey = ToPropertyKey(propertyKey);
+            return OrdinaryHasOwnMetadata(metadataKey, target, propertyKey);
+        }
+        exporter("hasOwnMetadata", hasOwnMetadata);
+        /**
+         * Gets the metadata value for the provided metadata key on the target object or its prototype chain.
+         * @param metadataKey A key used to store and retrieve metadata.
+         * @param target The target object on which the metadata is defined.
+         * @param propertyKey (Optional) The property key for the target.
+         * @returns The metadata value for the metadata key if found; otherwise, `undefined`.
+         * @example
+         *
+         *     class Example {
+         *         // property declarations are not part of ES6, though they are valid in TypeScript:
+         *         // static staticProperty;
+         *         // property;
+         *
+         *         constructor(p) { }
+         *         static staticMethod(p) { }
+         *         method(p) { }
+         *     }
+         *
+         *     // constructor
+         *     result = Reflect.getMetadata("custom:annotation", Example);
+         *
+         *     // property (on constructor)
+         *     result = Reflect.getMetadata("custom:annotation", Example, "staticProperty");
+         *
+         *     // property (on prototype)
+         *     result = Reflect.getMetadata("custom:annotation", Example.prototype, "property");
+         *
+         *     // method (on constructor)
+         *     result = Reflect.getMetadata("custom:annotation", Example, "staticMethod");
+         *
+         *     // method (on prototype)
+         *     result = Reflect.getMetadata("custom:annotation", Example.prototype, "method");
+         *
+         */
+        function getMetadata(metadataKey, target, propertyKey) {
+            if (!IsObject(target))
+                throw new TypeError();
+            if (!IsUndefined(propertyKey))
+                propertyKey = ToPropertyKey(propertyKey);
+            return OrdinaryGetMetadata(metadataKey, target, propertyKey);
+        }
+        exporter("getMetadata", getMetadata);
+        /**
+         * Gets the metadata value for the provided metadata key on the target object.
+         * @param metadataKey A key used to store and retrieve metadata.
+         * @param target The target object on which the metadata is defined.
+         * @param propertyKey (Optional) The property key for the target.
+         * @returns The metadata value for the metadata key if found; otherwise, `undefined`.
+         * @example
+         *
+         *     class Example {
+         *         // property declarations are not part of ES6, though they are valid in TypeScript:
+         *         // static staticProperty;
+         *         // property;
+         *
+         *         constructor(p) { }
+         *         static staticMethod(p) { }
+         *         method(p) { }
+         *     }
+         *
+         *     // constructor
+         *     result = Reflect.getOwnMetadata("custom:annotation", Example);
+         *
+         *     // property (on constructor)
+         *     result = Reflect.getOwnMetadata("custom:annotation", Example, "staticProperty");
+         *
+         *     // property (on prototype)
+         *     result = Reflect.getOwnMetadata("custom:annotation", Example.prototype, "property");
+         *
+         *     // method (on constructor)
+         *     result = Reflect.getOwnMetadata("custom:annotation", Example, "staticMethod");
+         *
+         *     // method (on prototype)
+         *     result = Reflect.getOwnMetadata("custom:annotation", Example.prototype, "method");
+         *
+         */
+        function getOwnMetadata(metadataKey, target, propertyKey) {
+            if (!IsObject(target))
+                throw new TypeError();
+            if (!IsUndefined(propertyKey))
+                propertyKey = ToPropertyKey(propertyKey);
+            return OrdinaryGetOwnMetadata(metadataKey, target, propertyKey);
+        }
+        exporter("getOwnMetadata", getOwnMetadata);
+        /**
+         * Gets the metadata keys defined on the target object or its prototype chain.
+         * @param target The target object on which the metadata is defined.
+         * @param propertyKey (Optional) The property key for the target.
+         * @returns An array of unique metadata keys.
+         * @example
+         *
+         *     class Example {
+         *         // property declarations are not part of ES6, though they are valid in TypeScript:
+         *         // static staticProperty;
+         *         // property;
+         *
+         *         constructor(p) { }
+         *         static staticMethod(p) { }
+         *         method(p) { }
+         *     }
+         *
+         *     // constructor
+         *     result = Reflect.getMetadataKeys(Example);
+         *
+         *     // property (on constructor)
+         *     result = Reflect.getMetadataKeys(Example, "staticProperty");
+         *
+         *     // property (on prototype)
+         *     result = Reflect.getMetadataKeys(Example.prototype, "property");
+         *
+         *     // method (on constructor)
+         *     result = Reflect.getMetadataKeys(Example, "staticMethod");
+         *
+         *     // method (on prototype)
+         *     result = Reflect.getMetadataKeys(Example.prototype, "method");
+         *
+         */
+        function getMetadataKeys(target, propertyKey) {
+            if (!IsObject(target))
+                throw new TypeError();
+            if (!IsUndefined(propertyKey))
+                propertyKey = ToPropertyKey(propertyKey);
+            return OrdinaryMetadataKeys(target, propertyKey);
+        }
+        exporter("getMetadataKeys", getMetadataKeys);
+        /**
+         * Gets the unique metadata keys defined on the target object.
+         * @param target The target object on which the metadata is defined.
+         * @param propertyKey (Optional) The property key for the target.
+         * @returns An array of unique metadata keys.
+         * @example
+         *
+         *     class Example {
+         *         // property declarations are not part of ES6, though they are valid in TypeScript:
+         *         // static staticProperty;
+         *         // property;
+         *
+         *         constructor(p) { }
+         *         static staticMethod(p) { }
+         *         method(p) { }
+         *     }
+         *
+         *     // constructor
+         *     result = Reflect.getOwnMetadataKeys(Example);
+         *
+         *     // property (on constructor)
+         *     result = Reflect.getOwnMetadataKeys(Example, "staticProperty");
+         *
+         *     // property (on prototype)
+         *     result = Reflect.getOwnMetadataKeys(Example.prototype, "property");
+         *
+         *     // method (on constructor)
+         *     result = Reflect.getOwnMetadataKeys(Example, "staticMethod");
+         *
+         *     // method (on prototype)
+         *     result = Reflect.getOwnMetadataKeys(Example.prototype, "method");
+         *
+         */
+        function getOwnMetadataKeys(target, propertyKey) {
+            if (!IsObject(target))
+                throw new TypeError();
+            if (!IsUndefined(propertyKey))
+                propertyKey = ToPropertyKey(propertyKey);
+            return OrdinaryOwnMetadataKeys(target, propertyKey);
+        }
+        exporter("getOwnMetadataKeys", getOwnMetadataKeys);
+        /**
+         * Deletes the metadata entry from the target object with the provided key.
+         * @param metadataKey A key used to store and retrieve metadata.
+         * @param target The target object on which the metadata is defined.
+         * @param propertyKey (Optional) The property key for the target.
+         * @returns `true` if the metadata entry was found and deleted; otherwise, false.
+         * @example
+         *
+         *     class Example {
+         *         // property declarations are not part of ES6, though they are valid in TypeScript:
+         *         // static staticProperty;
+         *         // property;
+         *
+         *         constructor(p) { }
+         *         static staticMethod(p) { }
+         *         method(p) { }
+         *     }
+         *
+         *     // constructor
+         *     result = Reflect.deleteMetadata("custom:annotation", Example);
+         *
+         *     // property (on constructor)
+         *     result = Reflect.deleteMetadata("custom:annotation", Example, "staticProperty");
+         *
+         *     // property (on prototype)
+         *     result = Reflect.deleteMetadata("custom:annotation", Example.prototype, "property");
+         *
+         *     // method (on constructor)
+         *     result = Reflect.deleteMetadata("custom:annotation", Example, "staticMethod");
+         *
+         *     // method (on prototype)
+         *     result = Reflect.deleteMetadata("custom:annotation", Example.prototype, "method");
+         *
+         */
+        function deleteMetadata(metadataKey, target, propertyKey) {
+            if (!IsObject(target))
+                throw new TypeError();
+            if (!IsUndefined(propertyKey))
+                propertyKey = ToPropertyKey(propertyKey);
+            var metadataMap = GetOrCreateMetadataMap(target, propertyKey, /*Create*/ false);
+            if (IsUndefined(metadataMap))
+                return false;
+            if (!metadataMap.delete(metadataKey))
+                return false;
+            if (metadataMap.size > 0)
+                return true;
+            var targetMetadata = Metadata.get(target);
+            targetMetadata.delete(propertyKey);
+            if (targetMetadata.size > 0)
+                return true;
+            Metadata.delete(target);
+            return true;
+        }
+        exporter("deleteMetadata", deleteMetadata);
+        function DecorateConstructor(decorators, target) {
+            for (var i = decorators.length - 1; i >= 0; --i) {
+                var decorator = decorators[i];
+                var decorated = decorator(target);
+                if (!IsUndefined(decorated) && !IsNull(decorated)) {
+                    if (!IsConstructor(decorated))
+                        throw new TypeError();
+                    target = decorated;
+                }
+            }
+            return target;
+        }
+        function DecorateProperty(decorators, target, propertyKey, descriptor) {
+            for (var i = decorators.length - 1; i >= 0; --i) {
+                var decorator = decorators[i];
+                var decorated = decorator(target, propertyKey, descriptor);
+                if (!IsUndefined(decorated) && !IsNull(decorated)) {
+                    if (!IsObject(decorated))
+                        throw new TypeError();
+                    descriptor = decorated;
+                }
+            }
+            return descriptor;
+        }
+        function GetOrCreateMetadataMap(O, P, Create) {
+            var targetMetadata = Metadata.get(O);
+            if (IsUndefined(targetMetadata)) {
+                if (!Create)
+                    return undefined;
+                targetMetadata = new _Map();
+                Metadata.set(O, targetMetadata);
+            }
+            var metadataMap = targetMetadata.get(P);
+            if (IsUndefined(metadataMap)) {
+                if (!Create)
+                    return undefined;
+                metadataMap = new _Map();
+                targetMetadata.set(P, metadataMap);
+            }
+            return metadataMap;
+        }
+        // 3.1.1.1 OrdinaryHasMetadata(MetadataKey, O, P)
+        // https://rbuckton.github.io/reflect-metadata/#ordinaryhasmetadata
+        function OrdinaryHasMetadata(MetadataKey, O, P) {
+            var hasOwn = OrdinaryHasOwnMetadata(MetadataKey, O, P);
+            if (hasOwn)
+                return true;
+            var parent = OrdinaryGetPrototypeOf(O);
+            if (!IsNull(parent))
+                return OrdinaryHasMetadata(MetadataKey, parent, P);
+            return false;
+        }
+        // 3.1.2.1 OrdinaryHasOwnMetadata(MetadataKey, O, P)
+        // https://rbuckton.github.io/reflect-metadata/#ordinaryhasownmetadata
+        function OrdinaryHasOwnMetadata(MetadataKey, O, P) {
+            var metadataMap = GetOrCreateMetadataMap(O, P, /*Create*/ false);
+            if (IsUndefined(metadataMap))
+                return false;
+            return ToBoolean(metadataMap.has(MetadataKey));
+        }
+        // 3.1.3.1 OrdinaryGetMetadata(MetadataKey, O, P)
+        // https://rbuckton.github.io/reflect-metadata/#ordinarygetmetadata
+        function OrdinaryGetMetadata(MetadataKey, O, P) {
+            var hasOwn = OrdinaryHasOwnMetadata(MetadataKey, O, P);
+            if (hasOwn)
+                return OrdinaryGetOwnMetadata(MetadataKey, O, P);
+            var parent = OrdinaryGetPrototypeOf(O);
+            if (!IsNull(parent))
+                return OrdinaryGetMetadata(MetadataKey, parent, P);
+            return undefined;
+        }
+        // 3.1.4.1 OrdinaryGetOwnMetadata(MetadataKey, O, P)
+        // https://rbuckton.github.io/reflect-metadata/#ordinarygetownmetadata
+        function OrdinaryGetOwnMetadata(MetadataKey, O, P) {
+            var metadataMap = GetOrCreateMetadataMap(O, P, /*Create*/ false);
+            if (IsUndefined(metadataMap))
+                return undefined;
+            return metadataMap.get(MetadataKey);
+        }
+        // 3.1.5.1 OrdinaryDefineOwnMetadata(MetadataKey, MetadataValue, O, P)
+        // https://rbuckton.github.io/reflect-metadata/#ordinarydefineownmetadata
+        function OrdinaryDefineOwnMetadata(MetadataKey, MetadataValue, O, P) {
+            var metadataMap = GetOrCreateMetadataMap(O, P, /*Create*/ true);
+            metadataMap.set(MetadataKey, MetadataValue);
+        }
+        // 3.1.6.1 OrdinaryMetadataKeys(O, P)
+        // https://rbuckton.github.io/reflect-metadata/#ordinarymetadatakeys
+        function OrdinaryMetadataKeys(O, P) {
+            var ownKeys = OrdinaryOwnMetadataKeys(O, P);
+            var parent = OrdinaryGetPrototypeOf(O);
+            if (parent === null)
+                return ownKeys;
+            var parentKeys = OrdinaryMetadataKeys(parent, P);
+            if (parentKeys.length <= 0)
+                return ownKeys;
+            if (ownKeys.length <= 0)
+                return parentKeys;
+            var set = new _Set();
+            var keys = [];
+            for (var _i = 0, ownKeys_1 = ownKeys; _i < ownKeys_1.length; _i++) {
+                var key = ownKeys_1[_i];
+                var hasKey = set.has(key);
+                if (!hasKey) {
+                    set.add(key);
+                    keys.push(key);
+                }
+            }
+            for (var _a = 0, parentKeys_1 = parentKeys; _a < parentKeys_1.length; _a++) {
+                var key = parentKeys_1[_a];
+                var hasKey = set.has(key);
+                if (!hasKey) {
+                    set.add(key);
+                    keys.push(key);
+                }
+            }
+            return keys;
+        }
+        // 3.1.7.1 OrdinaryOwnMetadataKeys(O, P)
+        // https://rbuckton.github.io/reflect-metadata/#ordinaryownmetadatakeys
+        function OrdinaryOwnMetadataKeys(O, P) {
+            var keys = [];
+            var metadataMap = GetOrCreateMetadataMap(O, P, /*Create*/ false);
+            if (IsUndefined(metadataMap))
+                return keys;
+            var keysObj = metadataMap.keys();
+            var iterator = GetIterator(keysObj);
+            var k = 0;
+            while (true) {
+                var next = IteratorStep(iterator);
+                if (!next) {
+                    keys.length = k;
+                    return keys;
+                }
+                var nextValue = IteratorValue(next);
+                try {
+                    keys[k] = nextValue;
+                }
+                catch (e) {
+                    try {
+                        IteratorClose(iterator);
+                    }
+                    finally {
+                        throw e;
+                    }
+                }
+                k++;
+            }
+        }
+        // 6 ECMAScript Data Typ0es and Values
+        // https://tc39.github.io/ecma262/#sec-ecmascript-data-types-and-values
+        function Type(x) {
+            if (x === null)
+                return 1 /* Null */;
+            switch (typeof x) {
+                case "undefined": return 0 /* Undefined */;
+                case "boolean": return 2 /* Boolean */;
+                case "string": return 3 /* String */;
+                case "symbol": return 4 /* Symbol */;
+                case "number": return 5 /* Number */;
+                case "object": return x === null ? 1 /* Null */ : 6 /* Object */;
+                default: return 6 /* Object */;
+            }
+        }
+        // 6.1.1 The Undefined Type
+        // https://tc39.github.io/ecma262/#sec-ecmascript-language-types-undefined-type
+        function IsUndefined(x) {
+            return x === undefined;
+        }
+        // 6.1.2 The Null Type
+        // https://tc39.github.io/ecma262/#sec-ecmascript-language-types-null-type
+        function IsNull(x) {
+            return x === null;
+        }
+        // 6.1.5 The Symbol Type
+        // https://tc39.github.io/ecma262/#sec-ecmascript-language-types-symbol-type
+        function IsSymbol(x) {
+            return typeof x === "symbol";
+        }
+        // 6.1.7 The Object Type
+        // https://tc39.github.io/ecma262/#sec-object-type
+        function IsObject(x) {
+            return typeof x === "object" ? x !== null : typeof x === "function";
+        }
+        // 7.1 Type Conversion
+        // https://tc39.github.io/ecma262/#sec-type-conversion
+        // 7.1.1 ToPrimitive(input [, PreferredType])
+        // https://tc39.github.io/ecma262/#sec-toprimitive
+        function ToPrimitive(input, PreferredType) {
+            switch (Type(input)) {
+                case 0 /* Undefined */: return input;
+                case 1 /* Null */: return input;
+                case 2 /* Boolean */: return input;
+                case 3 /* String */: return input;
+                case 4 /* Symbol */: return input;
+                case 5 /* Number */: return input;
+            }
+            var hint = PreferredType === 3 /* String */ ? "string" : PreferredType === 5 /* Number */ ? "number" : "default";
+            var exoticToPrim = GetMethod(input, toPrimitiveSymbol);
+            if (exoticToPrim !== undefined) {
+                var result = exoticToPrim.call(input, hint);
+                if (IsObject(result))
+                    throw new TypeError();
+                return result;
+            }
+            return OrdinaryToPrimitive(input, hint === "default" ? "number" : hint);
+        }
+        // 7.1.1.1 OrdinaryToPrimitive(O, hint)
+        // https://tc39.github.io/ecma262/#sec-ordinarytoprimitive
+        function OrdinaryToPrimitive(O, hint) {
+            if (hint === "string") {
+                var toString_1 = O.toString;
+                if (IsCallable(toString_1)) {
+                    var result = toString_1.call(O);
+                    if (!IsObject(result))
+                        return result;
+                }
+                var valueOf = O.valueOf;
+                if (IsCallable(valueOf)) {
+                    var result = valueOf.call(O);
+                    if (!IsObject(result))
+                        return result;
+                }
+            }
+            else {
+                var valueOf = O.valueOf;
+                if (IsCallable(valueOf)) {
+                    var result = valueOf.call(O);
+                    if (!IsObject(result))
+                        return result;
+                }
+                var toString_2 = O.toString;
+                if (IsCallable(toString_2)) {
+                    var result = toString_2.call(O);
+                    if (!IsObject(result))
+                        return result;
+                }
+            }
+            throw new TypeError();
+        }
+        // 7.1.2 ToBoolean(argument)
+        // https://tc39.github.io/ecma262/2016/#sec-toboolean
+        function ToBoolean(argument) {
+            return !!argument;
+        }
+        // 7.1.12 ToString(argument)
+        // https://tc39.github.io/ecma262/#sec-tostring
+        function ToString(argument) {
+            return "" + argument;
+        }
+        // 7.1.14 ToPropertyKey(argument)
+        // https://tc39.github.io/ecma262/#sec-topropertykey
+        function ToPropertyKey(argument) {
+            var key = ToPrimitive(argument, 3 /* String */);
+            if (IsSymbol(key))
+                return key;
+            return ToString(key);
+        }
+        // 7.2 Testing and Comparison Operations
+        // https://tc39.github.io/ecma262/#sec-testing-and-comparison-operations
+        // 7.2.2 IsArray(argument)
+        // https://tc39.github.io/ecma262/#sec-isarray
+        function IsArray(argument) {
+            return Array.isArray
+                ? Array.isArray(argument)
+                : argument instanceof Object
+                    ? argument instanceof Array
+                    : Object.prototype.toString.call(argument) === "[object Array]";
+        }
+        // 7.2.3 IsCallable(argument)
+        // https://tc39.github.io/ecma262/#sec-iscallable
+        function IsCallable(argument) {
+            // NOTE: This is an approximation as we cannot check for [[Call]] internal method.
+            return typeof argument === "function";
+        }
+        // 7.2.4 IsConstructor(argument)
+        // https://tc39.github.io/ecma262/#sec-isconstructor
+        function IsConstructor(argument) {
+            // NOTE: This is an approximation as we cannot check for [[Construct]] internal method.
+            return typeof argument === "function";
+        }
+        // 7.2.7 IsPropertyKey(argument)
+        // https://tc39.github.io/ecma262/#sec-ispropertykey
+        function IsPropertyKey(argument) {
+            switch (Type(argument)) {
+                case 3 /* String */: return true;
+                case 4 /* Symbol */: return true;
+                default: return false;
+            }
+        }
+        // 7.3 Operations on Objects
+        // https://tc39.github.io/ecma262/#sec-operations-on-objects
+        // 7.3.9 GetMethod(V, P)
+        // https://tc39.github.io/ecma262/#sec-getmethod
+        function GetMethod(V, P) {
+            var func = V[P];
+            if (func === undefined || func === null)
+                return undefined;
+            if (!IsCallable(func))
+                throw new TypeError();
+            return func;
+        }
+        // 7.4 Operations on Iterator Objects
+        // https://tc39.github.io/ecma262/#sec-operations-on-iterator-objects
+        function GetIterator(obj) {
+            var method = GetMethod(obj, iteratorSymbol);
+            if (!IsCallable(method))
+                throw new TypeError(); // from Call
+            var iterator = method.call(obj);
+            if (!IsObject(iterator))
+                throw new TypeError();
+            return iterator;
+        }
+        // 7.4.4 IteratorValue(iterResult)
+        // https://tc39.github.io/ecma262/2016/#sec-iteratorvalue
+        function IteratorValue(iterResult) {
+            return iterResult.value;
+        }
+        // 7.4.5 IteratorStep(iterator)
+        // https://tc39.github.io/ecma262/#sec-iteratorstep
+        function IteratorStep(iterator) {
+            var result = iterator.next();
+            return result.done ? false : result;
+        }
+        // 7.4.6 IteratorClose(iterator, completion)
+        // https://tc39.github.io/ecma262/#sec-iteratorclose
+        function IteratorClose(iterator) {
+            var f = iterator["return"];
+            if (f)
+                f.call(iterator);
+        }
+        // 9.1 Ordinary Object Internal Methods and Internal Slots
+        // https://tc39.github.io/ecma262/#sec-ordinary-object-internal-methods-and-internal-slots
+        // 9.1.1.1 OrdinaryGetPrototypeOf(O)
+        // https://tc39.github.io/ecma262/#sec-ordinarygetprototypeof
+        function OrdinaryGetPrototypeOf(O) {
+            var proto = Object.getPrototypeOf(O);
+            if (typeof O !== "function" || O === functionPrototype)
+                return proto;
+            // TypeScript doesn't set __proto__ in ES5, as it's non-standard.
+            // Try to determine the superclass constructor. Compatible implementations
+            // must either set __proto__ on a subclass constructor to the superclass constructor,
+            // or ensure each class has a valid `constructor` property on its prototype that
+            // points back to the constructor.
+            // If this is not the same as Function.[[Prototype]], then this is definately inherited.
+            // This is the case when in ES6 or when using __proto__ in a compatible browser.
+            if (proto !== functionPrototype)
+                return proto;
+            // If the super prototype is Object.prototype, null, or undefined, then we cannot determine the heritage.
+            var prototype = O.prototype;
+            var prototypeProto = prototype && Object.getPrototypeOf(prototype);
+            if (prototypeProto == null || prototypeProto === Object.prototype)
+                return proto;
+            // If the constructor was not a function, then we cannot determine the heritage.
+            var constructor = prototypeProto.constructor;
+            if (typeof constructor !== "function")
+                return proto;
+            // If we have some kind of self-reference, then we cannot determine the heritage.
+            if (constructor === O)
+                return proto;
+            // we have a pretty good guess at the heritage.
+            return constructor;
+        }
+        // naive Map shim
+        function CreateMapPolyfill() {
+            var cacheSentinel = {};
+            var arraySentinel = [];
+            var MapIterator = /** @class */ (function () {
+                function MapIterator(keys, values, selector) {
+                    this._index = 0;
+                    this._keys = keys;
+                    this._values = values;
+                    this._selector = selector;
+                }
+                MapIterator.prototype["@@iterator"] = function () { return this; };
+                MapIterator.prototype[iteratorSymbol] = function () { return this; };
+                MapIterator.prototype.next = function () {
+                    var index = this._index;
+                    if (index >= 0 && index < this._keys.length) {
+                        var result = this._selector(this._keys[index], this._values[index]);
+                        if (index + 1 >= this._keys.length) {
+                            this._index = -1;
+                            this._keys = arraySentinel;
+                            this._values = arraySentinel;
+                        }
+                        else {
+                            this._index++;
+                        }
+                        return { value: result, done: false };
+                    }
+                    return { value: undefined, done: true };
+                };
+                MapIterator.prototype.throw = function (error) {
+                    if (this._index >= 0) {
+                        this._index = -1;
+                        this._keys = arraySentinel;
+                        this._values = arraySentinel;
+                    }
+                    throw error;
+                };
+                MapIterator.prototype.return = function (value) {
+                    if (this._index >= 0) {
+                        this._index = -1;
+                        this._keys = arraySentinel;
+                        this._values = arraySentinel;
+                    }
+                    return { value: value, done: true };
+                };
+                return MapIterator;
+            }());
+            return /** @class */ (function () {
+                function Map() {
+                    this._keys = [];
+                    this._values = [];
+                    this._cacheKey = cacheSentinel;
+                    this._cacheIndex = -2;
+                }
+                Object.defineProperty(Map.prototype, "size", {
+                    get: function () { return this._keys.length; },
+                    enumerable: true,
+                    configurable: true
+                });
+                Map.prototype.has = function (key) { return this._find(key, /*insert*/ false) >= 0; };
+                Map.prototype.get = function (key) {
+                    var index = this._find(key, /*insert*/ false);
+                    return index >= 0 ? this._values[index] : undefined;
+                };
+                Map.prototype.set = function (key, value) {
+                    var index = this._find(key, /*insert*/ true);
+                    this._values[index] = value;
+                    return this;
+                };
+                Map.prototype.delete = function (key) {
+                    var index = this._find(key, /*insert*/ false);
+                    if (index >= 0) {
+                        var size = this._keys.length;
+                        for (var i = index + 1; i < size; i++) {
+                            this._keys[i - 1] = this._keys[i];
+                            this._values[i - 1] = this._values[i];
+                        }
+                        this._keys.length--;
+                        this._values.length--;
+                        if (key === this._cacheKey) {
+                            this._cacheKey = cacheSentinel;
+                            this._cacheIndex = -2;
+                        }
+                        return true;
+                    }
+                    return false;
+                };
+                Map.prototype.clear = function () {
+                    this._keys.length = 0;
+                    this._values.length = 0;
+                    this._cacheKey = cacheSentinel;
+                    this._cacheIndex = -2;
+                };
+                Map.prototype.keys = function () { return new MapIterator(this._keys, this._values, getKey); };
+                Map.prototype.values = function () { return new MapIterator(this._keys, this._values, getValue); };
+                Map.prototype.entries = function () { return new MapIterator(this._keys, this._values, getEntry); };
+                Map.prototype["@@iterator"] = function () { return this.entries(); };
+                Map.prototype[iteratorSymbol] = function () { return this.entries(); };
+                Map.prototype._find = function (key, insert) {
+                    if (this._cacheKey !== key) {
+                        this._cacheIndex = this._keys.indexOf(this._cacheKey = key);
+                    }
+                    if (this._cacheIndex < 0 && insert) {
+                        this._cacheIndex = this._keys.length;
+                        this._keys.push(key);
+                        this._values.push(undefined);
+                    }
+                    return this._cacheIndex;
+                };
+                return Map;
+            }());
+            function getKey(key, _) {
+                return key;
+            }
+            function getValue(_, value) {
+                return value;
+            }
+            function getEntry(key, value) {
+                return [key, value];
+            }
+        }
+        // naive Set shim
+        function CreateSetPolyfill() {
+            return /** @class */ (function () {
+                function Set() {
+                    this._map = new _Map();
+                }
+                Object.defineProperty(Set.prototype, "size", {
+                    get: function () { return this._map.size; },
+                    enumerable: true,
+                    configurable: true
+                });
+                Set.prototype.has = function (value) { return this._map.has(value); };
+                Set.prototype.add = function (value) { return this._map.set(value, value), this; };
+                Set.prototype.delete = function (value) { return this._map.delete(value); };
+                Set.prototype.clear = function () { this._map.clear(); };
+                Set.prototype.keys = function () { return this._map.keys(); };
+                Set.prototype.values = function () { return this._map.values(); };
+                Set.prototype.entries = function () { return this._map.entries(); };
+                Set.prototype["@@iterator"] = function () { return this.keys(); };
+                Set.prototype[iteratorSymbol] = function () { return this.keys(); };
+                return Set;
+            }());
+        }
+        // naive WeakMap shim
+        function CreateWeakMapPolyfill() {
+            var UUID_SIZE = 16;
+            var keys = HashMap.create();
+            var rootKey = CreateUniqueKey();
+            return /** @class */ (function () {
+                function WeakMap() {
+                    this._key = CreateUniqueKey();
+                }
+                WeakMap.prototype.has = function (target) {
+                    var table = GetOrCreateWeakMapTable(target, /*create*/ false);
+                    return table !== undefined ? HashMap.has(table, this._key) : false;
+                };
+                WeakMap.prototype.get = function (target) {
+                    var table = GetOrCreateWeakMapTable(target, /*create*/ false);
+                    return table !== undefined ? HashMap.get(table, this._key) : undefined;
+                };
+                WeakMap.prototype.set = function (target, value) {
+                    var table = GetOrCreateWeakMapTable(target, /*create*/ true);
+                    table[this._key] = value;
+                    return this;
+                };
+                WeakMap.prototype.delete = function (target) {
+                    var table = GetOrCreateWeakMapTable(target, /*create*/ false);
+                    return table !== undefined ? delete table[this._key] : false;
+                };
+                WeakMap.prototype.clear = function () {
+                    // NOTE: not a real clear, just makes the previous data unreachable
+                    this._key = CreateUniqueKey();
+                };
+                return WeakMap;
+            }());
+            function CreateUniqueKey() {
+                var key;
+                do
+                    key = "@@WeakMap@@" + CreateUUID();
+                while (HashMap.has(keys, key));
+                keys[key] = true;
+                return key;
+            }
+            function GetOrCreateWeakMapTable(target, create) {
+                if (!hasOwn.call(target, rootKey)) {
+                    if (!create)
+                        return undefined;
+                    Object.defineProperty(target, rootKey, { value: HashMap.create() });
+                }
+                return target[rootKey];
+            }
+            function FillRandomBytes(buffer, size) {
+                for (var i = 0; i < size; ++i)
+                    buffer[i] = Math.random() * 0xff | 0;
+                return buffer;
+            }
+            function GenRandomBytes(size) {
+                if (typeof Uint8Array === "function") {
+                    if (typeof crypto !== "undefined")
+                        return crypto.getRandomValues(new Uint8Array(size));
+                    if (typeof msCrypto !== "undefined")
+                        return msCrypto.getRandomValues(new Uint8Array(size));
+                    return FillRandomBytes(new Uint8Array(size), size);
+                }
+                return FillRandomBytes(new Array(size), size);
+            }
+            function CreateUUID() {
+                var data = GenRandomBytes(UUID_SIZE);
+                // mark as random - RFC 4122 § 4.4
+                data[6] = data[6] & 0x4f | 0x40;
+                data[8] = data[8] & 0xbf | 0x80;
+                var result = "";
+                for (var offset = 0; offset < UUID_SIZE; ++offset) {
+                    var byte = data[offset];
+                    if (offset === 4 || offset === 6 || offset === 8)
+                        result += "-";
+                    if (byte < 16)
+                        result += "0";
+                    result += byte.toString(16).toLowerCase();
+                }
+                return result;
+            }
+        }
+        // uses a heuristic used by v8 and chakra to force an object into dictionary mode.
+        function MakeDictionary(obj) {
+            obj.__ = undefined;
+            delete obj.__;
+            return obj;
+        }
+    });
+})(Reflect$1 || (Reflect$1 = {}));
+
+function constrainedProperty(options = {}) {
+    return propertyReflector(Object.assign(Object.assign({}, options), { isRelationship: false, isProperty: true }), propertiesByModel);
+}
+/** allows the introduction of a new constraint to the metadata of a property */
+function constrain(prop, value) {
+    return propertyReflector({ [prop]: value }, propertiesByModel);
+}
+function desc(value) {
+    return propertyReflector({ desc: value }, propertiesByModel);
+}
+function min(value) {
+    return propertyReflector({ min: value }, propertiesByModel);
+}
+function max(value) {
+    return propertyReflector({ max: value }, propertiesByModel);
+}
+function length(value) {
+    return propertyReflector({ length: value }, propertiesByModel);
+}
+const property = propertyReflector({
+    isRelationship: false,
+    isProperty: true,
+}, propertiesByModel);
+const pushKey = propertyReflector({ pushKey: true }, propertiesByModel);
+
+/** Detect free variable `global` from Node.js. */
+var freeGlobal$1 = typeof global == 'object' && global && global.Object === Object && global;
+
+/** Detect free variable `self`. */
+var freeSelf$1 = typeof self == 'object' && self && self.Object === Object && self;
+
+/** Used as a reference to the global object. */
+var root$1 = freeGlobal$1 || freeSelf$1 || Function('return this')();
+
+/** Built-in value references. */
+var Symbol$2 = root$1.Symbol;
+
+/** Used for built-in method references. */
+var objectProto$5 = Object.prototype;
+
+/** Used to check objects for own properties. */
+var hasOwnProperty$5 = objectProto$5.hasOwnProperty;
+
+/**
+ * Used to resolve the
+ * [`toStringTag`](http://ecma-international.org/ecma-262/7.0/#sec-object.prototype.tostring)
+ * of values.
+ */
+var nativeObjectToString$2 = objectProto$5.toString;
+
+/** Built-in value references. */
+var symToStringTag$2 = Symbol$2 ? Symbol$2.toStringTag : undefined;
+
+/**
+ * A specialized version of `baseGetTag` which ignores `Symbol.toStringTag` values.
+ *
+ * @private
+ * @param {*} value The value to query.
+ * @returns {string} Returns the raw `toStringTag`.
+ */
+function getRawTag$1(value) {
+  var isOwn = hasOwnProperty$5.call(value, symToStringTag$2),
+      tag = value[symToStringTag$2];
+
+  try {
+    value[symToStringTag$2] = undefined;
+    var unmasked = true;
+  } catch (e) {}
+
+  var result = nativeObjectToString$2.call(value);
+  if (unmasked) {
+    if (isOwn) {
+      value[symToStringTag$2] = tag;
+    } else {
+      delete value[symToStringTag$2];
+    }
+  }
+  return result;
+}
+
+/** Used for built-in method references. */
+var objectProto$6 = Object.prototype;
+
+/**
+ * Used to resolve the
+ * [`toStringTag`](http://ecma-international.org/ecma-262/7.0/#sec-object.prototype.tostring)
+ * of values.
+ */
+var nativeObjectToString$3 = objectProto$6.toString;
+
+/**
+ * Converts `value` to a string using `Object.prototype.toString`.
+ *
+ * @private
+ * @param {*} value The value to convert.
+ * @returns {string} Returns the converted string.
+ */
+function objectToString$1(value) {
+  return nativeObjectToString$3.call(value);
+}
+
+/** `Object#toString` result references. */
+var nullTag$1 = '[object Null]',
+    undefinedTag$1 = '[object Undefined]';
+
+/** Built-in value references. */
+var symToStringTag$3 = Symbol$2 ? Symbol$2.toStringTag : undefined;
+
+/**
+ * The base implementation of `getTag` without fallbacks for buggy environments.
+ *
+ * @private
+ * @param {*} value The value to query.
+ * @returns {string} Returns the `toStringTag`.
+ */
+function baseGetTag$1(value) {
+  if (value == null) {
+    return value === undefined ? undefinedTag$1 : nullTag$1;
+  }
+  return (symToStringTag$3 && symToStringTag$3 in Object(value))
+    ? getRawTag$1(value)
+    : objectToString$1(value);
+}
+
+/**
+ * Checks if `value` is object-like. A value is object-like if it's not `null`
+ * and has a `typeof` result of "object".
+ *
+ * @static
+ * @memberOf _
+ * @since 4.0.0
+ * @category Lang
+ * @param {*} value The value to check.
+ * @returns {boolean} Returns `true` if `value` is object-like, else `false`.
+ * @example
+ *
+ * _.isObjectLike({});
+ * // => true
+ *
+ * _.isObjectLike([1, 2, 3]);
+ * // => true
+ *
+ * _.isObjectLike(_.noop);
+ * // => false
+ *
+ * _.isObjectLike(null);
+ * // => false
+ */
+function isObjectLike(value) {
+  return value != null && typeof value == 'object';
+}
+
+/** `Object#toString` result references. */
+var symbolTag = '[object Symbol]';
+
+/**
+ * Checks if `value` is classified as a `Symbol` primitive or object.
+ *
+ * @static
+ * @memberOf _
+ * @since 4.0.0
+ * @category Lang
+ * @param {*} value The value to check.
+ * @returns {boolean} Returns `true` if `value` is a symbol, else `false`.
+ * @example
+ *
+ * _.isSymbol(Symbol.iterator);
+ * // => true
+ *
+ * _.isSymbol('abc');
+ * // => false
+ */
+function isSymbol(value) {
+  return typeof value == 'symbol' ||
+    (isObjectLike(value) && baseGetTag$1(value) == symbolTag);
+}
+
+/**
+ * A specialized version of `_.map` for arrays without support for iteratee
+ * shorthands.
+ *
+ * @private
+ * @param {Array} [array] The array to iterate over.
+ * @param {Function} iteratee The function invoked per iteration.
+ * @returns {Array} Returns the new mapped array.
+ */
+function arrayMap(array, iteratee) {
+  var index = -1,
+      length = array == null ? 0 : array.length,
+      result = Array(length);
+
+  while (++index < length) {
+    result[index] = iteratee(array[index], index, array);
+  }
+  return result;
+}
+
+/**
+ * Checks if `value` is classified as an `Array` object.
+ *
+ * @static
+ * @memberOf _
+ * @since 0.1.0
+ * @category Lang
+ * @param {*} value The value to check.
+ * @returns {boolean} Returns `true` if `value` is an array, else `false`.
+ * @example
+ *
+ * _.isArray([1, 2, 3]);
+ * // => true
+ *
+ * _.isArray(document.body.children);
+ * // => false
+ *
+ * _.isArray('abc');
+ * // => false
+ *
+ * _.isArray(_.noop);
+ * // => false
+ */
+var isArray$2 = Array.isArray;
+
+/** Used as references for various `Number` constants. */
+var INFINITY = 1 / 0;
+
+/** Used to convert symbols to primitives and strings. */
+var symbolProto$1 = Symbol$2 ? Symbol$2.prototype : undefined,
+    symbolToString$1 = symbolProto$1 ? symbolProto$1.toString : undefined;
+
+/**
+ * The base implementation of `_.toString` which doesn't convert nullish
+ * values to empty strings.
+ *
+ * @private
+ * @param {*} value The value to process.
+ * @returns {string} Returns the string.
+ */
+function baseToString(value) {
+  // Exit early for strings to avoid a performance hit in some environments.
+  if (typeof value == 'string') {
+    return value;
+  }
+  if (isArray$2(value)) {
+    // Recursively convert values (susceptible to call stack limits).
+    return arrayMap(value, baseToString) + '';
+  }
+  if (isSymbol(value)) {
+    return symbolToString$1 ? symbolToString$1.call(value) : '';
+  }
+  var result = (value + '');
+  return (result == '0' && (1 / value) == -INFINITY) ? '-0' : result;
+}
+
+/**
+ * Checks if `value` is the
+ * [language type](http://www.ecma-international.org/ecma-262/7.0/#sec-ecmascript-language-types)
+ * of `Object`. (e.g. arrays, functions, objects, regexes, `new Number(0)`, and `new String('')`)
+ *
+ * @static
+ * @memberOf _
+ * @since 0.1.0
+ * @category Lang
+ * @param {*} value The value to check.
+ * @returns {boolean} Returns `true` if `value` is an object, else `false`.
+ * @example
+ *
+ * _.isObject({});
+ * // => true
+ *
+ * _.isObject([1, 2, 3]);
+ * // => true
+ *
+ * _.isObject(_.noop);
+ * // => true
+ *
+ * _.isObject(null);
+ * // => false
+ */
+function isObject$1(value) {
+  var type = typeof value;
+  return value != null && (type == 'object' || type == 'function');
+}
+
+/** `Object#toString` result references. */
+var asyncTag$1 = '[object AsyncFunction]',
+    funcTag$1 = '[object Function]',
+    genTag$1 = '[object GeneratorFunction]',
+    proxyTag$1 = '[object Proxy]';
+
+/**
+ * Checks if `value` is classified as a `Function` object.
+ *
+ * @static
+ * @memberOf _
+ * @since 0.1.0
+ * @category Lang
+ * @param {*} value The value to check.
+ * @returns {boolean} Returns `true` if `value` is a function, else `false`.
+ * @example
+ *
+ * _.isFunction(_);
+ * // => true
+ *
+ * _.isFunction(/abc/);
+ * // => false
+ */
+function isFunction$1(value) {
+  if (!isObject$1(value)) {
+    return false;
+  }
+  // The use of `Object#toString` avoids issues with the `typeof` operator
+  // in Safari 9 which returns 'object' for typed arrays and other constructors.
+  var tag = baseGetTag$1(value);
+  return tag == funcTag$1 || tag == genTag$1 || tag == asyncTag$1 || tag == proxyTag$1;
+}
+
+/** Used to detect overreaching core-js shims. */
+var coreJsData$1 = root$1['__core-js_shared__'];
+
+/** Used to detect methods masquerading as native. */
+var maskSrcKey$1 = (function() {
+  var uid = /[^.]+$/.exec(coreJsData$1 && coreJsData$1.keys && coreJsData$1.keys.IE_PROTO || '');
+  return uid ? ('Symbol(src)_1.' + uid) : '';
+}());
+
+/**
+ * Checks if `func` has its source masked.
+ *
+ * @private
+ * @param {Function} func The function to check.
+ * @returns {boolean} Returns `true` if `func` is masked, else `false`.
+ */
+function isMasked$1(func) {
+  return !!maskSrcKey$1 && (maskSrcKey$1 in func);
+}
+
+/** Used for built-in method references. */
+var funcProto$2 = Function.prototype;
+
+/** Used to resolve the decompiled source of functions. */
+var funcToString$2 = funcProto$2.toString;
+
+/**
+ * Converts `func` to its source code.
+ *
+ * @private
+ * @param {Function} func The function to convert.
+ * @returns {string} Returns the source code.
+ */
+function toSource$1(func) {
+  if (func != null) {
+    try {
+      return funcToString$2.call(func);
+    } catch (e) {}
+    try {
+      return (func + '');
+    } catch (e) {}
+  }
+  return '';
+}
+
+/**
+ * Used to match `RegExp`
+ * [syntax characters](http://ecma-international.org/ecma-262/7.0/#sec-patterns).
+ */
+var reRegExpChar$1 = /[\\^$.*+?()[\]{}|]/g;
+
+/** Used to detect host constructors (Safari). */
+var reIsHostCtor$1 = /^\[object .+?Constructor\]$/;
+
+/** Used for built-in method references. */
+var funcProto$3 = Function.prototype,
+    objectProto$7 = Object.prototype;
+
+/** Used to resolve the decompiled source of functions. */
+var funcToString$3 = funcProto$3.toString;
+
+/** Used to check objects for own properties. */
+var hasOwnProperty$6 = objectProto$7.hasOwnProperty;
+
+/** Used to detect if a method is native. */
+var reIsNative$1 = RegExp('^' +
+  funcToString$3.call(hasOwnProperty$6).replace(reRegExpChar$1, '\\$&')
+  .replace(/hasOwnProperty|(function).*?(?=\\\()| for .+?(?=\\\])/g, '$1.*?') + '$'
+);
+
+/**
+ * The base implementation of `_.isNative` without bad shim checks.
+ *
+ * @private
+ * @param {*} value The value to check.
+ * @returns {boolean} Returns `true` if `value` is a native function,
+ *  else `false`.
+ */
+function baseIsNative$1(value) {
+  if (!isObject$1(value) || isMasked$1(value)) {
+    return false;
+  }
+  var pattern = isFunction$1(value) ? reIsNative$1 : reIsHostCtor$1;
+  return pattern.test(toSource$1(value));
+}
+
+/**
+ * Gets the value at `key` of `object`.
+ *
+ * @private
+ * @param {Object} [object] The object to query.
+ * @param {string} key The key of the property to get.
+ * @returns {*} Returns the property value.
+ */
+function getValue$1(object, key) {
+  return object == null ? undefined : object[key];
+}
+
+/**
+ * Gets the native function at `key` of `object`.
+ *
+ * @private
+ * @param {Object} object The object to query.
+ * @param {string} key The key of the method to get.
+ * @returns {*} Returns the function if it's native, else `undefined`.
+ */
+function getNative$1(object, key) {
+  var value = getValue$1(object, key);
+  return baseIsNative$1(value) ? value : undefined;
+}
+
+var defineProperty$2 = (function() {
+  try {
+    var func = getNative$1(Object, 'defineProperty');
+    func({}, '', {});
+    return func;
+  } catch (e) {}
+}());
+
+/** Used as references for various `Number` constants. */
+var MAX_SAFE_INTEGER = 9007199254740991;
+
+/** Used to detect unsigned integer values. */
+var reIsUint = /^(?:0|[1-9]\d*)$/;
+
+/**
+ * Checks if `value` is a valid array-like index.
+ *
+ * @private
+ * @param {*} value The value to check.
+ * @param {number} [length=MAX_SAFE_INTEGER] The upper bounds of a valid index.
+ * @returns {boolean} Returns `true` if `value` is a valid index, else `false`.
+ */
+function isIndex(value, length) {
+  var type = typeof value;
+  length = length == null ? MAX_SAFE_INTEGER : length;
+
+  return !!length &&
+    (type == 'number' ||
+      (type != 'symbol' && reIsUint.test(value))) &&
+        (value > -1 && value % 1 == 0 && value < length);
+}
+
+/**
+ * The base implementation of `assignValue` and `assignMergeValue` without
+ * value checks.
+ *
+ * @private
+ * @param {Object} object The object to modify.
+ * @param {string} key The key of the property to assign.
+ * @param {*} value The value to assign.
+ */
+function baseAssignValue(object, key, value) {
+  if (key == '__proto__' && defineProperty$2) {
+    defineProperty$2(object, key, {
+      'configurable': true,
+      'enumerable': true,
+      'value': value,
+      'writable': true
+    });
+  } else {
+    object[key] = value;
+  }
+}
+
+/**
+ * Performs a
+ * [`SameValueZero`](http://ecma-international.org/ecma-262/7.0/#sec-samevaluezero)
+ * comparison between two values to determine if they are equivalent.
+ *
+ * @static
+ * @memberOf _
+ * @since 4.0.0
+ * @category Lang
+ * @param {*} value The value to compare.
+ * @param {*} other The other value to compare.
+ * @returns {boolean} Returns `true` if the values are equivalent, else `false`.
+ * @example
+ *
+ * var object = { 'a': 1 };
+ * var other = { 'a': 1 };
+ *
+ * _.eq(object, object);
+ * // => true
+ *
+ * _.eq(object, other);
+ * // => false
+ *
+ * _.eq('a', 'a');
+ * // => true
+ *
+ * _.eq('a', Object('a'));
+ * // => false
+ *
+ * _.eq(NaN, NaN);
+ * // => true
+ */
+function eq$1(value, other) {
+  return value === other || (value !== value && other !== other);
+}
+
+/** Used for built-in method references. */
+var objectProto$8 = Object.prototype;
+
+/** Used to check objects for own properties. */
+var hasOwnProperty$7 = objectProto$8.hasOwnProperty;
+
+/**
+ * Assigns `value` to `key` of `object` if the existing value is not equivalent
+ * using [`SameValueZero`](http://ecma-international.org/ecma-262/7.0/#sec-samevaluezero)
+ * for equality comparisons.
+ *
+ * @private
+ * @param {Object} object The object to modify.
+ * @param {string} key The key of the property to assign.
+ * @param {*} value The value to assign.
+ */
+function assignValue(object, key, value) {
+  var objValue = object[key];
+  if (!(hasOwnProperty$7.call(object, key) && eq$1(objValue, value)) ||
+      (value === undefined && !(key in object))) {
+    baseAssignValue(object, key, value);
+  }
+}
+
+/** Used to match property names within property paths. */
+var reIsDeepProp = /\.|\[(?:[^[\]]*|(["'])(?:(?!\1)[^\\]|\\.)*?\1)\]/,
+    reIsPlainProp = /^\w*$/;
+
+/**
+ * Checks if `value` is a property name and not a property path.
+ *
+ * @private
+ * @param {*} value The value to check.
+ * @param {Object} [object] The object to query keys on.
+ * @returns {boolean} Returns `true` if `value` is a property name, else `false`.
+ */
+function isKey(value, object) {
+  if (isArray$2(value)) {
+    return false;
+  }
+  var type = typeof value;
+  if (type == 'number' || type == 'symbol' || type == 'boolean' ||
+      value == null || isSymbol(value)) {
+    return true;
+  }
+  return reIsPlainProp.test(value) || !reIsDeepProp.test(value) ||
+    (object != null && value in Object(object));
+}
+
+/* Built-in method references that are verified to be native. */
+var nativeCreate$1 = getNative$1(Object, 'create');
+
+/**
+ * Removes all key-value entries from the hash.
+ *
+ * @private
+ * @name clear
+ * @memberOf Hash
+ */
+function hashClear$1() {
+  this.__data__ = nativeCreate$1 ? nativeCreate$1(null) : {};
+  this.size = 0;
+}
+
+/**
+ * Removes `key` and its value from the hash.
+ *
+ * @private
+ * @name delete
+ * @memberOf Hash
+ * @param {Object} hash The hash to modify.
+ * @param {string} key The key of the value to remove.
+ * @returns {boolean} Returns `true` if the entry was removed, else `false`.
+ */
+function hashDelete$1(key) {
+  var result = this.has(key) && delete this.__data__[key];
+  this.size -= result ? 1 : 0;
+  return result;
+}
+
+/** Used to stand-in for `undefined` hash values. */
+var HASH_UNDEFINED$2 = '__lodash_hash_undefined__';
+
+/** Used for built-in method references. */
+var objectProto$9 = Object.prototype;
+
+/** Used to check objects for own properties. */
+var hasOwnProperty$8 = objectProto$9.hasOwnProperty;
+
+/**
+ * Gets the hash value for `key`.
+ *
+ * @private
+ * @name get
+ * @memberOf Hash
+ * @param {string} key The key of the value to get.
+ * @returns {*} Returns the entry value.
+ */
+function hashGet$1(key) {
+  var data = this.__data__;
+  if (nativeCreate$1) {
+    var result = data[key];
+    return result === HASH_UNDEFINED$2 ? undefined : result;
+  }
+  return hasOwnProperty$8.call(data, key) ? data[key] : undefined;
+}
+
+/** Used for built-in method references. */
+var objectProto$a = Object.prototype;
+
+/** Used to check objects for own properties. */
+var hasOwnProperty$9 = objectProto$a.hasOwnProperty;
+
+/**
+ * Checks if a hash value for `key` exists.
+ *
+ * @private
+ * @name has
+ * @memberOf Hash
+ * @param {string} key The key of the entry to check.
+ * @returns {boolean} Returns `true` if an entry for `key` exists, else `false`.
+ */
+function hashHas$1(key) {
+  var data = this.__data__;
+  return nativeCreate$1 ? (data[key] !== undefined) : hasOwnProperty$9.call(data, key);
+}
+
+/** Used to stand-in for `undefined` hash values. */
+var HASH_UNDEFINED$3 = '__lodash_hash_undefined__';
+
+/**
+ * Sets the hash `key` to `value`.
+ *
+ * @private
+ * @name set
+ * @memberOf Hash
+ * @param {string} key The key of the value to set.
+ * @param {*} value The value to set.
+ * @returns {Object} Returns the hash instance.
+ */
+function hashSet$1(key, value) {
+  var data = this.__data__;
+  this.size += this.has(key) ? 0 : 1;
+  data[key] = (nativeCreate$1 && value === undefined) ? HASH_UNDEFINED$3 : value;
+  return this;
+}
+
+/**
+ * Creates a hash object.
+ *
+ * @private
+ * @constructor
+ * @param {Array} [entries] The key-value pairs to cache.
+ */
+function Hash$1(entries) {
+  var index = -1,
+      length = entries == null ? 0 : entries.length;
+
+  this.clear();
+  while (++index < length) {
+    var entry = entries[index];
+    this.set(entry[0], entry[1]);
+  }
+}
+
+// Add methods to `Hash`.
+Hash$1.prototype.clear = hashClear$1;
+Hash$1.prototype['delete'] = hashDelete$1;
+Hash$1.prototype.get = hashGet$1;
+Hash$1.prototype.has = hashHas$1;
+Hash$1.prototype.set = hashSet$1;
+
+/**
+ * Removes all key-value entries from the list cache.
+ *
+ * @private
+ * @name clear
+ * @memberOf ListCache
+ */
+function listCacheClear$1() {
+  this.__data__ = [];
+  this.size = 0;
+}
+
+/**
+ * Gets the index at which the `key` is found in `array` of key-value pairs.
+ *
+ * @private
+ * @param {Array} array The array to inspect.
+ * @param {*} key The key to search for.
+ * @returns {number} Returns the index of the matched value, else `-1`.
+ */
+function assocIndexOf$1(array, key) {
+  var length = array.length;
+  while (length--) {
+    if (eq$1(array[length][0], key)) {
+      return length;
+    }
+  }
+  return -1;
+}
+
+/** Used for built-in method references. */
+var arrayProto$1 = Array.prototype;
+
+/** Built-in value references. */
+var splice$1 = arrayProto$1.splice;
+
+/**
+ * Removes `key` and its value from the list cache.
+ *
+ * @private
+ * @name delete
+ * @memberOf ListCache
+ * @param {string} key The key of the value to remove.
+ * @returns {boolean} Returns `true` if the entry was removed, else `false`.
+ */
+function listCacheDelete$1(key) {
+  var data = this.__data__,
+      index = assocIndexOf$1(data, key);
+
+  if (index < 0) {
+    return false;
+  }
+  var lastIndex = data.length - 1;
+  if (index == lastIndex) {
+    data.pop();
+  } else {
+    splice$1.call(data, index, 1);
+  }
+  --this.size;
+  return true;
+}
+
+/**
+ * Gets the list cache value for `key`.
+ *
+ * @private
+ * @name get
+ * @memberOf ListCache
+ * @param {string} key The key of the value to get.
+ * @returns {*} Returns the entry value.
+ */
+function listCacheGet$1(key) {
+  var data = this.__data__,
+      index = assocIndexOf$1(data, key);
+
+  return index < 0 ? undefined : data[index][1];
+}
+
+/**
+ * Checks if a list cache value for `key` exists.
+ *
+ * @private
+ * @name has
+ * @memberOf ListCache
+ * @param {string} key The key of the entry to check.
+ * @returns {boolean} Returns `true` if an entry for `key` exists, else `false`.
+ */
+function listCacheHas$1(key) {
+  return assocIndexOf$1(this.__data__, key) > -1;
+}
+
+/**
+ * Sets the list cache `key` to `value`.
+ *
+ * @private
+ * @name set
+ * @memberOf ListCache
+ * @param {string} key The key of the value to set.
+ * @param {*} value The value to set.
+ * @returns {Object} Returns the list cache instance.
+ */
+function listCacheSet$1(key, value) {
+  var data = this.__data__,
+      index = assocIndexOf$1(data, key);
+
+  if (index < 0) {
+    ++this.size;
+    data.push([key, value]);
+  } else {
+    data[index][1] = value;
+  }
+  return this;
+}
+
+/**
+ * Creates an list cache object.
+ *
+ * @private
+ * @constructor
+ * @param {Array} [entries] The key-value pairs to cache.
+ */
+function ListCache$1(entries) {
+  var index = -1,
+      length = entries == null ? 0 : entries.length;
+
+  this.clear();
+  while (++index < length) {
+    var entry = entries[index];
+    this.set(entry[0], entry[1]);
+  }
+}
+
+// Add methods to `ListCache`.
+ListCache$1.prototype.clear = listCacheClear$1;
+ListCache$1.prototype['delete'] = listCacheDelete$1;
+ListCache$1.prototype.get = listCacheGet$1;
+ListCache$1.prototype.has = listCacheHas$1;
+ListCache$1.prototype.set = listCacheSet$1;
+
+/* Built-in method references that are verified to be native. */
+var Map$2 = getNative$1(root$1, 'Map');
+
+/**
+ * Removes all key-value entries from the map.
+ *
+ * @private
+ * @name clear
+ * @memberOf MapCache
+ */
+function mapCacheClear$1() {
+  this.size = 0;
+  this.__data__ = {
+    'hash': new Hash$1,
+    'map': new (Map$2 || ListCache$1),
+    'string': new Hash$1
+  };
+}
+
+/**
+ * Checks if `value` is suitable for use as unique object key.
+ *
+ * @private
+ * @param {*} value The value to check.
+ * @returns {boolean} Returns `true` if `value` is suitable, else `false`.
+ */
+function isKeyable$1(value) {
+  var type = typeof value;
+  return (type == 'string' || type == 'number' || type == 'symbol' || type == 'boolean')
+    ? (value !== '__proto__')
+    : (value === null);
+}
+
+/**
+ * Gets the data for `map`.
+ *
+ * @private
+ * @param {Object} map The map to query.
+ * @param {string} key The reference key.
+ * @returns {*} Returns the map data.
+ */
+function getMapData$1(map, key) {
+  var data = map.__data__;
+  return isKeyable$1(key)
+    ? data[typeof key == 'string' ? 'string' : 'hash']
+    : data.map;
+}
+
+/**
+ * Removes `key` and its value from the map.
+ *
+ * @private
+ * @name delete
+ * @memberOf MapCache
+ * @param {string} key The key of the value to remove.
+ * @returns {boolean} Returns `true` if the entry was removed, else `false`.
+ */
+function mapCacheDelete$1(key) {
+  var result = getMapData$1(this, key)['delete'](key);
+  this.size -= result ? 1 : 0;
+  return result;
+}
+
+/**
+ * Gets the map value for `key`.
+ *
+ * @private
+ * @name get
+ * @memberOf MapCache
+ * @param {string} key The key of the value to get.
+ * @returns {*} Returns the entry value.
+ */
+function mapCacheGet$1(key) {
+  return getMapData$1(this, key).get(key);
+}
+
+/**
+ * Checks if a map value for `key` exists.
+ *
+ * @private
+ * @name has
+ * @memberOf MapCache
+ * @param {string} key The key of the entry to check.
+ * @returns {boolean} Returns `true` if an entry for `key` exists, else `false`.
+ */
+function mapCacheHas$1(key) {
+  return getMapData$1(this, key).has(key);
+}
+
+/**
+ * Sets the map `key` to `value`.
+ *
+ * @private
+ * @name set
+ * @memberOf MapCache
+ * @param {string} key The key of the value to set.
+ * @param {*} value The value to set.
+ * @returns {Object} Returns the map cache instance.
+ */
+function mapCacheSet$1(key, value) {
+  var data = getMapData$1(this, key),
+      size = data.size;
+
+  data.set(key, value);
+  this.size += data.size == size ? 0 : 1;
+  return this;
+}
+
+/**
+ * Creates a map cache object to store key-value pairs.
+ *
+ * @private
+ * @constructor
+ * @param {Array} [entries] The key-value pairs to cache.
+ */
+function MapCache$1(entries) {
+  var index = -1,
+      length = entries == null ? 0 : entries.length;
+
+  this.clear();
+  while (++index < length) {
+    var entry = entries[index];
+    this.set(entry[0], entry[1]);
+  }
+}
+
+// Add methods to `MapCache`.
+MapCache$1.prototype.clear = mapCacheClear$1;
+MapCache$1.prototype['delete'] = mapCacheDelete$1;
+MapCache$1.prototype.get = mapCacheGet$1;
+MapCache$1.prototype.has = mapCacheHas$1;
+MapCache$1.prototype.set = mapCacheSet$1;
+
+/** Error message constants. */
+var FUNC_ERROR_TEXT$1 = 'Expected a function';
+
+/**
+ * Creates a function that memoizes the result of `func`. If `resolver` is
+ * provided, it determines the cache key for storing the result based on the
+ * arguments provided to the memoized function. By default, the first argument
+ * provided to the memoized function is used as the map cache key. The `func`
+ * is invoked with the `this` binding of the memoized function.
+ *
+ * **Note:** The cache is exposed as the `cache` property on the memoized
+ * function. Its creation may be customized by replacing the `_.memoize.Cache`
+ * constructor with one whose instances implement the
+ * [`Map`](http://ecma-international.org/ecma-262/7.0/#sec-properties-of-the-map-prototype-object)
+ * method interface of `clear`, `delete`, `get`, `has`, and `set`.
+ *
+ * @static
+ * @memberOf _
+ * @since 0.1.0
+ * @category Function
+ * @param {Function} func The function to have its output memoized.
+ * @param {Function} [resolver] The function to resolve the cache key.
+ * @returns {Function} Returns the new memoized function.
+ * @example
+ *
+ * var object = { 'a': 1, 'b': 2 };
+ * var other = { 'c': 3, 'd': 4 };
+ *
+ * var values = _.memoize(_.values);
+ * values(object);
+ * // => [1, 2]
+ *
+ * values(other);
+ * // => [3, 4]
+ *
+ * object.a = 2;
+ * values(object);
+ * // => [1, 2]
+ *
+ * // Modify the result cache.
+ * values.cache.set(object, ['a', 'b']);
+ * values(object);
+ * // => ['a', 'b']
+ *
+ * // Replace `_.memoize.Cache`.
+ * _.memoize.Cache = WeakMap;
+ */
+function memoize$1(func, resolver) {
+  if (typeof func != 'function' || (resolver != null && typeof resolver != 'function')) {
+    throw new TypeError(FUNC_ERROR_TEXT$1);
+  }
+  var memoized = function() {
+    var args = arguments,
+        key = resolver ? resolver.apply(this, args) : args[0],
+        cache = memoized.cache;
+
+    if (cache.has(key)) {
+      return cache.get(key);
+    }
+    var result = func.apply(this, args);
+    memoized.cache = cache.set(key, result) || cache;
+    return result;
+  };
+  memoized.cache = new (memoize$1.Cache || MapCache$1);
+  return memoized;
+}
+
+// Expose `MapCache`.
+memoize$1.Cache = MapCache$1;
+
+/** Used as the maximum memoize cache size. */
+var MAX_MEMOIZE_SIZE$1 = 500;
+
+/**
+ * A specialized version of `_.memoize` which clears the memoized function's
+ * cache when it exceeds `MAX_MEMOIZE_SIZE`.
+ *
+ * @private
+ * @param {Function} func The function to have its output memoized.
+ * @returns {Function} Returns the new memoized function.
+ */
+function memoizeCapped$1(func) {
+  var result = memoize$1(func, function(key) {
+    if (cache.size === MAX_MEMOIZE_SIZE$1) {
+      cache.clear();
+    }
+    return key;
+  });
+
+  var cache = result.cache;
+  return result;
+}
+
+/** Used to match property names within property paths. */
+var rePropName$1 = /[^.[\]]+|\[(?:(-?\d+(?:\.\d+)?)|(["'])((?:(?!\2)[^\\]|\\.)*?)\2)\]|(?=(?:\.|\[\])(?:\.|\[\]|$))/g;
+
+/** Used to match backslashes in property paths. */
+var reEscapeChar$1 = /\\(\\)?/g;
+
+/**
+ * Converts `string` to a property path array.
+ *
+ * @private
+ * @param {string} string The string to convert.
+ * @returns {Array} Returns the property path array.
+ */
+var stringToPath$1 = memoizeCapped$1(function(string) {
+  var result = [];
+  if (string.charCodeAt(0) === 46 /* . */) {
+    result.push('');
+  }
+  string.replace(rePropName$1, function(match, number, quote, subString) {
+    result.push(quote ? subString.replace(reEscapeChar$1, '$1') : (number || match));
+  });
+  return result;
+});
+
+/**
+ * Converts `value` to a string. An empty string is returned for `null`
+ * and `undefined` values. The sign of `-0` is preserved.
+ *
+ * @static
+ * @memberOf _
+ * @since 4.0.0
+ * @category Lang
+ * @param {*} value The value to convert.
+ * @returns {string} Returns the converted string.
+ * @example
+ *
+ * _.toString(null);
+ * // => ''
+ *
+ * _.toString(-0);
+ * // => '-0'
+ *
+ * _.toString([1, 2, 3]);
+ * // => '1,2,3'
+ */
+function toString$1(value) {
+  return value == null ? '' : baseToString(value);
+}
+
+/**
+ * Casts `value` to a path array if it's not one.
+ *
+ * @private
+ * @param {*} value The value to inspect.
+ * @param {Object} [object] The object to query keys on.
+ * @returns {Array} Returns the cast property path array.
+ */
+function castPath(value, object) {
+  if (isArray$2(value)) {
+    return value;
+  }
+  return isKey(value, object) ? [value] : stringToPath$1(toString$1(value));
+}
+
+/** Used as references for various `Number` constants. */
+var INFINITY$1 = 1 / 0;
+
+/**
+ * Converts `value` to a string key if it's not a string or symbol.
+ *
+ * @private
+ * @param {*} value The value to inspect.
+ * @returns {string|symbol} Returns the key.
+ */
+function toKey(value) {
+  if (typeof value == 'string' || isSymbol(value)) {
+    return value;
+  }
+  var result = (value + '');
+  return (result == '0' && (1 / value) == -INFINITY$1) ? '-0' : result;
+}
+
+/**
+ * The base implementation of `_.get` without support for default values.
+ *
+ * @private
+ * @param {Object} object The object to query.
+ * @param {Array|string} path The path of the property to get.
+ * @returns {*} Returns the resolved value.
+ */
+function baseGet(object, path) {
+  path = castPath(path, object);
+
+  var index = 0,
+      length = path.length;
+
+  while (object != null && index < length) {
+    object = object[toKey(path[index++])];
+  }
+  return (index && index == length) ? object : undefined;
+}
+
+/**
+ * Gets the value at `path` of `object`. If the resolved value is
+ * `undefined`, the `defaultValue` is returned in its place.
+ *
+ * @static
+ * @memberOf _
+ * @since 3.7.0
+ * @category Object
+ * @param {Object} object The object to query.
+ * @param {Array|string} path The path of the property to get.
+ * @param {*} [defaultValue] The value returned for `undefined` resolved values.
+ * @returns {*} Returns the resolved value.
+ * @example
+ *
+ * var object = { 'a': [{ 'b': { 'c': 3 } }] };
+ *
+ * _.get(object, 'a[0].b.c');
+ * // => 3
+ *
+ * _.get(object, ['a', '0', 'b', 'c']);
+ * // => 3
+ *
+ * _.get(object, 'a.b.c', 'default');
+ * // => 'default'
+ */
+function get(object, path, defaultValue) {
+  var result = object == null ? undefined : baseGet(object, path);
+  return result === undefined ? defaultValue : result;
+}
+
+/**
+ * The base implementation of `_.set`.
+ *
+ * @private
+ * @param {Object} object The object to modify.
+ * @param {Array|string} path The path of the property to set.
+ * @param {*} value The value to set.
+ * @param {Function} [customizer] The function to customize path creation.
+ * @returns {Object} Returns `object`.
+ */
+function baseSet(object, path, value, customizer) {
+  if (!isObject$1(object)) {
+    return object;
+  }
+  path = castPath(path, object);
+
+  var index = -1,
+      length = path.length,
+      lastIndex = length - 1,
+      nested = object;
+
+  while (nested != null && ++index < length) {
+    var key = toKey(path[index]),
+        newValue = value;
+
+    if (index != lastIndex) {
+      var objValue = nested[key];
+      newValue = customizer ? customizer(objValue, key, nested) : undefined;
+      if (newValue === undefined) {
+        newValue = isObject$1(objValue)
+          ? objValue
+          : (isIndex(path[index + 1]) ? [] : {});
+      }
+    }
+    assignValue(nested, key, newValue);
+    nested = nested[key];
+  }
+  return object;
+}
+
+/**
+ * Sets the value at `path` of `object`. If a portion of `path` doesn't exist,
+ * it's created. Arrays are created for missing index properties while objects
+ * are created for all other missing properties. Use `_.setWith` to customize
+ * `path` creation.
+ *
+ * **Note:** This method mutates `object`.
+ *
+ * @static
+ * @memberOf _
+ * @since 3.7.0
+ * @category Object
+ * @param {Object} object The object to modify.
+ * @param {Array|string} path The path of the property to set.
+ * @param {*} value The value to set.
+ * @returns {Object} Returns `object`.
+ * @example
+ *
+ * var object = { 'a': [{ 'b': { 'c': 3 } }] };
+ *
+ * _.set(object, 'a[0].b.c', 4);
+ * console.log(object.a[0].b.c);
+ * // => 4
+ *
+ * _.set(object, ['x', '0', 'y', 'z'], 5);
+ * console.log(object.x[0].y.z);
+ * // => 5
+ */
+function set(object, path, value) {
+  return object == null ? object : baseSet(object, path, value);
+}
+
+const propertyDecorator = (nameValuePairs = {}, 
+/**
+ * if you want to set the property being decorated's name
+ * as property on meta specify the meta properties name here
+ */
+property) => (target, key) => {
+    const reflect = Reflect.getMetadata("design:type", target, key) || {};
+    if (nameValuePairs.isProperty) {
+        const meta = Object.assign(Object.assign(Object.assign({}, Reflect.getMetadata(key, target)), { type: reflect.name }), nameValuePairs);
+        Reflect.defineMetadata(key, meta, target);
+        addPropertyToModelMeta(target.constructor.name, property, meta);
+    }
+    if (nameValuePairs.isRelationship) {
+        const meta = Object.assign(Object.assign(Object.assign({}, Reflect.getMetadata(key, target)), { type: reflect.name }), nameValuePairs);
+        Reflect.defineMetadata(key, meta, target);
+        addRelationshipToModelMeta(target.constructor.name, property, meta);
+    }
+};
+function getPushKeys(target) {
+    const props = getProperties(target);
+    return props.filter((p) => p.pushKey).map((p) => p.property);
+}
+
+// TODO: make the defaultValue typed
+/**
+ * Allows setting a default value for a given property
+ */
+function defaultValue(value) {
+    return propertyReflector({ defaultValue: value }, propertiesByModel);
+}
+
+const encrypt = propertyReflector({ encrypt: true }, propertiesByModel);
+
+function hasMany(
+/**
+ * either a _string_ representing the Model's class name
+ * or a _constructor_ for the Model class
+ *
+ * In order to support prior implementations we include the
+ * possibility that a user of this API will pass in a _function_
+ * to a _constructor_. This approach is now deprecated.
+ */
+fkClass, inverse) {
+    try {
+        const fkConstructor = typeof fkClass === "string"
+            ? modelNameLookup(fkClass)
+            : modelConstructorLookup(fkClass);
+        let inverseProperty;
+        let directionality;
+        if (Array.isArray(inverse)) {
+            [inverseProperty, directionality] = inverse;
+        }
+        else {
+            inverseProperty = inverse;
+            directionality = inverse ? "bi-directional" : "one-way";
+        }
+        const payload = {
+            isRelationship: true,
+            isProperty: false,
+            relType: "hasMany",
+            directionality,
+            fkConstructor,
+        };
+        if (inverseProperty) {
+            payload.inverseProperty = inverseProperty;
+        }
+        return propertyReflector(Object.assign(Object.assign({}, payload), { type: "Object" }), relationshipsByModel);
+    }
+    catch (e) {
+        throw new DecoratorProblem("hasMany", e, { inverse });
+    }
+}
+
+function belongsTo(
+/**
+ * either a _string_ representing the Model's class name
+ * or a _constructor_ for the Model class.
+ *
+ * In order to support prior implementations we include the
+ * possibility that a user of this API will pass in a _function_
+ * to a _constructor_. This approach is now deprecated.
+ */
+fkClass, inverse) {
+    try {
+        const fkConstructor = typeof fkClass === "string"
+            ? modelNameLookup(fkClass)
+            : modelConstructorLookup(fkClass);
+        let inverseProperty;
+        let directionality;
+        if (Array.isArray(inverse)) {
+            [inverseProperty, directionality] = inverse;
+        }
+        else {
+            inverseProperty = inverse;
+            directionality = inverse ? "bi-directional" : "one-way";
+        }
+        const payload = {
+            isRelationship: true,
+            isProperty: false,
+            relType: "hasOne",
+            directionality,
+            fkConstructor,
+        };
+        if (inverseProperty) {
+            payload.inverseProperty = inverseProperty;
+        }
+        return propertyReflector(Object.assign(Object.assign({}, payload), { type: "String" }), relationshipsByModel);
+    }
+    catch (e) {
+        throw new DecoratorProblem("hasOne", e, { inverse });
+    }
+}
+const ownedBy = belongsTo;
+const hasOne = belongsTo;
+
+/** DB Indexes accumlated by index decorators */
+const indexesForModel = {};
+/**
+ * Gets all the db indexes for a given model
+ */
+function getDbIndexes(modelKlass) {
+    const modelName = modelKlass.constructor.name;
+    return modelName === "Model"
+        ? hashToArray(indexesForModel[modelName])
+        : (hashToArray(indexesForModel[modelName]) || []).concat(hashToArray(indexesForModel.Model));
+}
+const index = propertyReflector({
+    isIndex: true,
+    isUniqueIndex: false,
+}, indexesForModel);
+const uniqueIndex = propertyReflector({
+    isIndex: true,
+    isUniqueIndex: true,
+}, indexesForModel);
+
+function mock(value, ...rest) {
+    return propertyReflector({ mockType: value, mockParameters: rest }, propertiesByModel);
+}
+
+function model(options = {}) {
+    let isDirty = false;
+    return function decorateModel(target) {
+        // Function to add META to the model
+        function addMetaProperty() {
+            const modelOfObject = new target();
+            if (options.audit === undefined) {
+                options.audit = false;
+            }
+            if (!(options.audit === true ||
+                options.audit === false ||
+                options.audit === "server")) {
+                console.log(`You set the audit property to "${options.audit}" which is invalid. Valid properties are true, false, and "server". The audit property will be set to false for now.`);
+                options.audit = false;
+            }
+            const meta = Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign({}, options), { isProperty: isProperty(modelOfObject) }), { property: getModelProperty(modelOfObject) }), { properties: getProperties(modelOfObject) }), { isRelationship: isRelationship(modelOfObject) }), { relationship: getModelRelationship(modelOfObject) }), { relationships: getRelationships(modelOfObject) }), { dbIndexes: getDbIndexes(modelOfObject) }), { pushKeys: getPushKeys(modelOfObject) }), { dbOffset: options.dbOffset ? options.dbOffset : "" }), { audit: options.audit ? options.audit : false }), { plural: options.plural }), {
+                allProperties: [
+                    ...getProperties(modelOfObject).map((p) => p.property),
+                    ...getRelationships(modelOfObject).map((p) => p.property),
+                ],
+            }), {
+                localPostfix: options.localPostfix === undefined ? "all" : options.localPostfix,
+            }), {
+                localModelName: options.localModelName === undefined
+                    ? modelOfObject.constructor.name.slice(0, 1).toLowerCase() +
+                        modelOfObject.constructor.name.slice(1)
+                    : options.localModelName,
+            }), { isDirty });
+            addModelMeta(target.constructor.name.toLowerCase(), meta);
+            Object.defineProperty(target.prototype, "META", {
+                get() {
+                    return meta;
+                },
+                set(prop) {
+                    if (typeof prop === "object" && prop.isDirty !== undefined) {
+                        isDirty = prop.isDirty;
+                    }
+                    else {
+                        throw new Error("The META properties should only be set with the @model decorator at design time!");
+                    }
+                },
+                configurable: false,
+                enumerable: false,
+            });
+            if (target) {
+                // register the constructor so name based lookups will succeed
+                modelRegister(target);
+            }
+            return target;
+        }
+        // copy prototype so intanceof operator still works
+        addMetaProperty.prototype = target.prototype;
+        // return new constructor (will override original)
+        return addMetaProperty();
+    };
+}
+
+/**
+ * Adds meta data to a given "property" on a model. In this
+ * case we mean property to be either a strict property or
+ * a relationship.
+ *
+ * @param context The meta information as a dictionary/hash
+ * @param modelRollup a collection object which maintains
+ * a dictionary of properties
+ */
+const propertyReflector = (context = {}, 
+/**
+ * if you want this to be rollup up as an dictionary by prop;
+ * to be exposed in the model (or otherwise)
+ */
+modelRollup) => (modelKlass, key) => {
+    const modelName = modelKlass.constructor.name;
+    const reflect = Reflect.getMetadata("design:type", modelKlass, key) || {};
+    const meta = Object.assign(Object.assign(Object.assign(Object.assign({}, (Reflect.getMetadata(key, modelKlass) || {})), { type: lowercase(reflect.name) }), context), { property: key });
+    Reflect.defineMetadata(key, meta, modelKlass);
+    if (modelRollup) {
+        const modelAndProp = modelName + "." + key;
+        set(modelRollup, modelAndProp, Object.assign(Object.assign({}, get(modelRollup, modelAndProp)), meta));
+    }
+};
+
+function isProperty(modelKlass) {
+    return (prop) => {
+        return getModelProperty(modelKlass)(prop) ? true : false;
+    };
+}
+/** Properties accumlated by propertyDecorators  */
+const propertiesByModel = {};
+/** allows the addition of meta information to be added to a model's properties */
+function addPropertyToModelMeta(modelName, property, meta) {
+    if (!propertiesByModel[modelName]) {
+        propertiesByModel[modelName] = {};
+    }
+    // TODO: investigate why we need to genericize to model (from <T>)
+    propertiesByModel[modelName][property] = meta;
+}
+/** lookup meta data for schema properties */
+function getModelProperty(model) {
+    const className = model.constructor.name;
+    const propsForModel = getProperties(model);
+    return (prop) => {
+        return propsForModel.find((value) => {
+            return value.property === prop;
+        });
+    };
+}
+/**
+ * Gets all the properties for a given model
+ *
+ * @param modelConstructor the schema object which is being looked up
+ */
+function getProperties(model) {
+    const modelName = model.constructor.name;
+    const properties = hashToArray(propertiesByModel[modelName], "property") || [];
+    let parent = Object.getPrototypeOf(model.constructor);
+    while (parent.name) {
+        const subClass = new parent();
+        const subClassName = subClass.constructor.name;
+        properties.push(...hashToArray(propertiesByModel[subClassName], "property"));
+        parent = Object.getPrototypeOf(subClass.constructor);
+    }
+    return properties;
+}
+
+const relationshipsByModel = {};
+/** allows the addition of meta information to be added to a model's relationships */
+function addRelationshipToModelMeta(modelName, property, meta) {
+    if (!relationshipsByModel[modelName]) {
+        relationshipsByModel[modelName] = {};
+    }
+    // TODO: investigate why we need to genericize to model (from <T>)
+    relationshipsByModel[modelName][property] = meta;
+}
+function isRelationship(modelKlass) {
+    return (prop) => {
+        return getModelRelationship(modelKlass)(prop) ? true : false;
+    };
+}
+function getModelRelationship(model) {
+    const relnsForModel = getRelationships(model);
+    const className = model.constructor.name;
+    return (prop) => {
+        return relnsForModel.find((value) => {
+            return value.property === prop;
+        });
+    };
+}
+/**
+ * Gets all the relationships for a given model
+ */
+function getRelationships(model) {
+    const modelName = model.constructor.name;
+    const properties = hashToArray(relationshipsByModel[modelName], "property") || [];
+    let parent = Object.getPrototypeOf(model.constructor);
+    while (parent.name) {
+        const subClass = new parent();
+        const subClassName = subClass.constructor.name;
+        properties.push(...hashToArray(relationshipsByModel[subClassName], "property"));
+        parent = Object.getPrototypeOf(subClass.constructor);
+    }
+    return properties;
+}
+
+/*! *****************************************************************************
+Copyright (c) Microsoft Corporation.
+
+Permission to use, copy, modify, and/or distribute this software for any
+purpose with or without fee is hereby granted.
+
+THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH
+REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
+AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT,
+INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM
+LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
+OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+PERFORMANCE OF THIS SOFTWARE.
+***************************************************************************** */
+
+function __decorate(decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+}
+
+function __metadata(metadataKey, metadataValue) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(metadataKey, metadataValue);
+}
+
+exports.Model = class Model {
+};
+__decorate([
+    property,
+    __metadata("design:type", String)
+], exports.Model.prototype, "id", void 0);
+__decorate([
+    property,
+    mock("dateRecentMiliseconds"),
+    index,
+    __metadata("design:type", Number)
+], exports.Model.prototype, "lastUpdated", void 0);
+__decorate([
+    property,
+    mock("datePastMiliseconds"),
+    index,
+    __metadata("design:type", Number)
+], exports.Model.prototype, "createdAt", void 0);
+exports.Model = __decorate([
+    model()
+], exports.Model);
+
+exports.AuditLog = class AuditLog extends exports.Model {
+};
+__decorate([
+    property,
+    index,
+    __metadata("design:type", String)
+], exports.AuditLog.prototype, "modelName", void 0);
+__decorate([
+    property,
+    index,
+    __metadata("design:type", String)
+], exports.AuditLog.prototype, "modelId", void 0);
+__decorate([
+    property,
+    __metadata("design:type", Array)
+], exports.AuditLog.prototype, "changes", void 0);
+__decorate([
+    property,
+    __metadata("design:type", String)
+], exports.AuditLog.prototype, "action", void 0);
+exports.AuditLog = __decorate([
+    model({ dbOffset: "_auditing" })
+], exports.AuditLog);
+
+/**
+ * When creating a new record it is sometimes desirable to pass in
+ * the "payload" of FK's instead of just the FK. This function facilitates
+ * that.
+ */
+async function buildDeepRelationshipLinks(rec, property) {
+    const meta = getModelMeta(rec).property(property);
+    return meta.relType === "hasMany"
+        ? processHasMany$1(rec, property)
+        : processBelongsTo(rec, property);
+}
+async function processHasMany$1(rec, property) {
+    const meta = getModelMeta(rec).property(property);
+    const fks = rec.get(property);
+    for (const key of Object.keys(fks)) {
+        const fk = fks[key];
+        if (fk !== true) {
+            const fkRecord = await Record.add(meta.fkConstructor(), fk, {
+                setDeepRelationships: true,
+            });
+            await rec.addToRelationship(property, fkRecord.compositeKeyRef);
+        }
+    }
+    // strip out object FK's
+    const newFks = Object.keys(rec.get(property)).reduce((foreignKeys, curr) => {
+        const fk = fks[curr];
+        if (fk !== true) {
+            delete foreignKeys[curr];
+        }
+        return foreignKeys;
+    }, {});
+    // TODO: maybe there's a better way than writing private property?
+    // ambition is to remove the bullshit FKs objects; this record will
+    // not have been saved yet so we're just getting it back to a good
+    // state before it's saved.
+    rec._data[property] = newFks;
+    return;
+}
+async function processBelongsTo(rec, property) {
+    const fk = rec.get(property);
+    const meta = getModelMeta(rec).property(property);
+    if (fk && typeof fk === "object") {
+        const fkRecord = Record.add(meta.fkConstructor(), fk, {
+            setDeepRelationships: true,
+        });
+    }
+}
+
+/**
+ * Given a `Record` which defines all properties in it's
+ * "dynamic segments" as well as an `id`; this function returns
+ * an object representation of the composite key.
+ */
+function createCompositeKey(rec) {
+    const model = rec.data;
+    if (!rec.id) {
+        throw new FireModelError(`You can not create a composite key without first setting the 'id' property!`, "firemodel/not-ready");
+    }
+    const dynamicPathComponents = rec.dynamicPathComponents.reduce((prev, key) => {
+        if (!model[key]) {
+            throw new FireModelError(`You can not create a composite key on a ${capitalize(rec.modelName)} without first setting the '${key}' property!`, "firemodel/not-ready");
+        }
+        return Object.assign(Object.assign({}, prev), { [key]: model[key] });
+    }, {});
+    return rec.dynamicPathComponents.reduce((prev, key) => (Object.assign(Object.assign({}, prev), dynamicPathComponents)), { id: rec.id });
+}
+
+function createCompositeKeyFromFkString(fkCompositeRef, modelConstructor) {
+    const [id, ...paramsHash] = fkCompositeRef.split("::");
+    const model = modelConstructor ? new modelConstructor() : undefined;
+    return paramsHash
+        .map((i) => i.split(":"))
+        .reduce((acc, curr) => {
+        const [prop, value] = curr;
+        acc[prop] = model
+            ? setWithType(prop, value, model)
+            : value;
+        return acc;
+    }, { id });
+}
+function setWithType(prop, value, model) {
+    if (!model.META.property(prop)) {
+        throw new FireModelError(`When building a "typed" composite key based on the model ${capitalize(model.constructor.name)}, the property "${prop}" was presented but this property doesn't exist on this model!`, "firemodel/property-does-not-exist");
+    }
+    const type = model.META.property(prop).type;
+    switch (type) {
+        case "number":
+            return Number(value);
+        case "boolean":
+            return Boolean(value);
+        default:
+            return value;
+    }
+}
+
+/**
+ * Creates a string based composite key if the passed in record
+ * has dynamic path segments; if not it will just return the "id"
+ */
+function createCompositeKeyRefFromRecord(rec) {
+    const cKey = createCompositeKey(rec);
+    return rec.hasDynamicPath ? createCompositeRef(cKey) : rec.id;
+}
+/**
+ * Given a hash/dictionary (with an `id` prop), will generate a "composite
+ * reference" in string form.
+ */
+function createCompositeRef(cKey) {
+    return Object.keys(cKey).length > 1
+        ? cKey.id +
+            Object.keys(cKey)
+                .filter((k) => k !== "id")
+                .map((k) => `::${k}:${cKey[k]}`)
+        : cKey.id;
+}
+
+function extractFksFromPaths(rec, prop, paths) {
+    const pathToModel = rec.dbPath;
+    const relnType = rec.META.relationship(prop).relType;
+    return paths.reduce((acc, p) => {
+        const fkProp = pathJoin(pathToModel, prop);
+        if (p.path.includes(fkProp)) {
+            const parts = p.path.split("/");
+            const fkId = relnType === "hasOne" ? p.value : parts.pop();
+            acc = acc.concat(fkId);
+        }
+        return acc;
+    }, []);
+}
+
+/**
+ * sets the `Record` property to the optimistic values set
+ * with the relationship CRUD event.
+ *
+ * This function has no concern with dispatch or the FK model
+ * and any updates that may need to take place there.
+ */
+function locallyUpdateFkOnRecord(rec, fkId, event) {
+    const relnType = rec.META.relationship(event.property).relType;
+    // update lastUpdated but quietly as it will be updated again
+    // once server responds
+    rec.set("lastUpdated", new Date().getTime(), true);
+    // now work on a per-op basis
+    switch (event.operation) {
+        case "set":
+        case "add":
+            rec._data[event.property] =
+                relnType === "hasMany"
+                    ? Object.assign(Object.assign({}, rec.data[event.property]), { [fkId]: true }) : fkId;
+            return;
+        case "remove":
+            if (relnType === "hasMany") {
+                delete rec._data[event.property][fkId];
+            }
+            else {
+                rec._data[event.property] = "";
+            }
+            return;
+    }
+}
+
+/**
+   * **_reduceCompositeNotationToStringRepresentation**
+   *
+   * Reduces a `ICompositeKey` hash into string representation of the form:
+   *
+```typescript
+`${id}::${prop}:${propValue}::${prop2}:${propValue2}`
+```
+   */
+function reduceCompositeNotationToStringRepresentation(ck) {
+    return (`${ck.id}` +
+        Object.keys(ck)
+            .filter((k) => k !== "id")
+            .map((k) => `::${k}:${ck[k]}`));
+}
+
+function discoverRootPath(results) {
+    try {
+        const incomingPaths = results.map((i) => i.path);
+        const rootParts = incomingPaths.reduce((acc, curr) => {
+            let i = 0;
+            while (i < acc.length &&
+                curr.split("/").slice(0, i).join("/") === acc.slice(0, i).join("/")) {
+                i++;
+            }
+            return i === 1 ? [] : acc.slice(0, i - 1);
+        }, incomingPaths[0].split("/"));
+        const root = rootParts.join("/");
+        const paths = results.reduce((acc, curr) => {
+            acc = acc.concat({
+                path: curr.path.replace(root, ""),
+                value: curr.value,
+            });
+            return acc;
+        }, []);
+        return {
+            paths,
+            root,
+            fullPathNames: Object.keys(results),
+        };
+    }
+    catch (e) {
+        if (e.firemodel) {
+            throw e;
+        }
+        else {
+            throw new FireModelProxyError(e, "Problems in discoverRootPath");
+        }
+    }
+}
+
+/**
+ * **relationshipOperation**
+ *
+ * updates the current Record while also executing the appropriate two-phased commit
+ * with the `dispatch()` function; looking to associate with watchers wherever possible
+ */
+async function relationshipOperation(rec, 
+/**
+ * **operation**
+ *
+ * The relationship operation that is being executed
+ */
+operation, 
+/**
+ * **property**
+ *
+ * The property on this model which changing its relationship status in some way
+ */
+property, 
+/**
+ * The array of _foreign keys_ (of the "from" model) which will be operated on
+ */
+fkRefs, 
+/**
+ * **paths**
+ *
+ * a set of name value pairs where the `name` is the DB path that needs updating
+ * and the value is the value to set.
+ */
+paths, options = {}) {
+    // make sure all FK's are strings
+    const fks = fkRefs.map((fk) => {
+        return typeof fk === "object" ? createCompositeRef(fk) : fk;
+    });
+    const dispatchEvents = {
+        set: [
+            exports.FmEvents.RELATIONSHIP_SET_LOCALLY,
+            exports.FmEvents.RELATIONSHIP_SET_CONFIRMATION,
+            exports.FmEvents.RELATIONSHIP_SET_ROLLBACK,
+        ],
+        clear: [
+            exports.FmEvents.RELATIONSHIP_REMOVED_LOCALLY,
+            exports.FmEvents.RELATIONSHIP_REMOVED_CONFIRMATION,
+            exports.FmEvents.RELATIONSHIP_REMOVED_ROLLBACK,
+        ],
+        // update: [
+        //   FMEvents.RELATIONSHIP_UPDATED_LOCALLY,
+        //   FMEvents.RELATIONSHIP_UPDATED_CONFIRMATION,
+        //   FMEvents.RELATIONSHIP_UPDATED_ROLLBACK
+        // ],
+        add: [
+            exports.FmEvents.RELATIONSHIP_ADDED_LOCALLY,
+            exports.FmEvents.RELATIONSHIP_ADDED_CONFIRMATION,
+            exports.FmEvents.RELATIONSHIP_ADDED_ROLLBACK,
+        ],
+        remove: [
+            exports.FmEvents.RELATIONSHIP_REMOVED_LOCALLY,
+            exports.FmEvents.RELATIONSHIP_REMOVED_CONFIRMATION,
+            exports.FmEvents.RELATIONSHIP_REMOVED_ROLLBACK,
+        ],
+    };
+    try {
+        const [localEvent, confirmEvent, rollbackEvent] = dispatchEvents[operation];
+        const fkConstructor = rec.META.relationship(property).fkConstructor;
+        // TODO: fix the typing here to make sure fkConstructor knows it's type
+        const fkRecord = new Record(fkConstructor());
+        const fkMeta = getModelMeta(fkRecord.data);
+        const transactionId = "t-reln-" +
+            Math.random().toString(36).substr(2, 5) +
+            "-" +
+            Math.random().toString(36).substr(2, 5);
+        const event = {
+            key: rec.compositeKeyRef,
+            operation,
+            property,
+            kind: "relationship",
+            eventType: "local",
+            transactionId,
+            fks,
+            paths,
+            from: capitalize(rec.modelName),
+            to: capitalize(fkRecord.modelName),
+            fromLocal: rec.localPath,
+            toLocal: fkRecord.localPath,
+            fromConstructor: rec.modelConstructor,
+            toConstructor: fkRecord.modelConstructor,
+        };
+        const inverseProperty = rec.META.relationship(property).inverseProperty;
+        if (inverseProperty) {
+            event.inverseProperty = inverseProperty;
+        }
+        try {
+            await localRelnOp(rec, event, localEvent);
+            await relnConfirmation(rec, event, confirmEvent);
+        }
+        catch (e) {
+            await relnRollback(rec, event, rollbackEvent);
+            throw new FireModelProxyError(e, `Encountered an error executing a relationship operation between the "${event.from}" model and "${event.to}". The paths that were being modified were: ${event.paths
+                .map((i) => i.path)
+                .join("- \n")}\n A dispatch for a rollback event has been issued.`);
+        }
+    }
+    catch (e) {
+        if (e.firemodel) {
+            throw e;
+        }
+        else {
+            throw new UnknownRelationshipProblem(e, rec, property, operation);
+        }
+    }
+}
+async function localRelnOp(rec, event, type) {
+    try {
+        // locally modify Record's values
+        // const ids = extractFksFromPaths(rec, event.property, event.paths);
+        event.fks.map((fk) => {
+            locallyUpdateFkOnRecord(rec, fk, Object.assign(Object.assign({}, event), { type }));
+        });
+        // local optimistic dispatch
+        rec.dispatch(Object.assign(Object.assign({}, event), { type }));
+        const ref = rec.db.ref("/");
+        // TODO: replace with multiPathSet/transaction
+        await ref.update(event.paths.reduce((acc, curr) => {
+            acc[curr.path] = curr.value;
+            return acc;
+        }, {}));
+    }
+    catch (e) {
+        throw new FireModelProxyError(e, `While operating doing a local relationship operation ran into an error. Note that the "paths" passed in were:\n${JSON.stringify(event.paths)}.\n\nThe underlying error message was:`);
+    }
+}
+async function relnConfirmation(rec, event, type) {
+    rec.dispatch(Object.assign(Object.assign({}, event), { type }));
+}
+async function relnRollback(rec, event, type) {
+    //
+    /**
+     * no writes will have actually been done to DB but
+     * front end framework will need to know as it probably
+     * adjusted _optimistically_
+     */
+    rec.dispatch(Object.assign(Object.assign({}, event), { type }));
+}
+
+/**
+ * Builds all the DB paths needed to update a pairing of a PK:FK. It is intended
+ * to be used by the `Record`'s transactional API as a first step of specifying
+ * the FULL atomic transaction that will be executed as a "multi-path set" on
+ * Firebase.
+ *
+ * If the operation requires the removal o relationship then set this in the
+ * optional hash.
+ *
+ * @param rec the `Record` which holds the FK reference to an external entity
+ * @param property the _property_ on the `Record` which holds the FK id
+ * @param fkRef the "id" for the FK which is being worked on
+ */
+function buildRelationshipPaths(rec, property, fkRef, options = {}) {
+    try {
+        const meta = getModelMeta(rec);
+        const now = options.now || new Date().getTime();
+        const operation = options.operation || "add";
+        const altHasManyValue = options.altHasManyValue || true;
+        const fkModelConstructor = meta.relationship(property).fkConstructor();
+        const inverseProperty = meta.relationship(property).inverseProperty;
+        const fkRecord = Record.createWith(fkModelConstructor, fkRef, {
+            db: rec.db,
+        });
+        const results = [];
+        /**
+         * Normalize to a composite key format
+         */
+        const fkCompositeKey = typeof fkRef === "object" ? fkRef : fkRecord.compositeKey;
+        const fkId = createCompositeKeyRefFromRecord(fkRecord);
+        /**
+         * boolean flag indicating whether current model has a **hasMany** relationship
+         * with the FK.
+         */
+        const hasManyReln = meta.isRelationship(property) &&
+            meta.relationship(property).relType === "hasMany";
+        const pathToRecordsFkReln = pathJoin(rec.dbPath, // this includes dynamic segments for originating model
+        property, 
+        // we must add the fk id to path (versus value) to make the write non-destructive
+        // to other hasMany keys which already exist
+        hasManyReln ? fkId : "");
+        // Add paths for current record
+        results.push({
+            path: pathToRecordsFkReln,
+            value: operation === "remove" ? null : hasManyReln ? altHasManyValue : fkId,
+        });
+        results.push({ path: pathJoin(rec.dbPath, "lastUpdated"), value: now });
+        // INVERSE RELATIONSHIP
+        if (inverseProperty) {
+            const fkMeta = getModelMeta(fkRecord);
+            const inverseReln = fkMeta.relationship(inverseProperty);
+            if (!inverseReln) {
+                throw new MissingInverseProperty(rec, property);
+            }
+            if (!inverseReln.inverseProperty &&
+                inverseReln.directionality === "bi-directional") {
+                throw new MissingReciprocalInverse(rec, property);
+            }
+            if (inverseReln.inverseProperty !== property &&
+                inverseReln.directionality === "bi-directional") {
+                throw new IncorrectReciprocalInverse(rec, property);
+            }
+            const fkInverseIsHasManyReln = inverseProperty
+                ? fkMeta.relationship(inverseProperty).relType === "hasMany"
+                : false;
+            const pathToInverseFkReln = fkInverseIsHasManyReln
+                ? pathJoin(fkRecord.dbPath, inverseProperty, rec.compositeKeyRef)
+                : pathJoin(fkRecord.dbPath, inverseProperty);
+            // Inverse paths
+            results.push({
+                path: pathToInverseFkReln,
+                value: operation === "remove"
+                    ? null
+                    : fkInverseIsHasManyReln
+                        ? altHasManyValue
+                        : rec.compositeKeyRef,
+            });
+            results.push({
+                path: pathJoin(fkRecord.dbPath, "lastUpdated"),
+                value: now,
+            });
+        }
+        // TODO: add validation of FK paths if option is set
+        return results;
+    }
+    catch (e) {
+        if (e.firemodel) {
+            console.log(e);
+            throw e;
+        }
+        throw new UnknownRelationshipProblem(e, rec, property);
+    }
+}
+
+const registeredModels = {};
+/**
+ * Registered a model's constructor so that it can be used by name. This
+ * is sometime necessary due to circular dependencies.
+ *
+ * @param model a class constructor derived from `Model`
+ */
+function modelRegister(...models) {
+    models.forEach((model) => {
+        if (!model) {
+            throw new FireModelError(`An attempt was made to register a Model subclass but the passed in constructor was undefined!${models.length > 0
+                ? ` [ ${models.length} models being registed during this call ]`
+                : ""}`, "firemodel/not-allowed");
+        }
+        if (typeof model !== "function" || !model.constructor) {
+            throw new FireModelError(`An attempt was made to register a Model subclass but the passed in constructor was the wrong type [ ${typeof model} ]!\nmodel passed was: ${model}`, "firemodel/not-allowed");
+        }
+        const modelName = new model().constructor.name;
+        registeredModels[modelName] = model;
+    });
+}
+function listRegisteredModels() {
+    return Object.keys(registeredModels);
+}
+function modelRegistryLookup(name) {
+    const model = registeredModels[name];
+    if (!name) {
+        throw new FireModelError(`Look failed because the model ${name} was not registered!`, "firemodel/not-allowed");
+    }
+    return model;
+}
+/**
+ * When you are building relationships to other `Model`'s it is often
+ * benefitial to just pass in the name of the `Model` rather than it's
+ * constructor as this avoids the dreaded "circular dependency" problem
+ * that occur when you try to pass in class constructors which depend
+ * on one another.
+ */
+const modelNameLookup = (name) => () => {
+    return modelRegistryLookup(name);
+};
+/**
+ * When you are defining a _relationship_ between `Model`'s it sometimes
+ * useful to just pass in the constructor to the other `Model`. This is in
+ * contrast to just passing a string name of the model.
+ *
+ * The advantage here is that the external model does not need to be
+ * "registered" separately whereas with a string name it would have to be.
+ */
+const modelConstructorLookup = (constructor) => () => {
+    // TODO: remove the "any"
+    return isConstructable(constructor) ? constructor : constructor();
+};
+// tslint:disable-next-line: ban-types
+function isConstructable(fn) {
+    try {
+        const f = new fn();
+        return true;
+    }
+    catch (e) {
+        return false;
+    }
+}
+
+function UnwatchedLocalEvent(rec, event) {
+    const meta = {
+        dynamicPathProperties: rec.dynamicPathComponents,
+        compositeKey: rec.compositeKey,
+        modelConstructor: rec.modelConstructor,
+        modelName: rec.modelName,
+        pluralName: rec.pluralName,
+        localModelName: rec.META.localModelName,
+        localPath: rec.localPath,
+        localPostfix: rec.META.localPostfix,
+    };
+    return Object.assign(Object.assign(Object.assign({}, event), meta), { dbPath: rec.dbPath, watcherSource: "unknown" });
+}
+
+/**
+ * wraps a Vuex function's to Mutation.commit() function so it's
+ * signature looks like a Redux call to dispatch
+ */
+function VeuxWrapper(vuexDispatch) {
+    /** vuex wrapped redux dispatch function */
+    return async (reduxAction) => {
+        const type = reduxAction.type;
+        delete reduxAction.type;
+        return vuexDispatch(type, reduxAction);
+    };
+}
+
+/** Enumeration of all Firemodel Actions that will be fired */
+(function (FmEvents) {
+    /** A record has been added locally */
+    FmEvents["RECORD_ADDED_LOCALLY"] = "@firemodel/RECORD_ADDED_LOCALLY";
+    /** A record which was added locally has now been confirmed by Firebase */
+    FmEvents["RECORD_ADDED_CONFIRMATION"] = "@firemodel/RECORD_ADDED_CONFIRMATION";
+    /** A record added locally failed to be saved to Firebase */
+    FmEvents["RECORD_ADDED_ROLLBACK"] = "@firemodel/RECORD_ADDED_ROLLBACK";
+    /** A record has been added to a given Model list being watched (external event) */
+    FmEvents["RECORD_ADDED"] = "@firemodel/RECORD_ADDED";
+    /** A record has been updated locally */
+    FmEvents["RECORD_CHANGED_LOCALLY"] = "@firemodel/RECORD_CHANGED_LOCALLY";
+    /** a record changed locally has now been confirmed by Firebase */
+    FmEvents["RECORD_CHANGED_CONFIRMATION"] = "@firemodel/RECORD_CHANGED_CONFIRMATION";
+    /** A record changed locally failed to be saved to Firebase */
+    FmEvents["RECORD_CHANGED_ROLLBACK"] = "@firemodel/RECORD_CHANGED_ROLLBACK";
+    /** A record has been updated on Firebase (external event) */
+    FmEvents["RECORD_CHANGED"] = "@firemodel/RECORD_CHANGED";
+    /**
+     * for client originated events touching relationships (as external events would come back as an event per model)
+     */
+    FmEvents["RECORD_MOVED"] = "@firemodel/RECORD_MOVED";
+    /** A record has been removed from a given Model list being watched */
+    FmEvents["RECORD_REMOVED_LOCALLY"] = "@firemodel/RECORD_REMOVED_LOCALLY";
+    /** a record removed locally has now been confirmed by Firebase */
+    FmEvents["RECORD_REMOVED_CONFIRMATION"] = "@firemodel/RECORD_REMOVED_CONFIRMATION";
+    /** A record removed locally failed to be saved to Firebase */
+    FmEvents["RECORD_REMOVED_ROLLBACK"] = "@firemodel/RECORD_REMOVED_LOCALLY";
+    /** A record has been removed from a given Model list being watched */
+    FmEvents["RECORD_REMOVED"] = "@firemodel/RECORD_REMOVED";
+    /** An attempt to access the database was refused to lack of permissions */
+    FmEvents["PERMISSION_DENIED"] = "@firemodel/PERMISSION_DENIED";
+    /** The optimistic local change now needs to be rolled back due to failure in Firebase */
+    FmEvents["RECORD_LOCAL_ROLLBACK"] = "@firemodel/RECORD_LOCAL_ROLLBACK";
+    /** Indicates that a given model's "since" property has been updated */
+    FmEvents["SINCE_UPDATED"] = "@firemodel/SINCE_UPDATED";
+    /** Watcher has started request to watch; waiting for initial SYNC event */
+    FmEvents["WATCHER_STARTING"] = "@firemodel/WATCHER_STARTING";
+    /** Watcher has established connection with Firebase */
+    FmEvents["WATCHER_STARTED"] = "@firemodel/WATCHER_STARTED";
+    /**
+     * The watcher started with "largePayload" will send a sync event with the
+     * whole payload so data synchronization can happen in one mutation
+     */
+    FmEvents["WATCHER_SYNC"] = "@firemodel/WATCHER_SYNC";
+    /** Watcher failed to start */
+    FmEvents["WATCHER_FAILED"] = "@firemodel/WATCHER_FAILED";
+    /** Watcher has disconnected an event stream from Firebase */
+    FmEvents["WATCHER_STOPPED"] = "@firemodel/WATCHER_STOPPED";
+    /** Watcher has disconnected all event streams from Firebase */
+    FmEvents["WATCHER_STOPPED_ALL"] = "@firemodel/WATCHER_STOPPED_ALL";
+    /** Relationship(s) have been removed locally */
+    FmEvents["RELATIONSHIP_REMOVED_LOCALLY"] = "@firemodel/RELATIONSHIP_REMOVED_LOCALLY";
+    /** Relationship removal has been confirmed by database */
+    FmEvents["RELATIONSHIP_REMOVED_CONFIRMATION"] = "@firemodel/RELATIONSHIP_REMOVED_CONFIRMATION";
+    /** Relationship removal failed and must be rolled back if client updated optimistically */
+    FmEvents["RELATIONSHIP_REMOVED_ROLLBACK"] = "@firemodel/RELATIONSHIP_REMOVED_ROLLBACK";
+    /** Relationship has been added locally */
+    FmEvents["RELATIONSHIP_ADDED_LOCALLY"] = "@firemodel/RELATIONSHIP_ADDED_LOCALLY";
+    /** Relationship add has been confirmed by database */
+    FmEvents["RELATIONSHIP_ADDED_CONFIRMATION"] = "@firemodel/RELATIONSHIP_ADDED_CONFIRMATION";
+    /** Relationship add failed and must be rolled back if client updated optimistically */
+    FmEvents["RELATIONSHIP_ADDED_ROLLBACK"] = "@firemodel/RELATIONSHIP_ADDED_ROLLBACK";
+    /** Relationship has been set locally (relating to a hasOne event) */
+    FmEvents["RELATIONSHIP_SET_LOCALLY"] = "@firemodel/RELATIONSHIP_SET_LOCALLY";
+    /** Relationship set has been confirmed by database */
+    FmEvents["RELATIONSHIP_SET_CONFIRMATION"] = "@firemodel/RELATIONSHIP_SET_CONFIRMATION";
+    /** Relationship set failed and must be rolled back if client updated optimistically */
+    FmEvents["RELATIONSHIP_SET_ROLLBACK"] = "@firemodel/RELATIONSHIP_ADDED_ROLLBACK";
+    /** A relationship was "added" but it already existed; this is typically non-action oriented */
+    FmEvents["RELATIONSHIP_DUPLICATE_ADD"] = "@firemodel/RELATIONSHIP_DUPLICATE_ADD";
+    FmEvents["APP_CONNECTED"] = "@firemodel/APP_CONNECTED";
+    FmEvents["APP_DISCONNECTED"] = "@firemodel/APP_DISCONNECTED";
+    FmEvents["UNEXPECTED_ERROR"] = "@firemodel/UNEXPECTED_ERROR";
+})(exports.FmEvents || (exports.FmEvents = {}));
+
+function isHasManyRelationship(rec, property) {
+    return rec.META.relationship(property).relType === "hasMany" ? true : false;
+}
+
+/**
+ * The base class which both `WatchList` and `WatchRecord` derive.
+ */
+class WatchBase {
+    constructor() {
+        /**
+         * this is only to accomodate the list watcher using `ids` which is an aggregate of
+         * `record` watchers.
+         */
+        this._underlyingRecordWatchers = [];
+    }
+    /**
+     * **start**
+     *
+     * executes the watcher (`WatchList` or `WatchRecord`) so that it becomes
+     * actively watched
+     */
+    async start(options = {}) {
+        const isListOfRecords = this._watcherSource === "list-of-records";
+        const watchIdPrefix = isListOfRecords ? "wlr" : "w";
+        let watchHashCode;
+        try {
+            watchHashCode = isListOfRecords
+                ? String(this._underlyingRecordWatchers[0]._query.hashCode())
+                : String(this._query.hashCode());
+        }
+        catch (e) {
+            throw new FireModelProxyError(e, `An error occured trying to start a watcher. The source was "${this._watcherSource}" and had a query of: ${this._query}\n\nThe underlying error was: ${e.message}`, "watcher/not-allowed");
+        }
+        const watcherId = watchIdPrefix + "-" + watchHashCode;
+        this._watcherName = options.name || `${watcherId}`;
+        const watcherName = options.name || this._watcherName || `${watcherId}`;
+        const watcherItem = this.buildWatcherItem(watcherName);
+        // The dispatcher will now have all the context it needs to publish events
+        // in a consistent fashion; this dispatch function will be used both by
+        // both locally originated events AND server based events.
+        const dispatch = WatchDispatcher(watcherItem.dispatch)(watcherItem);
+        if (!this.db) {
+            throw new FireModelError(`Attempt to start a watcher before the database connection has been established!`);
+        }
+        try {
+            if (this._eventType === "value") {
+                if (this._watcherSource === "list-of-records") {
+                    // Watch all "ids" added to the list of records
+                    this._underlyingRecordWatchers.forEach((r) => {
+                        this.db.watch(r._query, ["value"], dispatch);
+                    });
+                }
+                else {
+                    this.db.watch(this._query, ["value"], dispatch);
+                }
+            }
+            else {
+                if (options.largePayload) {
+                    const payload = await List.fromQuery(this._modelConstructor, this._query, { offsets: this._options.offsets || {} });
+                    await dispatch({
+                        type: exports.FmEvents.WATCHER_SYNC,
+                        kind: "watcher",
+                        modelConstructor: this._modelConstructor,
+                        key: this._query.path.split("/").pop(),
+                        value: payload.data,
+                        offsets: this._options.offsets || {},
+                    });
+                }
+                this.db.watch(this._query, ["child_added", "child_changed", "child_moved", "child_removed"], dispatch);
+            }
+        }
+        catch (e) {
+            console.log(`Problem starting watcher [${watcherId}]: `, e);
+            (this._dispatcher || FireModel.dispatch)({
+                type: exports.FmEvents.WATCHER_FAILED,
+                errorMessage: e.message,
+                errorCode: e.code || e.name || "firemodel/watcher-failed",
+            });
+            throw e;
+        }
+        try {
+            addToWatcherPool(watcherItem);
+            // dispatch "starting"; no need to wait for promise
+            (this._dispatcher || FireModel.dispatch)(Object.assign({ type: exports.FmEvents.WATCHER_STARTING }, watcherItem));
+            await waitForInitialization(watcherItem);
+            // console.log("watcher initialized", watcherItem);
+            await (this._dispatcher || FireModel.dispatch)(Object.assign({ type: exports.FmEvents.WATCHER_STARTED }, watcherItem));
+            return watcherItem;
+        }
+        catch (e) {
+            throw new FireModelError(`The watcher "${watcherId}" failed to initialize`, "firemodel/watcher-initialization");
+        }
+    }
+    /**
+     * **dispatch**
+     *
+     * allows you to state an explicit dispatch function which will be called
+     * when this watcher detects a change; by default it will use the "default dispatch"
+     * set on FireModel.dispatch.
+     */
+    dispatch(d) {
+        this._dispatcher = d;
+        return this;
+    }
+    toString() {
+        return `Watching path "${this._query.path}" for "${this._eventType}" event(s) [ hashcode: ${String(this._query.hashCode())} ]`;
+    }
+    /**
+     * Allows you to use the properties of the watcher to build a
+     * `watcherContext` dictionary; this is intended to be used as
+     * part of the initialization of the `dispatch` function for
+     * local state management.
+     *
+     * **Note:** that while used here as part of the `start()` method
+     * it is also used externally by locally triggered events as well
+     */
+    buildWatcherItem(name) {
+        const dispatch = this.getCoreDispatch();
+        const isListOfRecords = this._watcherSource === "list-of-records";
+        const watchIdPrefix = isListOfRecords ? "wlr" : "w";
+        const watchHashCode = isListOfRecords
+            ? String(this._underlyingRecordWatchers[0]._query.hashCode())
+            : String(this._query.hashCode());
+        const watcherId = watchIdPrefix + "-" + watchHashCode;
+        const watcherName = name || `${watcherId}`;
+        const eventFamily = this._watcherSource === "list" ? "child" : "value";
+        const watcherPaths = this._watcherSource === "list-of-records"
+            ? this._underlyingRecordWatchers.map((i) => i._query.path)
+            : [this._query.path];
+        // TODO: fix this bullshit typing; should be: SerializedQuery<T> | Array<SerializedQuery<T>>
+        const query = this._watcherSource === "list-of-records"
+            ? this._underlyingRecordWatchers.map((i) => i._query)
+            : this._query;
+        const watchContext = {
+            watcherId,
+            watcherName,
+            eventFamily,
+            dispatch,
+            modelConstructor: this._modelConstructor,
+            query,
+            dynamicPathProperties: this._dynamicProperties,
+            compositeKey: this._compositeKey,
+            localPath: this._localPath,
+            localPostfix: this._localPostfix,
+            modelName: this._modelName,
+            localModelName: this._localModelName || "not-relevant",
+            pluralName: this._pluralName,
+            watcherPaths,
+            // TODO: Fix this typing ... the error is nonsensical atm
+            watcherSource: this._watcherSource,
+            createdAt: new Date().getTime(),
+        };
+        return watchContext;
+    }
+    getCoreDispatch() {
+        // Use the bespoke dispatcher for this class if it's available;
+        // if not then fall back to the default Firemodel dispatch
+        const coreDispatch = this._dispatcher || FireModel.dispatch;
+        if (coreDispatch.name === "defaultDispatch") {
+            throw new FireModelError(`Attempt to start a ${this._watcherSource} watcher on "${this._query.path}" but no dispatcher has been assigned. Make sure to explicitly set the dispatch function or use "FireModel.dispatch = xxx" to setup a default dispatch function.`, `firemodel/invalid-dispatch`);
+        }
+        return coreDispatch;
+    }
+    get db() {
+        if (!this._db) {
+            if (FireModel.defaultDb) {
+                this._db = FireModel.defaultDb;
+            }
+        }
+        return this._db;
+    }
+}
+
+/**
+ * **watchDispatcher**
+ *
+ * Wraps both start-time _watcher context_ and combines that with
+ * event information (like the `key` and `dbPath`) to provide a rich
+ * data environment for the `dispatch` function to operate with.
+ */
+const WatchDispatcher = (
+/**
+ * a base/generic redux dispatch function; typically provided
+ * by the frontend state management framework
+ */
+coreDispatchFn) => (
+/** context provided by the watcher at the time in which the watcher was setup */
+watcherContext) => {
+    if (typeof coreDispatchFn !== "function") {
+        throw new FireModelError(`A watcher is being setup but the dispatch function is not a valid function!`, "firemodel/not-allowed");
+    }
+    // Handle incoming events ...
+    return async (event) => {
+        const typeLookup = {
+            child_added: exports.FmEvents.RECORD_ADDED,
+            child_removed: exports.FmEvents.RECORD_REMOVED,
+            child_changed: exports.FmEvents.RECORD_CHANGED,
+            child_moved: exports.FmEvents.RECORD_MOVED,
+            value: exports.FmEvents.RECORD_CHANGED,
+        };
+        let eventContext;
+        let errorMessage;
+        if (event.kind === "relationship") {
+            eventContext = {
+                type: event.type,
+                dbPath: "not-relevant, use toLocal and fromLocal",
+            };
+        }
+        else if (event.kind === "watcher") ;
+        else {
+            // in the case of a watcher list-of records; when the database has no
+            // records yet there is no way to fulfill the dynamic path segments without
+            // reaching into the watcher context
+            if (watcherContext.watcherPaths) {
+                const fullPath = watcherContext.watcherPaths.find((i) => i.includes(event.key));
+                const compositeKey = Record.getCompositeKeyFromPath(watcherContext.modelConstructor, fullPath);
+                event.value = Object.assign(Object.assign({}, (event.value || {})), compositeKey);
+            }
+            // record events (both server and local)
+            const recordProps = typeof event.value === "object"
+                ? Object.assign({ id: event.key }, event.value) : { id: event.key };
+            const rec = Record.createWith(watcherContext.modelConstructor, recordProps);
+            let type;
+            switch (event.kind) {
+                case "record":
+                    type = event.type;
+                    break;
+                case "server-event":
+                    type =
+                        event.value === null
+                            ? exports.FmEvents.RECORD_REMOVED
+                            : typeLookup[event.eventType];
+                    break;
+                default:
+                    type = exports.FmEvents.UNEXPECTED_ERROR;
+                    errorMessage = `The "kind" of event was not recognized [ ${event.kind} ]`;
+            }
+            eventContext = {
+                type,
+                dbPath: rec.dbPath,
+            };
+        }
+        const reduxAction = Object.assign(Object.assign(Object.assign({}, watcherContext), event), eventContext);
+        const results = await coreDispatchFn(reduxAction);
+        // The mock server and client are now in sync
+        hasInitialized(watcherContext.watcherId);
+        return results;
+    };
+};
+
+class WatchList extends WatchBase {
+    constructor() {
+        super(...arguments);
+        this._offsets = {};
+        this._options = {};
+    }
+    static list(
+    /**
+     * The `Model` underlying the **List**
+     */
+    modelConstructor, 
+    /**
+     * optionally state the _dynamic path_ properties which offset the **dbPath**
+     */
+    options = {}) {
+        const obj = new WatchList();
+        obj.list(modelConstructor, options);
+        return obj;
+    }
+    list(modelConstructor, options = {}) {
+        this._watcherSource = "list";
+        this._eventType = "child";
+        this._options = options;
+        if (options.offsets) {
+            this._offsets = options.offsets;
+        }
+        const lst = List.create(modelConstructor, options);
+        this._modelConstructor = modelConstructor;
+        this._classProperties = getAllPropertiesFromClassStructure(new this._modelConstructor());
+        this._dynamicProperties = Record.dynamicPathProperties(modelConstructor);
+        this.setPathDependantProperties();
+        return this;
+    }
+    /**
+     *
+     * @param offsetDict
+     */
+    offsets(offsetDict) {
+        this._offsets = offsetDict;
+        const lst = List.create(this._modelConstructor, this._options);
+        this.setPathDependantProperties();
+        return this;
+    }
+    /**
+     * **ids**
+     *
+     * There are times where you know an array of IDs which you want to watch as a `list`
+     * and calling a series of **record** watchers would not work because -- for a given model
+     * -- you can only watch one (this is due to the fact that a _record_ watcher does not
+     * offset the record by it's ID). This is the intended use-case for this type of _list_
+     * watcher.
+     *
+     * It is worth noting that with this watcher the frontend will indeed get an array of
+     * records but from a **Firebase** standpoint this is not a "list watcher" but instead
+     * a series of "record watchers".
+     *
+     * @param ids the list of FK references (simple or composite)
+     */
+    ids(...ids) {
+        if (ids.length === 0) {
+            throw new FireModelError(`You attempted to setup a watcher list on a given set of ID's of "${this._modelName}" but the list of ID's was empty!`, "firemodel/not-ready");
+        }
+        for (const id of ids) {
+            this._underlyingRecordWatchers.push(this._options.offsets
+                ? Watch.record(this._modelConstructor, Object.assign(Object.assign({}, (typeof id === "string" ? { id } : id)), this._options.offsets))
+                : Watch.record(this._modelConstructor, id));
+        }
+        this._watcherSource = "list-of-records";
+        this._eventType = "value";
+        return this;
+    }
+    /**
+     * **since**
+     *
+     * Watch for all records that have changed since a given date
+     *
+     * @param when  the datetime in milliseconds or a string format that works with new Date(x)
+     * @param limit  optionally limit the records returned to a max number
+     */
+    since(when, limit) {
+        this._query = this._query.orderByChild("lastUpdated").startAt(when);
+        if (limit) {
+            this._query = this._query.limitToFirst(limit);
+        }
+        return this;
+    }
+    /**
+     * **dormantSince**
+     *
+     * Watch for all records that have NOT changed since a given date (opposite of "since")
+     *
+     * @param when  the datetime in milliseconds or a string format that works with new Date(x)
+     * @param limit  optionally limit the records returned to a max number
+     */
+    dormantSince(when, limit) {
+        this._query = this._query.orderByChild("lastUpdated").endAt(when);
+        if (limit) {
+            this._query = this._query.limitToFirst(limit);
+        }
+        return this;
+    }
+    /**
+     * **after**
+     *
+     * Watch all records that were created after a given date
+     *
+     * @param when  the datetime in milliseconds or a string format that works with new Date(x)
+     * @param limit  optionally limit the records returned to a max number
+     */
+    after(when, limit) {
+        this._query = this._query.orderByChild("createdAt").startAt(when);
+        if (limit) {
+            this._query = this._query.limitToFirst(limit);
+        }
+        return this;
+    }
+    /**
+     * **before**
+     *
+     * Watch all records that were created before a given date
+     *
+     * @param when  the datetime in milliseconds or a string format that works with new Date(x)
+     * @param limit  optionally limit the records returned to a max number
+     */
+    before(when, limit) {
+        this._query = this._query.orderByChild("createdAt").endAt(when);
+        if (limit) {
+            this._query = this._query.limitToFirst(limit);
+        }
+        return this;
+    }
+    /**
+     * **first**
+     *
+     * Watch for a given number of records; starting with the first/earliest records (createdAt).
+     * Optionally you can state an ID from which to start from. This is useful for a pagination
+     * strategy.
+     *
+     * @param howMany  the datetime in milliseconds or a string format that works with new Date(x)
+     * @param startAt  the ID reference to a record in the list (if used for pagination, add the last record in the list to this value)
+     */
+    first(howMany, startAt) {
+        this._query = this._query.orderByChild("createdAt").limitToFirst(howMany);
+        if (startAt) {
+            this._query = this._query.startAt(startAt);
+        }
+        return this;
+    }
+    /**
+     * **last**
+     *
+     * Watch for a given number of records; starting with the last/most-recently added records
+     * (e.g., createdAt). Optionally you can state an ID from which to start from.
+     * This is useful for a pagination strategy.
+     *
+     * @param howMany  the datetime in milliseconds or a string format that works with new Date(x)
+     * @param startAt  the ID reference to a record in the list (if used for pagination, add the last record in the list to this value)
+     */
+    last(howMany, startAt) {
+        this._query = this._query.orderByChild("createdAt").limitToLast(howMany);
+        if (startAt) {
+            this._query = this._query.endAt(startAt);
+        }
+        return this;
+    }
+    /**
+     * **recent**
+     *
+     * Watch for a given number of records; starting with the recent/most-recently updated records
+     * (e.g., lastUpdated). Optionally you can state an ID from which to start from.
+     * This is useful for a pagination strategy.
+     *
+     * @param howMany  the datetime in milliseconds or a string format that works with new Date(x)
+     * @param startAt  the ID reference to a record in the list (if used for pagination, add the recent record in the list to this value)
+     */
+    recent(howMany, startAt) {
+        this._query = this._query.orderByChild("lastUpdated").limitToFirst(howMany);
+        if (startAt) {
+            this._query = this._query.startAt(startAt);
+        }
+        return this;
+    }
+    /**
+     * **inactive**
+     *
+     * Watch for a given number of records; starting with the inactive/most-inactively added records
+     * (e.g., lastUpdated). Optionally you can state an ID from which to start from.
+     * This is useful for a pagination strategy.
+     *
+     * @param howMany  the datetime in milliseconds or a string format that works with new Date(x)
+     * @param startAt  the ID reference to a record in the list (if used for pagination, add the inactive record in the list to this value)
+     */
+    inactive(howMany, startAt) {
+        this._query = this._query.orderByChild("lastUpdated").limitToLast(howMany);
+        if (startAt) {
+            this._query = this._query.endAt(startAt);
+        }
+        return this;
+    }
+    /**
+     * **fromQuery**
+     *
+     * Watch for all records that conform to a passed in query
+     *
+     * @param query
+     */
+    fromQuery(inputQuery) {
+        this._query = inputQuery;
+        return this;
+    }
+    /**
+     * **all**
+     *
+     * Watch for all records of a given type
+     *
+     * @param limit it you want to limit the results a max number of records
+     */
+    all(limit) {
+        if (limit) {
+            this._query = this._query.limitToLast(limit);
+        }
+        return this;
+    }
+    /**
+     * **where**
+     *
+     * Watch for all records where a specified property is
+     * equal, less-than, or greater-than a certain value
+     *
+     * @param property the property which the comparison operater is being compared to
+     * @param value either just a value (in which case "equality" is the operator), or a tuple with operator followed by value (e.g., [">", 34])
+     */
+    where(property, value) {
+        let operation = "=";
+        let val;
+        if (Array.isArray(value)) {
+            val = value[1];
+            operation = value[0];
+        }
+        else {
+            val = value;
+        }
+        this._query = universalFire.SerializedQuery.create(this.db, this._query.path)
+            .orderByChild(property)
+            // TODO: fix typing issue here.
+            // @ts-ignore
+            .where(operation, val);
+        return this;
+    }
+    /**
+     * Sets properties that could be effected by _dynamic paths_
+     */
+    setPathDependantProperties() {
+        if (this._dynamicProperties.length === 0 ||
+            Object.keys(this._offsets).length > 0) {
+            const lst = List.create(this._modelConstructor, Object.assign(Object.assign({}, this._options), { offsets: this._offsets }));
+            this._query = universalFire.SerializedQuery.create(this.db, lst.dbPath);
+            this._modelName = lst.modelName;
+            this._pluralName = lst.pluralName;
+            this._localPath = lst.localPath;
+            this._localPostfix = lst.localPostfix;
+        }
+    }
+}
+
+class WatchRecord extends WatchBase {
+    static record(modelConstructor, pk, options = {}) {
+        if (!pk) {
+            throw new FireModelError(`Attempt made to watch a RECORD but no primary key was provided!`, "firemodel/no-pk");
+        }
+        const o = new WatchRecord();
+        // if options hash has a DB reference; use it
+        if (o.db) {
+            o._db = options.db;
+        }
+        o._eventType = "value";
+        o._watcherSource = "record";
+        const r = Record.createWith(modelConstructor, pk, options.db ? { db: options.db } : {});
+        o._query = universalFire.SerializedQuery.create(options.db || FireModel.defaultDb, `${r.dbPath}`);
+        o._modelConstructor = modelConstructor;
+        o._modelName = r.modelName;
+        o._localModelName = r.META.localModelName;
+        o._pluralName = r.pluralName;
+        o._localPath = r.localPath;
+        o._localPostfix = r.META.localPostfix;
+        o._dynamicProperties = r.dynamicPathComponents;
+        o._compositeKey = r.compositeKey;
+        return o;
+    }
+}
+
+/**
+ * **findWatchers**
+ *
+ * Given a database path, finds all the watchers which are watching this
+ * path or a parent of this path. This must consider a normal **list** or
+ * **record** watcher but also a **list-of-records** where instead of a
+ * `1:1` relationship between "watcher" and Firebase listener there is instead
+ * a `1:M` relationship.
+ */
+function findWatchers(
+/** the database path where change was detected */
+dbPath) {
+    const inspectListofRecords = (watcher) => {
+        const paths = watcher.watcherPaths;
+        let found = false;
+        paths.forEach((p) => {
+            if (dbPath.includes(p)) {
+                found = true;
+            }
+        });
+        return found;
+    };
+    return hashToArray(Watch.inventory).filter((i) => i.watcherSource === "list-of-records"
+        ? /** handles the "list-of-records" use case */
+            inspectListofRecords(i)
+        : /** handles the standard use case */
+            dbPath.includes(i.query.path));
+}
+
+/**
+ * indicates which watcherId's have returned their initial
+ * value.
+ */
+const _hasInitialized = {};
+const hasInitialized = (watcherId, value = true) => {
+    if (watcherId) {
+        _hasInitialized[watcherId] = value;
+    }
+    return _hasInitialized;
+};
+/**
+ * Waits for a newly started watcher to get back the first
+ * data from the watcher. This indicates that the frontend
+ * and Firebase DB are now in sync.
+ */
+async function waitForInitialization(watcher, timeout = 750) {
+    setTimeout(() => {
+        if (!ready(watcher)) {
+            console.info(`A watcher [ ${watcher.watcherId} ] has not returned an event in the timeout window  [ ${timeout}ms ]. This might represent an issue but can also happen when a watcher starts listening to a path [ ${watcher.watcherPaths.join(", ")} ] which has no data yet.`);
+        }
+        hasInitialized(watcher.watcherId, "timed-out");
+    }, timeout);
+    while (!ready(watcher)) {
+        await wait(50);
+    }
+}
+function ready(watcher) {
+    return hasInitialized()[watcher.watcherId] ? true : false;
+}
+
+/**
+ * allows the parent `Watch` class to instantiate
+ * subclasses without having a circular dependency
+ */
+function getWatchList() {
+    return new WatchList();
+}
+/**
+ * allows the parent `Watch` class to instantiate
+ * subclasses without having a circular dependency
+ */
+function getWatchRecord() {
+    return new WatchRecord();
+}
+
+/** a cache of all the watched  */
+let watcherPool = {};
+function getWatcherPool() {
+    return watcherPool;
+}
+function getWatcherPoolList() {
+    return hashToArray(getWatcherPool());
+}
+function addToWatcherPool(item) {
+    watcherPool[item.watcherId] = item;
+}
+function getFromWatcherPool(code) {
+    return watcherPool[code];
+}
+function clearWatcherPool() {
+    watcherPool = {};
+}
+/**
+ * Each watcher must have it's own `dispatch()` function which
+ * is reponsible for capturing the "context". This will be used
+ * both by locally originated events (which have more info) and
+ * server based events.
+ */
+function addDispatchForWatcher(code, dispatch) {
+    //
+}
+function removeFromWatcherPool(code) {
+    delete watcherPool[code];
+    return watcherPool;
+}
+
+/**
+ * writeAudit
+ *
+ * Allows for a consistent way of writing audit records to the database
+ *
+ * @param recordId the ID of the record which is changing
+ * @param pluralName the plural name of the Model type
+ * @param action CRUD action
+ * @param changes array of changes
+ * @param options
+ */
+async function writeAudit(record, action, changes, options = {}) {
+    const db = options.db || FireModel.defaultDb;
+    await Record.add(exports.AuditLog, {
+        modelName: capitalize(record.modelName),
+        modelId: record.id,
+        action,
+        changes,
+    }, { db });
+}
+
+exports.AuditBase = AuditBase;
+exports.AuditList = AuditList;
+exports.AuditRecord = AuditRecord;
+exports.DecoratorProblem = DecoratorProblem;
 exports.DexieDb = DexieDb;
+exports.DexieError = DexieError;
 exports.DexieList = DexieList;
 exports.DexieRecord = DexieRecord;
+exports.DuplicateRelationship = DuplicateRelationship;
+exports.DynamicPropertiesNotReady = DynamicPropertiesNotReady;
 exports.FireModel = FireModel;
+exports.FireModelError = FireModelError;
+exports.FireModelProxyError = FireModelProxyError;
+exports.FkDoesNotExist = FkDoesNotExist;
+exports.IncorrectReciprocalInverse = IncorrectReciprocalInverse;
 exports.List = List;
+exports.MissingInverseProperty = MissingInverseProperty;
+exports.MissingReciprocalInverse = MissingReciprocalInverse;
 exports.Mock = Mock;
+exports.MockApi = MockApi;
+exports.MockError = MockError;
+exports.NamedFakes = NamedFakes;
+exports.NotHasManyRelationship = NotHasManyRelationship;
+exports.NotHasOneRelationship = NotHasOneRelationship;
 exports.OneWay = OneWay;
+exports.PropertyNamePatterns = PropertyNamePatterns;
 exports.Record = Record;
+exports.RecordCrudFailure = RecordCrudFailure;
+exports.UnknownRelationshipProblem = UnknownRelationshipProblem;
 exports.UnwatchedLocalEvent = UnwatchedLocalEvent;
+exports.VerboseError = VerboseError;
 exports.VeuxWrapper = VeuxWrapper;
 exports.Watch = Watch;
+exports.WatchBase = WatchBase;
+exports.WatchDispatcher = WatchDispatcher;
+exports.WatchList = WatchList;
+exports.WatchRecord = WatchRecord;
+exports.addDispatchForWatcher = addDispatchForWatcher;
+exports.addModelMeta = addModelMeta;
 exports.addPropertyToModelMeta = addPropertyToModelMeta;
 exports.addRelationshipToModelMeta = addRelationshipToModelMeta;
+exports.addRelationships = addRelationships;
+exports.addToWatcherPool = addToWatcherPool;
 exports.belongsTo = belongsTo;
+exports.buildDeepRelationshipLinks = buildDeepRelationshipLinks;
+exports.buildRelationshipPaths = buildRelationshipPaths;
+exports.capitalize = capitalize;
+exports.clearWatcherPool = clearWatcherPool;
+exports.compareHashes = compareHashes;
 exports.constrain = constrain;
 exports.constrainedProperty = constrainedProperty;
 exports.createCompositeKey = createCompositeKey;
+exports.createCompositeKeyFromFkString = createCompositeKeyFromFkString;
+exports.createCompositeKeyRefFromRecord = createCompositeKeyRefFromRecord;
+exports.createCompositeRef = createCompositeRef;
 exports.defaultValue = defaultValue;
 exports.desc = desc;
+exports.discoverRootPath = discoverRootPath;
+exports.dotNotation = dotNotation$1;
 exports.encrypt = encrypt;
-exports.fbKey = key;
+exports.extractFksFromPaths = extractFksFromPaths;
+exports.fakeIt = fakeIt;
+exports.findWatchers = findWatchers;
+exports.firstKey = firstKey$1;
+exports.getAllPropertiesFromClassStructure = getAllPropertiesFromClassStructure;
 exports.getDbIndexes = getDbIndexes;
+exports.getFromWatcherPool = getFromWatcherPool;
+exports.getModelMeta = getModelMeta;
 exports.getModelProperty = getModelProperty;
 exports.getModelRelationship = getModelRelationship;
 exports.getProperties = getProperties;
 exports.getPushKeys = getPushKeys;
 exports.getRelationships = getRelationships;
+exports.getWatchList = getWatchList;
+exports.getWatchRecord = getWatchRecord;
+exports.getWatcherPool = getWatcherPool;
+exports.getWatcherPoolList = getWatcherPoolList;
+exports.hasInitialized = hasInitialized;
 exports.hasMany = hasMany;
 exports.hasOne = hasOne;
 exports.index = index;
 exports.indexesForModel = indexesForModel;
 exports.isConstructable = isConstructable;
+exports.isHasManyRelationship = isHasManyRelationship;
 exports.isProperty = isProperty;
 exports.isRelationship = isRelationship;
 exports.length = length;
 exports.listRegisteredModels = listRegisteredModels;
+exports.localRelnOp = localRelnOp;
+exports.locallyUpdateFkOnRecord = locallyUpdateFkOnRecord;
+exports.lowercase = lowercase;
 exports.max = max;
 exports.min = min;
 exports.mock = mock;
+exports.mockProperties = mockProperties;
+exports.mockValue = mockValue;
 exports.model = model;
 exports.modelConstructorLookup = modelConstructorLookup;
 exports.modelNameLookup = modelNameLookup;
 exports.modelRegister = modelRegister;
 exports.modelRegistryLookup = modelRegistryLookup;
+exports.modelsWithMeta = modelsWithMeta;
+exports.normalized = normalized;
 exports.ownedBy = ownedBy;
 exports.pathJoin = pathJoin$1;
+exports.processHasMany = processHasMany;
+exports.processHasOne = processHasOne;
 exports.propertiesByModel = propertiesByModel;
 exports.property = property;
 exports.propertyDecorator = propertyDecorator;
 exports.propertyReflector = propertyReflector;
 exports.pushKey = pushKey;
+exports.reduceCompositeNotationToStringRepresentation = reduceCompositeNotationToStringRepresentation;
+exports.relationshipOperation = relationshipOperation;
 exports.relationshipsByModel = relationshipsByModel;
+exports.relnConfirmation = relnConfirmation;
+exports.relnRollback = relnRollback;
+exports.removeFromWatcherPool = removeFromWatcherPool;
+exports.slashNotation = slashNotation;
+exports.stripLeadingSlash = stripLeadingSlash;
 exports.uniqueIndex = uniqueIndex;
+exports.updateToAuditChanges = updateToAuditChanges;
+exports.waitForInitialization = waitForInitialization;
+exports.withoutMetaOrPrivate = withoutMetaOrPrivate;
+exports.writeAudit = writeAudit;
 //# sourceMappingURL=index.js.map

@@ -1,14 +1,15 @@
+import "./testing/fake-indexeddb";
+
+import { Car } from "./testing/Car";
+import DeepPerson from "./testing/dynamicPaths/DeepPerson";
 // tslint:disable: no-implicit-dependencies
 // tslint:disable: no-submodule-imports
-import { DexieDb } from "../src/dexie/DexieDb";
-import "./testing/fake-indexeddb";
-import { Car } from "./testing/Car";
-import { DexieRecord } from "../src/dexie/DexieRecord";
-import indexedDB from "fake-indexeddb";
-import fdbKeyRange from "fake-indexeddb/lib/FDBKeyRange";
-import DeepPerson from "./testing/dynamicPaths/DeepPerson";
-import { wait } from "common-types";
+import { DexieDb } from "../src/FireDexie/DexieDb";
+import { DexieRecord } from "../src/FireDexie/DexieRecord";
 import { fbKey } from "../src";
+import fdbKeyRange from "fake-indexeddb/lib/FDBKeyRange";
+import indexedDB from "fake-indexeddb";
+import { wait } from "common-types";
 DexieDb.indexedDB(indexedDB, fdbKeyRange);
 
 describe("Dexie - Record API", () => {
@@ -34,7 +35,7 @@ describe("Dexie - Record API", () => {
     const addResponse = await car.add({
       id: fbKey(),
       model: "Fiesta",
-      cost: 20000
+      cost: 20000,
     });
     expect(addResponse).toBeInstanceOf(Car);
 
@@ -48,7 +49,7 @@ describe("Dexie - Record API", () => {
     const person = d.record(DeepPerson);
     const addPerson = await person.add({
       name: { first: "Bob", last: "Marley" },
-      group: "testing"
+      group: "testing",
     });
     expect(addPerson).toBeInstanceOf(DeepPerson);
     expect(typeof addPerson.id).toBeString();
@@ -57,7 +58,7 @@ describe("Dexie - Record API", () => {
     expect(addPerson.createdAt).toBeNumber();
     const personResult = await person.get({
       id: addPerson.id,
-      group: addPerson.group
+      group: addPerson.group,
     });
     expect(personResult).toBeInstanceOf(DeepPerson);
     expect(typeof personResult.id).toBeString();
@@ -66,24 +67,21 @@ describe("Dexie - Record API", () => {
     expect(personResult.createdAt).toBeNumber();
   });
 
-  it(
-    "When calling add() without an id property, the id is auto-generated",
-    async () => {
-      const car = await d.record(Car).add({
-        model: "Fiesta",
-        cost: 22000
-      });
-      expect(car).toBeInstanceOf(Car);
-      expect(typeof car.id).toBeString();
-    }
-  );
+  it("When calling add() without an id property, the id is auto-generated", async () => {
+    const car = await d.record(Car).add({
+      model: "Fiesta",
+      cost: 22000,
+    });
+    expect(car).toBeInstanceOf(Car);
+    expect(typeof car.id).toBeString();
+  });
 
   it("Calls to update() update the record correctly", async () => {
     const car = d.record(Car);
     await car.add({
       id: "4567",
       model: "Fiesta",
-      cost: 20000
+      cost: 20000,
     });
     const initial = await car.get("4567");
     expect(initial.cost).toBe(20000);
@@ -95,22 +93,19 @@ describe("Dexie - Record API", () => {
     expect(final.createdAt).toBe(initial.createdAt);
   });
 
-  it(
-    "remove() removes an added record; attempt to get afterward throws an error",
-    async () => {
-      const car = d.record(Car);
-      await car.add({
-        id: "666",
-        model: "Fiesta",
-        cost: 20000
-      });
-      await car.remove("666");
-      try {
-        const fail = await car.get("666");
-        throw new Error(`The record 666 should have been removed from database!`);
-      } catch (e) {
-        expect(e.code === "add");
-      }
+  it("remove() removes an added record; attempt to get afterward throws an error", async () => {
+    const car = d.record(Car);
+    await car.add({
+      id: "666",
+      model: "Fiesta",
+      cost: 20000,
+    });
+    await car.remove("666");
+    try {
+      const fail = await car.get("666");
+      throw new Error(`The record 666 should have been removed from database!`);
+    } catch (e) {
+      expect(e.code === "add");
     }
-  );
+  });
 });

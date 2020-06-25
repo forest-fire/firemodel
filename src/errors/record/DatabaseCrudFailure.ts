@@ -1,8 +1,10 @@
-import { FireModelError } from "../FireModelError";
-import { Record } from "../../Record";
-import { Model } from "../../models/Model";
-import { IFmCrudOperation } from "../../state-mgmt";
-import { capitalize } from "../../util";
+import {
+  FireModelError,
+  IFmCrudOperation,
+  Model,
+  Record,
+  capitalize,
+} from "@/private";
 
 export class RecordCrudFailure<T extends Model> extends FireModelError {
   constructor(

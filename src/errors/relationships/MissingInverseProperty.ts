@@ -1,7 +1,4 @@
-import { FireModelError } from "../FireModelError";
-import { Record } from "../../Record";
-import { Model } from "../../models/Model";
-import { capitalize } from "../../util";
+import { FireModelError, Model, Record, capitalize } from "@/private";
 
 /**
  * When the record's META points to a inverse property on the FK; this error

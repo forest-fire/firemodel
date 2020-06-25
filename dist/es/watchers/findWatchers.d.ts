@@ -1,4 +1,4 @@
-import { IWatcherEventContext } from "../state-mgmt";
+import { IWatcherEventContext } from "../private";
 /**
  * **findWatchers**
  *

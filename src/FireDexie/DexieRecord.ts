@@ -1,12 +1,15 @@
-import { IModelConstructor } from "../index";
-import { IPrimaryKey } from "../@types";
 import { Dexie, Table } from "dexie";
-import { Model } from "../models/Model";
-import { key as fbKey } from "firebase-key";
-import { IDexieModelMeta } from "../@types/optional/dexie";
-import { DexieError } from "../errors";
-import { capitalize } from "../util";
+import {
+  DexieError,
+  IDexieModelMeta,
+  IModelConstructor,
+  IPrimaryKey,
+  Model,
+  capitalize,
+} from "@/private";
+
 import { IDictionary } from "common-types";
+import { key as fbKey } from "firebase-key";
 
 /**
  * Provides a simple API to do CRUD operations

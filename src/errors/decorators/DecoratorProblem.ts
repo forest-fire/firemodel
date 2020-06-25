@@ -1,6 +1,4 @@
-import { FireModelError } from "../FireModelError";
-import { Record } from "../../Record";
-import { Model } from "../../models/Model";
+import { FireModelError } from "@/private";
 import { IDictionary } from "common-types";
 
 export class DecoratorProblem extends FireModelError {

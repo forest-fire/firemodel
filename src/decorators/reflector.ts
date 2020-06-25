@@ -1,8 +1,7 @@
+import { Model, lowercase } from "@/private";
+import { get, set } from "lodash-es";
+
 import { IDictionary } from "common-types";
-import { Model } from "../models/Model";
-import { get } from "lodash-es";
-import { lowercase } from "../util";
-import { set } from "lodash-es";
 
 export interface IHasPropertyAndType {
   property: string;

@@ -1,7 +1,5 @@
+import { IListOptions, IPrimaryKey, Model, WatchBase } from "../private";
 import { IComparisonOperator, ISerializedQuery } from "universal-fire";
-import { IListOptions, IPrimaryKey } from "../@types";
-import { Model } from "../models/Model";
-import { WatchBase } from "./WatchBase";
 import { epochWithMilliseconds } from "common-types";
 export declare class WatchList<T extends Model> extends WatchBase<T> {
     static list<T extends Model>(

@@ -1,22 +1,22 @@
 import "reflect-metadata";
-import { IDictionary } from "common-types";
-import { getPushKeys } from "./decorator";
-import { addModelMeta } from "../ModelMeta";
-import { getDbIndexes } from "./indexing";
+
 import {
+  FmModelConstructor,
+  IFmModelMeta,
+  Model,
+  addModelMeta,
+  getDbIndexes,
   getModelProperty,
-  getProperties,
-  isProperty
-} from "./model-meta/property-store";
-import {
   getModelRelationship,
+  getProperties,
+  getPushKeys,
+  getRelationships,
+  isProperty,
   isRelationship,
-  getRelationships
-} from "./model-meta/relationship-store";
-import { IFmModelMeta } from "./types";
-import { Model } from "../models/Model";
-import { FmModelConstructor } from "../@types/general";
-import { modelRegister } from "../record/relationships/modelRegistration";
+  modelRegister,
+} from "@/private";
+
+import { IDictionary } from "common-types";
 
 export function model(options: Partial<IFmModelMeta> = {}) {
   let isDirty: boolean = false;
@@ -58,22 +58,22 @@ export function model(options: Partial<IFmModelMeta> = {}) {
         ...{ plural: options.plural },
         ...{
           allProperties: [
-            ...getProperties(modelOfObject).map(p => p.property),
-            ...getRelationships(modelOfObject).map(p => p.property)
-          ]
+            ...getProperties(modelOfObject).map((p) => p.property),
+            ...getRelationships(modelOfObject).map((p) => p.property),
+          ],
         },
         ...{
           localPostfix:
-            options.localPostfix === undefined ? "all" : options.localPostfix
+            options.localPostfix === undefined ? "all" : options.localPostfix,
         },
         ...{
           localModelName:
             options.localModelName === undefined
               ? modelOfObject.constructor.name.slice(0, 1).toLowerCase() +
                 modelOfObject.constructor.name.slice(1)
-              : options.localModelName
+              : options.localModelName,
         },
-        ...{ isDirty }
+        ...{ isDirty },
       };
 
       addModelMeta(target.constructor.name.toLowerCase(), meta);
@@ -92,7 +92,7 @@ export function model(options: Partial<IFmModelMeta> = {}) {
           }
         },
         configurable: false,
-        enumerable: false
+        enumerable: false,
       });
 
       if (target) {

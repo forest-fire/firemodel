@@ -1,15 +1,16 @@
-import { IDictionary } from "common-types";
 import {
+  FireModelError,
   FmEvents,
   IEventTimeContext,
-  IReduxDispatch,
+  IFmServerOrLocalEvent,
   IFmWatchEvent,
+  IReduxDispatch,
   IWatcherEventContext,
-  IFmServerOrLocalEvent
-} from "../state-mgmt";
-import { Record } from "../Record";
-import { hasInitialized } from "./watchInitialization";
-import { FireModelError } from "../errors";
+  Record,
+  hasInitialized,
+} from "@/private";
+
+import { IDictionary } from "common-types";
 
 /**
  * **watchDispatcher**
@@ -42,7 +43,7 @@ export const WatchDispatcher = <T>(
       child_removed: FmEvents.RECORD_REMOVED,
       child_changed: FmEvents.RECORD_CHANGED,
       child_moved: FmEvents.RECORD_MOVED,
-      value: FmEvents.RECORD_CHANGED
+      value: FmEvents.RECORD_CHANGED,
     };
 
     let eventContext: IEventTimeContext<T>;
@@ -51,7 +52,7 @@ export const WatchDispatcher = <T>(
     if (event.kind === "relationship") {
       eventContext = {
         type: event.type,
-        dbPath: "not-relevant, use toLocal and fromLocal"
+        dbPath: "not-relevant, use toLocal and fromLocal",
       };
     } else if (event.kind === "watcher") {
       // do nothing
@@ -60,7 +61,7 @@ export const WatchDispatcher = <T>(
       // records yet there is no way to fulfill the dynamic path segments without
       // reaching into the watcher context
       if (watcherContext.watcherPaths) {
-        const fullPath = watcherContext.watcherPaths.find(i =>
+        const fullPath = watcherContext.watcherPaths.find((i) =>
           i.includes(event.key)
         );
         const compositeKey = Record.getCompositeKeyFromPath(
@@ -101,14 +102,14 @@ export const WatchDispatcher = <T>(
 
       eventContext = {
         type,
-        dbPath: rec.dbPath
+        dbPath: rec.dbPath,
       };
     }
 
     const reduxAction: IFmWatchEvent<T> = {
       ...watcherContext,
       ...event,
-      ...eventContext
+      ...eventContext,
     };
 
     const results = await coreDispatchFn(reduxAction);

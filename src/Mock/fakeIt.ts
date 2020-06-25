@@ -1,9 +1,10 @@
-import { format, parseISO } from "date-fns";
-
 import { IDictionary } from "common-types";
 import { MockHelper } from "firemock";
-import { NamedFakes } from "./NamedFakes";
-import { fbKey } from "../index";
+import { NamedFakes } from "@/private";
+import { format } from "date-fns";
+
+// TODO: bring in this functionality again
+// import { fbKey } from "../index";
 
 const sequence: IDictionary<number> = {};
 
@@ -59,7 +60,8 @@ export function fakeIt<T = any>(
   switch (type) {
     case "id":
     case "fbKey":
-      return fbKey();
+      // return fbKey();
+      return "asdafsfsasdf";
     case "String":
       return helper.faker.lorem.words(5);
     case "number":

@@ -1,10 +1,14 @@
-import { Model } from "../models/Model";
-import { WatchBase } from "./WatchBase";
-import { IPrimaryKey, IModelOptions } from "../@types";
-import { FireModelError } from "../errors";
-import { Record } from "..";
+import {
+  FireModel,
+  FireModelError,
+  IModelOptions,
+  IPrimaryKey,
+  Model,
+  Record,
+  WatchBase,
+} from "@/private";
+
 import { SerializedQuery } from "universal-fire";
-import { FireModel } from "../FireModel";
 
 export class WatchRecord<T extends Model> extends WatchBase<T> {
   public static record<T extends Model>(

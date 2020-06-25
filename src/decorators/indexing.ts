@@ -1,8 +1,9 @@
 import "reflect-metadata";
+
+import { IModelIndexMeta, propertyReflector } from "@/private";
+
 import { IDictionary } from "common-types";
-import { propertyReflector } from "./reflector";
 import { hashToArray } from "typed-conversions";
-import { IModelIndexMeta } from "./types";
 
 /** DB Indexes accumlated by index decorators */
 export const indexesForModel: IDictionary<IDictionary<IModelIndexMeta>> = {};
@@ -23,7 +24,7 @@ export function getDbIndexes<T>(modelKlass: object): IModelIndexMeta[] {
 export const index = propertyReflector<IModelIndexMeta>(
   {
     isIndex: true,
-    isUniqueIndex: false
+    isUniqueIndex: false,
   },
   indexesForModel
 );
@@ -31,7 +32,7 @@ export const index = propertyReflector<IModelIndexMeta>(
 export const uniqueIndex = propertyReflector<IModelIndexMeta>(
   {
     isIndex: true,
-    isUniqueIndex: true
+    isUniqueIndex: true,
   },
   indexesForModel
 );

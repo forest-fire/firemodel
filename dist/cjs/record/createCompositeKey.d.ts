@@ -1,4 +1,4 @@
-import { Model, Record, ICompositeKey } from "..";
+import { ICompositeKey, Model, Record } from "../private";
 /**
  * Given a `Record` which defines all properties in it's
  * "dynamic segments" as well as an `id`; this function returns

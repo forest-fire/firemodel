@@ -1,6 +1,4 @@
-import { FireModelError } from "../FireModelError";
-import { Record } from "../../Record";
-import { Model } from "../../models/Model";
+import { FireModelError, Model, Record } from "../../private";
 export declare class NotHasManyRelationship<T extends Model> extends FireModelError {
     constructor(rec: Record<T>, property: string, method: string);
 }

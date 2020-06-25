@@ -1,6 +1,5 @@
 import { IDictionary, wait } from "common-types";
-import { IWatcherEventContext } from "../state-mgmt/index";
-import { Model } from "../models/Model";
+import { IWatcherEventContext, Model } from "@/private";
 
 /**
  * indicates which watcherId's have returned their initial

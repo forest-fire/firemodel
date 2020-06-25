@@ -1,4 +1,4 @@
-import { ICompositeKey } from "../@types/record-types";
+import { ICompositeKey } from "../private";
 /**
    * **_reduceCompositeNotationToStringRepresentation**
    *

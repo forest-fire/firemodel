@@ -1,6 +1,5 @@
+import { IFmModelRelationshipMeta, Model } from "../../private";
 import { IDictionary } from "common-types";
-import { Model } from "../../models/Model";
-import { IFmModelRelationshipMeta } from "../types";
 export declare const relationshipsByModel: IDictionary<IDictionary<IFmModelRelationshipMeta>>;
 /** allows the addition of meta information to be added to a model's relationships */
 export declare function addRelationshipToModelMeta<T extends Model = Model>(modelName: string, property: string, meta: IFmModelRelationshipMeta<T>): void;

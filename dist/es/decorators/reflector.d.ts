@@ -1,5 +1,5 @@
+import { Model } from "../private";
 import { IDictionary } from "common-types";
-import { Model } from "../models/Model";
 export interface IHasPropertyAndType {
     property: string;
     type: string;

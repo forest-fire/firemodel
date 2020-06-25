@@ -1,7 +1,9 @@
-import { FireModelError } from "../FireModelError";
-import { Record } from "../../Record";
-import { Model } from "../../models/Model";
-import { MissingReciprocalInverse } from "./MissingReciprocalInverse";
+import {
+  FireModelError,
+  MissingReciprocalInverse,
+  Model,
+  Record,
+} from "@/private";
 
 export class IncorrectReciprocalInverse<
   T extends Model

@@ -1,22 +1,23 @@
 import {
+  FireModelProxyError,
   FmEvents,
   IFkReference,
+  IFmLocalRelationshipEvent,
   IFmPathValuePair,
+  IFmRelationshipOperation,
+  IFmRelationshipOptions,
   IFmRelationshipOptionsForHasMany,
-} from "..";
-import { IFmRelationshipOperation, IFmRelationshipOptions } from "../@types";
+  Model,
+  Record,
+  UnknownRelationshipProblem,
+  capitalize,
+  createCompositeRef,
+  getModelMeta,
+  locallyUpdateFkOnRecord,
+} from "@/private";
 
-import { FireModelProxyError } from "../errors";
 import { IDictionary } from "common-types";
-import { IFmLocalRelationshipEvent } from "../state-mgmt";
-import { Model } from "../models/Model";
-import { Record } from "../Record";
 import { Reference } from "firemock";
-import { UnknownRelationshipProblem } from "../errors/relationships/UnknownRelationshipProblem";
-import { capitalize } from "../util";
-import { createCompositeRef } from "./createCompositeKeyString";
-import { getModelMeta } from "../ModelMeta";
-import { locallyUpdateFkOnRecord } from "./locallyUpdateFkOnRecord";
 
 /**
  * **relationshipOperation**

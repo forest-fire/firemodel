@@ -14,10 +14,14 @@
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "typeRoots": ["./node_modules/@types", "./src/@types"],
-    "baseUrl": ".",
+    "baseUrl": "src",
     "paths": {
       "@/*": ["*"]
-    }
+    },
+    "plugins": [
+      { "transform": "typescript-transform-paths" },
+      { "transform": "typescript-transform-paths", "afterDeclarations": true }
+    ]
   },
   "files": ["global.d.ts"],
   "include": ["src/**/*", "test/**/*-spec.ts", "global.d.ts"]

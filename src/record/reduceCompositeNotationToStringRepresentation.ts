@@ -1,4 +1,4 @@
-import { ICompositeKey } from "../@types/record-types";
+import { ICompositeKey } from "@/private";
 
 /**
    * **_reduceCompositeNotationToStringRepresentation**
@@ -15,7 +15,7 @@ export function reduceCompositeNotationToStringRepresentation(
   return (
     `${ck.id}` +
     Object.keys(ck)
-      .filter(k => k !== "id")
-      .map(k => `::${k}:${ck[k]}`)
+      .filter((k) => k !== "id")
+      .map((k) => `::${k}:${ck[k]}`)
   );
 }

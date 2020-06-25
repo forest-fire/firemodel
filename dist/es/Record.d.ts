@@ -1,12 +1,6 @@
-import { IFMEventName, IFmCrudOperations, IFmDispatchOptions } from "./state-mgmt/index";
-import { IFmRelationshipOptionsForHasMany } from ".";
-import { ICompositeKey, IFkReference, IRecordOptions } from "./@types/record-types";
+import { FireModel, ICompositeKey, IFMEventName, IFkReference, IFmCrudOperations, IFmDispatchOptions, IFmRelationshipOptions, IFmRelationshipOptionsForHasMany, IRecordOptions, IReduxDispatch, Model } from "./private";
 import { IDictionary, Nullable, fk, pk } from "common-types";
-import { IReduxDispatch } from "./state-mgmt";
-import { IFmRelationshipOptions } from "./@types";
-import { FireModel } from "./FireModel";
 import { IAbstractedDatabase } from "universal-fire";
-import { Model } from "./models/Model";
 export interface IWriteOperation {
     id: string;
     type: "set" | "pushKey" | "update";

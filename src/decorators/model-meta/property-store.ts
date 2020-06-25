@@ -1,7 +1,7 @@
+import { IFmModelPropertyMeta, Model } from "@/private";
+
 import { IDictionary } from "common-types";
-import { Model } from "../../models/Model";
 import { hashToArray } from "typed-conversions";
-import { IFmModelPropertyMeta } from "../types";
 
 export function isProperty(modelKlass: IDictionary) {
   return (prop: string) => {
@@ -34,7 +34,7 @@ export function getModelProperty<T extends Model = Model>(model: T) {
   const propsForModel = getProperties(model);
 
   return (prop: string) => {
-    return propsForModel.find(value => {
+    return propsForModel.find((value) => {
       return value.property === prop;
     });
   };

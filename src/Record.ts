@@ -1,55 +1,50 @@
 import {
+  FireModel,
   FireModelError,
   FireModelProxyError,
-  NotHasManyRelationship,
-  NotHasOneRelationship,
-} from "./errors";
-import {
   FmEvents,
-  IFMEventName,
-  IFmCrudOperations,
-  IFmDispatchOptions,
-} from "./state-mgmt/index";
-import {
   IAuditChange,
   IAuditOperations,
-  IFmModelPropertyMeta,
-  IFmRelationshipOptionsForHasMany,
-  List,
-  createCompositeKey,
-} from ".";
-import {
   ICompositeKey,
+  IFMEventName,
   IFkReference,
-  IRecordOptions,
-} from "./@types/record-types";
-import { IDictionary, Nullable, Omit, dotNotation, fk, pk } from "common-types";
-import {
+  IFmCrudOperations,
+  IFmDispatchOptions,
   IFmLocalRecordEvent,
+  IFmModelPropertyMeta,
+  IFmPathValuePair,
+  IFmRelationshipOptions,
+  IFmRelationshipOptionsForHasMany,
+  IRecordOptions,
   IReduxDispatch,
   IWatcherEventContext,
-} from "./state-mgmt";
-import { IFmPathValuePair, IFmRelationshipOptions } from "./@types";
-import { capitalize, compareHashes, withoutMetaOrPrivate } from "./util";
+  List,
+  Model,
+  NotHasManyRelationship,
+  NotHasOneRelationship,
+  RecordCrudFailure,
+  UnwatchedLocalEvent,
+  WatchDispatcher,
+  buildDeepRelationshipLinks,
+  buildRelationshipPaths,
+  capitalize,
+  compareHashes,
+  createCompositeKey,
+  createCompositeKeyFromFkString,
+  createCompositeKeyRefFromRecord,
+  findWatchers,
+  getModelMeta,
+  isHasManyRelationship,
+  pathJoin,
+  relationshipOperation,
+  withoutMetaOrPrivate,
+  writeAudit,
+} from "@/private";
+import { IDictionary, Nullable, Omit, dotNotation, fk, pk } from "common-types";
 
-import { FireModel } from "./FireModel";
 import { IAbstractedDatabase } from "universal-fire";
-import { Model } from "./models/Model";
-import { RecordCrudFailure } from "./errors/record/DatabaseCrudFailure";
-import { UnwatchedLocalEvent } from "./state-mgmt/UnwatchedLocalEvent";
-import { WatchDispatcher } from "./watchers/WatchDispatcher";
-import { buildDeepRelationshipLinks } from "./record/buildDeepRelationshipLinks";
-import { buildRelationshipPaths } from "./record/relationships/buildRelationshipPaths";
 import { default as copy } from "fast-copy";
-import { createCompositeKeyFromFkString } from "./record/createCompositeKeyFromFkString";
-import { createCompositeKeyRefFromRecord } from "./record/createCompositeKeyString";
 import { key as fbKey } from "firebase-key";
-import { findWatchers } from "./watchers/findWatchers";
-import { getModelMeta } from "./ModelMeta";
-import { isHasManyRelationship } from "./verifications/isHasManyRelationship";
-import { pathJoin } from "./path";
-import { relationshipOperation } from "./record/relationshipOperation";
-import { writeAudit } from "./Audit";
 
 export interface IWriteOperation {
   id: string;

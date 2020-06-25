@@ -1,5 +1,10 @@
-import { IFmModelPropertyMeta, Model } from "../index";
-import { NamedFakes, PropertyNamePatterns, fakeIt } from "./index";
+import {
+  IFmModelPropertyMeta,
+  Model,
+  NamedFakes,
+  PropertyNamePatterns,
+  fakeIt,
+} from "@/private";
 
 import { IAbstractedDatabase } from "universal-fire";
 import { MockHelper } from "firemock";

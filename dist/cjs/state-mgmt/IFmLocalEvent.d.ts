@@ -1,9 +1,6 @@
-import { FmEvents, IFmCrudOperations } from "./index";
-import { EventType } from "@firebase/database-types";
-import { IMultiPathUpdates } from "../FireModel";
-import { Model } from "../models/Model";
-import { IFmRelationshipOperation, IFmPathValuePair } from "../@types";
+import { FmEvents, IFmCrudOperations, IFmPathValuePair, IFmRelationshipOperation, IMultiPathUpdates, Model } from "../private";
 import { fk, pk } from "common-types";
+import { EventType } from "@firebase/database-types";
 /**
  * All local events should provide the following meta
  */

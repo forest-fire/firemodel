@@ -1,7 +1,11 @@
-import { Record } from "../Record";
-import { IFmModelRelationshipMeta } from "../decorators";
-import { IMockRelationshipConfig, IMockResponse } from "./types";
-import { Mock } from "../Mock";
+import {
+  IFmModelRelationshipMeta,
+  IMockRelationshipConfig,
+  IMockResponse,
+  Mock,
+  Record,
+} from "@/private";
+
 import { IAbstractedDatabase } from "universal-fire";
 
 export async function processHasOne<T>(

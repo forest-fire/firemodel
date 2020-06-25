@@ -1,7 +1,6 @@
-import { Model, Record } from "..";
-import { getModelMeta } from "../ModelMeta";
+import { IFkReference, Model, Record, getModelMeta } from "@/private";
+
 import { IDictionary } from "common-types";
-import { IFkReference } from "../@types";
 
 /**
  * When creating a new record it is sometimes desirable to pass in
@@ -29,7 +28,7 @@ async function processHasMany<T extends Model>(
     const fk = fks[key as keyof typeof fks] as true | IDictionary;
     if (fk !== true) {
       const fkRecord = await Record.add(meta.fkConstructor(), fk, {
-        setDeepRelationships: true
+        setDeepRelationships: true,
       });
       await rec.addToRelationship(property, fkRecord.compositeKeyRef);
     }
@@ -63,7 +62,7 @@ async function processBelongsTo<T extends Model>(
 
   if (fk && typeof fk === "object") {
     const fkRecord = Record.add(meta.fkConstructor(), fk, {
-      setDeepRelationships: true
+      setDeepRelationships: true,
     });
   }
 }

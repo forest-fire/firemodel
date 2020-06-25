@@ -1,7 +1,7 @@
-import { IDictionary, fk, pk, epoch } from "common-types";
+import { IDictionary, epoch, fk, pk } from "common-types";
 
-import { IFmHasId } from "../private";
 import { IAbstractedDatabase } from "universal-fire";
+import { IFmHasId } from "@/private";
 
 export type IIdWithDynamicPrefix = IDictionary<number | string> & {
   id: string;

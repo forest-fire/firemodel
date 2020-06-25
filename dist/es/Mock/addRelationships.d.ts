@@ -1,8 +1,6 @@
-import { IMockRelationshipConfig, IMockResponse } from "./types";
+import { IMockRelationshipConfig, IMockResponse, Model, Record } from "../private";
 import { IAbstractedDatabase } from "universal-fire";
 import { IDictionary } from "common-types";
-import { Model } from "../models/Model";
-import { Record } from "../Record";
 /**
  * Adds relationships to mocked records
  */

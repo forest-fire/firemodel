@@ -1,9 +1,7 @@
-import { Model } from "./models/Model";
-import { Record } from "./Record";
-import { FireModel } from "./FireModel";
-import API from "./Mock/api";
-import { FireModelError } from "./errors";
+import { FireModel, FireModelError, Model, Record } from "@/private";
+
 import { IAbstractedDatabase } from "universal-fire";
+import { MockApi } from "./Mock/MockApi";
 
 function defaultCardinality<T>(r: Record<T>) {
   return r.META.relationships.reduce((prev, curr) => {
@@ -38,5 +36,5 @@ export function Mock<T extends Model>(
     );
   }
 
-  return API<T>(db, modelConstructor);
+  return MockApi<T>(db, modelConstructor);
 }

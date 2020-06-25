@@ -1,14 +1,16 @@
-// tslint:disable: no-implicit-dependencies
-// tslint:disable: no-submodule-imports
-import { DexieDb } from "../src/dexie/DexieDb";
-import { Car } from "./testing/Car";
-import DeepPerson from "./testing/dynamicPaths/DeepPerson";
 import "./testing/fake-indexeddb";
-import indexedDB from "fake-indexeddb";
-import fdbKeyRange from "fake-indexeddb/lib/FDBKeyRange";
-DexieDb.indexedDB(indexedDB, fdbKeyRange);
 
 import { carData, peopleData } from "./dexie-test-data";
+
+import { Car } from "./testing/Car";
+import DeepPerson from "./testing/dynamicPaths/DeepPerson";
+// tslint:disable: no-implicit-dependencies
+// tslint:disable: no-submodule-imports
+import { DexieDb } from "../src/FireDexie/DexieDb";
+import fdbKeyRange from "fake-indexeddb/lib/FDBKeyRange";
+import indexedDB from "fake-indexeddb";
+DexieDb.indexedDB(indexedDB, fdbKeyRange);
+
 
 describe("Dexie Table API", () => {
   let db: DexieDb;
@@ -22,25 +24,24 @@ describe("Dexie Table API", () => {
     db.close();
   });
 
-  it(
-    "bulkPut() puts records into the database; toArray() retrieves",
-    async () => {
-      const response = await db
-        .table(Car)
-        .bulkPut(carData)
-        .catch(e => {
-          throw new Error(`Couldn't execute bulkAdd():  ${e.message}`);
-        });
+  it("bulkPut() puts records into the database; toArray() retrieves", async () => {
+    const response = await db
+      .table(Car)
+      .bulkPut(carData)
+      .catch((e) => {
+        throw new Error(`Couldn't execute bulkAdd():  ${e.message}`);
+      });
 
-      const lastCar = carData.slice(-1).pop();
-      expect(response).toBeString();
-      expect(response).toBe(lastCar.id);
+    const lastCar = carData.slice(-1).pop();
+    expect(response).toBeString();
+    expect(response).toBe(lastCar.id);
 
-      const all = await db.table(Car).toArray();
-      expect(all).toHaveLength(carData.length);
-      expect(all.map(i => i.id)).toEqual(expect.arrayContaining([carData[0].id]));
-    }
-  );
+    const all = await db.table(Car).toArray();
+    expect(all).toHaveLength(carData.length);
+    expect(all.map((i) => i.id)).toEqual(
+      expect.arrayContaining([carData[0].id])
+    );
+  });
 
   it("invalid data passed into bulkAdd() returns error", async () => {
     try {
@@ -53,16 +54,13 @@ describe("Dexie Table API", () => {
     }
   });
 
-  it.skip(
-    "bulkPut() of a model which has a composite key / dynamic path",
-    async () => {
-      const tbl = db.table(DeepPerson);
-      await tbl.bulkPut(peopleData);
-      const response = await tbl.toArray();
-      expect(response).toHaveLength(peopleData.length);
-      const ids = response.map(i => i.id);
-      expect(ids).toEqual(expect.arrayContaining([peopleData[0].id]));
-      expect(ids).toEqual(expect.arrayContaining([peopleData[1].id]));
-    }
-  );
+  it.skip("bulkPut() of a model which has a composite key / dynamic path", async () => {
+    const tbl = db.table(DeepPerson);
+    await tbl.bulkPut(peopleData);
+    const response = await tbl.toArray();
+    expect(response).toHaveLength(peopleData.length);
+    const ids = response.map((i) => i.id);
+    expect(ids).toEqual(expect.arrayContaining([peopleData[0].id]));
+    expect(ids).toEqual(expect.arrayContaining([peopleData[1].id]));
+  });
 });

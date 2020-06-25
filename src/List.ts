@@ -1,23 +1,24 @@
-import { arrayToHash } from "typed-conversions";
-
-import { epochWithMilliseconds, IDictionary } from "common-types";
-import type { IComparisonOperator } from "@forest-fire/serialized-query";
 import {
-  SerializedQuery,
-  ISerializedQuery,
+  FireModel,
+  FireModelError,
+  IListOptions,
+  IPrimaryKey,
+  IReduxDispatch,
+  Model,
+  Record,
+  capitalize,
+  getModelMeta,
+  pathJoin,
+} from "@/private";
+import {
   IAbstractedDatabase,
+  IComparisonOperator,
+  ISerializedQuery,
+  SerializedQuery,
 } from "universal-fire";
+import { IDictionary, epochWithMilliseconds } from "common-types";
 
-import { Model } from "./models/Model";
-import { Record } from "./Record";
-import { FireModel } from "./FireModel";
-import { IReduxDispatch } from "./state-mgmt/index";
-import { pathJoin } from "./path";
-import { getModelMeta } from "./ModelMeta";
-import { IListOptions } from "./@types/general";
-import { FireModelError } from "./errors";
-import { capitalize } from "./util";
-import { IPrimaryKey } from "./@types";
+import { arrayToHash } from "typed-conversions";
 
 const DEFAULT_IF_NOT_FOUND = "__DO_NOT_USE__";
 

@@ -1,6 +1,6 @@
+import { FireModelError, Model } from "@/private";
+
 import { IDictionary } from "common-types";
-import { Model } from "../../models/Model";
-import { FireModelError } from "../../errors/FireModelError";
 
 const registeredModels: IDictionary<new () => any> = {};
 
@@ -13,7 +13,7 @@ const registeredModels: IDictionary<new () => any> = {};
 export function modelRegister<T extends Model = Model>(
   ...models: IModelConstructor[]
 ) {
-  models.forEach(model => {
+  models.forEach((model) => {
     if (!model) {
       throw new FireModelError(
         `An attempt was made to register a Model subclass but the passed in constructor was undefined!${

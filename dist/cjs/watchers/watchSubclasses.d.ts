@@ -1,5 +1,4 @@
-import { WatchList } from "./WatchList";
-import { WatchRecord } from "./WatchRecord";
+import { WatchList, WatchRecord } from "../private";
 /**
  * allows the parent `Watch` class to instantiate
  * subclasses without having a circular dependency

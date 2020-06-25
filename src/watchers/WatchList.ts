@@ -1,18 +1,21 @@
 import {
+  FireModelError,
+  IListOptions,
+  IPrimaryKey,
+  List,
+  Model,
+  Record,
+  Watch,
+  WatchBase,
+  getAllPropertiesFromClassStructure,
+} from "@/private";
+import {
   IComparisonOperator,
   ISerializedQuery,
   SerializedQuery,
 } from "universal-fire";
-import { IListOptions, IPrimaryKey } from "../@types";
 
-import { FireModelError } from "../errors";
-import { List } from "../List";
-import { Model } from "../models/Model";
-import { Record } from "../Record";
-import { Watch } from "../index";
-import { WatchBase } from "./WatchBase";
 import { epochWithMilliseconds } from "common-types";
-import { getAllPropertiesFromClassStructure } from "../util";
 
 export class WatchList<T extends Model> extends WatchBase<T> {
   public static list<T extends Model>(

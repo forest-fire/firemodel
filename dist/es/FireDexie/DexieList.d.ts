@@ -1,9 +1,6 @@
 import Dexie from "dexie";
-import { IDexieListOptions, IDexieModelMeta } from "../@types/optional/dexie";
+import { IDexieListOptions, IDexieModelMeta, IModelConstructor, Model, PropType } from "../private";
 import { IComparisonOperator } from "universal-fire";
-import { IModelConstructor } from "..";
-import { Model } from "../models/Model";
-import { PropType } from "../@types/index";
 import { epoch } from "common-types";
 /**
  * Provides a simple API for list based queries that resembles the Firemodel `List` API

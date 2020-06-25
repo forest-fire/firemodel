@@ -1,6 +1,4 @@
-import { ICompositeKey, Model } from "..";
-import { FireModelError } from "../errors";
-import { capitalize } from "../util";
+import { FireModelError, ICompositeKey, Model, capitalize } from "@/private";
 
 export function createCompositeKeyFromFkString<T = ICompositeKey>(
   fkCompositeRef: string,
@@ -10,7 +8,7 @@ export function createCompositeKeyFromFkString<T = ICompositeKey>(
   const model: T = modelConstructor ? new modelConstructor() : undefined;
 
   return paramsHash
-    .map(i => i.split(":"))
+    .map((i) => i.split(":"))
     .reduce(
       (acc: any, curr) => {
         const [prop, value] = curr;

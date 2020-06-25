@@ -1,12 +1,6 @@
-import { epochWithMilliseconds, IDictionary } from "common-types";
-import type { IComparisonOperator } from "@forest-fire/serialized-query";
-import { ISerializedQuery, IAbstractedDatabase } from "universal-fire";
-import { Model } from "./models/Model";
-import { Record } from "./Record";
-import { FireModel } from "./FireModel";
-import { IReduxDispatch } from "./state-mgmt/index";
-import { IListOptions } from "./@types/general";
-import { IPrimaryKey } from "./@types";
+import { FireModel, IListOptions, IPrimaryKey, IReduxDispatch, Model, Record } from "./private";
+import { IAbstractedDatabase, IComparisonOperator, ISerializedQuery } from "universal-fire";
+import { IDictionary, epochWithMilliseconds } from "common-types";
 export declare class List<T extends Model> extends FireModel<T> {
     /**
      * Sets the default database to be used by all FireModel classes

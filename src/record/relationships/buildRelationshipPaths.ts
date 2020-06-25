@@ -1,19 +1,18 @@
 import {
-  IFkReference,
   ICompositeKey,
+  IFkReference,
+  IFmBuildRelationshipOptions,
   IFmPathValuePair,
-  IFmBuildRelationshipOptions
-} from "../..";
-import { Record } from "../../Record";
-import { getModelMeta } from "../../ModelMeta";
-import { pathJoin } from "common-types";
-import {
-  MissingReciprocalInverse,
   IncorrectReciprocalInverse,
+  MissingInverseProperty,
+  MissingReciprocalInverse,
+  Record,
   UnknownRelationshipProblem,
-  MissingInverseProperty
-} from "../../errors/index";
-import { createCompositeKeyRefFromRecord } from "../createCompositeKeyString";
+  createCompositeKeyRefFromRecord,
+  getModelMeta,
+} from "@/private";
+
+import { pathJoin } from "common-types";
 
 /**
  * Builds all the DB paths needed to update a pairing of a PK:FK. It is intended
@@ -41,7 +40,9 @@ export function buildRelationshipPaths<T>(
     const altHasManyValue = options.altHasManyValue || true;
     const fkModelConstructor = meta.relationship(property).fkConstructor();
     const inverseProperty = meta.relationship(property).inverseProperty;
-    const fkRecord = Record.createWith(fkModelConstructor, fkRef, {db: rec.db});
+    const fkRecord = Record.createWith(fkModelConstructor, fkRef, {
+      db: rec.db,
+    });
     const results: IFmPathValuePair[] = [];
 
     /**
@@ -72,7 +73,7 @@ export function buildRelationshipPaths<T>(
     results.push({
       path: pathToRecordsFkReln,
       value:
-        operation === "remove" ? null : hasManyReln ? altHasManyValue : fkId
+        operation === "remove" ? null : hasManyReln ? altHasManyValue : fkId,
     });
     results.push({ path: pathJoin(rec.dbPath, "lastUpdated"), value: now });
 
@@ -113,11 +114,11 @@ export function buildRelationshipPaths<T>(
             ? null
             : fkInverseIsHasManyReln
             ? altHasManyValue
-            : rec.compositeKeyRef
+            : rec.compositeKeyRef,
       });
       results.push({
         path: pathJoin(fkRecord.dbPath, "lastUpdated"),
-        value: now
+        value: now,
       });
     }
     // TODO: add validation of FK paths if option is set

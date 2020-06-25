@@ -1,10 +1,13 @@
-import { IAuditLogItem, IModelOptions } from "./@types";
+import {
+  AuditBase,
+  IAuditLogItem,
+  IModelOptions,
+  Model,
+  pathJoin,
+} from "@/private";
 
-import { AuditBase } from "./AuditBase";
-import { Model } from "./models/Model";
 import { SerializedQuery } from "universal-fire";
 import { epochWithMilliseconds } from "common-types";
-import { pathJoin } from "./path";
 
 export class AuditList<T extends Model> extends AuditBase<T> {
   constructor(modelKlass: new () => T, options: IModelOptions = {}) {

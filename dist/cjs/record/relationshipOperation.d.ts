@@ -1,8 +1,4 @@
-import { FmEvents, IFkReference, IFmPathValuePair, IFmRelationshipOptionsForHasMany } from "..";
-import { IFmRelationshipOperation, IFmRelationshipOptions } from "../@types";
-import { IFmLocalRelationshipEvent } from "../state-mgmt";
-import { Model } from "../models/Model";
-import { Record } from "../Record";
+import { FmEvents, IFkReference, IFmLocalRelationshipEvent, IFmPathValuePair, IFmRelationshipOperation, IFmRelationshipOptions, IFmRelationshipOptionsForHasMany, Model, Record } from "../private";
 /**
  * **relationshipOperation**
  *

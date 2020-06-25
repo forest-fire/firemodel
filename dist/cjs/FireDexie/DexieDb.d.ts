@@ -1,10 +1,6 @@
-import { IModelConstructor } from "..";
-import { Model } from "../models/Model";
-import { IDictionary } from "common-types";
 import Dexie, { TableSchema } from "dexie";
-import { DexieRecord } from "./DexieRecord";
-import { DexieList } from "./DexieList";
-import { IPrimaryKey, IDexiePriorVersion } from "../private";
+import { DexieList, DexieRecord, IDexiePriorVersion, IModelConstructor, IPrimaryKey, Model } from "../private";
+import { IDictionary } from "common-types";
 /**
  * Provides a simple API to convert to/work with **Dexie** models
  * from a **Firemodel** model definition.

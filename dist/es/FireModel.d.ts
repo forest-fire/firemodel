@@ -1,11 +1,7 @@
-import { Model } from "./models/Model";
-declare type Record<T> = import("./Record").Record<T>;
+import { IAbstractedDatabase, IAdminConfig, IClientConfig } from "universal-fire";
 import { IDictionary } from "common-types";
-import { IReduxDispatch } from "./state-mgmt";
-import type { IClientConfig, IAdminConfig } from "@forest-fire/types";
-import { IFmModelMeta, IFmModelPropertyMeta, IFmModelRelationshipMeta } from "./decorators/types";
-import { IFmChangedProperties } from "./@types";
-import { IAbstractedDatabase } from "universal-fire";
+import { IFmChangedProperties, IFmModelMeta, IFmModelPropertyMeta, IFmModelRelationshipMeta, IReduxDispatch, Model } from "./private";
+declare type Record<T> = import("./Record").Record<T>;
 export declare class FireModel<T extends Model> {
     static get defaultDb(): IAbstractedDatabase;
     /**
@@ -52,7 +48,7 @@ export declare class FireModel<T extends Model> {
      * meta information -- contained on the given model
      */
     get relationships(): IFmModelRelationshipMeta[];
-    get dispatch(): IReduxDispatch<import("./state-mgmt").IReduxAction, any>;
+    get dispatch(): IReduxDispatch<import("./private").IReduxAction, any>;
     static get isDefaultDispatch(): boolean;
     get dispatchIsActive(): boolean;
     /** the connected real-time database */

@@ -1,8 +1,13 @@
 import type { ISerializedQuery } from "universal-fire";
-import { Model } from "../models/Model";
-import { IWatchEventClassification, IReduxDispatch, IWatcherSource } from "..";
+
 import { epoch } from "common-types";
-import { IFmRecordMeta } from "./events";
+import {
+  IFmRecordMeta,
+  Model,
+  IWatchEventClassification,
+  IReduxDispatch,
+  IWatcherSource,
+} from "@/private";
 
 export interface IWatcherEventContextBase<T extends Model = Model>
   extends IFmRecordMeta<T> {

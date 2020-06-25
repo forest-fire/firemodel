@@ -1,5 +1,5 @@
 import { IDictionary } from "common-types";
-import { NamedFakes } from "./index";
+import { NamedFakes } from "@/private";
 
 export const PropertyNamePatterns: IDictionary<keyof typeof NamedFakes> = {
   id: "id",

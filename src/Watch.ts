@@ -1,23 +1,21 @@
-import { Model } from "./models/Model";
 import {
-  IReduxDispatch,
-  IWatcherEventContext,
+  FireModel,
+  FireModelError,
   FmEvents,
   IFmWatcherStopped,
-} from "./state-mgmt";
-import { FireModel } from "./FireModel";
-import { IModelOptions } from "./@types/general";
-import { IPrimaryKey } from "./@types/record-types";
-import { FireModelError } from "./errors";
-import {
-  getWatcherPool,
+  IModelOptions,
+  IPrimaryKey,
+  IReduxDispatch,
+  IWatcherEventContext,
+  Model,
+  WatchList,
+  WatchRecord,
   clearWatcherPool,
-  removeFromWatcherPool,
+  firstKey,
+  getWatcherPool,
   getWatcherPoolList,
-} from "./watchers/watcherPool";
-import { WatchList } from "./watchers/WatchList";
-import { WatchRecord } from "./watchers/WatchRecord";
-import { firstKey } from "./util";
+  removeFromWatcherPool,
+} from "@/private";
 import { IAbstractedDatabase, IRtdbDbEvent } from "universal-fire";
 
 /**

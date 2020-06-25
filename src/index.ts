@@ -1,19 +1,29 @@
-export * from "./decorators/index";
-export { Model, AuditLog } from "./models/index";
+// #autoindex
+//#region autoindexed files
+// indexed at: 6th Jun, 2020, 07:35 AM ( GMT-7 )
+// local file exports
+export * from "./Audit";
+export * from "./AuditBase";
+export * from "./AuditList";
+export * from "./AuditRecord";
+export * from "./FireModel";
+export * from "./List";
+export * from "./Mock";
+export * from "./ModelMeta";
 export * from "./Record";
-export * from "./record/relationships/modelRegistration";
-export { List } from "./List";
-export { Mock } from "./Mock";
-export { FireModel } from "./FireModel";
-export { Watch } from "./Watch";
-export * from "./watchers/types";
-export * from "./state-mgmt/index";
+export * from "./VerboseError";
+export * from "./Watch";
+export * from "./path";
+export * from "./util";
+// directory exports
 export * from "./@types/index";
-export { pathJoin } from "./path";
-export * from "./Mock/types";
-
-export { fk, pk } from "common-types";
-export { key as fbKey } from "firebase-key";
-export * from "./record/createCompositeKey";
-
-export * from "./dexie/index";
+export * from "./FireDexie/index";
+export * from "./Mock/index";
+export * from "./decorators/index";
+export * from "./errors/index";
+export * from "./models/index";
+export * from "./record/index";
+export * from "./state-mgmt/index";
+export * from "./verifications/index";
+export * from "./watchers/index";
+//#endregion

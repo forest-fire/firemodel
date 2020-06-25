@@ -1,4 +1,4 @@
-import { IFmRelationshipDirectionality } from "./types";
+import { IFmRelationshipDirectionality } from "../private";
 /**
  * A helper method when designing relationships. In most cases when you
  * state a "inverse property" it means that the two entities can be
