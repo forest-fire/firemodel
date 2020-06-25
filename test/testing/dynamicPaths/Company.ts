@@ -1,4 +1,12 @@
-import { model, Model, property, hasMany, fks, mock } from "../../../src";
+import {
+  Model,
+  fks,
+  hasMany,
+  mock,
+  model,
+  property,
+} from "../../../src/private";
+
 import DeepPerson from "./DeepPerson";
 
 @model({ dbOffset: ":group/testing", localPostfix: "all" })

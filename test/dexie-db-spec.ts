@@ -5,7 +5,7 @@ import DeepPerson from "./testing/dynamicPaths/DeepPerson";
 import { DeeperPerson } from "./testing/dynamicPaths/DeeperPerson";
 // tslint:disable: no-implicit-dependencies
 // tslint:disable: no-submodule-imports
-import { DexieDb } from "../src/FireDexie/DexieDb";
+import { DexieDb } from "../src/private";
 import { Person } from "./testing/Person";
 import fdbKeyRange from "fake-indexeddb/lib/FDBKeyRange";
 import indexedDB from "fake-indexeddb";

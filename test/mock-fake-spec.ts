@@ -4,7 +4,7 @@ import { FireModel, List, Mock } from "../src";
 import { Product } from "./testing/Product";
 // import { DB, SDK } from "universal-fire";
 import { RealTimeAdmin } from "@forest-fire/real-time-admin";
-import { fakeIt } from "../src/Mock/fakeIt";
+import { fakeIt } from "../src/private";
 
 const helper = new MockHelper();
 

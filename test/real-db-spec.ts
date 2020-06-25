@@ -14,7 +14,7 @@ import { IDictionary, pathJoin, wait } from "common-types";
 import { IRealTimeAdmin, RealTimeAdmin } from "universal-fire";
 
 import { FancyPerson } from "./testing/FancyPerson";
-import { FireModel } from "../src/FireModel";
+import { FireModel } from "../src/private";
 import { Person } from "./testing/Person";
 
 helpers.setupEnv();

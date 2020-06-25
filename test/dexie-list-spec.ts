@@ -1,14 +1,13 @@
 import "./testing/fake-indexeddb";
 
-// tslint:disable: no-implicit-dependencies
-// tslint:disable: no-submodule-imports
-import { DexieDb, DexieList } from "../src/FireDexie/index";
+import { DexieDb, DexieList } from "../src/private";
 import { carData, peopleData } from "./dexie-test-data";
 
 import { Car } from "./testing/Car";
 import DeepPerson from "./testing/dynamicPaths/DeepPerson";
 import fdbKeyRange from "fake-indexeddb/lib/FDBKeyRange";
 import indexedDB from "fake-indexeddb";
+
 DexieDb.indexedDB(indexedDB, fdbKeyRange);
 
 // TODO: this test passes when run alone but somehow fails when run

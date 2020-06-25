@@ -3,9 +3,9 @@ import "reflect-metadata";
 import { IFmLocalEvent, IFmWatchEvent, List, Record } from "../src";
 import { IRealTimeAdmin, RealTimeAdmin } from "universal-fire";
 
-import { FireModel } from "../src/FireModel";
-import { FmEvents } from "../src/state-mgmt";
-import { Mock } from "../src/Mock";
+import { FireModel } from "../src/private";
+import { FmEvents } from "../src/private";
+import { Mock } from "../src/private";
 import { Person as Peeps } from "./testing/PersonAsPeeps";
 import { Person } from "./testing/Person";
 

@@ -1,4 +1,4 @@
-import { model, Model, property, hasOne, fk, mock } from "../../../src";
+import { Model, fk, hasOne, mock, model, property } from "../src/private";
 
 @model({ dbOffset: "up" })
 export class UserProfile extends Model {

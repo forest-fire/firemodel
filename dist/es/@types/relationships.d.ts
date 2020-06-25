@@ -1,4 +1,5 @@
 import { FireModelError } from "../private";
+import { IDictionary } from "common-types";
 /**
  * **IFmRelationshipOperation**
  *
@@ -67,3 +68,9 @@ export interface IFmRelationshipOptionsForHasMany extends IFmRelationshipOptions
      */
     altHasManyValue?: any;
 }
+/**
+ * Represents an array of _foreign-keys_ (1:M relations) as they would be represented
+ * in a Firebase dataabase (aka, a dictionary where the key is the foreign key, the
+ * value would _typically_ be "true" but could be something else in edge cases)
+ */
+export declare type fks<T = true> = IDictionary<T>;

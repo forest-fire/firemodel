@@ -2,14 +2,14 @@ import "reflect-metadata";
 
 import * as helpers from "./testing/helpers";
 
-import { IFmWatchEvent, List, Record } from "../src/index";
+import { IFmWatchEvent, List, Record } from "../src/private";
 import { IRealTimeAdmin, RealTimeAdmin } from "universal-fire";
 
 import { Car } from "./testing/Car";
 import Company from "./testing/dynamicPaths/Company";
-import { FireModel } from "../src/FireModel";
-import { FmEvents } from "../src/state-mgmt";
-import { Mock } from "../src/Mock";
+import { FireModel } from "../src/private";
+import { FmEvents } from "../src/private";
+import { Mock } from "../src/private";
 import { Person } from "./testing/Person";
 import { SerializedQuery } from "universal-fire";
 

@@ -1,4 +1,4 @@
-import { model, Model, property } from "../../../src";
+import { Model, model, property } from "../src/private";
 
 @model({ dbOffset: "no-write" })
 export class Car extends Model {

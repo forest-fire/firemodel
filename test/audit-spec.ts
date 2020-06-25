@@ -1,7 +1,8 @@
 import { IRealTimeAdmin, RealTimeAdmin } from "universal-fire";
 import { List, Mock, Record } from "../src";
-import { AuditLog } from "../src/models/index";
-import { FireModel } from "../src/FireModel";
+
+import { AuditLog } from "../src/private";
+import { FireModel } from "../src/private";
 import { Person } from "./testing/AuditedPerson";
 import { wait } from "common-types";
 

@@ -4,12 +4,13 @@ import { Car } from "./testing/Car";
 import DeepPerson from "./testing/dynamicPaths/DeepPerson";
 // tslint:disable: no-implicit-dependencies
 // tslint:disable: no-submodule-imports
-import { DexieDb } from "../src/FireDexie/DexieDb";
-import { DexieRecord } from "../src/FireDexie/DexieRecord";
+import { DexieDb } from "../src/private";
+import { DexieRecord } from "../src/private";
 import { fbKey } from "../src";
 import fdbKeyRange from "fake-indexeddb/lib/FDBKeyRange";
 import indexedDB from "fake-indexeddb";
 import { wait } from "common-types";
+
 DexieDb.indexedDB(indexedDB, fdbKeyRange);
 
 describe("Dexie - Record API", () => {

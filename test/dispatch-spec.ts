@@ -1,10 +1,10 @@
-import { FireModel, IMultiPathUpdates } from "../src/FireModel";
+import { FireModel, IMultiPathUpdates } from "../src/private";
 import { IFmChangedProperties, IFmWatchEvent, Record } from "../src";
 import { IRealTimeAdmin, RealTimeAdmin } from "universal-fire";
-import { IVuexDispatch, VeuxWrapper } from "../src/state-mgmt/VuexWrapper";
-import { compareHashes, withoutMetaOrPrivate } from "../src/util";
+import { IVuexDispatch, VeuxWrapper } from "../src/private";
+import { compareHashes, withoutMetaOrPrivate } from "../src/private";
 
-import { FmEvents } from "../src/state-mgmt";
+import { FmEvents } from "../src/private";
 import { Person } from "./testing/Person";
 import { PersonWithLocal } from "./testing/PersonWithLocal";
 import { PersonWithLocalAndPrefix } from "./testing/PersonWithLocalAndPrefix";

@@ -1,21 +1,22 @@
 import {
-  model,
   Model,
-  property,
-  hasMany,
-  fks,
-  hasOne,
   fk,
+  fks,
+  hasMany,
+  hasOne,
+  index,
   mock,
+  model,
+  property,
   uniqueIndex,
-  index
-} from "../../../src";
-import Hobby from "./Hobby";
-import Company from "./Company";
-import Location from "./Location";
-import { HumanAttribute } from "./HumanAttribute";
-import School from "./School";
+} from "../../../src/private";
+
 import Car from "./Car";
+import Company from "./Company";
+import Hobby from "./Hobby";
+import { HumanAttribute } from "./HumanAttribute";
+import Location from "./Location";
+import School from "./School";
 
 export interface IDeepName {
   first: string;

@@ -5,9 +5,9 @@ import { IRealTimeAdmin, RealTimeAdmin } from "universal-fire";
 
 import { Company } from "./testing/Company";
 import { FancyPerson } from "./testing/FancyPerson";
-import { FireModel } from "../src/FireModel";
-import { FmEvents } from "../src/state-mgmt";
-import { List } from "../src/List";
+import { FireModel } from "../src/private";
+import { FmEvents } from "../src/private";
+import { List } from "../src/private";
 
 const addFatherAndChildren = async () => {
   const bob = await Record.add(FancyPerson, {

@@ -6,11 +6,11 @@ import { Car } from "./testing/Car";
 import DeepPerson from "./testing/dynamicPaths/DeepPerson";
 // tslint:disable: no-implicit-dependencies
 // tslint:disable: no-submodule-imports
-import { DexieDb } from "../src/FireDexie/DexieDb";
+import { DexieDb } from "../src/private";
 import fdbKeyRange from "fake-indexeddb/lib/FDBKeyRange";
 import indexedDB from "fake-indexeddb";
-DexieDb.indexedDB(indexedDB, fdbKeyRange);
 
+DexieDb.indexedDB(indexedDB, fdbKeyRange);
 
 describe("Dexie Table API", () => {
   let db: DexieDb;

@@ -14,9 +14,9 @@
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "typeRoots": ["./node_modules/@types", "./src/@types"],
-    "baseUrl": "src",
+    "baseUrl": ".",
     "paths": {
-      "@/*": ["*"]
+      "@/*": ["src/*"]
     },
     "plugins": [
       { "transform": "typescript-transform-paths" },
