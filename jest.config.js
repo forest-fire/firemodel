@@ -1,3 +1,4 @@
+const { resolve } = require("path");
 module.exports = {
   testMatch: ["**/test/?(*-)+(spec|test).[jt]s?(x)"],
   // https://jestjs.io/docs/en/configuration#transform-objectstring-pathtotransformer--pathtotransformer-object
@@ -14,6 +15,11 @@ module.exports = {
   moduleNameMapper: {
     // map lodash-es to lodash (aka, CJS implementation)
     "^lodash-es$": "<rootDir>/node_modules/lodash/lodash.js",
+    "@/private": "<rootDir>/src/private",
+    "@types": "<rootDir>/src/types/index",
+    "@errors": "<rootDir>/errors/index",
+    "@decorators": "<rootDir>/decorators/index",
+    // "^@/(.*)$": resolve(__dirname, "./src/$1"),
   },
   // adds more assertions to the default library that Jest provides
   setupFilesAfterEnv: ["jest-extended"],

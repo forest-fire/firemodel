@@ -2,8 +2,8 @@ export declare type NonProperties<T> = {
     [P in keyof T]: T[P] extends () => any ? never : P;
 }[keyof T];
 export declare type Properties<T> = Pick<T, NonProperties<T>>;
+import { IFmModelMeta } from "../@types/index";
 import { epochWithMilliseconds } from "common-types";
-import { IFmModelMeta } from "../decorators/types";
 export declare class Model {
     /** The primary-key for the record */
     id?: string;

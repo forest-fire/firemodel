@@ -16,7 +16,12 @@
     "typeRoots": ["./node_modules/@types", "./src/@types"],
     "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"]
+      "@/*": ["src/*"],
+      "@types": ["src/@types/index"],
+      "@errors": ["src/errors/index"],
+      "@dexie": ["src/FireDexie/index"],
+      "@mock": ["src/Mock/index"],
+      "@decorators": ["src/decorators/index"]
     },
     "plugins": [
       { "transform": "typescript-transform-paths" },

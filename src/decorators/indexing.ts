@@ -1,9 +1,9 @@
 import "reflect-metadata";
 
-import { IModelIndexMeta, propertyReflector } from "@/private";
-
 import { IDictionary } from "common-types";
+import { IModelIndexMeta } from "@types";
 import { hashToArray } from "typed-conversions";
+import { propertyReflector } from "@decorators";
 
 /** DB Indexes accumlated by index decorators */
 export const indexesForModel: IDictionary<IDictionary<IModelIndexMeta>> = {};

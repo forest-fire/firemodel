@@ -1,10 +1,6 @@
-import {
-  FireModelError,
-  ICompositeKey,
-  Model,
-  Record,
-  capitalize,
-} from "@/private";
+import { FireModelError, Model, Record, capitalize } from "@/private";
+
+import { ICompositeKey } from "@types";
 
 /**
  * Given a `Record` which defines all properties in it's

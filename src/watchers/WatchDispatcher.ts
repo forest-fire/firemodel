@@ -4,13 +4,13 @@ import {
   IEventTimeContext,
   IFmServerOrLocalEvent,
   IFmWatchEvent,
-  IReduxDispatch,
   IWatcherEventContext,
   Record,
   hasInitialized,
 } from "@/private";
 
 import { IDictionary } from "common-types";
+import { IReduxDispatch } from "@types";
 
 /**
  * **watchDispatcher**

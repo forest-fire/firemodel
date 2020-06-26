@@ -1,2 +1,2 @@
-import { FmMockType } from "./types";
-export declare function mock(value: FmMockType, ...rest: any[]): (modelKlass: import("../private").Model, key: string) => void;
+import { FmMockType } from "../@types/index";
+export declare function mock(value: FmMockType, ...rest: any[]): (modelKlass: import("..").Model, key: string) => void;

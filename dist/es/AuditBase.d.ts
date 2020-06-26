@@ -1,5 +1,6 @@
-import { IModelOptions, Model, Record } from "./private";
+import { Model, Record } from "./private";
 import { IAbstractedDatabase, ISerializedQuery } from "universal-fire";
+import { IModelOptions } from "./@types/index";
 export declare class AuditBase<T extends Model = Model> {
     protected _modelKlass: new () => T;
     protected _record: Record<T>;

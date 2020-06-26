@@ -1,5 +1,6 @@
 import Dexie from "dexie";
-import { IDexieListOptions, IDexieModelMeta, IModelConstructor, Model, PropType } from "../private";
+import { IModelConstructor, Model } from "../private";
+import { IDexieListOptions, IDexieModelMeta, PropType } from "../@types/index";
 import { IComparisonOperator } from "universal-fire";
 import { epoch } from "common-types";
 /**

@@ -1,11 +1,15 @@
-import { IMockRelationshipConfig, IMockResponse } from "./types";
-import { addRelationships, mockProperties } from "./index";
+import {
+  FireModelError,
+  IMockRelationshipConfig,
+  IMockResponse,
+  Record,
+  addRelationships,
+  mockProperties,
+} from "@/private";
 
-import { FireModelError } from "../errors";
 import { IAbstractedDatabase } from "universal-fire";
 import { IDictionary } from "common-types";
 import { Mock } from "firemock";
-import { Record } from "../Record";
 
 let mockPrepared = false;
 

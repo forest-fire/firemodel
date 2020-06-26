@@ -1,12 +1,9 @@
 import "reflect-metadata";
 
-import {
-  IFmModelPropertyMeta,
-  propertiesByModel,
-  propertyReflector,
-} from "@/private";
+import { propertiesByModel, propertyReflector } from "@decorators";
 
 import { IDictionary } from "common-types";
+import { IFmModelPropertyMeta } from "@types";
 
 export function constrainedProperty(options: IDictionary = {}) {
   return propertyReflector<IFmModelPropertyMeta>(

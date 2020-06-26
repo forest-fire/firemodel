@@ -1,4 +1,5 @@
-import { FmEvents, IFmCrudOperations, IFmPathValuePair, IFmRelationshipOperation, IMultiPathUpdates, Model } from "../private";
+import { FmEvents, IMultiPathUpdates, Model } from "../private";
+import { IFmCrudOperations, IFmPathValuePair, IFmRelationshipOperation } from "../@types/index";
 import { fk, pk } from "common-types";
 import { EventType } from "@firebase/database-types";
 /**

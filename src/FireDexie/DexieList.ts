@@ -1,13 +1,6 @@
 import Dexie, { IndexableType } from "dexie";
-import {
-  DexieError,
-  IDexieListOptions,
-  IDexieModelMeta,
-  IModelConstructor,
-  Model,
-  PropType,
-  capitalize,
-} from "@/private";
+import { DexieError, IModelConstructor, Model, capitalize } from "@/private";
+import { IDexieListOptions, IDexieModelMeta, PropType } from "@types";
 
 import { IComparisonOperator } from "universal-fire";
 import { epoch } from "common-types";

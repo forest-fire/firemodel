@@ -1,6 +1,7 @@
-import { FireModel, IListOptions, IPrimaryKey, IReduxDispatch, Model, Record } from "./private";
+import { FireModel, Model, Record } from "./private";
 import { IAbstractedDatabase, IComparisonOperator, ISerializedQuery } from "universal-fire";
 import { IDictionary, epochWithMilliseconds } from "common-types";
+import { IListOptions, IPrimaryKey, IReduxDispatch } from "./@types/index";
 export declare class List<T extends Model> extends FireModel<T> {
     /**
      * Sets the default database to be used by all FireModel classes

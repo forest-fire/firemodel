@@ -1,10 +1,5 @@
-import {
-  AuditBase,
-  IAuditLogItem,
-  IModelOptions,
-  Model,
-  pathJoin,
-} from "@/private";
+import { AuditBase, Model, pathJoin } from "@/private";
+import { IAuditLogItem, IModelOptions } from "@types";
 
 import { SerializedQuery } from "universal-fire";
 import { epochWithMilliseconds } from "common-types";

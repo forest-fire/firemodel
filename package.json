@@ -17,6 +17,7 @@
   "typings": "dist/es/index.d.ts",
   "scripts": {
     "clean": "rimraf dist",
+    "tnode": "yarn ts-node -r tsconfig-paths/register",
     "clean:nuclear": "rimraf lib dist node_modules && yarn cache clean && rm yarn.lock && yarn && yarn upgrade",
     "lint": "./node_modules/.bin/tslint --force --format verbose \"src/**/*.ts\"",
     "build": "run-s clean build:rollup",
@@ -39,12 +40,11 @@
     "watch:es": "tsc -w -P tsconfig.esnext.json",
     "watch:cjs": "tsc -w -P tsconfig.cjs.json",
     "watch:autoindex": "do autoindex",
-    "visualize": "yarn madge src --extensions ts -i /tmp/dep-visualize.png && open /tmp/dep-visualize.png",
-    "circular": "yarn madge src --extensions ts --circular",
-    "orphans": "yarn madge src --extensions ts --orphans",
+    "visualize": "yarn madge src --ts-config tconfig.json --extensions ts -i /tmp/dep-visualize.png && open /tmp/dep-visualize.png",
+    "circular": "yarn madge src --ts-config tconfig.json --extensions ts --circular",
+    "orphans": "yarn madge src --ts-config tconfig.json --extensions ts --orphans",
     "leaves": "yarn madge src --extensions ts --leaves",
-    "warnings": "yarn madge src --extensions ts --warnings",
-    "summary": "yarn madge src --extensions ts --summary"
+    "summary": "yarn madge src --ts-config tconfig.json --extensions ts --summary"
   },
   "dependencies": {
     "common-types": "^1.15.6",
@@ -103,6 +103,7 @@
     "test-console": "^1.1.0",
     "ts-jest": "^26.1.1",
     "ts-node": "^8.10.2",
+    "tsconfig-paths": "^3.9.0",
     "tslint": "^6.1.2",
     "tslint-config-prettier": "^1.18.0",
     "ttypescript": "^1.5.10",

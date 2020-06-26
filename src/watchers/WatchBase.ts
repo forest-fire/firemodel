@@ -12,15 +12,17 @@ import {
   FireModelProxyError,
   FireModel,
   FmEvents,
-  IListOptions,
-  IReduxDispatch,
   IWatcherEventContext,
   IWatchEventClassification,
   IFmWatcherStartOptions,
-  FmModelConstructor,
-  ICompositeKey,
   Model,
 } from "@/private";
+import {
+  IListOptions,
+  IReduxDispatch,
+  FmModelConstructor,
+  ICompositeKey,
+} from "@types";
 
 /**
  * The base class which both `WatchList` and `WatchRecord` derive.

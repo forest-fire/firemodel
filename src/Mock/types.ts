@@ -1,4 +1,4 @@
-import { ICompositeKey } from "@/private";
+import { ICompositeKey } from "@types";
 import { IDictionary } from "common-types";
 
 export type ICardinalityConfig<T> = {

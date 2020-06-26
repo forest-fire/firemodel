@@ -1,5 +1,4 @@
 import {
-  IFmModelRelationshipMeta,
   IMockRelationshipConfig,
   IMockResponse,
   Mock,
@@ -7,6 +6,7 @@ import {
 } from "@/private";
 
 import { IAbstractedDatabase } from "universal-fire";
+import { IFmModelRelationshipMeta } from "@types";
 
 export async function processHasMany<T>(
   record: Record<T>,

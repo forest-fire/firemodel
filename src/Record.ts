@@ -3,20 +3,7 @@ import {
   FireModelError,
   FireModelProxyError,
   FmEvents,
-  IAuditChange,
-  IAuditOperations,
-  ICompositeKey,
-  IFMEventName,
-  IFkReference,
-  IFmCrudOperations,
-  IFmDispatchOptions,
   IFmLocalRecordEvent,
-  IFmModelPropertyMeta,
-  IFmPathValuePair,
-  IFmRelationshipOptions,
-  IFmRelationshipOptionsForHasMany,
-  IRecordOptions,
-  IReduxDispatch,
   IWatcherEventContext,
   List,
   Model,
@@ -40,6 +27,21 @@ import {
   withoutMetaOrPrivate,
   writeAudit,
 } from "@/private";
+import {
+  IAuditChange,
+  IAuditOperations,
+  ICompositeKey,
+  IFMEventName,
+  IFkReference,
+  IFmCrudOperations,
+  IFmDispatchOptions,
+  IFmModelPropertyMeta,
+  IFmPathValuePair,
+  IFmRelationshipOptions,
+  IFmRelationshipOptionsForHasMany,
+  IRecordOptions,
+  IReduxDispatch,
+} from "@types";
 import { IDictionary, Nullable, Omit, dotNotation, fk, pk } from "common-types";
 
 import { IAbstractedDatabase } from "universal-fire";
@@ -991,7 +993,7 @@ export class Record<T extends Model> extends FireModel<T> {
     let paths: IFmPathValuePair[] = [];
 
     const now = new Date().getTime();
-    fkRefs.map((ref) => {
+    fkRefs.map((ref: IFkReference) => {
       paths = [
         ...buildRelationshipPaths(this, property, ref, {
           now,
@@ -1029,7 +1031,7 @@ export class Record<T extends Model> extends FireModel<T> {
     let paths: IFmPathValuePair[] = [];
 
     const now = new Date().getTime();
-    fkRefs.map((ref) => {
+    fkRefs.map((ref: IFkReference) => {
       paths = [
         ...buildRelationshipPaths(this, property, ref, {
           now,

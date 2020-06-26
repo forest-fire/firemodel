@@ -3,9 +3,6 @@ import {
   FireModelError,
   FmEvents,
   IFmWatcherStopped,
-  IModelOptions,
-  IPrimaryKey,
-  IReduxDispatch,
   IWatcherEventContext,
   Model,
   WatchList,
@@ -17,6 +14,7 @@ import {
   removeFromWatcherPool,
 } from "@/private";
 import { IAbstractedDatabase, IRtdbDbEvent } from "universal-fire";
+import { IModelOptions, IPrimaryKey, IReduxDispatch } from "@types";
 
 /**
  * A static library for interacting with _watchers_. It

@@ -1,6 +1,6 @@
-import { IReduxDispatch, IWatcherEventContext } from "@/private";
-
 import { IDictionary } from "common-types";
+import { IReduxDispatch } from "@types";
+import { IWatcherEventContext } from "@/private";
 import { hashToArray } from "typed-conversions";
 
 /** a cache of all the watched  */

@@ -1,11 +1,9 @@
+import { FmEvents, IMultiPathUpdates, Model } from "@/private";
 import {
-  FmEvents,
   IFmCrudOperations,
   IFmPathValuePair,
   IFmRelationshipOperation,
-  IMultiPathUpdates,
-  Model,
-} from "@/private";
+} from "@types";
 import { fk, pk } from "common-types";
 
 // TODO: replace this with typing from universal-fire

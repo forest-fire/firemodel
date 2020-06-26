@@ -1,9 +1,6 @@
 import {
   FireModel,
   FireModelError,
-  IListOptions,
-  IPrimaryKey,
-  IReduxDispatch,
   Model,
   Record,
   capitalize,
@@ -17,6 +14,7 @@ import {
   SerializedQuery,
 } from "universal-fire";
 import { IDictionary, epochWithMilliseconds } from "common-types";
+import { IListOptions, IPrimaryKey, IReduxDispatch } from "@types";
 
 import { arrayToHash } from "typed-conversions";
 

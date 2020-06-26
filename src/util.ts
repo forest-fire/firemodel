@@ -1,12 +1,9 @@
-import {
-  IAuditChange,
-  IFmChangedProperties,
-  Model,
-  propertiesByModel,
-} from "@/private";
+import { IAuditChange, IFmChangedProperties } from "@types";
 
 import { IDictionary } from "common-types";
+import { Model } from "@/private";
 import { hashToArray } from "typed-conversions";
+import { propertiesByModel } from "@decorators";
 
 const equal = require("fast-deep-equal/es6");
 

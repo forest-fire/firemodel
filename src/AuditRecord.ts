@@ -1,10 +1,5 @@
-import {
-  AuditBase,
-  IAuditLogItem,
-  IModelOptions,
-  Model,
-  pathJoin,
-} from "@/private";
+import { AuditBase, Model, pathJoin } from "@/private";
+import { IAuditLogItem, IModelOptions } from "@types";
 
 import { Parallel } from "wait-in-parallel";
 import { SerializedQuery } from "universal-fire";

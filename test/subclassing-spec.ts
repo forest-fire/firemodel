@@ -1,6 +1,5 @@
 import { Customer } from "./testing/subClassing/Customer";
 import { Record } from "../src";
-import { UserProfile } from "./testing/subClassing/UserProfile";
 
 describe("Subclassing Models", () => {
   it("Subclass has own props", async () => {

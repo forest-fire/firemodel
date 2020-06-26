@@ -1,12 +1,5 @@
-import {
-  FireModel,
-  FireModelError,
-  IModelOptions,
-  IPrimaryKey,
-  Model,
-  Record,
-  WatchBase,
-} from "@/private";
+import { FireModel, FireModelError, Model, Record, WatchBase } from "@/private";
+import { IModelOptions, IPrimaryKey } from "@types";
 
 import { SerializedQuery } from "universal-fire";
 

@@ -3,6 +3,8 @@ import {
   IFkReference,
   IFmBuildRelationshipOptions,
   IFmPathValuePair,
+} from "@types";
+import {
   IncorrectReciprocalInverse,
   MissingInverseProperty,
   MissingReciprocalInverse,

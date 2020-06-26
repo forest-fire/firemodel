@@ -3,12 +3,11 @@ export type NonProperties<T> = {
   [P in keyof T]: T[P] extends () => any ? never : P;
 }[keyof T];
 export type Properties<T> = Pick<T, NonProperties<T>>;
+
+import { index, mock, model, property } from "@decorators";
+
+import { IFmModelMeta } from "@types";
 import { epochWithMilliseconds } from "common-types";
-import { property } from "../decorators/constraints";
-import { mock } from "../decorators/mock";
-import { model } from "../decorators/model";
-import { index, uniqueIndex } from "../decorators/indexing";
-import { IFmModelMeta } from "../decorators/types";
 
 @model()
 export class Model {

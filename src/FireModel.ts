@@ -10,6 +10,8 @@ import {
   IFmModelPropertyMeta,
   IFmModelRelationshipMeta,
   IReduxDispatch,
+} from "@types";
+import {
   Model,
   getModelMeta,
   listRegisteredModels,

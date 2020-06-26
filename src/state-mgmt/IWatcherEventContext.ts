@@ -5,9 +5,9 @@ import {
   IFmRecordMeta,
   Model,
   IWatchEventClassification,
-  IReduxDispatch,
   IWatcherSource,
 } from "@/private";
+import { IReduxDispatch } from "@types";
 
 export interface IWatcherEventContextBase<T extends Model = Model>
   extends IFmRecordMeta<T> {

@@ -1,12 +1,7 @@
 import {
   FireModelProxyError,
   FmEvents,
-  IFkReference,
   IFmLocalRelationshipEvent,
-  IFmPathValuePair,
-  IFmRelationshipOperation,
-  IFmRelationshipOptions,
-  IFmRelationshipOptionsForHasMany,
   Model,
   Record,
   UnknownRelationshipProblem,
@@ -15,6 +10,13 @@ import {
   getModelMeta,
   locallyUpdateFkOnRecord,
 } from "@/private";
+import {
+  IFkReference,
+  IFmPathValuePair,
+  IFmRelationshipOperation,
+  IFmRelationshipOptions,
+  IFmRelationshipOptionsForHasMany,
+} from "@types";
 
 import { IDictionary } from "common-types";
 import { Reference } from "firemock";

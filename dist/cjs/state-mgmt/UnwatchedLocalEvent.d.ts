@@ -3,7 +3,7 @@ export declare function UnwatchedLocalEvent<T>(rec: Record<T>, event: IFmLocalEv
     dbPath: string;
     watcherSource: string;
     dynamicPathProperties: string[];
-    compositeKey: import("../private").ICompositeKey<T>;
+    compositeKey: any;
     modelConstructor: new () => T;
     modelName: string;
     pluralName: string;
@@ -11,7 +11,7 @@ export declare function UnwatchedLocalEvent<T>(rec: Record<T>, event: IFmLocalEv
     localPath: string;
     localPostfix: string;
     kind: "record";
-    operation: import(".").IFmCrudOperations;
+    operation: import("../@types").IFmCrudOperations;
     value: T;
     changed?: (keyof T)[];
     added?: (keyof T)[];
@@ -28,7 +28,7 @@ export declare function UnwatchedLocalEvent<T>(rec: Record<T>, event: IFmLocalEv
     dbPath: string;
     watcherSource: string;
     dynamicPathProperties: string[];
-    compositeKey: import("../private").ICompositeKey<T>;
+    compositeKey: any;
     modelConstructor: new () => T;
     modelName: string;
     pluralName: string;
@@ -36,7 +36,7 @@ export declare function UnwatchedLocalEvent<T>(rec: Record<T>, event: IFmLocalEv
     localPath: string;
     localPostfix: string;
     kind: "relationship";
-    operation: import("../private").IFmRelationshipOperation;
+    operation: import("../@types").IFmRelationshipOperation;
     property: keyof T & string;
     fks: string[];
     inverseProperty?: "id" | "lastUpdated" | "createdAt" | "META";
@@ -47,7 +47,7 @@ export declare function UnwatchedLocalEvent<T>(rec: Record<T>, event: IFmLocalEv
     fromConstructor: new () => T;
     toConstructor: new () => import("../private").Model;
     value?: undefined;
-    paths: import("../private").IFmPathValuePair[];
+    paths: import("../@types").IFmPathValuePair[];
     type: import("./actions").FmEvents;
     key: string;
     transactionId: string;

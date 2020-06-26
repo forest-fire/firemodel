@@ -1,8 +1,6 @@
-import {
-  IFmModelPropertyMeta,
-  propertiesByModel,
-  propertyReflector,
-} from "@/private";
+import { propertiesByModel, propertyReflector } from "@decorators";
+
+import { IFmModelPropertyMeta } from "@types";
 
 // TODO: make the defaultValue typed
 /**

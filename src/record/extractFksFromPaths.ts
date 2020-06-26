@@ -1,5 +1,6 @@
-import { IFmPathValuePair, Model, Record } from "@/private";
+import { Model, Record } from "@/private";
 
+import { IFmPathValuePair } from "@types";
 import { pathJoin } from "common-types";
 
 export function extractFksFromPaths<T extends Model>(

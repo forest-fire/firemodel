@@ -1,4 +1,5 @@
-import { IFmRelationshipDirectionality, IFnToModelConstructor, IModelConstructor } from "../private";
+import { IFnToModelConstructor, IModelConstructor } from "../private";
+import { IFmRelationshipDirectionality } from "../@types/index";
 export declare function belongsTo(
 /**
  * either a _string_ representing the Model's class name

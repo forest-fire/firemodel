@@ -1,7 +1,5 @@
 import {
   FireModelError,
-  IListOptions,
-  IPrimaryKey,
   List,
   Model,
   Record,
@@ -14,6 +12,7 @@ import {
   ISerializedQuery,
   SerializedQuery,
 } from "universal-fire";
+import { IListOptions, IPrimaryKey } from "@types";
 
 import { epochWithMilliseconds } from "common-types";
 

@@ -1,15 +1,16 @@
 import {
   DecoratorProblem,
-  IFmModelRelationshipMeta,
-  IFmRelationshipDirectionality,
   IFnToModelConstructor,
   IModelConstructor,
   modelConstructorLookup,
   modelNameLookup,
-  propertyReflector,
-  relationshipsByModel,
 } from "@/private";
 import { IDictionary, Omit } from "common-types";
+import {
+  IFmModelRelationshipMeta,
+  IFmRelationshipDirectionality,
+} from "@types";
+import { propertyReflector, relationshipsByModel } from "@decorators";
 
 export type IFmHasMany<T = true> = IDictionary<T>;
 

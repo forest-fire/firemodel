@@ -1,5 +1,5 @@
 import { IDictionary } from "common-types";
-import { IFmModelMeta } from "@/private";
+import { IFmModelMeta } from "@types";
 
 const meta: IDictionary<IFmModelMeta> = {};
 

@@ -1,3 +1,4 @@
+import "reflect-metadata";
 import { Model } from "../private";
 import { IDictionary } from "common-types";
 export interface IHasPropertyAndType {

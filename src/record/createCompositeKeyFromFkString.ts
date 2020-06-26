@@ -1,4 +1,6 @@
-import { FireModelError, ICompositeKey, Model, capitalize } from "@/private";
+import { FireModelError, Model, capitalize } from "@/private";
+
+import { ICompositeKey } from "@types";
 
 export function createCompositeKeyFromFkString<T = ICompositeKey>(
   fkCompositeRef: string,

@@ -1,10 +1,8 @@
 import "reflect-metadata";
 
+import { FmModelConstructor, IFmModelMeta } from "@types";
+import { Model, addModelMeta, modelRegister } from "@/private";
 import {
-  FmModelConstructor,
-  IFmModelMeta,
-  Model,
-  addModelMeta,
   getDbIndexes,
   getModelProperty,
   getModelRelationship,
@@ -13,8 +11,7 @@ import {
   getRelationships,
   isProperty,
   isRelationship,
-  modelRegister,
-} from "@/private";
+} from "@decorators";
 
 import { IDictionary } from "common-types";
 

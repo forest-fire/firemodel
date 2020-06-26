@@ -1,4 +1,5 @@
-import { IFkReference, IFmBuildRelationshipOptions, IFmPathValuePair, Record } from "../../private";
+import { IFkReference, IFmBuildRelationshipOptions, IFmPathValuePair } from "../../@types/index";
+import { Record } from "../../private";
 /**
  * Builds all the DB paths needed to update a pairing of a PK:FK. It is intended
  * to be used by the `Record`'s transactional API as a first step of specifying

@@ -1,6 +1,7 @@
-import { IFkReference, Model, Record, getModelMeta } from "@/private";
+import { Model, Record, getModelMeta } from "@/private";
 
 import { IDictionary } from "common-types";
+import { IFkReference } from "@types";
 
 /**
  * When creating a new record it is sometimes desirable to pass in

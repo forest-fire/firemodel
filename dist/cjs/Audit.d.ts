@@ -1,4 +1,5 @@
-import { IAuditChange, IAuditOperations, IModelOptions, Record } from "./private";
+import { Record } from "./private";
+import { IAuditChange, IAuditOperations, IModelOptions } from "./@types/index";
 /**
  * writeAudit
  *

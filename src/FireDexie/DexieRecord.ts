@@ -1,14 +1,8 @@
-import { Dexie, Table } from "dexie";
-import {
-  DexieError,
-  IDexieModelMeta,
-  IModelConstructor,
-  IPrimaryKey,
-  Model,
-  capitalize,
-} from "@/private";
+import { DexieError, IModelConstructor, Model, capitalize } from "@/private";
+import { IDexieModelMeta, IPrimaryKey } from "@types";
 
 import { IDictionary } from "common-types";
+import { Table } from "dexie";
 import { key as fbKey } from "firebase-key";
 
 /**

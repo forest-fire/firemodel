@@ -1,18 +1,20 @@
-import Dexie, { Table, TableSchema } from "dexie";
+import Dexie, { TableSchema } from "dexie";
 import {
   DexieError,
   DexieList,
   DexieRecord,
   FireModelError,
-  ICompositeKey,
-  IDexieModelMeta,
-  IDexiePriorVersion,
   IModelConstructor,
-  IPrimaryKey,
   Model,
   Record,
   capitalize,
 } from "@/private";
+import {
+  ICompositeKey,
+  IDexieModelMeta,
+  IDexiePriorVersion,
+  IPrimaryKey,
+} from "@types";
 import { IDictionary, pk } from "common-types";
 
 /**

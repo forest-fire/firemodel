@@ -1,4 +1,5 @@
-import { FmEvents, IFkReference, IFmLocalRelationshipEvent, IFmPathValuePair, IFmRelationshipOperation, IFmRelationshipOptions, IFmRelationshipOptionsForHasMany, Model, Record } from "../private";
+import { FmEvents, IFmLocalRelationshipEvent, Model, Record } from "../private";
+import { IFkReference, IFmPathValuePair, IFmRelationshipOperation, IFmRelationshipOptions, IFmRelationshipOptionsForHasMany } from "../@types/index";
 /**
  * **relationshipOperation**
  *

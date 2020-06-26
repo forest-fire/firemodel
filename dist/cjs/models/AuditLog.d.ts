@@ -1,5 +1,5 @@
-import { Model } from "../models/Model";
-import { IAuditOperations, IAuditChange } from "../@types/audit-types";
+import { IAuditChange, IAuditOperations } from "../@types/index";
+import { Model } from "../private";
 export declare class AuditLog extends Model {
     /** the `Model` which has been changed */
     modelName: string;

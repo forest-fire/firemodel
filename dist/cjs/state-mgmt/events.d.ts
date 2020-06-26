@@ -1,6 +1,7 @@
 import { FmEvents, IFmLocalEvent } from "./index";
-import { ICompositeKey, IFmLocalRecordEvent, IFmLocalRelationshipEvent, IWatcherEventContext, Model } from "../private";
+import { IFmLocalRecordEvent, IFmLocalRelationshipEvent, IWatcherEventContext, Model } from "../private";
 import { IPathBasedWatchEvent, IValueBasedWatchEvent } from "universal-fire";
+import { ICompositeKey } from "../@types/index";
 import { IDictionary } from "common-types";
 export declare type IFmEventType = "value" | "child_added" | "child_moved" | "child_removed" | "child_changed";
 /**

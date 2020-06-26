@@ -1,6 +1,5 @@
 import { FmEvents, IFmLocalEvent } from "./index";
 import {
-  ICompositeKey,
   IFmLocalRecordEvent,
   IFmLocalRelationshipEvent,
   IWatcherEventContext,
@@ -8,6 +7,7 @@ import {
 } from "@/private";
 import { IPathBasedWatchEvent, IValueBasedWatchEvent } from "universal-fire";
 
+import { ICompositeKey } from "@types";
 import { IDictionary } from "common-types";
 
 export type IFmEventType =

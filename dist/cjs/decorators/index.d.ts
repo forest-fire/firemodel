@@ -9,5 +9,4 @@ export * from "./indexing";
 export * from "./mock";
 export * from "./model";
 export * from "./reflector";
-export * from "./types";
 export * from "./model-meta/index";

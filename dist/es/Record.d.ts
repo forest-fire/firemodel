@@ -1,4 +1,5 @@
-import { FireModel, ICompositeKey, IFMEventName, IFkReference, IFmCrudOperations, IFmDispatchOptions, IFmRelationshipOptions, IFmRelationshipOptionsForHasMany, IRecordOptions, IReduxDispatch, Model } from "./private";
+import { FireModel, Model } from "./private";
+import { ICompositeKey, IFMEventName, IFkReference, IFmCrudOperations, IFmDispatchOptions, IFmRelationshipOptions, IFmRelationshipOptionsForHasMany, IRecordOptions, IReduxDispatch } from "./@types/index";
 import { IDictionary, Nullable, fk, pk } from "common-types";
 import { IAbstractedDatabase } from "universal-fire";
 export interface IWriteOperation {
@@ -343,7 +344,7 @@ export declare class Record<T extends Model> extends FireModel<T> {
         modelName: string;
         pluralName: any;
         key: string;
-        compositeKey: ICompositeKey<T>;
+        compositeKey: any;
         localPath: any;
         data: string;
     };

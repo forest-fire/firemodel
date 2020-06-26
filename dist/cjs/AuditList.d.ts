@@ -1,4 +1,5 @@
-import { AuditBase, IAuditLogItem, IModelOptions, Model } from "./private";
+import { AuditBase, Model } from "./private";
+import { IAuditLogItem, IModelOptions } from "./@types/index";
 import { epochWithMilliseconds } from "common-types";
 export declare class AuditList<T extends Model> extends AuditBase<T> {
     constructor(modelKlass: new () => T, options?: IModelOptions);

@@ -1,12 +1,5 @@
-import {
-  AuditLog,
-  FireModel,
-  IAuditChange,
-  IAuditOperations,
-  IModelOptions,
-  Record,
-  capitalize,
-} from "@/private";
+import { AuditLog, FireModel, Record, capitalize } from "@/private";
+import { IAuditChange, IAuditOperations, IModelOptions } from "@types";
 
 /**
  * writeAudit

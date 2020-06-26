@@ -1,4 +1,4 @@
-import { ICompositeKey } from "../private";
+import { ICompositeKey } from "../@types/index";
 /**
    * **_reduceCompositeNotationToStringRepresentation**
    *

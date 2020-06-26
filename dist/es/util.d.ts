@@ -1,5 +1,6 @@
-import { IAuditChange, IFmChangedProperties, Model } from "./private";
+import { IAuditChange, IFmChangedProperties } from "./@types/index";
 import { IDictionary } from "common-types";
+import { Model } from "./private";
 export declare function normalized(...args: string[]): string[];
 export declare function slashNotation(...args: string[]): string;
 export declare function firstKey<T extends IDictionary = IDictionary>(thingy: T): string;

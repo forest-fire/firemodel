@@ -1,14 +1,15 @@
 import {
   DecoratorProblem,
-  IFmModelRelationshipMeta,
-  IFmRelationshipDirectionality,
   IFnToModelConstructor,
   IModelConstructor,
   modelConstructorLookup,
   modelNameLookup,
-  propertyReflector,
-  relationshipsByModel,
 } from "@/private";
+import {
+  IFmModelRelationshipMeta,
+  IFmRelationshipDirectionality,
+} from "@types";
+import { propertyReflector, relationshipsByModel } from "@decorators";
 
 import { Omit } from "common-types";
 

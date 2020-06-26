@@ -1,5 +1,6 @@
-import { IFmRelationshipDirectionality, IFnToModelConstructor, IModelConstructor } from "../private";
+import { IFnToModelConstructor, IModelConstructor } from "../private";
 import { IDictionary } from "common-types";
+import { IFmRelationshipDirectionality } from "../@types/index";
 export declare type IFmHasMany<T = true> = IDictionary<T>;
 export declare function hasMany(
 /**
