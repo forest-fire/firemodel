@@ -1,7 +1,7 @@
-import { Model, Record } from "@/core";
-
 import { FireModelError } from "@errors";
 import { IFmRelationshipOperation } from "@types";
+import { Model } from "@/models";
+import { Record } from "@/core";
 
 export class UnknownRelationshipProblem<
   T extends Model

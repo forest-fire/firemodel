@@ -1,6 +1,7 @@
-import { Model, Record, createCompositeKey } from "@/core";
+import { Record, createCompositeKey } from "@/core";
 
 import { IDictionary } from "common-types";
+import { Model } from "@/models";
 
 /**
  * Creates a string based composite key if the passed in record

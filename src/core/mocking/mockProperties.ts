@@ -1,8 +1,9 @@
-import { Model, Record, mockValue } from "@/core";
+import { Record, mockValue } from "@/core";
 
 import { IAbstractedDatabase } from "universal-fire";
 import { IDictionary } from "common-types";
 import { IMockRelationshipConfig } from "@types";
+import { Model } from "@/models";
 import { getMockHelper } from "firemock";
 import { getModelMeta } from "@/util";
 

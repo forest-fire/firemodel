@@ -1,7 +1,6 @@
 import {
   FireModel,
   List,
-  Model,
   WatchDispatcher,
   buildDeepRelationshipLinks,
   buildRelationshipPaths,
@@ -41,15 +40,16 @@ import {
   capitalize,
   compareHashes,
   getModelMeta,
+  isHasManyRelationship,
   pathJoin,
   withoutMetaOrPrivate,
 } from "@/util";
 
 import { IAbstractedDatabase } from "universal-fire";
+import { Model } from "@/models";
 import { UnwatchedLocalEvent } from "@/state-mgmt";
 import { default as copy } from "fast-copy";
 import { key as fbKey } from "firebase-key";
-import { isHasManyRelationship } from "@/verifications";
 import { writeAudit } from "@/audit";
 
 export interface IWriteOperation {

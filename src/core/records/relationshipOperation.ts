@@ -8,15 +8,11 @@ import {
   IFmRelationshipOptions,
   IFmRelationshipOptionsForHasMany,
 } from "@types";
-import {
-  Model,
-  Record,
-  createCompositeRef,
-  locallyUpdateFkOnRecord,
-} from "@/core";
+import { Record, createCompositeRef, locallyUpdateFkOnRecord } from "@/core";
 import { capitalize, getModelMeta } from "@/util";
 
 import { IDictionary } from "common-types";
+import { Model } from "@/models";
 import { Reference } from "firemock";
 
 /**

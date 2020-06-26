@@ -11,16 +11,17 @@ import {
   IFmModelRelationshipMeta,
   IReduxDispatch,
 } from "@types";
+import {} from "@/core";
+
 import {
-  Model,
-  listRegisteredModels,
+  getModelMeta,
   modelRegister,
+  listRegisteredModels,
   modelRegistryLookup,
-} from "@/core";
+} from "@/util";
 
-import { getModelMeta } from "@/util";
-
-type Record<T> = import("./Record").Record<T>;
+import type { Record } from "@/core";
+import { Model } from "@/models";
 
 // tslint:disable-next-line:no-var-requires
 const pluralize = require("pluralize");

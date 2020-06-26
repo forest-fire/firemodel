@@ -4,9 +4,11 @@ import {
   SerializedQuery,
 } from "universal-fire";
 import { IListOptions, IPrimaryKey } from "@types";
-import { List, Model, Record, Watch, WatchBase } from "@/core";
+import { List, Record, Watch } from "@/core";
 
 import { FireModelError } from "@errors";
+import { Model } from "@/models";
+import { WatchBase } from "./shared/WatchBase";
 import { epochWithMilliseconds } from "common-types";
 import { getAllPropertiesFromClassStructure } from "@/util";
 

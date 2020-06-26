@@ -7,7 +7,7 @@ import {
   IWatcherEventContext,
 } from "@types";
 
-import { Model } from "@/core";
+import { Model } from "@/models";
 
 export interface IFmWatcherStopped {
   type: typeof FmEvents.WATCHER_STOPPED;

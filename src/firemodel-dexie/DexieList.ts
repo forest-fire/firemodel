@@ -6,9 +6,9 @@ import {
   PropType,
 } from "@types";
 
-import { DexieError } from "@errors";
+import { DexieError } from "@/errors";
 import { IComparisonOperator } from "universal-fire";
-import { Model } from "@/core";
+import { Model } from "@/models";
 import { capitalize } from "@/util";
 import { epoch } from "common-types";
 

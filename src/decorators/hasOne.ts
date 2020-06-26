@@ -4,8 +4,8 @@ import {
   IFnToModelConstructor,
   IModelConstructor,
 } from "@types";
-import { modelConstructorLookup, modelNameLookup } from "@/core";
-import { propertyReflector, relationshipsByModel } from "@decorators";
+import { modelConstructorLookup, modelNameLookup } from "@/util";
+import { propertyReflector, relationshipsByModel } from "@/decorators/shared";
 
 import { DecoratorProblem } from "@errors";
 import { Omit } from "common-types";

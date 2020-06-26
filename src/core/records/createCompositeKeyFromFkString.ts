@@ -1,6 +1,6 @@
 import { FireModelError } from "@errors";
 import { ICompositeKey } from "@types";
-import { Model } from "@/core";
+import { Model } from "@/models";
 import { capitalize } from "@/util";
 
 export function createCompositeKeyFromFkString<T = ICompositeKey>(

@@ -1,7 +1,7 @@
 import { IDictionary, wait } from "common-types";
 
 import { IWatcherEventContext } from "@types";
-import { Model } from "@/core";
+import { Model } from "@/models";
 
 /**
  * indicates which watcherId's have returned their initial

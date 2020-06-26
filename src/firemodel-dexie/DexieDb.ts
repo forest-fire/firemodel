@@ -9,8 +9,9 @@ import {
   IPrimaryKey,
 } from "@types";
 import { IDictionary, pk } from "common-types";
-import { Model, Record } from "@/core";
 
+import { Model } from "@/models";
+import { Record } from "@/core";
 import { capitalize } from "@/util";
 
 /**

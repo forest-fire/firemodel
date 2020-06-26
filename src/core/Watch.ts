@@ -1,6 +1,5 @@
 import {
   FireModel,
-  Model,
   WatchList,
   WatchRecord,
   clearWatcherPool,
@@ -19,6 +18,7 @@ import {
 import { IAbstractedDatabase, IRtdbDbEvent } from "universal-fire";
 
 import { FireModelError } from "@errors";
+import { Model } from "@/models";
 import { firstKey } from "@/util";
 
 /**

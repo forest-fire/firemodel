@@ -1,7 +1,7 @@
-import { Model, NamedFakes } from "@/core";
-
 import { IFnToModelConstructor } from "@types";
 import { MockHelper } from "firemock";
+import { Model } from "@/models";
+import { NamedFakes } from "@/core";
 
 export type FmRelationshipType = "hasMany" | "hasOne";
 /**

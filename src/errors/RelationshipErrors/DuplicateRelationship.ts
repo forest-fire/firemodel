@@ -1,5 +1,5 @@
 import { FireModelError } from "@errors";
-import { Model } from "@/core";
+import { Model } from "@/models";
 
 export class DuplicateRelationship<
   P extends Model,

@@ -1,4 +1,4 @@
-import { propertiesByModel, propertyReflector } from "@decorators";
+import { propertiesByModel, propertyReflector } from "@/decorators/shared";
 
 import { IFmModelPropertyMeta } from "@types";
 

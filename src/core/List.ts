@@ -10,7 +10,7 @@ import { IListOptions, IPrimaryKey, IReduxDispatch } from "@types";
 import { capitalize, getModelMeta, pathJoin } from "@/util";
 
 import { FireModelError } from "@errors";
-import { Model } from "@/core/models";
+import { Model } from "@/models";
 import { arrayToHash } from "typed-conversions";
 
 const DEFAULT_IF_NOT_FOUND = "__DO_NOT_USE__";

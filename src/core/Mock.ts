@@ -1,8 +1,9 @@
-import { FireModel, Model, Record } from "@/core";
+import { FireModel, Record } from "@/core";
 
 import { FireModelError } from "@errors";
 import { IAbstractedDatabase } from "universal-fire";
 import { MockApi } from "./mocking/MockApi";
+import { Model } from "@/models";
 
 function defaultCardinality<T>(r: Record<T>) {
   return r.META.relationships.reduce((prev, curr) => {

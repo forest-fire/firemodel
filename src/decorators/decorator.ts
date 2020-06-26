@@ -5,10 +5,10 @@ import {
   addPropertyToModelMeta,
   addRelationshipToModelMeta,
   getProperties,
-} from "@decorators";
+} from "@/decorators/shared";
 
 import { IDictionary } from "common-types";
-import { Model } from "@/core";
+import { Model } from "@/models";
 
 export const propertyDecorator = <T extends Model>(
   nameValuePairs: IDictionary = {},

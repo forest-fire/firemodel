@@ -1,7 +1,8 @@
-import { FireModel, Model, Record } from "@/core";
+import { FireModel, Record } from "@/core";
 import { IAbstractedDatabase, ISerializedQuery } from "universal-fire";
 
 import { IModelOptions } from "@types";
+import { Model } from "@/models";
 import { pathJoin } from "@/util";
 
 export class AuditBase<T extends Model = Model> {

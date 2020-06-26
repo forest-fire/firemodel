@@ -1,6 +1,6 @@
-import { Model, Record } from "@/core";
-
 import { IFmLocalRelationshipEvent } from "@types";
+import { Model } from "@/models";
+import { Record } from "@/core";
 import { fk } from "common-types";
 
 /**

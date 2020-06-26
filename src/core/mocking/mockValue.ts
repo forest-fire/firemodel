@@ -1,8 +1,9 @@
-import { Model, NamedFakes, PropertyNamePatterns, fakeIt } from "@/core";
+import { NamedFakes, PropertyNamePatterns, fakeIt } from "@/core";
 
 import { IAbstractedDatabase } from "universal-fire";
 import { IFmModelPropertyMeta } from "@types";
 import { MockHelper } from "firemock";
+import { Model } from "@/models";
 
 export function mockValue<T extends Model>(
   db: IAbstractedDatabase,

@@ -1,7 +1,7 @@
-import { Model, Record } from "@/core";
-
 import { FireModelError } from "@errors";
 import { IFmCrudOperation } from "@types";
+import { Model } from "@/models";
+import { Record } from "@/core";
 import { capitalize } from "@/util";
 
 export class RecordCrudFailure<T extends Model> extends FireModelError {

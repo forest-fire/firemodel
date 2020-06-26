@@ -1,6 +1,6 @@
-import { Model, Record } from "@/core";
-
 import { FireModelError } from "@errors";
+import { Model } from "@/models";
+import { Record } from "@/core";
 import { capitalize } from "@/util";
 
 export class MissingReciprocalInverse<T extends Model> extends FireModelError {

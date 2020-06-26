@@ -1,4 +1,4 @@
-import { Model } from "@/core/models";
+import { Model } from "@/models";
 
 export type IModelConstructor<T extends Model = any> = new () => IModelSubclass<
   T

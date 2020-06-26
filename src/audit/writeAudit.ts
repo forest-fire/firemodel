@@ -1,6 +1,7 @@
-import { AuditLog, FireModel, Record } from "@/core";
+import { FireModel, Record } from "@/core";
 import { IAuditChange, IAuditOperations, IModelOptions } from "@types";
 
+import { AuditLog } from "@/models";
 import { capitalize } from "@/util";
 
 /**

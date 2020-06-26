@@ -1,7 +1,7 @@
-import { Model, Record } from "@/core";
-
 import { IDictionary } from "common-types";
 import { IFkReference } from "@types";
+import { Model } from "@/models";
+import { Record } from "@/core";
 import { getModelMeta } from "@/util";
 
 /**

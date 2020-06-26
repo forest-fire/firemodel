@@ -1,20 +1,19 @@
 import "reflect-metadata";
 
 import { FmModelConstructor, IFmModelMeta } from "@types";
-import { Model, modelRegister } from "@/core";
+import { addModelMeta, modelRegister } from "@/util";
+import { getDbIndexes, getPushKeys } from "@decorators";
 import {
-  getDbIndexes,
   getModelProperty,
   getModelRelationship,
   getProperties,
-  getPushKeys,
   getRelationships,
   isProperty,
   isRelationship,
-} from "@decorators";
+} from "./shared";
 
 import { IDictionary } from "common-types";
-import { addModelMeta } from "@/util";
+import { Model } from "@/models";
 
 export function model(options: Partial<IFmModelMeta> = {}) {
   let isDirty: boolean = false;

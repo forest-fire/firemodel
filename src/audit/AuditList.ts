@@ -1,7 +1,7 @@
 import { IAuditLogItem, IModelOptions } from "@types";
 
 import { AuditBase } from "@/audit";
-import { Model } from "@/core";
+import { Model } from "@/models";
 import { SerializedQuery } from "universal-fire";
 import { epochWithMilliseconds } from "common-types";
 import { pathJoin } from "@/util";

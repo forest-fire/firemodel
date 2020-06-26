@@ -1,6 +1,6 @@
 import "reflect-metadata";
 
-import { propertiesByModel, propertyReflector } from "@decorators";
+import { propertiesByModel, propertyReflector } from "@/decorators/shared";
 
 import { IDictionary } from "common-types";
 import { IFmModelPropertyMeta } from "@types";
