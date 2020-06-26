@@ -1,4 +1,4 @@
-import { FireModelError } from "@/private";
+import { FireModelError } from "@errors";
 import { IDictionary } from "common-types";
 
 /**

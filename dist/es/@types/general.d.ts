@@ -1,6 +1,6 @@
 import { IDictionary, datetime } from "common-types";
 import { IAbstractedDatabase } from "universal-fire";
-import { Model } from "../private";
+import { Model } from "../core";
 export declare type FmModelConstructor<T extends Model> = new () => T;
 /** _options_ allowed to modify the behavior/configuration of a `Model` */
 export interface IModelOptions {

@@ -1,7 +1,7 @@
-import Dexie, { Transaction } from "dexie";
+import type { Dexie, Transaction } from "dexie";
 
 import { IDictionary } from "common-types";
-import { IFmModelMeta } from "@/private";
+import { IFmModelMeta } from "@types";
 
 export interface IDexiePriorVersion {
   /**

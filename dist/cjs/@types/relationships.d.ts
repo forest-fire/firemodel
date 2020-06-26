@@ -1,4 +1,4 @@
-import { FireModelError } from "../private";
+import { FireModelError } from "../errors/index";
 import { IDictionary } from "common-types";
 /**
  * **IFmRelationshipOperation**

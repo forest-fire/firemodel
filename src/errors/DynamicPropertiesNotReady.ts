@@ -1,4 +1,4 @@
-import { Model, Record } from "@/private";
+import { Model, Record } from "@/core";
 
 import { FireModelError } from "@errors";
 

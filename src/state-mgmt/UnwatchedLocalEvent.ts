@@ -1,4 +1,6 @@
-import { IFmLocalEvent, IFmRecordMeta, Record } from "@/private";
+import { IFmLocalEvent, IFmRecordMeta } from "@types";
+
+import { Record } from "@/core";
 
 export function UnwatchedLocalEvent<T>(
   rec: Record<T>,

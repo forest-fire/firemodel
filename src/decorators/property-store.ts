@@ -1,6 +1,6 @@
 import { IDictionary } from "common-types";
 import { IFmModelPropertyMeta } from "@types";
-import { Model } from "@/private";
+import { Model } from "@/core";
 import { hashToArray } from "typed-conversions";
 
 export function isProperty(modelKlass: IDictionary) {

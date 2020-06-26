@@ -1,6 +1,5 @@
-import { IFnToModelConstructor, IModelConstructor } from "../private";
 import { IDictionary } from "common-types";
-import { IFmRelationshipDirectionality } from "../@types/index";
+import { IFmRelationshipDirectionality, IFnToModelConstructor, IModelConstructor } from "../@types/index";
 export declare type IFmHasMany<T = true> = IDictionary<T>;
 export declare function hasMany(
 /**
@@ -11,4 +10,4 @@ export declare function hasMany(
  * possibility that a user of this API will pass in a _function_
  * to a _constructor_. This approach is now deprecated.
  */
-fkClass: IFnToModelConstructor | IModelConstructor | string, inverse?: string | [string, IFmRelationshipDirectionality]): (modelKlass: import("../private").Model, key: string) => void;
+fkClass: IFnToModelConstructor | IModelConstructor | string, inverse?: string | [string, IFmRelationshipDirectionality]): (modelKlass: import("../core").Model, key: string) => void;

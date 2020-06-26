@@ -19,8 +19,7 @@
       "@/*": ["src/*"],
       "@types": ["src/@types/index"],
       "@errors": ["src/errors/index"],
-      "@dexie": ["src/FireDexie/index"],
-      "@mock": ["src/Mock/index"],
+      "@dexie": ["src/firemodel-dexie/index"],
       "@decorators": ["src/decorators/index"]
     },
     "plugins": [

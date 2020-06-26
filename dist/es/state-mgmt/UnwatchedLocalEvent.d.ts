@@ -1,9 +1,10 @@
-import { IFmLocalEvent, Record } from "../private";
+import { IFmLocalEvent } from "../@types/index";
+import { Record } from "../core";
 export declare function UnwatchedLocalEvent<T>(rec: Record<T>, event: IFmLocalEvent<T>): {
     dbPath: string;
     watcherSource: string;
     dynamicPathProperties: string[];
-    compositeKey: any;
+    compositeKey: import("../@types").ICompositeKey<T>;
     modelConstructor: new () => T;
     modelName: string;
     pluralName: string;
@@ -17,18 +18,18 @@ export declare function UnwatchedLocalEvent<T>(rec: Record<T>, event: IFmLocalEv
     added?: (keyof T)[];
     removed?: (keyof T)[];
     priorValue?: T;
-    type: import("./actions").FmEvents;
+    type: import("../@types").FmEvents;
     key: string;
     transactionId: string;
     eventType: "value" | "child_added" | "child_changed" | "child_moved" | "child_removed" | "local";
-    paths?: import("../FireModel").IMultiPathUpdates[];
+    paths?: import("../core").IMultiPathUpdates[];
     errorCode?: string | number;
     errorMessage?: string;
 } | {
     dbPath: string;
     watcherSource: string;
     dynamicPathProperties: string[];
-    compositeKey: any;
+    compositeKey: import("../@types").ICompositeKey<T>;
     modelConstructor: new () => T;
     modelName: string;
     pluralName: string;
@@ -45,10 +46,10 @@ export declare function UnwatchedLocalEvent<T>(rec: Record<T>, event: IFmLocalEv
     fromLocal: string;
     toLocal: string;
     fromConstructor: new () => T;
-    toConstructor: new () => import("../private").Model;
+    toConstructor: new () => import("../core").Model;
     value?: undefined;
     paths: import("../@types").IFmPathValuePair[];
-    type: import("./actions").FmEvents;
+    type: import("../@types").FmEvents;
     key: string;
     transactionId: string;
     eventType: "value" | "child_added" | "child_changed" | "child_moved" | "child_removed" | "local";

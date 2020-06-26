@@ -8,5 +8,6 @@ export * from "./hasOne";
 export * from "./indexing";
 export * from "./mock";
 export * from "./model";
-export * from "./reflector";
-export * from "./model-meta/index";
+export * from "./property-store";
+export * from "./propertyReflector";
+export * from "./relationship-store";

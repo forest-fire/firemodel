@@ -1,4 +1,5 @@
-import { FireModelError, Model, Record } from "../../private";
+import { Model, Record } from "../../core";
+import { FireModelError } from "../index";
 /**
  * When the record's META points to a inverse property on the FK; this error
  * presents when that `FK[inverseProperty]` doesn't exist in the FK's meta.

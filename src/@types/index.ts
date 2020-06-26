@@ -1,14 +1,19 @@
 // #autoindex:named, exclude: iso-path-join
 //#region autoindexed files
-// indexed at: 6th Jun, 2020, 06:02 PM ( GMT-7 )
+// indexed at: 6th Jun, 2020, 10:04 PM ( GMT-7 )
 // local file exports
+export * from "./actions";
 export * from "./audit-types";
 export * from "./decorators";
 export * from "./dexie";
+export * from "./events";
 export * from "./firemodel-types";
 export * from "./general";
+export * from "./mock-types";
+export * from "./model-relationships";
 export * from "./proxy";
 export * from "./record-types";
 export * from "./relationships";
 export * from "./state-mgmt";
+export * from "./watcher-types";
 //#endregion

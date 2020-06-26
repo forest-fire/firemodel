@@ -8,7 +8,7 @@ import {
 } from "@decorators";
 
 import { IDictionary } from "common-types";
-import { Model } from "@/private";
+import { Model } from "@/core";
 
 export const propertyDecorator = <T extends Model>(
   nameValuePairs: IDictionary = {},

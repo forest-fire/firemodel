@@ -1,7 +1,7 @@
 import "reflect-metadata";
 
 import { FmModelConstructor, IFmModelMeta } from "@types";
-import { Model, addModelMeta, modelRegister } from "@/private";
+import { Model, modelRegister } from "@/core";
 import {
   getDbIndexes,
   getModelProperty,
@@ -14,6 +14,7 @@ import {
 } from "@decorators";
 
 import { IDictionary } from "common-types";
+import { addModelMeta } from "@/util";
 
 export function model(options: Partial<IFmModelMeta> = {}) {
   let isDirty: boolean = false;

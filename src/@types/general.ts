@@ -2,7 +2,7 @@ import { IDictionary, datetime } from "common-types";
 
 // import { IAbstractedDatabase } from "universal-fire";
 import { IAbstractedDatabase } from "universal-fire";
-import { Model } from "@/private";
+import { Model } from "@/core";
 
 export type FmModelConstructor<T extends Model> = new () => T;
 

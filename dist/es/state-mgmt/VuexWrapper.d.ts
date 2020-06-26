@@ -1,5 +1,4 @@
-import { IFmLocalEvent } from "../private";
-import { IReduxAction } from "../@types/index";
+import { IFmLocalEvent, IReduxAction } from "../@types/index";
 /**
  * The Vuex equivalent of a Redux dispatch call
  */

@@ -1,5 +1,6 @@
-import { IFnToModelConstructor, Model, NamedFakes } from "@/private";
+import { Model, NamedFakes } from "@/core";
 
+import { IFnToModelConstructor } from "@types";
 import { MockHelper } from "firemock";
 
 export type FmRelationshipType = "hasMany" | "hasOne";

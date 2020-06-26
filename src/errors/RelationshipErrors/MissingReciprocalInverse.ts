@@ -1,6 +1,7 @@
-import { Model, Record, capitalize } from "@/private";
+import { Model, Record } from "@/core";
 
 import { FireModelError } from "@errors";
+import { capitalize } from "@/util";
 
 export class MissingReciprocalInverse<T extends Model> extends FireModelError {
   constructor(rec: Record<T>, property: keyof T & string) {

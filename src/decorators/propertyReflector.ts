@@ -1,9 +1,10 @@
 import "reflect-metadata";
 
-import { Model, lowercase } from "@/private";
 import { get, set } from "lodash-es";
 
 import { IDictionary } from "common-types";
+import { Model } from "@/core";
+import { lowercase } from "@/util";
 
 /**
  * Adds meta data to a given "property" on a model. In this

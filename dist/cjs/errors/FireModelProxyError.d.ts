@@ -1,4 +1,4 @@
-import { FireModelError } from "../private";
+import { FireModelError } from "./index";
 export declare class FireModelProxyError extends FireModelError {
     firemodel: boolean;
     code: string;
