@@ -1,5 +1,5 @@
 import { IDictionary } from "common-types";
-import { IFmModelMeta } from "../../@/types/index";
+import { IFmModelMeta } from "@/types/index";
 
 const meta: IDictionary<IFmModelMeta> = {};
 

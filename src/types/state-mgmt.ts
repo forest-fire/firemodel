@@ -4,6 +4,7 @@ import {
   IFmRecordMeta,
   IFmRelationshipOperation,
   IModel,
+  IMultiPathUpdates,
   IWatchEventClassification,
   IWatcherSource,
 } from "@/types";
@@ -17,7 +18,6 @@ import { epoch, fk, pk } from "common-types";
 // TODO: replace this with typing from universal-fire
 import { EventType } from "@firebase/database-types";
 import { IDictionary } from "common-types";
-import { IMultiPathUpdates } from "@/core";
 
 export type Extractable<T, U> = T extends U ? any : never;
 export type NotString<T> = string extends T ? never : any;

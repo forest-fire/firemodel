@@ -16,8 +16,7 @@
     "typeRoots": ["./node_modules/@/types", "src/types"],
     "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"],
-      "@errors": ["src/errors/index"]
+      "@/*": ["src/*"]
     },
     "plugins": [
       { "transform": "typescript-transform-paths" },

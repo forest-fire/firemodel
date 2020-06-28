@@ -180,3 +180,8 @@ export interface IWriteOperation {
   /** called on positive confirmation received from server */
   callback: (type: string, value: any) => void;
 }
+
+export interface IMultiPathUpdates {
+  path: string;
+  value: any;
+}
