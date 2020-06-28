@@ -1,4 +1,4 @@
-import { FireModelProxyError, UnknownRelationshipProblem } from "@errors";
+import { FireModelProxyError, UnknownRelationshipProblem } from "@/errors";
 import {
   FmEvents,
   IFkReference,
@@ -8,11 +8,12 @@ import {
   IFmRelationshipOptions,
   IFmRelationshipOptionsForHasMany,
 } from "@types";
-import { Record, createCompositeRef, locallyUpdateFkOnRecord } from "@/core";
 import { capitalize, getModelMeta } from "@/util";
+import { createCompositeRef, locallyUpdateFkOnRecord } from "./index";
 
 import { IDictionary } from "common-types";
-import { Model } from "@/models";
+import { IModel } from "@types";
+import { Record } from "@/core";
 import { Reference } from "firemock";
 
 /**
@@ -22,8 +23,8 @@ import { Reference } from "firemock";
  * with the `dispatch()` function; looking to associate with watchers wherever possible
  */
 export async function relationshipOperation<
-  F extends Model,
-  T extends Model = Model
+  F extends IModel,
+  T extends IModel = IModel
 >(
   rec: Record<F>,
   /**
@@ -142,7 +143,7 @@ export async function relationshipOperation<
   }
 }
 
-export async function localRelnOp<F extends Model, T extends Model>(
+export async function localRelnOp<F extends IModel, T extends IModel>(
   rec: Record<F>,
   event: Omit<IFmLocalRelationshipEvent<F, T>, "type">,
   type: FmEvents
@@ -173,7 +174,7 @@ export async function localRelnOp<F extends Model, T extends Model>(
   }
 }
 
-export async function relnConfirmation<F extends Model, T extends Model>(
+export async function relnConfirmation<F extends IModel, T extends IModel>(
   rec: Record<F>,
   event: Omit<IFmLocalRelationshipEvent<F, T>, "type">,
   type: FmEvents
@@ -181,7 +182,7 @@ export async function relnConfirmation<F extends Model, T extends Model>(
   rec.dispatch({ ...event, type });
 }
 
-export async function relnRollback<F extends Model, T extends Model>(
+export async function relnRollback<F extends IModel, T extends IModel>(
   rec: Record<F>,
   event: Omit<IFmLocalRelationshipEvent<F, T>, "type">,
   type: FmEvents

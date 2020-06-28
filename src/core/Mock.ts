@@ -1,9 +1,9 @@
 import { FireModel, Record } from "@/core";
 
-import { FireModelError } from "@errors";
+import { FireModelError } from "@/errors";
 import { IAbstractedDatabase } from "universal-fire";
+import { IModel } from "@types";
 import { MockApi } from "./mocking/MockApi";
-import { Model } from "@/models";
 
 function defaultCardinality<T>(r: Record<T>) {
   return r.META.relationships.reduce((prev, curr) => {
@@ -17,7 +17,7 @@ function defaultCardinality<T>(r: Record<T>) {
  * @param modelConstructor The Model being mocked
  * @param db optionally state the DB connection; will use **Firemodel**'s default DB otherwise
  */
-export function Mock<T extends Model>(
+export function Mock<T extends IModel>(
   modelConstructor: new () => T,
   db?: IAbstractedDatabase
 ) {

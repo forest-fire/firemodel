@@ -6,16 +6,15 @@ import {
   SerializedQuery,
 } from "universal-fire";
 import { IDictionary, epochWithMilliseconds } from "common-types";
-import { IListOptions, IPrimaryKey, IReduxDispatch } from "@types";
+import { IListOptions, IModel, IPrimaryKey, IReduxDispatch } from "@types";
 import { capitalize, getModelMeta, pathJoin } from "@/util";
 
-import { FireModelError } from "@errors";
-import { Model } from "@/models";
+import { FireModelError } from "@/errors";
 import { arrayToHash } from "typed-conversions";
 
 const DEFAULT_IF_NOT_FOUND = "__DO_NOT_USE__";
 
-function addTimestamps<T extends Model>(obj: IDictionary) {
+function addTimestamps<T extends IModel>(obj: IDictionary) {
   const datetime = new Date().getTime();
   const output: IDictionary = {};
   Object.keys(obj).forEach((i) => {
@@ -28,7 +27,7 @@ function addTimestamps<T extends Model>(obj: IDictionary) {
 
   return output as T;
 }
-export class List<T extends Model> extends FireModel<T> {
+export class List<T extends IModel> extends FireModel<T> {
   //#region STATIC Interfaces
 
   /**
@@ -50,7 +49,7 @@ export class List<T extends Model> extends FireModel<T> {
    * a destructive operation ... any other records of the
    * same type that existed beforehand are removed.
    */
-  public static async set<T extends Model>(
+  public static async set<T extends IModel>(
     model: new () => T,
     payload: IDictionary<T>,
     options: IListOptions<T> = {}
@@ -90,7 +89,7 @@ export class List<T extends Model> extends FireModel<T> {
     FireModel.dispatch = fn;
   }
 
-  public static create<T extends Model>(
+  public static create<T extends IModel>(
     model: new () => T,
     options?: IListOptions<T>
   ) {
@@ -104,7 +103,7 @@ export class List<T extends Model> extends FireModel<T> {
    * @param query the serialized query; note that this LIST will override the path of the query
    * @param options model options
    */
-  public static async fromQuery<T extends Model>(
+  public static async fromQuery<T extends IModel>(
     model: new () => T,
     query: ISerializedQuery<T>,
     options: IListOptions<T> = {}
@@ -129,7 +128,7 @@ export class List<T extends Model> extends FireModel<T> {
    * @param schema the schema type
    * @param options model options
    */
-  public static async all<T extends Model>(
+  public static async all<T extends IModel>(
     model: new () => T,
     options: IListOptions<T> = {}
   ): Promise<List<T>> {
@@ -149,7 +148,7 @@ export class List<T extends Model> extends FireModel<T> {
    * @param howMany the number of records to bring back
    * @param options model options
    */
-  public static async first<T extends Model>(
+  public static async first<T extends IModel>(
     model: new () => T,
     howMany: number,
     options: IListOptions<T> = {}
@@ -172,7 +171,7 @@ export class List<T extends Model> extends FireModel<T> {
    * @param offset start at an offset position (useful for paging)
    * @param options
    */
-  public static async recent<T extends Model>(
+  public static async recent<T extends IModel>(
     model: new () => T,
     howMany: number,
     offset: number = 0,
@@ -191,7 +190,7 @@ export class List<T extends Model> extends FireModel<T> {
    *
    * Brings back all records that have changed since a given date (using `lastUpdated` field)
    */
-  public static async since<T extends Model>(
+  public static async since<T extends IModel>(
     model: new () => T,
     since: epochWithMilliseconds,
     options: IListOptions<T> = {}
@@ -220,7 +219,7 @@ export class List<T extends Model> extends FireModel<T> {
    * "least active" means that their `lastUpdated` property has gone
    * without any update for the longest.
    */
-  public static async inactive<T extends Model>(
+  public static async inactive<T extends IModel>(
     model: new () => T,
     howMany: number,
     options: IListOptions<T> = {}
@@ -239,7 +238,7 @@ export class List<T extends Model> extends FireModel<T> {
    * Lists the _last "x"_ items of a given model where "last" refers to the datetime
    * that the record was **created**.
    */
-  public static async last<T extends Model>(
+  public static async last<T extends IModel>(
     model: new () => T,
     howMany: number,
     options: IListOptions<T> = {}
@@ -258,7 +257,7 @@ export class List<T extends Model> extends FireModel<T> {
    * Runs a `List.where()` search and returns the first result as a _model_
    * of type `T`. If no results were found it returns `undefined`.
    */
-  public static async find<T extends Model, K extends keyof T>(
+  public static async find<T extends IModel, K extends keyof T>(
     model: new () => T,
     property: K & string,
     value: T[K] | [IComparisonOperator, T[K]],
@@ -272,7 +271,7 @@ export class List<T extends Model> extends FireModel<T> {
    * Puts an array of records into Firemodel as one operation; this operation
    * is only available to those who are using the Admin SDK/API.
    */
-  public static async bulkPut<T extends Model>(
+  public static async bulkPut<T extends IModel>(
     model: new () => T,
     records: T[] | IDictionary<T>,
     options: IListOptions<T> = {}
@@ -303,7 +302,7 @@ export class List<T extends Model> extends FireModel<T> {
    * override this default by adding a _tuple_ to the `value` where the first
    * array item is the operator, the second the value you are comparing against.
    */
-  public static async where<T extends Model, K extends keyof T>(
+  public static async where<T extends IModel, K extends keyof T>(
     model: new () => T,
     property: K & string,
     value: T[K] | [IComparisonOperator, T[K]],
@@ -336,7 +335,7 @@ export class List<T extends Model> extends FireModel<T> {
    * because the "id" can be any form of `ICompositeKey` as well just a plain `id`. The naming
    * here is just to retain consistency with the **Watch** api.
    */
-  public static async ids<T extends Model>(
+  public static async ids<T extends IModel>(
     model: new () => T,
     ...fks: IPrimaryKey<T>[]
   ) {
@@ -359,7 +358,7 @@ export class List<T extends Model> extends FireModel<T> {
    * **Note:** the optional second parameter lets you pass in any
    * dynamic path segments if that is needed for the given model.
    */
-  public static dbPath<T extends Model, K extends keyof T>(
+  public static dbPath<T extends IModel, K extends keyof T>(
     model: new () => T,
     offsets?: Partial<T>
   ) {

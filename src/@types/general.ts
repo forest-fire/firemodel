@@ -2,9 +2,9 @@ import { IDictionary, datetime } from "common-types";
 
 // import { IAbstractedDatabase } from "universal-fire";
 import { IAbstractedDatabase } from "universal-fire";
-import { Model } from "@/models";
+import { IModel } from "@types";
 
-export type FmModelConstructor<T extends Model> = new () => T;
+export type FmModelConstructor<T extends IModel> = new () => T;
 
 /** _options_ allowed to modify the behavior/configuration of a `Model` */
 export interface IModelOptions {

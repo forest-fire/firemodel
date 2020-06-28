@@ -1,16 +1,16 @@
 import Dexie, { TableSchema } from "dexie";
-import { DexieError, FireModelError } from "@errors";
+import { DexieError, FireModelError } from "@/errors";
 import { DexieList, DexieRecord } from "@/firemodel-dexie/index";
 import {
   ICompositeKey,
   IDexieModelMeta,
   IDexiePriorVersion,
+  IModel,
   IModelConstructor,
   IPrimaryKey,
 } from "@types";
 import { IDictionary, pk } from "common-types";
 
-import { Model } from "@/models";
 import { Record } from "@/core";
 import { capitalize } from "@/util";
 
@@ -25,7 +25,7 @@ export class DexieDb {
    * them into a dictionary of Dexie-compatible model definitions where the _key_ to
    * the dictionary is the plural name of the model
    */
-  public static modelConversion<T extends Model>(
+  public static modelConversion<T extends IModel>(
     ...modelConstructors: Array<IModelConstructor<T>>
   ) {
     if (modelConstructors.length === 0) {
@@ -244,7 +244,7 @@ export class DexieDb {
    *
    * @param model the `Model` in question
    */
-  public modelIsManagedByDexie<T extends Model>(model: IModelConstructor<T>) {
+  public modelIsManagedByDexie<T extends IModel>(model: IModelConstructor<T>) {
     const r = Record.create(model);
     return this.modelNames.includes(r.modelName);
   }
@@ -252,7 +252,7 @@ export class DexieDb {
   /**
    * Returns a typed **Dexie** `Table` object for a given model class
    */
-  public table<T extends Model>(
+  public table<T extends IModel>(
     model: IModelConstructor<T>
   ): Dexie.Table<T, IPrimaryKey<T>> {
     const r = Record.create(model);
@@ -287,7 +287,7 @@ export class DexieDb {
    *
    * @param model the **Firemodel** model (aka, the constructor)
    */
-  public record<T extends Model>(model: IModelConstructor<T>) {
+  public record<T extends IModel>(model: IModelConstructor<T>) {
     const r = Record.create(model);
     if (!this.modelNames.includes(r.modelName)) {
       const isPlural = this.pluralNames.includes(r.modelName);
@@ -317,7 +317,7 @@ export class DexieDb {
    *
    * @param model the **Firemodel** `Model` name
    */
-  public list<T extends Model>(model: IModelConstructor<T>) {
+  public list<T extends IModel>(model: IModelConstructor<T>) {
     const r = Record.create(model);
     if (!this.isOpen()) {
       this.open();

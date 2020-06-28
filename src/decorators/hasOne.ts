@@ -4,11 +4,15 @@ import {
   IFnToModelConstructor,
   IModelConstructor,
 } from "@types";
-import { modelConstructorLookup, modelNameLookup } from "@/util";
-import { propertyReflector, relationshipsByModel } from "@/decorators/shared";
+import {
+  modelConstructorLookup,
+  modelNameLookup,
+  relationshipsByModel,
+} from "@/util";
 
-import { DecoratorProblem } from "@errors";
+import { DecoratorProblem } from "@/errors";
 import { Omit } from "common-types";
+import { propertyReflector } from "@/decorators";
 
 export function belongsTo(
   /**
@@ -42,6 +46,8 @@ export function belongsTo(
       relType: "hasOne",
       directionality,
       fkConstructor,
+      inverseProperty,
+      hasInverse: inverseProperty !== undefined ? true : false,
     };
     if (inverseProperty) {
       payload.inverseProperty = inverseProperty;

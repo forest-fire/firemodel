@@ -1,6 +1,6 @@
 import { IDictionary } from "common-types";
 import { MockHelper } from "firemock";
-import { NamedFakes } from "@/core";
+import { NamedFakes } from "@types";
 import { format } from "date-fns";
 
 // TODO: bring in this functionality again

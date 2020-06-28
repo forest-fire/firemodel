@@ -1,23 +1,22 @@
 import "reflect-metadata";
 
-import { IFmModelPropertyMeta, IFmModelRelationshipMeta } from "@types";
+import { IFmModelPropertyMeta, IFmModelRelationshipMeta, IModel } from "@types";
 import {
   addPropertyToModelMeta,
   addRelationshipToModelMeta,
   getProperties,
-} from "@/decorators/shared";
+} from "@/util";
 
 import { IDictionary } from "common-types";
-import { Model } from "@/models";
 
-export const propertyDecorator = <T extends Model>(
+export const propertyDecorator = <T extends IModel>(
   nameValuePairs: IDictionary = {},
   /**
    * if you want to set the property being decorated's name
    * as property on meta specify the meta properties name here
    */
   property?: string
-) => (target: Model, key: string): void => {
+) => (target: IModel, key: string): void => {
   const reflect: IDictionary =
     Reflect.getMetadata("design:type", target, key) || {};
 
@@ -41,8 +40,3 @@ export const propertyDecorator = <T extends Model>(
     addRelationshipToModelMeta(target.constructor.name, property, meta);
   }
 };
-
-export function getPushKeys(target: object) {
-  const props = getProperties(target);
-  return props.filter((p) => p.pushKey).map((p) => p.property);
-}

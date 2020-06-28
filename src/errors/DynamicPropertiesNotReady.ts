@@ -1,9 +1,11 @@
-import { FireModelError } from "@errors";
-import { Model } from "@/models";
-import { Record } from "@/core";
+import { IModel, IRecord } from "@types";
 
-export class DynamicPropertiesNotReady<T extends Model> extends FireModelError {
-  constructor(rec: Record<T>, message?: string) {
+import { FireModelError } from "@/errors";
+
+export class DynamicPropertiesNotReady<
+  T extends IModel
+> extends FireModelError {
+  constructor(rec: IRecord<T>, message?: string) {
     message = message
       ? message
       : `An attempt to interact with the record ${

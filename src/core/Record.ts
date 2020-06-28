@@ -1,22 +1,12 @@
-import {
-  FireModel,
-  List,
-  WatchDispatcher,
-  buildDeepRelationshipLinks,
-  buildRelationshipPaths,
-  createCompositeKey,
-  createCompositeKeyFromFkString,
-  createCompositeKeyRefFromRecord,
-  findWatchers,
-  relationshipOperation,
-} from "@/core";
+//#region imports
+import { FireModel, List } from "@/core";
 import {
   FireModelError,
   FireModelProxyError,
   NotHasManyRelationship,
   NotHasOneRelationship,
   RecordCrudFailure,
-} from "@errors";
+} from "@/errors";
 import {
   FmEvents,
   IAuditChange,
@@ -31,11 +21,24 @@ import {
   IFmPathValuePair,
   IFmRelationshipOptions,
   IFmRelationshipOptionsForHasMany,
+  IModel,
+  IRecord,
   IRecordOptions,
+  IRecordRelationshipMeta,
   IReduxDispatch,
   IWatcherEventContext,
+  IWriteOperation,
 } from "@types";
 import { IDictionary, Nullable, Omit, dotNotation, fk, pk } from "common-types";
+import { WatchDispatcher, findWatchers } from "./watchers";
+import {
+  buildDeepRelationshipLinks,
+  buildRelationshipPaths,
+  createCompositeKey,
+  createCompositeKeyFromFkString,
+  createCompositeKeyRefFromRecord,
+  relationshipOperation,
+} from "./records";
 import {
   capitalize,
   compareHashes,
@@ -46,24 +49,14 @@ import {
 } from "@/util";
 
 import { IAbstractedDatabase } from "universal-fire";
-import { Model } from "@/models";
 import { UnwatchedLocalEvent } from "@/state-mgmt";
 import { default as copy } from "fast-copy";
 import { key as fbKey } from "firebase-key";
 import { writeAudit } from "@/audit";
 
-export interface IWriteOperation {
-  id: string;
-  type: "set" | "pushKey" | "update";
-  /** The database path being written to */
-  path: string;
-  /** The new value being written to database */
-  value: any;
-  /** called on positive confirmation received from server */
-  callback: (type: string, value: any) => void;
-}
+//#endregion
 
-export class Record<T extends Model> extends FireModel<T> {
+export class Record<T extends IModel> extends FireModel<T> implements IRecord {
   //#region STATIC INTERFACE
   public static set defaultDb(db: IAbstractedDatabase) {
     FireModel.defaultDb = db;
@@ -82,7 +75,7 @@ export class Record<T extends Model> extends FireModel<T> {
    * An array of "dynamic properties" that are derived fom the "dbOffset" to
    * produce the "dbPath". Note: this does NOT include the `id` property.
    */
-  public static dynamicPathProperties<T extends Model = Model>(
+  public static dynamicPathProperties<T extends IModel = IModel>(
     /**
      * the **Model** who's properties are being interogated
      */
@@ -97,7 +90,7 @@ export class Record<T extends Model> extends FireModel<T> {
    * creates a new -- and empty -- Record object; often used in
    * conjunction with the Record's initialize() method
    */
-  public static create<T extends Model>(
+  public static create<T extends IModel>(
     model: new () => T,
     options: IRecordOptions = {}
   ) {
@@ -116,7 +109,7 @@ export class Record<T extends Model> extends FireModel<T> {
    * Creates an empty record and then inserts all values
    * provided along with default values provided in META.
    */
-  public static local<T extends Model>(
+  public static local<T extends IModel>(
     model: new () => T,
     values: Partial<T>,
     options: IRecordOptions & { ignoreEmptyValues?: boolean } = {}
@@ -157,7 +150,7 @@ export class Record<T extends Model> extends FireModel<T> {
    * @param payload the data for the new record; this optionally can include the "id" but if left off the new record will use a firebase pushkey
    * @param options
    */
-  public static async add<T extends Model>(
+  public static async add<T extends IModel>(
     model: (new () => T) | string,
     payload: T,
     options: IRecordOptions = {}
@@ -225,7 +218,7 @@ export class Record<T extends Model> extends FireModel<T> {
    * @param updates properties to update; this is a non-destructive operation so properties not expressed will remain unchanged. Also, because values are _nullable_ you can set a property to `null` to REMOVE it from the database.
    * @param options
    */
-  public static async update<T extends Model>(
+  public static async update<T extends IModel>(
     model: new () => T,
     id: string | ICompositeKey<T>,
     updates: Nullable<Partial<T>>,
@@ -252,7 +245,7 @@ export class Record<T extends Model> extends FireModel<T> {
    * @param property the property on the record
    * @param payload the new payload you want to push into the array
    */
-  public static async pushKey<T extends Model>(
+  public static async pushKey<T extends IModel>(
     model: new () => T,
     id: string | ICompositeKey<T>,
     property: keyof T & string,
@@ -285,7 +278,7 @@ export class Record<T extends Model> extends FireModel<T> {
    * @payload either a string representing an `id` or Composite Key or alternatively
    * a hash/dictionary of attributes that are to be set as a starting point
    */
-  public static createWith<T extends Model>(
+  public static createWith<T extends IModel>(
     model: new () => T,
     payload: Partial<T> | string,
     options: IRecordOptions = {}
@@ -322,7 +315,7 @@ export class Record<T extends Model> extends FireModel<T> {
    * @param id either just an "id" string or in the case of models with dynamic path prefixes you can pass in an object with the id and all dynamic prefixes
    * @param options
    */
-  public static async get<T extends Model>(
+  public static async get<T extends IModel>(
     model: new () => T,
     id: string | ICompositeKey<T>,
     options: IRecordOptions = {}
@@ -332,7 +325,7 @@ export class Record<T extends Model> extends FireModel<T> {
     return record;
   }
 
-  public static async remove<T extends Model>(
+  public static async remove<T extends IModel>(
     model: new () => T,
     id: IFkReference<T>,
     /** if there is a known current state of this model you can avoid a DB call to get it */
@@ -349,7 +342,7 @@ export class Record<T extends Model> extends FireModel<T> {
    * Associates a new FK to a relationship on the given `Model`; returning
    * the primary model as a return value
    */
-  public static async associate<T extends Model>(
+  public static async associate<T extends IModel>(
     model: new () => T,
     id: pk,
     property: keyof T & string,
@@ -366,7 +359,7 @@ export class Record<T extends Model> extends FireModel<T> {
    * and in both cases the `id` property will be returned as part of the composite
    * so long as the path does indeed have the `id` at the end of the path.
    */
-  public static getCompositeKeyFromPath<T extends Model>(
+  public static getCompositeKeyFromPath<T extends IModel>(
     model: new () => T,
     path: string
   ) {
@@ -420,7 +413,7 @@ export class Record<T extends Model> extends FireModel<T> {
    * @param model the class definition of the model you want the CompositeKey for
    * @param object the data which will be used to generate the Composite key from
    */
-  public static compositeKey<T extends Model>(
+  public static compositeKey<T extends IModel>(
     model: new () => T,
     obj: Partial<T>
   ): ICompositeKey<T> {
@@ -447,7 +440,7 @@ export class Record<T extends Model> extends FireModel<T> {
    * @param model the class definition of the model you want the CompositeKey for
    * @param object the data which will be used to generate the Composite key from
    */
-  public static compositeKeyRef<T extends Model>(
+  public static compositeKeyRef<T extends IModel>(
     model: new () => T,
     /** either a partial model or just the `id` of the model if model is not a dynamic path */
     object: Partial<T> | string
@@ -491,7 +484,7 @@ export class Record<T extends Model> extends FireModel<T> {
    * Note: it returns the name in PascalCase _not_
    * camelCase.
    */
-  public static modelName<T extends Model>(model: new () => T) {
+  public static modelName<T extends IModel>(model: new () => T) {
     const r = Record.create(model);
     return capitalize(r.modelName);
   }
@@ -590,7 +583,7 @@ export class Record<T extends Model> extends FireModel<T> {
    * An array of "dynamic properties" that are derived fom the "dbOffset" to
    * produce the "dbPath"
    */
-  public get dynamicPathComponents() {
+  public get dynamicPathComponents(): Array<string & keyof T> {
     return this._findDynamicComponents(this.META.dbOffset);
   }
 
@@ -691,6 +684,78 @@ export class Record<T extends Model> extends FireModel<T> {
 
   public get modelConstructor() {
     return this._modelConstructor;
+  }
+
+  /**
+   * Returns a `Record` for the FK of the given model, assuming that the
+   * relationship has a cardinality of 1 (aka, hasOne/ownedBy).
+   *
+   * If instead, you want to get ALL the `Record`'s relationing to a relationship
+   * of a cardinality greater than 1 than you should use `getRecordsForRelationship`
+   * instead.
+   *
+   * @param property the relationship _property name_ which has has a
+   * FK relationship to another model
+   */
+  public getMetaForRelationship(
+    property: string & keyof T
+  ): IRecordRelationshipMeta {
+    if (!this.META.property(property)?.isRelationship) {
+      throw new FireModelError(
+        `Attempt to get a Record instance for a relationship contained on the "${capitalize(
+          this.modelName
+        )}" model failed. The property "${property}" is either not a property or is not a relationship property on this model!`,
+        "invalid-relationship-lookup"
+      );
+    }
+    if (this.META.property(property).relType === "hasMany") {
+      throw new FireModelError(
+        `Attempt to get a Record instance for a a relationship contained on the "${capitalize(
+          this.modelName
+        )}" model failed because the relationship property ["${property}"] has a cardinality greater than 1. Use "getRecordsForRelationships" instead.`
+      );
+    }
+    const pkHasInverse = this.META.relationship(property).inverseProperty;
+    const fkInverseProperty = this.META.relationship(property).inverseProperty;
+    const fkRec = Record.create(this.META.property(property).fkConstructor());
+    const inverseIsMissing = pkHasInverse
+      ? fkRec.META.relationship(fkInverseProperty).inverseProperty === property
+      : false;
+
+    const pkCardinality =
+      this.META.relationship(property).relType === `hasMany` ? "M" : "1";
+    const fkCardinality =
+      pkHasInverse &&
+      fkRec.META.relationship(fkInverseProperty).relType === `hasMany`
+        ? "M"
+        : "1";
+    const cardinality = `${pkCardinality}:${fkCardinality}`;
+    const inversePointsToWrongModel = pkHasInverse
+      ? fkRec.META.relationship(fkInverseProperty).fkModelName !==
+        this.modelName
+      : false;
+    const fkReciprocalInverseProperty =
+      pkHasInverse && fkRec.META.relationship(property).hasInverse
+        ? fkRec.META.relationship(property).inverseProperty
+        : undefined;
+    const fkHasInvalidInverse =
+      pkHasInverse &&
+      fkRec.META.relationship(property).hasInverse &&
+      fkRec.META.relationship(property).inverseProperty !== property
+        ? true
+        : false;
+
+    return {
+      fkConstructor: this.META.property(property).fkConstructor,
+      modelName: fkRec.modelName,
+      pluralName: fkRec.pluralName,
+      inverseIsMissing,
+      inversePointsToWrongModel,
+      fkHasInvalidInverse,
+      fkInverseProperty,
+      fkReciprocalInverseProperty,
+      cardinality,
+    };
   }
 
   /**

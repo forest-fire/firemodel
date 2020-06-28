@@ -1,14 +1,14 @@
-import { Record, mockValue } from "@/core";
+import { IMockRelationshipConfig, IModel } from "@types";
 
 import { IAbstractedDatabase } from "universal-fire";
 import { IDictionary } from "common-types";
-import { IMockRelationshipConfig } from "@types";
-import { Model } from "@/models";
+import { Record } from "@/core";
 import { getMockHelper } from "firemock";
 import { getModelMeta } from "@/util";
+import { mockValue } from "./index";
 
 /** adds mock values for all the properties on a given model */
-export function mockProperties<T extends Model>(
+export function mockProperties<T extends IModel>(
   db: IAbstractedDatabase,
   config: IMockRelationshipConfig = { relationshipBehavior: "ignore" },
   exceptions: IDictionary

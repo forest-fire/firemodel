@@ -10,6 +10,7 @@ import {
   IFmModelPropertyMeta,
   IFmModelRelationshipMeta,
   IReduxDispatch,
+  IModel,
 } from "@types";
 import {} from "@/core";
 
@@ -21,7 +22,6 @@ import {
 } from "@/util";
 
 import type { Record } from "@/core";
-import { Model } from "@/models";
 
 // tslint:disable-next-line:no-var-requires
 const pluralize = require("pluralize");
@@ -29,7 +29,7 @@ const defaultDispatch: IReduxDispatch<any, any> = async (context) => "";
 
 const registeredModules: IDictionary<new () => any> = {};
 
-export class FireModel<T extends Model> {
+export class FireModel<T extends IModel> {
   public static get defaultDb() {
     return FireModel._defaultDb;
   }
@@ -153,7 +153,7 @@ export class FireModel<T extends Model> {
   }
 
   public get pushKeys() {
-    return (this._model as Model).META.pushKeys;
+    return (this._model as IModel).META.pushKeys;
   }
 
   public static auditLogs: string = "/auditing";
@@ -187,7 +187,7 @@ const db = await FireModel.connect(DB, options);
     return db;
   }
 
-  public static register<T extends Model = Model>(model: new () => T) {
+  public static register<T extends IModel = IModel>(model: new () => T) {
     modelRegister(model);
   }
 
@@ -244,9 +244,4 @@ const db = await FireModel.connect(DB, options);
   }
 
   //#endregion
-}
-
-export interface IMultiPathUpdates {
-  path: string;
-  value: any;
 }

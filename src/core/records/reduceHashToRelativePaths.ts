@@ -1,6 +1,6 @@
 import { IFmDatabasePaths, IFmPathValuePair } from "@types";
 
-import { FireModelProxyError } from "@errors";
+import { FireModelProxyError } from "@/errors";
 
 export function discoverRootPath(
   results: IFmPathValuePair[]

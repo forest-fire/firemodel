@@ -1,6 +1,6 @@
+import { IFkReference, IModel } from "@types";
+
 import { IDictionary } from "common-types";
-import { IFkReference } from "@types";
-import { Model } from "@/models";
 import { Record } from "@/core";
 import { getModelMeta } from "@/util";
 
@@ -9,7 +9,7 @@ import { getModelMeta } from "@/util";
  * the "payload" of FK's instead of just the FK. This function facilitates
  * that.
  */
-export async function buildDeepRelationshipLinks<T extends Model>(
+export async function buildDeepRelationshipLinks<T extends IModel>(
   rec: Record<T>,
   property: keyof T & string
 ) {
@@ -19,7 +19,7 @@ export async function buildDeepRelationshipLinks<T extends Model>(
     : processBelongsTo(rec, property);
 }
 
-async function processHasMany<T extends Model>(
+async function processHasMany<T extends IModel>(
   rec: Record<T>,
   property: keyof T & string
 ) {
@@ -55,7 +55,7 @@ async function processHasMany<T extends Model>(
   return;
 }
 
-async function processBelongsTo<T extends Model>(
+async function processBelongsTo<T extends IModel>(
   rec: Record<T>,
   property: keyof T & string
 ) {

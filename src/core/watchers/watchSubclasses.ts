@@ -1,4 +1,4 @@
-import { WatchList, WatchRecord } from "@/core";
+import { WatchList, WatchRecord } from "./index";
 
 /**
  * allows the parent `Watch` class to instantiate

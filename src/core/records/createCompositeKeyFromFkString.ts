@@ -1,6 +1,6 @@
-import { FireModelError } from "@errors";
-import { ICompositeKey } from "@types";
-import { Model } from "@/models";
+import { ICompositeKey, IModel } from "@types";
+
+import { FireModelError } from "@/errors";
 import { capitalize } from "@/util";
 
 export function createCompositeKeyFromFkString<T = ICompositeKey>(
@@ -24,7 +24,7 @@ export function createCompositeKeyFromFkString<T = ICompositeKey>(
     );
 }
 
-function setWithType<T extends Model>(prop: string, value: string, model: T) {
+function setWithType<T extends IModel>(prop: string, value: string, model: T) {
   if (!model.META.property(prop)) {
     throw new FireModelError(
       `When building a "typed" composite key based on the model ${capitalize(

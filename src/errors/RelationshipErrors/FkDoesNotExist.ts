@@ -1,9 +1,9 @@
-import { FireModelError } from "@errors";
-import { Model } from "@/models";
+import { FireModelError } from "@/errors";
+import { IModel } from "@types";
 
 export class FkDoesNotExist<
-  P extends Model,
-  F extends Model
+  P extends IModel,
+  F extends IModel
 > extends FireModelError {
   constructor(pk: P, property: string, fkId: string) {
     // TODO: is this typing right for constructor?

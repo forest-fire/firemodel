@@ -1,4 +1,4 @@
-import { FireModelError } from "@errors";
+import { FireModelError } from "@/errors";
 import { IDictionary } from "common-types";
 
 export class DecoratorProblem extends FireModelError {

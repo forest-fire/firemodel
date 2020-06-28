@@ -1,24 +1,24 @@
 import "reflect-metadata";
 
-import { FmModelConstructor, IFmModelMeta } from "@types";
-import { addModelMeta, modelRegister } from "@/util";
-import { getDbIndexes, getPushKeys } from "@decorators";
+import { FmModelConstructor, IFmModelMeta, IModel } from "@types";
 import {
+  addModelMeta,
   getModelProperty,
   getModelRelationship,
   getProperties,
   getRelationships,
   isProperty,
   isRelationship,
-} from "./shared";
+} from "@/util";
+import { getPushKeys, modelRegister } from "@/util";
 
 import { IDictionary } from "common-types";
-import { Model } from "@/models";
+import { getDbIndexes } from "@decorators";
 
 export function model(options: Partial<IFmModelMeta> = {}) {
   let isDirty: boolean = false;
 
-  return function decorateModel<T extends Model>(
+  return function decorateModel<T extends IModel>(
     target: FmModelConstructor<T>
   ) {
     // Function to add META to the model

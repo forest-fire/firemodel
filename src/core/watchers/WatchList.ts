@@ -3,17 +3,16 @@ import {
   ISerializedQuery,
   SerializedQuery,
 } from "universal-fire";
-import { IListOptions, IPrimaryKey } from "@types";
+import { IListOptions, IModel, IPrimaryKey } from "@types";
 import { List, Record, Watch } from "@/core";
 
-import { FireModelError } from "@errors";
-import { Model } from "@/models";
-import { WatchBase } from "./shared/WatchBase";
+import { FireModelError } from "@/errors";
+import { WatchBase } from "./WatchBase";
 import { epochWithMilliseconds } from "common-types";
 import { getAllPropertiesFromClassStructure } from "@/util";
 
-export class WatchList<T extends Model> extends WatchBase<T> {
-  public static list<T extends Model>(
+export class WatchList<T extends IModel> extends WatchBase<T> {
+  public static list<T extends IModel>(
     /**
      * The `Model` underlying the **List**
      */

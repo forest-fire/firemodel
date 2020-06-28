@@ -1,8 +1,12 @@
-import { IDexieModelMeta, IModelConstructor, IPrimaryKey } from "@types";
+import {
+  IDexieModelMeta,
+  IModel,
+  IModelConstructor,
+  IPrimaryKey,
+} from "@types";
 
 import { DexieError } from "@/errors";
 import { IDictionary } from "common-types";
-import { Model } from "@/models";
 import { Table } from "dexie";
 import { capitalize } from "@/util";
 import { key as fbKey } from "firebase-key";
@@ -12,7 +16,7 @@ import { key as fbKey } from "firebase-key";
  * on Dexie/IndexDB which resembles the Firemodel
  * API.
  */
-export class DexieRecord<T extends Model> {
+export class DexieRecord<T extends IModel> {
   constructor(
     private modelConstructor: IModelConstructor<T>,
     private table: Table<any, any>,

@@ -1,12 +1,11 @@
-import { IAuditLogItem, IModelOptions } from "@types";
+import { IAuditLogItem, IModel, IModelOptions } from "@types";
 
 import { AuditBase } from "@/audit";
-import { Model } from "@/models";
 import { SerializedQuery } from "universal-fire";
 import { epochWithMilliseconds } from "common-types";
 import { pathJoin } from "@/util";
 
-export class AuditList<T extends Model> extends AuditBase<T> {
+export class AuditList<T extends IModel> extends AuditBase<T> {
   constructor(modelKlass: new () => T, options: IModelOptions = {}) {
     super(modelKlass, options);
     this._query = SerializedQuery.create(this.db, pathJoin(this.dbPath, "all"));

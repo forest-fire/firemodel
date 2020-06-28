@@ -2,13 +2,13 @@ import Dexie, { IndexableType } from "dexie";
 import {
   IDexieListOptions,
   IDexieModelMeta,
+  IModel,
   IModelConstructor,
   PropType,
 } from "@types";
 
 import { DexieError } from "@/errors";
 import { IComparisonOperator } from "universal-fire";
-import { Model } from "@/models";
 import { capitalize } from "@/util";
 import { epoch } from "common-types";
 
@@ -16,7 +16,7 @@ import { epoch } from "common-types";
  * Provides a simple API for list based queries that resembles the Firemodel `List` API
  * but which works on the IndexDB using Dexie under the hood.
  */
-export class DexieList<T extends Model> {
+export class DexieList<T extends IModel> {
   constructor(
     private modelConstructor: IModelConstructor<T>,
     private table: Dexie.Table<T, any>,

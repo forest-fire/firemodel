@@ -1,10 +1,10 @@
-import { FireModelError } from "@errors";
-import { IFmCrudOperation } from "@types";
-import { Model } from "@/models";
+import { IFmCrudOperation, IModel } from "@types";
+
+import { FireModelError } from "@/errors";
 import { Record } from "@/core";
 import { capitalize } from "@/util";
 
-export class RecordCrudFailure<T extends Model> extends FireModelError {
+export class RecordCrudFailure<T extends IModel> extends FireModelError {
   constructor(
     rec: Record<T>,
     crudAction: IFmCrudOperation,

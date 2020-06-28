@@ -3,6 +3,7 @@ import {
   IFmPathValuePair,
   IFmRecordMeta,
   IFmRelationshipOperation,
+  IModel,
   IWatchEventClassification,
   IWatcherSource,
 } from "@types";
@@ -17,7 +18,6 @@ import { epoch, fk, pk } from "common-types";
 import { EventType } from "@firebase/database-types";
 import { IDictionary } from "common-types";
 import { IMultiPathUpdates } from "@/core";
-import { Model } from "@/models";
 
 export type Extractable<T, U> = T extends U ? any : never;
 export type NotString<T> = string extends T ? never : any;
@@ -82,7 +82,7 @@ export type IFmServerOrLocalEvent<T> =
   | IFmLocalEvent<T>
   | IFmWatcherEvent<T>;
 
-export interface IFmWatcherEvent<T extends Model = Model> {
+export interface IFmWatcherEvent<T extends IModel = IModel> {
   type: FmEvents;
   kind: "watcher";
   key: string;
@@ -131,8 +131,8 @@ export interface IFmLocalEventBase<T> {
  * on both effected records.
  */
 export interface IFmLocalRelationshipEvent<
-  F extends Model = Model,
-  T extends Model = Model
+  F extends IModel = IModel,
+  T extends IModel = IModel
 > extends IFmLocalEventBase<F> {
   kind: "relationship";
   operation: IFmRelationshipOperation;
@@ -175,7 +175,7 @@ export interface IFmLocalRelationshipEvent<
 /**
  * Core event properties of a `Record` based change in **Firemodel**
  */
-export interface IFmLocalRecordEvent<T extends Model = Model>
+export interface IFmLocalRecordEvent<T extends IModel = IModel>
   extends IFmLocalEventBase<T> {
   kind: "record";
   operation: IFmCrudOperations;
@@ -223,7 +223,7 @@ export type IFmLocalEvent<T> =
   | IFmLocalRecordEvent<T>
   | IFmLocalRelationshipEvent<T>;
 
-export interface IWatcherEventContextBase<T extends Model = Model>
+export interface IWatcherEventContextBase<T extends IModel = IModel>
   extends IFmRecordMeta<T> {
   watcherId: string;
   /** if defined, pass along the string name off the watcher */
@@ -258,7 +258,7 @@ export interface IWatcherEventContextBase<T extends Model = Model>
  * When watching a "list-of-records" you are really watching
  * a basket/array of underlying record watchers.
  */
-export interface IWatcherEventContextListofRecords<T extends Model = Model>
+export interface IWatcherEventContextListofRecords<T extends IModel = IModel>
   extends IWatcherEventContextBase<T> {
   watcherSource: "list-of-records";
   /**
@@ -269,7 +269,7 @@ export interface IWatcherEventContextListofRecords<T extends Model = Model>
   eventFamily: "child";
 }
 
-export interface IWatcherEventContextList<T extends Model = Model>
+export interface IWatcherEventContextList<T extends IModel = IModel>
   extends IWatcherEventContextBase<T> {
   watcherSource: "list";
   /**
@@ -279,7 +279,7 @@ export interface IWatcherEventContextList<T extends Model = Model>
   eventFamily: "child";
 }
 
-export interface IWatcherEventContextRecord<T extends Model = Model>
+export interface IWatcherEventContextRecord<T extends IModel = IModel>
   extends IWatcherEventContextBase<T> {
   watcherSource: "record";
   /**
@@ -293,7 +293,7 @@ export interface IWatcherEventContextRecord<T extends Model = Model>
  * The meta information provided when a watcher is started;
  * it is also added to events when they have watcher context.
  */
-export type IWatcherEventContext<T extends Model = Model> =
+export type IWatcherEventContext<T extends IModel = IModel> =
   | IWatcherEventContextList<T>
   | IWatcherEventContextRecord<T>
   | IWatcherEventContextListofRecords<T>;

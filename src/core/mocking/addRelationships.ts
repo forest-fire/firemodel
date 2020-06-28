@@ -1,14 +1,14 @@
-import { IMockRelationshipConfig, IMockResponse } from "@types";
-import { Record, processHasMany, processHasOne } from "@/core";
+import { IMockRelationshipConfig, IMockResponse, IModel } from "@types";
+import { processHasMany, processHasOne } from "./index";
 
 import { IAbstractedDatabase } from "universal-fire";
 import { IDictionary } from "common-types";
-import { Model } from "@/models";
+import { Record } from "@/core";
 
 /**
  * Adds relationships to mocked records
  */
-export function addRelationships<T extends Model>(
+export function addRelationships<T extends IModel>(
   db: IAbstractedDatabase,
   config: IMockRelationshipConfig,
   exceptions: IDictionary = {}

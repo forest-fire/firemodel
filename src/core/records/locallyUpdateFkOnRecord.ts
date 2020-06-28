@@ -1,5 +1,5 @@
-import { IFmLocalRelationshipEvent } from "@types";
-import { Model } from "@/models";
+import { IFmLocalRelationshipEvent, IModel } from "@types";
+
 import { Record } from "@/core";
 import { fk } from "common-types";
 
@@ -10,7 +10,7 @@ import { fk } from "common-types";
  * This function has no concern with dispatch or the FK model
  * and any updates that may need to take place there.
  */
-export function locallyUpdateFkOnRecord<F extends Model, T extends Model>(
+export function locallyUpdateFkOnRecord<F extends IModel, T extends IModel>(
   rec: Record<F>,
   fkId: fk,
   event: IFmLocalRelationshipEvent<F, T>

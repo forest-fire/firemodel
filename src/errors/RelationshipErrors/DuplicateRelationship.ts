@@ -1,9 +1,9 @@
-import { FireModelError } from "@errors";
-import { Model } from "@/models";
+import { FireModelError } from "@/errors";
+import { IModel } from "@types";
 
 export class DuplicateRelationship<
-  P extends Model,
-  F extends Model
+  P extends IModel,
+  F extends IModel
 > extends FireModelError {
   constructor(pk: P, property: string, fkId: string) {
     const fkConstructor = pk.META.relationship("property").fkConstructor();

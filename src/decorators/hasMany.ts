@@ -6,9 +6,10 @@ import {
   IModelConstructor,
 } from "@types";
 import { modelConstructorLookup, modelNameLookup } from "@/util";
-import { propertyReflector, relationshipsByModel } from "./shared";
 
-import { DecoratorProblem } from "@errors";
+import { DecoratorProblem } from "@/errors";
+import { propertyReflector } from "@/decorators";
+import { relationshipsByModel } from "@/util";
 
 export type IFmHasMany<T = true> = IDictionary<T>;
 
@@ -30,7 +31,7 @@ export function hasMany(
         ? modelNameLookup(fkClass)
         : modelConstructorLookup(fkClass);
 
-    let inverseProperty: string | null;
+    let inverseProperty: string | undefined;
     let directionality: IFmRelationshipDirectionality;
     if (Array.isArray(inverse)) {
       [inverseProperty, directionality] = inverse;
@@ -44,10 +45,9 @@ export function hasMany(
       relType: "hasMany",
       directionality,
       fkConstructor,
+      inverseProperty,
+      hasInverse: inverseProperty !== undefined ? true : false,
     };
-    if (inverseProperty) {
-      payload.inverseProperty = inverseProperty;
-    }
 
     return propertyReflector(
       { ...payload, type: "Object" },

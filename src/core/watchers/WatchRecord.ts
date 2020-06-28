@@ -1,13 +1,12 @@
 import { FireModel, Record } from "@/core";
-import { IModelOptions, IPrimaryKey } from "@types";
+import { IModel, IModelOptions, IPrimaryKey } from "@types";
 
-import { FireModelError } from "@errors";
-import { Model } from "@/models";
+import { FireModelError } from "@/errors";
 import { SerializedQuery } from "universal-fire";
-import { WatchBase } from "./shared/WatchBase";
+import { WatchBase } from "./WatchBase";
 
-export class WatchRecord<T extends Model> extends WatchBase<T> {
-  public static record<T extends Model>(
+export class WatchRecord<T extends IModel> extends WatchBase<T> {
+  public static record<T extends IModel>(
     modelConstructor: new () => T,
     pk: IPrimaryKey<T>,
     options: IModelOptions = {}

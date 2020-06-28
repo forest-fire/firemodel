@@ -1,4 +1,4 @@
-import { AuditLog, FireModel, List, Mock, Record } from "@/private";
+import { AuditLog, FireModel, List, Mock, Record } from "@/index";
 import { IRealTimeAdmin, RealTimeAdmin } from "universal-fire";
 
 import { Person } from "./testing/AuditedPerson";

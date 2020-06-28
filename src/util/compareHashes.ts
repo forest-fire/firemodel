@@ -1,8 +1,7 @@
-import { IFmChangedProperties } from "@types";
-import { Model } from "@/models";
+import { IFmChangedProperties, IModel } from "@types";
 const equal = require("fast-deep-equal/es6");
 
-export function compareHashes<T extends Model>(
+export function compareHashes<T extends IModel>(
   from: Partial<T>,
   to: Partial<T>,
   /**

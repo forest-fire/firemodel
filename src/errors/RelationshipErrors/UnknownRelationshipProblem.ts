@@ -1,10 +1,10 @@
-import { FireModelError } from "@errors";
+import { FireModelError } from "@/errors";
 import { IFmRelationshipOperation } from "@types";
-import { Model } from "@/models";
+import { IModel } from "@types";
 import { Record } from "@/core";
 
 export class UnknownRelationshipProblem<
-  T extends Model
+  T extends IModel
 > extends FireModelError {
   constructor(
     err: Error,

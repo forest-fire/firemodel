@@ -6,10 +6,11 @@ import {
   IReduxDispatch,
   IWatcherEventContext,
 } from "@types";
-import { Record, hasInitialized } from "@/core";
 
-import { FireModelError } from "@errors";
+import { FireModelError } from "@/errors";
 import { IDictionary } from "common-types";
+import { Record } from "@/core";
+import { hasInitialized } from "./index";
 
 /**
  * **watchDispatcher**

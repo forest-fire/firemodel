@@ -1,13 +1,4 @@
 import {
-  FireModel,
-  WatchList,
-  WatchRecord,
-  clearWatcherPool,
-  getWatcherPool,
-  getWatcherPoolList,
-  removeFromWatcherPool,
-} from "@/core";
-import {
   FmEvents,
   IFmWatcherStopped,
   IModelOptions,
@@ -16,9 +7,18 @@ import {
   IWatcherEventContext,
 } from "@types";
 import { IAbstractedDatabase, IRtdbDbEvent } from "universal-fire";
+import {
+  WatchList,
+  WatchRecord,
+  clearWatcherPool,
+  getWatcherPool,
+  getWatcherPoolList,
+  removeFromWatcherPool,
+} from "./watchers";
 
-import { FireModelError } from "@errors";
-import { Model } from "@/models";
+import { FireModel } from "@/core";
+import { FireModelError } from "@/errors";
+import { IModel } from "@types";
 import { firstKey } from "@/util";
 
 /**
@@ -26,7 +26,7 @@ import { firstKey } from "@/util";
  * provides the entry point into the watcher API and then
  * hands off to either `WatchList` or `WatchRecord`.
  */
-export class Watch<T extends Model = Model> {
+export class Watch<T extends IModel = IModel> {
   /**
    * Sets the default database for all Firemodel
    * classes such as `FireModel`, `Record`, and `List`
@@ -155,7 +155,7 @@ export class Watch<T extends Model = Model> {
    * the composite key, or an object representation of the composite
    * key.
    */
-  public static record<T extends Model>(
+  public static record<T extends IModel>(
     modelConstructor: new () => T,
     pk: IPrimaryKey<T>,
     options: IModelOptions = {}
@@ -163,7 +163,7 @@ export class Watch<T extends Model = Model> {
     return WatchRecord.record(modelConstructor, pk, options);
   }
 
-  public static list<T extends Model>(
+  public static list<T extends IModel>(
     /**
      * The **Model** subType which this list watcher will watch
      */

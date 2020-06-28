@@ -1,26 +1,24 @@
-import { FireModelError } from "@errors";
-import { Model } from "@/models";
-import { Record } from "@/core";
+import { IModel, IRecord } from "@types";
+
+import { FireModelError } from "@/errors";
 import { capitalize } from "@/util";
 
 /**
  * When the record's META points to a inverse property on the FK; this error
  * presents when that `FK[inverseProperty]` doesn't exist in the FK's meta.
  */
-export class MissingInverseProperty<T extends Model> extends FireModelError {
+export class MissingInverseProperty<T extends IModel> extends FireModelError {
   public from: string;
   public to: string;
   public inverseProperty: string;
 
-  constructor(rec: Record<T>, property: keyof T & string) {
+  constructor(rec: IRecord<T>, property: keyof T & string) {
     super("", "firemodel/missing-inverse-property");
 
-    const fkRecord = Record.create(
-      rec.META.relationship(property).fkConstructor(),
-      { db: rec.db }
-    );
+    const fkMeta = rec.getMetaForRelationship(property);
+
     this.from = capitalize(rec.modelName);
-    this.to = capitalize(fkRecord.modelName);
+    this.to = capitalize(fkMeta.modelName);
     const pkInverse = rec.META.relationship(property).inverseProperty;
     this.inverseProperty = pkInverse;
 

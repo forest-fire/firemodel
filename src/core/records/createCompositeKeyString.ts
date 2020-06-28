@@ -1,13 +1,13 @@
-import { Record, createCompositeKey } from "@/core";
-
 import { IDictionary } from "common-types";
-import { Model } from "@/models";
+import { IModel } from "@types";
+import { Record } from "@/core";
+import { createCompositeKey } from "./index";
 
 /**
  * Creates a string based composite key if the passed in record
  * has dynamic path segments; if not it will just return the "id"
  */
-export function createCompositeKeyRefFromRecord<T extends Model = Model>(
+export function createCompositeKeyRefFromRecord<T extends IModel = IModel>(
   rec: Record<T>
 ) {
   const cKey: IDictionary & { id: string } = createCompositeKey(rec);

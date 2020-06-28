@@ -1,6 +1,6 @@
-import { FireModelError } from "@errors";
-import { ICompositeKey } from "@types";
-import { Model } from "@/models";
+import { ICompositeKey, IModel } from "@types";
+
+import { FireModelError } from "@/errors";
 import { Record } from "@/core";
 import { capitalize } from "@/util";
 
@@ -9,7 +9,7 @@ import { capitalize } from "@/util";
  * "dynamic segments" as well as an `id`; this function returns
  * an object representation of the composite key.
  */
-export function createCompositeKey<T extends Model = Model>(
+export function createCompositeKey<T extends IModel = IModel>(
   rec: Record<T>
 ): ICompositeKey<T> {
   const model = rec.data;

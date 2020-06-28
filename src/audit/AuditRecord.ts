@@ -1,13 +1,12 @@
-import { IAuditLogItem, IModelOptions } from "@types";
+import { IAuditLogItem, IModel, IModelOptions } from "@types";
 
 import { AuditBase } from "@/audit";
-import { Model } from "@/models";
 import { Parallel } from "wait-in-parallel";
 import { SerializedQuery } from "universal-fire";
 import { epochWithMilliseconds } from "common-types";
 import { pathJoin } from "@/util";
 
-export class AuditRecord<T extends Model> extends AuditBase {
+export class AuditRecord<T extends IModel> extends AuditBase {
   constructor(
     modelKlass: new () => T,
     id: string,

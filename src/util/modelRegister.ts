@@ -1,8 +1,9 @@
-import { IFnToModelConstructor, IModelConstructor } from "@types";
+import { IFnToModelConstructor, IModel, IModelConstructor } from "@types";
 
-import { FireModelError } from "@/errors";
+// TODO: this is necessitated by the use of `Record` in some error classes
+// which sets up a whole dependency chain
+import { FireModelError } from "@/errors/FireModelError";
 import { IDictionary } from "common-types";
-import { Model } from "@/models";
 
 const registeredModels: IDictionary<new () => any> = {};
 
@@ -71,7 +72,7 @@ export const modelNameLookup = (name: string) => (): IModelConstructor => {
  * The advantage here is that the external model does not need to be
  * "registered" separately whereas with a string name it would have to be.
  */
-export const modelConstructorLookup = <T extends Model>(
+export const modelConstructorLookup = <T extends IModel>(
   constructor: IModelConstructor<T> | IFnToModelConstructor<T>
 ) => (): IModelConstructor => {
   // TODO: remove the "any"

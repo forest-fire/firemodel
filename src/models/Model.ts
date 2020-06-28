@@ -4,13 +4,13 @@ export type NonProperties<T> = {
 }[keyof T];
 export type Properties<T> = Pick<T, NonProperties<T>>;
 
+import { IFmModelMeta, IModel } from "@types";
 import { index, mock, model, property } from "@decorators";
 
-import { IFmModelMeta } from "@types";
 import { epochWithMilliseconds } from "common-types";
 
 @model()
-export class Model {
+export class Model implements IModel {
   // prettier-ignore
   // TODO: This should be made required and the API updated to make it optional where appropriate
   /** The primary-key for the record */

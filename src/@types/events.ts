@@ -4,10 +4,9 @@ import {
   IFmLocalRecordEvent,
   IFmLocalRelationshipEvent,
   IFmServerOrLocalEvent,
+  IModel,
   IWatcherEventContext,
 } from "@types";
-
-import { Model } from "@/models";
 
 export interface IFmWatcherStopped {
   type: typeof FmEvents.WATCHER_STOPPED;
@@ -26,7 +25,9 @@ export interface IFmWatcherStopped {
  * This represents the payload which **Firemodel** will dispatch when
  * _watcher context_ is available.
  */
-export type IFmWatchEvent<T extends Model = Model> = IFmServerOrLocalEvent<T> &
+export type IFmWatchEvent<T extends IModel = IModel> = IFmServerOrLocalEvent<
+  T
+> &
   IEventTimeContext<T> &
   IWatcherEventContext<T>;
 
@@ -37,7 +38,7 @@ export type IFmWatchEvent<T extends Model = Model> = IFmServerOrLocalEvent<T> &
  * the payload you will get.
  */
 export type IFmWatchEventLocalRecord<
-  T extends Model = Model
+  T extends IModel = IModel
 > = IFmLocalRecordEvent<T> & IEventTimeContext<T> & IWatcherEventContext<T>;
 
 /**
@@ -53,7 +54,7 @@ export type IFmWatchEventLocalRecord<
  * `IFmLocalRelationshipEvent` and not worry about whether the event was watched or not.
  */
 export type IFmWatchEventLocalRelationship<
-  T extends Model = Model
+  T extends IModel = IModel
 > = IFmLocalRelationshipEvent<T> &
   IEventTimeContext<T> &
   IWatcherEventContext<T>;
@@ -62,7 +63,7 @@ export type IFmWatchEventLocal<T> =
   | IFmWatchEventLocalRecord<T>
   | IFmWatchEventLocalRelationship<T>;
 
-export interface IFmRecordMeta<T extends Model> {
+export interface IFmRecordMeta<T extends IModel> {
   /**
    * The properties on the underlying _model_ which are needed
    * to compose the `CompositeKey` (excluding the `id` property)
