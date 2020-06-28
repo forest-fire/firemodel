@@ -1,24 +1,26 @@
 const { resolve } = require("path");
 module.exports = {
   testMatch: ["**/test/?(*-)+(spec|test).[jt]s?(x)"],
-  // https://jestjs.io/docs/en/configuration#transform-objectstring-pathtotransformer--pathtotransformer-object
+
   // Maps a regular expression for a "path" and maps it to a transformer
+  // https://jestjs.io/docs/en/configuration#transform-objectstring-pathtotransformer--pathtotransformer-object
   transform: {
     "^.+\\.tsx?$": "ts-jest",
   },
+
   // https://jestjs.io/docs/en/configuration#transformignorepatterns-arraystring
   transformIgnorePatterns: [
-    "<rootDir>/node_modules/(?!(universal-fire|@forest-fire|lodash-es)).+\\.js$",
+    // "<rootDir>/node_modules/(?!(universal-fire|@forest-fire)).+\\.js$",
+    resolve(process.cwd(), "node_modules") +
+      `/(?!(universal-fire|@forest-fire)).+\\.js$`,
   ],
-  // https://jestjs.io/docs/en/configuration#modulenamemapper-objectstring-string--arraystring
+
   // modules which do NOT export CJS must have an entry to
+  // https://jestjs.io/docs/en/configuration#modulenamemapper-objectstring-string--arraystring
   moduleNameMapper: {
     "^@/(.*)$": resolve(process.cwd(), "src", "$1"),
-    // "@/types": "<rootDir>/src/types/index",
-    // "@errors": "<rootDir>/errors/index",
-    // "@/decorators": "<rootDir>/decorators/index",
-    // "^@/(.*)$": resolve(__dirname, "./src/$1"),
   },
+
   // adds more assertions to the default library that Jest provides
   setupFilesAfterEnv: ["jest-extended"],
   testEnvironment: "node",

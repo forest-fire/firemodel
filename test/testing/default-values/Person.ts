@@ -1,4 +1,4 @@
-import { Model, defaultValue, mock, model, property } from "@/index";
+import { Model, defaultValue, mock, model, property } from "../../../src";
 
 @model()
 export class Person extends Model {

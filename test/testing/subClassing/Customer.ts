@@ -1,4 +1,4 @@
-import { Model, mock, model, property } from "@/index";
+import { mock, model, property } from "../../../src";
 
 import { UserProfile } from "./UserProfile";
 

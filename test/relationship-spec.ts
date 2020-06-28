@@ -1,6 +1,10 @@
 import { IFmWatchEvent, Record } from "../src";
 import { IRealTimeAdmin, RealTimeAdmin } from "universal-fire";
-import { buildRelationshipPaths, extractFksFromPaths } from "@/core/records";
+import {
+  buildRelationshipPaths,
+  createCompositeKeyFromFkString,
+  extractFksFromPaths,
+} from "@/core/records";
 
 import { Car } from "./testing/Car";
 import { Company } from "./testing/Company";

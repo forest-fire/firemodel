@@ -1,4 +1,4 @@
-import { Model, length, max, min, model, property } from "@/index";
+import { Model, length, max, min, model, property } from "../../../src";
 
 @model({ localPrefix: "foo/bar", localPostfix: "since" })
 export class PostfixPerson extends Model {

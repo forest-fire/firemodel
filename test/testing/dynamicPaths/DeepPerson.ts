@@ -8,7 +8,7 @@ import {
   mock,
   model,
   property,
-} from "@/index";
+} from "../../../src";
 
 import Car from "./Car";
 import Company from "./Company";
