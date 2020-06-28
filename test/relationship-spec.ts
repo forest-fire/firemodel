@@ -5,14 +5,14 @@ import { Car } from "./testing/Car";
 import { Company } from "./testing/Company";
 import DeepPerson from "./testing/dynamicPaths/DeepPerson";
 import { FancyPerson } from "./testing/FancyPerson";
-import { FireModel } from "../src/private";
-import { FmEvents } from "../src/private";
+import { FireModel } from "@/index";
+import { FmEvents } from "@/index";
 import OffsetCar from "./testing/dynamicPaths/Car";
 import { Pay } from "./testing/Pay";
 import { Person } from "./testing/Person";
-import { buildRelationshipPaths } from "../src/private";
-import { createCompositeKeyFromFkString } from "../src/private";
-import { extractFksFromPaths } from "../src/private";
+import { buildRelationshipPaths } from "@/index";
+import { createCompositeKeyFromFkString } from "@/index";
+import { extractFksFromPaths } from "@/index";
 import { pathJoin } from "common-types";
 
 const hasManyPaths = (id: string, now: number) => [

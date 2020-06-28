@@ -1,4 +1,3 @@
-import DeepPerson, { IDeepName } from "./testing/dynamicPaths/DeepPerson";
 import {
   FireModel,
   FmEvents,
@@ -7,11 +6,12 @@ import {
   Mock,
   Record,
   Watch,
-} from "../src";
+} from "@/index";
 import { IRealTimeAdmin, RealTimeAdmin } from "universal-fire";
 import { firstKey, firstRecord, lastRecord } from "./testing/helpers";
 
 import Company from "./testing/dynamicPaths/Company";
+import DeepPerson from "./testing/dynamicPaths/DeepPerson";
 import { DeeperPerson } from "./testing/dynamicPaths/DeeperPerson";
 import Hobby from "./testing/dynamicPaths/Hobby";
 import { HumanAttribute } from "./testing/dynamicPaths/HumanAttribute";

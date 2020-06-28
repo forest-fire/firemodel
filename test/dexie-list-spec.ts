@@ -1,6 +1,6 @@
 import "./testing/fake-indexeddb";
 
-import { DexieDb, DexieList } from "../src/private";
+import { DexieDb, DexieList } from "@/index";
 import { carData, peopleData } from "./dexie-test-data";
 
 import { Car } from "./testing/Car";

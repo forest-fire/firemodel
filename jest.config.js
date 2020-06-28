@@ -13,7 +13,7 @@ module.exports = {
   // https://jestjs.io/docs/en/configuration#modulenamemapper-objectstring-string--arraystring
   // modules which do NOT export CJS must have an entry to
   moduleNameMapper: {
-    "^@/(.*)$": "<rootDir>/src/$1",
+    "^@/(.*)$": resolve(process.cwd(), "src", "$1"),
     // "@/types": "<rootDir>/src/types/index",
     // "@errors": "<rootDir>/errors/index",
     // "@/decorators": "<rootDir>/decorators/index",

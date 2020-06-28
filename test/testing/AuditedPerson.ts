@@ -1,18 +1,8 @@
-import {
-  model,
-  Model,
-  property,
-  hasOne,
-  fk,
-  hasMany,
-  min,
-  pushKey,
-  max,
-  length
-} from "../../src";
+import { Model, fk, hasOne, length, max, min, model, property } from "@/index";
+
 import { Company } from "./Company";
-import { IDictionary } from "common-types";
 import { Concert } from "./Concert";
+import { IDictionary } from "common-types";
 
 function bespokeMock(context: import("firemock").MockHelper) {
   return context.faker.name.firstName() + ", hello to you";

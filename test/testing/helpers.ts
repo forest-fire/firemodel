@@ -41,19 +41,30 @@ export async function timeout(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-let envIsSetup = false;
+export interface IStagedVariables {
+  development: IDictionary;
+  test: IDictionary;
+  staging: IDictionary;
+  production: IDictionary;
+}
 
+let envIsSetup = false;
+const stage = process.env.AWS_STAGE as
+  | (keyof IStagedVariables & string)
+  | undefined;
 export function setupEnv() {
   if (!envIsSetup) {
-    if (!process.env.AWS_STAGE) {
+    if (!stage) {
       process.env.AWS_STAGE = "test";
     }
-    const current = process.env;
-    const yamlConfig: IDictionary = yaml.safeLoad(
+    const yamlConfig = yaml.safeLoad(
       fs.readFileSync("./env.yml", "utf8")
-    );
+    ) as IStagedVariables;
+    if (typeof yamlConfig === "string") {
+      throw new Error(`Attempt to setup the test environment `);
+    }
     const combined = {
-      ...yamlConfig[process.env.AWS_STAGE],
+      ...yamlConfig[stage],
       ...process.env,
     };
 

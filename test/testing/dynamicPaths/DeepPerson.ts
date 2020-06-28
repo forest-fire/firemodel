@@ -8,8 +8,7 @@ import {
   mock,
   model,
   property,
-  uniqueIndex,
-} from "../../../src/private";
+} from "@/index";
 
 import Car from "./Car";
 import Company from "./Company";
@@ -45,7 +44,7 @@ export default class DeepPerson extends Model {
   // prettier-ignore
   @hasMany(() => Hobby, "practitioners") hobbies?: fks;
   // prettier-ignore
-  @hasMany(() => Car, "owners") cars?: fks;
+  @hasMany(Car, "owners") cars?: fks;
   // prettier-ignore
   @hasMany('DeepPerson', "children") parents?: fks;
   // prettier-ignore

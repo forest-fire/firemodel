@@ -1,6 +1,6 @@
 import { IRealTimeAdmin, RealTimeAdmin } from "universal-fire";
 
-import { FireModel } from "../src/private";
+import { FireModel } from "@/index";
 
 describe("Rolling back a record => ", () => {
   let db: IRealTimeAdmin;

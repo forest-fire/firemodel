@@ -6,7 +6,7 @@ import { Car } from "./testing/Car";
 import DeepPerson from "./testing/dynamicPaths/DeepPerson";
 // tslint:disable: no-implicit-dependencies
 // tslint:disable: no-submodule-imports
-import { DexieDb } from "../src/private";
+import { DexieDb } from "@/index";
 import fdbKeyRange from "fake-indexeddb/lib/FDBKeyRange";
 import indexedDB from "fake-indexeddb";
 

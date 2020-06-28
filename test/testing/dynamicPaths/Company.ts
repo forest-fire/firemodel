@@ -1,11 +1,4 @@
-import {
-  Model,
-  fks,
-  hasMany,
-  mock,
-  model,
-  property,
-} from "../../../src/private";
+import { Model, fks, hasMany, mock, model, property } from "@/index";
 
 import DeepPerson from "./DeepPerson";
 

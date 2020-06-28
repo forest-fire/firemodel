@@ -18,7 +18,7 @@ import { Car } from "./testing/Car";
 import { Company } from "./testing/Company";
 import { FancyPerson } from "./testing/FancyPerson";
 import { Mock as FireMock } from "firemock";
-import { Mock } from "../src/private";
+import { Mock } from "@/index";
 
 helpers.setupEnv();
 @model({})

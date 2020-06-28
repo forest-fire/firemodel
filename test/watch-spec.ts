@@ -10,13 +10,13 @@ import { IRealTimeAdmin, RealTimeAdmin } from "universal-fire";
 
 import { BaseSerializer } from "@forest-fire/serialized-query";
 import { DeeperPerson } from "./testing/dynamicPaths/DeeperPerson";
-import { FireModel } from "../src/private";
-import { FmEvents } from "../src/private";
+import { FireModel } from "@/index";
+import { FmEvents } from "@/index";
 import { Person } from "./testing/Person";
 import { PersonWithLocalAndPrefix } from "./testing/PersonWithLocalAndPrefix";
-import { Watch } from "../src/private";
-import { WatchList } from "../src/private";
-import { getWatcherPool } from "../src/private";
+import { Watch } from "@/index";
+import { WatchList } from "@/index";
+import { getWatcherPool } from "@/index";
 import { setupEnv } from "./testing/helpers";
 
 setupEnv();

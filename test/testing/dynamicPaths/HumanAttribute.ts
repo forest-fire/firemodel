@@ -1,4 +1,4 @@
-import { Model, mock, model, property } from "../../../src/private";
+import { Model, mock, model, property } from "@/index";
 
 @model({ dbOffset: "attributes/:category" })
 export class HumanAttribute extends Model {
