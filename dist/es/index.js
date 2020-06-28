@@ -11255,7 +11255,6 @@ class WatchBase {
             // dispatch "starting"; no need to wait for promise
             (this._dispatcher || FireModel.dispatch)(Object.assign({ type: FmEvents.WATCHER_STARTING }, watcherItem));
             await waitForInitialization(watcherItem);
-            // console.log("watcher initialized", watcherItem);
             await (this._dispatcher || FireModel.dispatch)(Object.assign({ type: FmEvents.WATCHER_STARTED }, watcherItem));
             return watcherItem;
         }
@@ -11757,18 +11756,25 @@ const hasInitialized = (watcherId, value = true) => {
  * and Firebase DB are now in sync.
  */
 async function waitForInitialization(watcher, timeout = 750) {
-    setTimeout(() => {
-        if (!ready(watcher)) {
-            console.info(`A watcher [ ${watcher.watcherId} ] has not returned an event in the timeout window  [ ${timeout}ms ]. This might represent an issue but can also happen when a watcher starts listening to a path [ ${watcher.watcherPaths.join(", ")} ] which has no data yet.`);
-        }
-        hasInitialized(watcher.watcherId, "timed-out");
-    }, timeout);
-    while (!ready(watcher)) {
-        await wait(50);
+    const startTime = new Date().getTime();
+    let stopWaiting = false;
+    function possibleProblem() {
+        console.info(`A watcher [ ${watcher.watcherId} ] has not returned an event in the timeout window  [ ${timeout}ms ]. This might represent an issue but can also happen when a watcher starts listening to a path [ ${watcher.watcherPaths.join(", ")} ] which has no data yet.`);
     }
-}
-function ready(watcher) {
-    return hasInitialized()[watcher.watcherId] ? true : false;
+    function ready(watcher) {
+        return hasInitialized()[watcher.watcherId] ? true : false;
+    }
+    // poll for readiness; checking at each checkpoint if we need to
+    // express that the expected timeframe has been exceeded.
+    while (!ready(watcher) && !stopWaiting) {
+        await wait(50);
+        const currentTime = new Date().getTime();
+        console.log(currentTime - startTime);
+        if (currentTime - startTime > timeout) {
+            stopWaiting = true;
+            possibleProblem();
+        }
+    }
 }
 
 /**
