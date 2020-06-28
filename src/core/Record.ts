@@ -856,6 +856,7 @@ export class Record<T extends IModel> extends FireModel<T> implements IRecord {
         "firemodel/meta-missing"
       );
     }
+
     // can not update relationship properties
     if (
       Object.keys(props).some((key: any) => {

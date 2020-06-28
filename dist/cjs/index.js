@@ -2289,7 +2289,8 @@ function getAllPropertiesFromClassStructure(model) {
 }
 
 function isHasManyRelationship(rec, property) {
-    return rec.META.relationship(property).relType === "hasMany" ? true : false;
+    var _a;
+    return ((_a = rec.META.relationship(property)) === null || _a === void 0 ? void 0 : _a.relType) === "hasMany" ? true : false;
 }
 
 /**
@@ -2536,12 +2537,12 @@ class UnknownRelationshipProblem extends FireModelError {
  * @param value The value to set at the _dotPath_
  * @param createIfNonExistant by default, if the path to the object does not exist then an error is thrown but if you want you can state the desire to have the full path created
  */
-function set(obj, dotPath, value, createIfNonExistant = false) {
+function set(obj, dotPath, value, createIfNonExistant = true) {
     if (!dotPath) {
         throw new FmUtilityError(`Attempt to set value into a dotPath but the dotPath was empty!`, "not-allowed");
     }
     const parts = dotPath.split(/\??\./);
-    const allButLast = parts.slice(0, parts.length - 2);
+    const allButLast = parts.slice(0, parts.length - 1);
     const key = parts.pop();
     let ref = obj;
     // iterate the ref to the leaf node
@@ -8345,6 +8346,52 @@ function NumberBetween(startEnd) {
     return (Math.floor(Math.random() * (startEnd[1] - startEnd[0] + 1)) + startEnd[0]);
 }
 
+var alphabet = "-0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz";
+
+function randomString(alphabet, length) {
+    var buffer = [];
+    length = length | 0;
+    while (length) {
+        var r = (Math.random() * alphabet.length) | 0;
+        buffer.push(alphabet.charAt(r));
+        length -= 1;
+    }
+    return buffer.join("");
+}
+
+var lastTimestamp = 0;
+function key(timestamp, as) {
+    if (timestamp === undefined) {
+        timestamp = Date.now();
+        if (timestamp <= lastTimestamp) {
+            timestamp = lastTimestamp + 1;
+        }
+        lastTimestamp = timestamp;
+    }
+    if (timestamp instanceof Date) {
+        timestamp = timestamp.getTime();
+    }
+    var result = new Array(9);
+    for (var i = 7; i >= 0; --i) {
+        result[i] = alphabet.charAt(timestamp % 64);
+        timestamp = Math.floor(timestamp / 64);
+    }
+    if (timestamp !== 0) {
+        throw new Error("Unexpected timestamp.");
+    }
+    switch (as) {
+        case "max":
+            result[8] = "zzzzzzzzzzzz";
+            break;
+        case "min":
+            result[8] = "------------";
+            break;
+        default:
+            result[8] = randomString(alphabet, 12);
+    }
+    return result.join("");
+}
+
 function toInteger(dirtyNumber) {
   if (dirtyNumber === null || dirtyNumber === true || dirtyNumber === false) {
     return NaN;
@@ -10717,7 +10764,6 @@ function cleanEscapedString(input) {
 }
 
 // TODO: bring in this functionality again
-// import { fbKey } from "../index";
 const sequence = {};
 function getDistribution(...distribution) {
     const num = Math.floor(Math.random() * 100) + 1;
@@ -10756,8 +10802,7 @@ function fakeIt(helper, type, ...rest) {
     switch (type) {
         case "id":
         case "fbKey":
-            // return fbKey();
-            return "asdafsfsasdf";
+            return key();
         case "String":
             return helper.faker.lorem.words(5);
         case "number":
@@ -11727,6 +11772,21 @@ function ready(watcher) {
     return hasInitialized()[watcher.watcherId] ? true : false;
 }
 
+/**
+ * allows the parent `Watch` class to instantiate
+ * subclasses without having a circular dependency
+ */
+function getWatchList() {
+    return new WatchList();
+}
+/**
+ * allows the parent `Watch` class to instantiate
+ * subclasses without having a circular dependency
+ */
+function getWatchRecord() {
+    return new WatchRecord();
+}
+
 /** a cache of all the watched  */
 let watcherPool = {};
 function getWatcherPool() {
@@ -11738,8 +11798,20 @@ function getWatcherPoolList() {
 function addToWatcherPool(item) {
     watcherPool[item.watcherId] = item;
 }
+function getFromWatcherPool(code) {
+    return watcherPool[code];
+}
 function clearWatcherPool() {
     watcherPool = {};
+}
+/**
+ * Each watcher must have it's own `dispatch()` function which
+ * is reponsible for capturing the "context". This will be used
+ * both by locally originated events (which have more info) and
+ * server based events.
+ */
+function addDispatchForWatcher(code, dispatch) {
+    //
 }
 function removeFromWatcherPool(code) {
     delete watcherPool[code];
@@ -11956,6 +12028,20 @@ function createCompositeRef(cKey) {
         : cKey.id;
 }
 
+function extractFksFromPaths(rec, prop, paths) {
+    const pathToModel = rec.dbPath;
+    const relnType = rec.META.relationship(prop).relType;
+    return paths.reduce((acc, p) => {
+        const fkProp = pathJoin$1(pathToModel, prop);
+        if (p.path.includes(fkProp)) {
+            const parts = p.path.split("/");
+            const fkId = relnType === "hasOne" ? p.value : parts.pop();
+            acc = acc.concat(fkId);
+        }
+        return acc;
+    }, []);
+}
+
 /**
  * sets the `Record` property to the optimistic values set
  * with the relationship CRUD event.
@@ -11984,6 +12070,57 @@ function locallyUpdateFkOnRecord(rec, fkId, event) {
                 rec._data[event.property] = "";
             }
             return;
+    }
+}
+
+/**
+   * **_reduceCompositeNotationToStringRepresentation**
+   *
+   * Reduces a `ICompositeKey` hash into string representation of the form:
+   *
+```typescript
+`${id}::${prop}:${propValue}::${prop2}:${propValue2}`
+```
+   */
+function reduceCompositeNotationToStringRepresentation(ck) {
+    return (`${ck.id}` +
+        Object.keys(ck)
+            .filter((k) => k !== "id")
+            .map((k) => `::${k}:${ck[k]}`));
+}
+
+function discoverRootPath(results) {
+    try {
+        const incomingPaths = results.map((i) => i.path);
+        const rootParts = incomingPaths.reduce((acc, curr) => {
+            let i = 0;
+            while (i < acc.length &&
+                curr.split("/").slice(0, i).join("/") === acc.slice(0, i).join("/")) {
+                i++;
+            }
+            return i === 1 ? [] : acc.slice(0, i - 1);
+        }, incomingPaths[0].split("/"));
+        const root = rootParts.join("/");
+        const paths = results.reduce((acc, curr) => {
+            acc = acc.concat({
+                path: curr.path.replace(root, ""),
+                value: curr.value,
+            });
+            return acc;
+        }, []);
+        return {
+            paths,
+            root,
+            fullPathNames: Object.keys(results),
+        };
+    }
+    catch (e) {
+        if (e.firemodel) {
+            throw e;
+        }
+        else {
+            throw new FireModelProxyError(e, "Problems in discoverRootPath");
+        }
     }
 }
 
@@ -12143,6 +12280,19 @@ function UnwatchedLocalEvent(rec, event) {
         localPostfix: rec.META.localPostfix,
     };
     return Object.assign(Object.assign(Object.assign({}, event), meta), { dbPath: rec.dbPath, watcherSource: "unknown" });
+}
+
+/**
+ * wraps a Vuex function's to Mutation.commit() function so it's
+ * signature looks like a Redux call to dispatch
+ */
+function VeuxWrapper(vuexDispatch) {
+    /** vuex wrapped redux dispatch function */
+    return async (reduxAction) => {
+        const type = reduxAction.type;
+        delete reduxAction.type;
+        return vuexDispatch(type, reduxAction);
+    };
 }
 
 var toStringFunction = Function.prototype.toString;
@@ -12493,52 +12643,6 @@ copy.strict = function strictCopy(object, options) {
         realm: options ? options.realm : void 0,
     });
 };
-
-var alphabet = "-0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz";
-
-function randomString(alphabet, length) {
-    var buffer = [];
-    length = length | 0;
-    while (length) {
-        var r = (Math.random() * alphabet.length) | 0;
-        buffer.push(alphabet.charAt(r));
-        length -= 1;
-    }
-    return buffer.join("");
-}
-
-var lastTimestamp = 0;
-function key(timestamp, as) {
-    if (timestamp === undefined) {
-        timestamp = Date.now();
-        if (timestamp <= lastTimestamp) {
-            timestamp = lastTimestamp + 1;
-        }
-        lastTimestamp = timestamp;
-    }
-    if (timestamp instanceof Date) {
-        timestamp = timestamp.getTime();
-    }
-    var result = new Array(9);
-    for (var i = 7; i >= 0; --i) {
-        result[i] = alphabet.charAt(timestamp % 64);
-        timestamp = Math.floor(timestamp / 64);
-    }
-    if (timestamp !== 0) {
-        throw new Error("Unexpected timestamp.");
-    }
-    switch (as) {
-        case "max":
-            result[8] = "zzzzzzzzzzzz";
-            break;
-        case "min":
-            result[8] = "------------";
-            break;
-        default:
-            result[8] = randomString(alphabet, 12);
-    }
-    return result.join("");
-}
 
 const first = require("lodash.first");
 
@@ -14468,30 +14572,70 @@ exports.DexieRecord = DexieRecord;
 exports.FireModel = FireModel;
 exports.List = List;
 exports.Mock = Mock;
+exports.MockApi = MockApi;
 exports.NamedFakes = NamedFakes;
 exports.OneWay = OneWay;
+exports.PropertyNamePatterns = PropertyNamePatterns;
 exports.Record = Record;
+exports.UnwatchedLocalEvent = UnwatchedLocalEvent;
+exports.VeuxWrapper = VeuxWrapper;
 exports.Watch = Watch;
+exports.WatchBase = WatchBase;
+exports.WatchDispatcher = WatchDispatcher;
+exports.WatchList = WatchList;
+exports.WatchRecord = WatchRecord;
+exports.addDispatchForWatcher = addDispatchForWatcher;
+exports.addRelationships = addRelationships;
+exports.addToWatcherPool = addToWatcherPool;
 exports.belongsTo = belongsTo;
+exports.buildDeepRelationshipLinks = buildDeepRelationshipLinks;
+exports.buildRelationshipPaths = buildRelationshipPaths;
+exports.clearWatcherPool = clearWatcherPool;
 exports.constrain = constrain;
 exports.constrainedProperty = constrainedProperty;
+exports.createCompositeKey = createCompositeKey;
+exports.createCompositeKeyFromFkString = createCompositeKeyFromFkString;
+exports.createCompositeKeyRefFromRecord = createCompositeKeyRefFromRecord;
+exports.createCompositeRef = createCompositeRef;
 exports.defaultValue = defaultValue;
 exports.desc = desc;
+exports.discoverRootPath = discoverRootPath;
 exports.encrypt = encrypt;
+exports.extractFksFromPaths = extractFksFromPaths;
+exports.fakeIt = fakeIt;
+exports.findWatchers = findWatchers;
 exports.getDbIndexes = getDbIndexes;
+exports.getFromWatcherPool = getFromWatcherPool;
+exports.getWatchList = getWatchList;
+exports.getWatchRecord = getWatchRecord;
+exports.getWatcherPool = getWatcherPool;
+exports.getWatcherPoolList = getWatcherPoolList;
+exports.hasInitialized = hasInitialized;
 exports.hasMany = hasMany;
 exports.hasOne = hasOne;
 exports.index = index;
 exports.indexesForModel = indexesForModel;
 exports.length = length;
+exports.localRelnOp = localRelnOp;
+exports.locallyUpdateFkOnRecord = locallyUpdateFkOnRecord;
 exports.max = max;
 exports.min = min;
 exports.mock = mock;
+exports.mockProperties = mockProperties;
+exports.mockValue = mockValue;
 exports.model = model;
 exports.ownedBy = ownedBy;
+exports.processHasMany = processHasMany;
+exports.processHasOne = processHasOne;
 exports.property = property;
 exports.propertyDecorator = propertyDecorator;
 exports.propertyReflector = propertyReflector;
 exports.pushKey = pushKey;
+exports.reduceCompositeNotationToStringRepresentation = reduceCompositeNotationToStringRepresentation;
+exports.relationshipOperation = relationshipOperation;
+exports.relnConfirmation = relnConfirmation;
+exports.relnRollback = relnRollback;
+exports.removeFromWatcherPool = removeFromWatcherPool;
 exports.uniqueIndex = uniqueIndex;
+exports.waitForInitialization = waitForInitialization;
 //# sourceMappingURL=index.js.map

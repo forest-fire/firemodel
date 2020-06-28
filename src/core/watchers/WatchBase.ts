@@ -150,7 +150,6 @@ export class WatchBase<T extends IModel> {
       });
 
       await waitForInitialization(watcherItem);
-      // console.log("watcher initialized", watcherItem);
 
       await (this._dispatcher || FireModel.dispatch)({
         type: FmEvents.WATCHER_STARTED,

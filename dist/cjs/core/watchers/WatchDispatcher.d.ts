@@ -1,4 +1,4 @@
-import { IFmServerOrLocalEvent, IFmWatchEvent, IReduxDispatch, IWatcherEventContext } from "../../types";
+import { IFmServerOrLocalEvent, IFmWatchEvent, IReduxDispatch, IWatcherEventContext } from "../../types/index";
 /**
  * **watchDispatcher**
  *

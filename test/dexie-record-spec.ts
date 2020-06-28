@@ -6,7 +6,7 @@ import DeepPerson from "./testing/dynamicPaths/DeepPerson";
 // tslint:disable: no-submodule-imports
 import { DexieDb } from "@/index";
 import { DexieRecord } from "@/index";
-import { fbKey } from "../src";
+import { key as fbKey } from "firebase-key";
 import fdbKeyRange from "fake-indexeddb/lib/FDBKeyRange";
 import indexedDB from "fake-indexeddb";
 import { wait } from "common-types";

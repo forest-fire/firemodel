@@ -297,3 +297,11 @@ export type IWatcherEventContext<T extends IModel = IModel> =
   | IWatcherEventContextList<T>
   | IWatcherEventContextRecord<T>
   | IWatcherEventContextListofRecords<T>;
+
+/**
+ * The Vuex equivalent of a Redux dispatch call
+ */
+export type IVuexDispatch<I = IFmLocalEvent<any>, O = any> = (
+  type: string,
+  payload: Omit<I, "type">
+) => Promise<O>;

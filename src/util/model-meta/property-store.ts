@@ -49,6 +49,7 @@ export function getProperties<T extends IModel>(model: T) {
   const modelName = model.constructor.name;
   const properties =
     hashToArray(propertiesByModel[modelName], "property") || [];
+
   let parent = Object.getPrototypeOf(model.constructor);
 
   while (parent.name) {

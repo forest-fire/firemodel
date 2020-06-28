@@ -237,3 +237,7 @@ export interface IWatcherEventContextRecord<T extends IModel = IModel> extends I
  * it is also added to events when they have watcher context.
  */
 export declare type IWatcherEventContext<T extends IModel = IModel> = IWatcherEventContextList<T> | IWatcherEventContextRecord<T> | IWatcherEventContextListofRecords<T>;
+/**
+ * The Vuex equivalent of a Redux dispatch call
+ */
+export declare type IVuexDispatch<I = IFmLocalEvent<any>, O = any> = (type: string, payload: Omit<I, "type">) => Promise<O>;

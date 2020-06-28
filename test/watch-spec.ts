@@ -1,22 +1,22 @@
-import { IDictionary, wait } from "common-types";
 import {
+  FireModel,
+  FmEvents,
   IFmLocalEvent,
   IFmWatchEvent,
   IReduxAction,
   Mock,
   Record,
-} from "../src";
+  Watch,
+  WatchList,
+  getWatcherPool,
+} from "@/index";
+import { IDictionary, wait } from "common-types";
 import { IRealTimeAdmin, RealTimeAdmin } from "universal-fire";
 
 import { BaseSerializer } from "@forest-fire/serialized-query";
 import { DeeperPerson } from "./testing/dynamicPaths/DeeperPerson";
-import { FireModel } from "@/index";
-import { FmEvents } from "@/index";
 import { Person } from "./testing/Person";
 import { PersonWithLocalAndPrefix } from "./testing/PersonWithLocalAndPrefix";
-import { Watch } from "@/index";
-import { WatchList } from "@/index";
-import { getWatcherPool } from "@/index";
 import { setupEnv } from "./testing/helpers";
 
 setupEnv();
@@ -41,7 +41,7 @@ describe("Watch →", () => {
       .start();
     expect(watcherId).toBeString();
 
-    expect(Watch.lookup(watcherId)).toBeInstanceOf(Object);
+    expect(Watch.lookup(watcherId)).toBeObject();
     expect(Watch.lookup(watcherId)).toHaveProperty("eventFamily");
     expect(Watch.lookup(watcherId)).toHaveProperty("query");
     expect(Watch.lookup(watcherId)).toHaveProperty("createdAt");
@@ -140,11 +140,11 @@ describe("Watch →", () => {
     }
   });
 
-  it("Watching a List uses pluralName for localPath unless localModelName is set", async () => {
+  it.only("Watching a List uses pluralName for localPath unless localModelName is set", async () => {
+    Watch.reset();
     FireModel.defaultDb = await RealTimeAdmin.connect({
       mocking: true,
     });
-    Watch.reset();
     const personId = (await Mock(PersonWithLocalAndPrefix).generate(1)).pop()
       .id;
     const person = await Record.get(PersonWithLocalAndPrefix, personId);

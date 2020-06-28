@@ -42,16 +42,15 @@ export async function timeout(ms: number) {
 }
 
 export interface IStagedVariables {
-  development: IDictionary;
+  dev: IDictionary;
   test: IDictionary;
-  staging: IDictionary;
-  production: IDictionary;
+  stage: IDictionary;
+  prod: IDictionary;
 }
 
 let envIsSetup = false;
-const stage = process.env.AWS_STAGE as
-  | (keyof IStagedVariables & string)
-  | undefined;
+const stage = (process.env.AWS_STAGE || "dev") as keyof IStagedVariables &
+  string;
 export function setupEnv() {
   if (!envIsSetup) {
     if (!stage) {
@@ -61,12 +60,15 @@ export function setupEnv() {
       fs.readFileSync("./env.yml", "utf8")
     ) as IStagedVariables;
     if (typeof yamlConfig === "string") {
-      throw new Error(`Attempt to setup the test environment `);
+      throw new Error(
+        `Attempt to setup the test environment failed as env.yml was not brought in as a dictionary!`
+      );
     }
     const combined = {
       ...yamlConfig[stage],
       ...process.env,
     };
+    console.log(`ENV setup for "${stage}" stage:`);
 
     Object.keys(combined).forEach((key) => (process.env[key] = combined[key]));
     envIsSetup = true;

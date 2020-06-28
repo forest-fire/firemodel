@@ -1,7 +1,15 @@
-import { Model, fk, hasOne, length, max, min, model, property } from "@/index";
+import {
+  Model,
+  fk,
+  hasOne,
+  length,
+  max,
+  min,
+  model,
+  property,
+} from "../../src/index";
 
 import { Company } from "./Company";
-import { Concert } from "./Concert";
 import { IDictionary } from "common-types";
 
 function bespokeMock(context: import("firemock").MockHelper) {

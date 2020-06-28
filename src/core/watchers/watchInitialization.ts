@@ -29,21 +29,29 @@ export async function waitForInitialization<T = Model>(
   watcher: IWatcherEventContext<T>,
   timeout: number = 750
 ): Promise<void> {
-  setTimeout(() => {
-    if (!ready(watcher)) {
-      console.info(
-        `A watcher [ ${
-          watcher.watcherId
-        } ] has not returned an event in the timeout window  [ ${timeout}ms ]. This might represent an issue but can also happen when a watcher starts listening to a path [ ${watcher.watcherPaths.join(
-          ", "
-        )} ] which has no data yet.`
-      );
-    }
-    hasInitialized(watcher.watcherId, "timed-out");
-  }, timeout);
+  const startTime = performance.now();
+  let stopWaiting = false;
+  function possibleProblem() {
+    console.info(
+      `A watcher [ ${
+        watcher.watcherId
+      } ] has not returned an event in the timeout window  [ ${timeout}ms ]. This might represent an issue but can also happen when a watcher starts listening to a path [ ${watcher.watcherPaths.join(
+        ", "
+      )} ] which has no data yet.`
+    );
+  }
 
-  while (!ready(watcher)) {
+  // poll for readiness; checking at each checkpoint if we need to
+  // express that the expected timeframe has been exceeded.
+  while (!ready(watcher) && !stopWaiting) {
     await wait(50);
+    const currentTime = performance.now();
+    console.log(currentTime - startTime);
+
+    if (currentTime - startTime > timeout) {
+      stopWaiting = true;
+      possibleProblem();
+    }
   }
 }
 

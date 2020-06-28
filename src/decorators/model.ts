@@ -40,6 +40,7 @@ export function model(options: Partial<IFmModelMeta> = {}) {
         );
         options.audit = false;
       }
+
       const meta: IFmModelMeta = {
         ...options,
         ...{ isProperty: isProperty(modelOfObject) },

@@ -14,7 +14,7 @@ export function set(
   obj: IDictionary,
   dotPath: string,
   value: any,
-  createIfNonExistant: boolean = false
+  createIfNonExistant: boolean = true
 ) {
   if (!dotPath) {
     throw new FmUtilityError(
@@ -23,7 +23,7 @@ export function set(
     );
   }
   const parts = dotPath.split(/\??\./);
-  const allButLast = parts.slice(0, parts.length - 2);
+  const allButLast = parts.slice(0, parts.length - 1);
   const key = parts.pop();
   let ref = obj;
 

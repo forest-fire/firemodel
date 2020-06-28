@@ -1,13 +1,17 @@
-import { FireModel, IMultiPathUpdates } from "@/index";
-import { IFmChangedProperties, IFmWatchEvent, Record } from "../src";
+import {
+  IFmChangedProperties,
+  IFmWatchEvent,
+  IVuexDispatch,
+  Record,
+  VeuxWrapper,
+} from "@/index";
 import { IRealTimeAdmin, RealTimeAdmin } from "universal-fire";
-import { IVuexDispatch, VeuxWrapper } from "@/index";
-import { compareHashes, withoutMetaOrPrivate } from "@/index";
 
 import { FmEvents } from "@/index";
 import { Person } from "./testing/Person";
 import { PersonWithLocal } from "./testing/PersonWithLocal";
 import { PersonWithLocalAndPrefix } from "./testing/PersonWithLocalAndPrefix";
+import { compareHashes } from "@/util";
 import { wait } from "./testing/helpers";
 
 describe("Dispatch →", () => {

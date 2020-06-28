@@ -38,6 +38,7 @@ export const propertyReflector = <R>(
 
   if (modelRollup) {
     const modelAndProp = modelName + "." + key;
+
     set(modelRollup, modelAndProp, {
       ...get(modelRollup, modelAndProp),
       ...meta,

@@ -353,9 +353,9 @@ describe("MOCK uses dynamic dbOffsets", () => {
       .followRelationshipLinks()
       .generate(2, { group: "test" });
     // basics
-    expect(db.mock.db.group.test.testing.deepPeople).toBeInstanceOf(Object);
-    expect(db.mock.db.hobbies).toBeInstanceOf(Object);
-    expect(db.mock.db.test.testing.companies).toBeInstanceOf(Object);
+    expect(db.mock.db.group.test.testing.deepPeople).toBeObject();
+    expect(db.mock.db.hobbies).toBeObject();
+    expect(db.mock.db.test.testing.companies).toBeObject();
     // FK checks
     fkStructuralChecksForHasMany(db.mock.db.group.test.testing.deepPeople);
 

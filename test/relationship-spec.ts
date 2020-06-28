@@ -1,5 +1,6 @@
 import { IFmWatchEvent, Record } from "../src";
 import { IRealTimeAdmin, RealTimeAdmin } from "universal-fire";
+import { buildRelationshipPaths, extractFksFromPaths } from "@/core/records";
 
 import { Car } from "./testing/Car";
 import { Company } from "./testing/Company";
@@ -10,9 +11,6 @@ import { FmEvents } from "@/index";
 import OffsetCar from "./testing/dynamicPaths/Car";
 import { Pay } from "./testing/Pay";
 import { Person } from "./testing/Person";
-import { buildRelationshipPaths } from "@/index";
-import { createCompositeKeyFromFkString } from "@/index";
-import { extractFksFromPaths } from "@/index";
 import { pathJoin } from "common-types";
 
 const hasManyPaths = (id: string, now: number) => [
