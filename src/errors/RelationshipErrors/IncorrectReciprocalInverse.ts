@@ -1,5 +1,5 @@
 import { FireModelError, MissingReciprocalInverse } from "@/errors";
-import { IModel, IRecord } from "@types";
+import { IModel, IRecord } from "@/types";
 
 import { capitalize } from "@/util";
 

@@ -3,7 +3,7 @@ import {
   IFkReference,
   IFmBuildRelationshipOptions,
   IFmPathValuePair,
-} from "@types";
+} from "@/types";
 import {
   IncorrectReciprocalInverse,
   MissingInverseProperty,

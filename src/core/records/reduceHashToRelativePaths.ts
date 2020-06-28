@@ -1,4 +1,4 @@
-import { IFmDatabasePaths, IFmPathValuePair } from "@types";
+import { IFmDatabasePaths, IFmPathValuePair } from "@/types";
 
 import { FireModelProxyError } from "@/errors";
 

@@ -3,7 +3,7 @@ import {
   IModel,
   IModelConstructor,
   IPrimaryKey,
-} from "@types";
+} from "@/types";
 
 import { DexieError } from "@/errors";
 import { IDictionary } from "common-types";

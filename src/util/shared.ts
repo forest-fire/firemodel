@@ -1,4 +1,4 @@
-import { IAuditChange, IModel } from "@types";
+import { IAuditChange, IModel } from "@/types";
 
 import { IDictionary } from "common-types";
 

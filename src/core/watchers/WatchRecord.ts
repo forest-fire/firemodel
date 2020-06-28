@@ -1,5 +1,5 @@
 import { FireModel, Record } from "@/core";
-import { IModel, IModelOptions, IPrimaryKey } from "@types";
+import { IModel, IModelOptions, IPrimaryKey } from "@/types";
 
 import { FireModelError } from "@/errors";
 import { SerializedQuery } from "universal-fire";

@@ -1,6 +1,6 @@
 import { FireModelError } from "@/errors";
-import { IFmRelationshipOperation } from "@types";
-import { IModel } from "@types";
+import { IFmRelationshipOperation } from "@/types";
+import { IModel } from "@/types";
 import { Record } from "@/core";
 
 export class UnknownRelationshipProblem<

@@ -5,7 +5,7 @@ import {
   IFmWatchEvent,
   IReduxDispatch,
   IWatcherEventContext,
-} from "@types";
+} from "@/types";
 
 import { FireModelError } from "@/errors";
 import { IDictionary } from "common-types";

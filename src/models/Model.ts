@@ -4,7 +4,7 @@ export type NonProperties<T> = {
 }[keyof T];
 export type Properties<T> = Pick<T, NonProperties<T>>;
 
-import { IFmModelMeta, IModel } from "@types";
+import { IFmModelMeta, IModel } from "@/types";
 import { index, mock, model, property } from "@/decorators";
 
 import { epochWithMilliseconds } from "common-types";

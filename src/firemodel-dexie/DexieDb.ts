@@ -8,7 +8,7 @@ import {
   IModel,
   IModelConstructor,
   IPrimaryKey,
-} from "@types";
+} from "@/types";
 import { IDictionary, pk } from "common-types";
 
 import { Record } from "@/core";

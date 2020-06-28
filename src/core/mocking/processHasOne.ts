@@ -2,7 +2,7 @@ import {
   IFmModelRelationshipMeta,
   IMockRelationshipConfig,
   IMockResponse,
-} from "@types";
+} from "@/types";
 import { Mock, Record } from "@/core";
 
 import { IAbstractedDatabase } from "universal-fire";

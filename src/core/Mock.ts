@@ -2,7 +2,7 @@ import { FireModel, Record } from "@/core";
 
 import { FireModelError } from "@/errors";
 import { IAbstractedDatabase } from "universal-fire";
-import { IModel } from "@types";
+import { IModel } from "@/types";
 import { MockApi } from "./mocking/MockApi";
 
 function defaultCardinality<T>(r: Record<T>) {

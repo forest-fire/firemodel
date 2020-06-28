@@ -3,7 +3,7 @@ import {
   ISerializedQuery,
   SerializedQuery,
 } from "universal-fire";
-import { IListOptions, IModel, IPrimaryKey } from "@types";
+import { IListOptions, IModel, IPrimaryKey } from "@/types";
 import { List, Record, Watch } from "@/core";
 
 import { FireModelError } from "@/errors";

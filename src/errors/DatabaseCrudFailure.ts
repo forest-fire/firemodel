@@ -1,4 +1,4 @@
-import { IFmCrudOperation, IModel } from "@types";
+import { IFmCrudOperation, IModel } from "@/types";
 
 import { FireModelError } from "@/errors";
 import { Record } from "@/core";

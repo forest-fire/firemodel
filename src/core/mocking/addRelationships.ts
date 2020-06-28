@@ -1,4 +1,4 @@
-import { IMockRelationshipConfig, IMockResponse, IModel } from "@types";
+import { IMockRelationshipConfig, IMockResponse, IModel } from "@/types";
 import { processHasMany, processHasOne } from "./index";
 
 import { IAbstractedDatabase } from "universal-fire";

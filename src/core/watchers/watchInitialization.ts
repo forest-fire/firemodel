@@ -1,6 +1,6 @@
 import { IDictionary, wait } from "common-types";
 
-import { IWatcherEventContext } from "@types";
+import { IWatcherEventContext } from "@/types";
 import { Model } from "@/models";
 
 /**

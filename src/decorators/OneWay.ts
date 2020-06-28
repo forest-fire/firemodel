@@ -1,4 +1,4 @@
-import { IFmRelationshipDirectionality } from "@types";
+import { IFmRelationshipDirectionality } from "@/types";
 
 /**
  * A helper method when designing relationships. In most cases when you

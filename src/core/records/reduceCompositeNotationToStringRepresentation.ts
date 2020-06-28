@@ -1,4 +1,4 @@
-import { ICompositeKey } from "@types";
+import { ICompositeKey } from "@/types";
 
 /**
    * **_reduceCompositeNotationToStringRepresentation**

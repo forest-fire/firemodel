@@ -1,6 +1,6 @@
 // #autoindex
 //#region autoindexed files
-// indexed at: 6th Jun, 2020, 03:32 PM ( GMT-7 )
+// indexed at: 6th Jun, 2020, 09:09 PM ( GMT-7 )
 // local file exports
 export * from "./compareHashes";
 export * from "./get";

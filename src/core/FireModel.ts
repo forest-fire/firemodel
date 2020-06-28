@@ -11,7 +11,7 @@ import {
   IFmModelRelationshipMeta,
   IReduxDispatch,
   IModel,
-} from "@types";
+} from "@/types";
 import {} from "@/core";
 
 import {

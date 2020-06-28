@@ -5,7 +5,7 @@ import {
   IModel,
   IModelConstructor,
   PropType,
-} from "@types";
+} from "@/types";
 
 import { DexieError } from "@/errors";
 import { IComparisonOperator } from "universal-fire";

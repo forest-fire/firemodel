@@ -1,4 +1,4 @@
-import { IWatcherEventContext } from "@types";
+import { IWatcherEventContext } from "@/types";
 import { Watch } from "@/core";
 import { hashToArray } from "typed-conversions";
 

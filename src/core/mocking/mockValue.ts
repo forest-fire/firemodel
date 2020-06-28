@@ -1,4 +1,4 @@
-import { IFmModelPropertyMeta, IModel, NamedFakes } from "@types";
+import { IFmModelPropertyMeta, IModel, NamedFakes } from "@/types";
 import { PropertyNamePatterns, fakeIt } from "./index";
 
 import { IAbstractedDatabase } from "universal-fire";

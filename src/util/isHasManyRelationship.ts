@@ -1,4 +1,4 @@
-import type { IModel, IRecord } from "@types";
+import type { IModel, IRecord } from "@/types";
 
 export function isHasManyRelationship<T extends IModel>(
   rec: IRecord<T>,

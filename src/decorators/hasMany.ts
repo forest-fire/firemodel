@@ -4,7 +4,7 @@ import {
   IFmRelationshipDirectionality,
   IFnToModelConstructor,
   IModelConstructor,
-} from "@types";
+} from "@/types";
 import { modelConstructorLookup, modelNameLookup } from "@/util";
 
 import { DecoratorProblem } from "@/errors";

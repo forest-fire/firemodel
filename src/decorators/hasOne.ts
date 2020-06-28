@@ -3,7 +3,7 @@ import {
   IFmRelationshipDirectionality,
   IFnToModelConstructor,
   IModelConstructor,
-} from "@types";
+} from "@/types";
 import {
   modelConstructorLookup,
   modelNameLookup,

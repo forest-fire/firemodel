@@ -1,4 +1,4 @@
-import { IFmChangedProperties, IModel } from "@types";
+import { IFmChangedProperties, IModel } from "@/types";
 const equal = require("fast-deep-equal/es6");
 
 export function compareHashes<T extends IModel>(

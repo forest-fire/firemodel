@@ -7,12 +7,12 @@ import {
   IFmRelationshipOperation,
   IFmRelationshipOptions,
   IFmRelationshipOptionsForHasMany,
-} from "@types";
+} from "@/types";
 import { capitalize, getModelMeta } from "@/util";
 import { createCompositeRef, locallyUpdateFkOnRecord } from "./index";
 
 import { IDictionary } from "common-types";
-import { IModel } from "@types";
+import { IModel } from "@/types";
 import { Record } from "@/core";
 import { Reference } from "firemock";
 

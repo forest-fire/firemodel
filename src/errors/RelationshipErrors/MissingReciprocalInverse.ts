@@ -1,4 +1,4 @@
-import { IModel, IRecord } from "@types";
+import { IModel, IRecord } from "@/types";
 
 import { FireModelError } from "@/errors";
 import { capitalize } from "@/util";

@@ -1,4 +1,4 @@
-import { IMockRelationshipConfig, IMockResponse } from "@types";
+import { IMockRelationshipConfig, IMockResponse } from "@/types";
 import { addRelationships, mockProperties } from "./index";
 
 import { FireModelError } from "@/errors";

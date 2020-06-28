@@ -6,7 +6,7 @@ import {
   SerializedQuery,
 } from "universal-fire";
 import { IDictionary, epochWithMilliseconds } from "common-types";
-import { IListOptions, IModel, IPrimaryKey, IReduxDispatch } from "@types";
+import { IListOptions, IModel, IPrimaryKey, IReduxDispatch } from "@/types";
 import { capitalize, getModelMeta, pathJoin } from "@/util";
 
 import { FireModelError } from "@/errors";

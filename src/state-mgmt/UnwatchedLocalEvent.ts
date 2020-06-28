@@ -1,4 +1,4 @@
-import { IFmLocalEvent, IFmRecordMeta } from "@types";
+import { IFmLocalEvent, IFmRecordMeta } from "@/types";
 
 import { Record } from "@/core";
 

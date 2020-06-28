@@ -1,4 +1,4 @@
-import { IReduxDispatch, IWatcherEventContext } from "@types";
+import { IReduxDispatch, IWatcherEventContext } from "@/types";
 
 import { IDictionary } from "common-types";
 import { hashToArray } from "typed-conversions";

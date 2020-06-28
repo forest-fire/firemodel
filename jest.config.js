@@ -16,7 +16,7 @@ module.exports = {
     // map lodash-es to lodash (aka, CJS implementation)
     "^lodash-es$": "<rootDir>/node_modules/lodash/lodash.js",
     "@/private": "<rootDir>/src/private",
-    "@types": "<rootDir>/src/types/index",
+    "@/types": "<rootDir>/src/types/index",
     "@errors": "<rootDir>/errors/index",
     "@/decorators": "<rootDir>/decorators/index",
     // "^@/(.*)$": resolve(__dirname, "./src/$1"),

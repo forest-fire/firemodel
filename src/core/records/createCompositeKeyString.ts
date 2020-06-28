@@ -1,5 +1,5 @@
 import { IDictionary } from "common-types";
-import { IModel } from "@types";
+import { IModel } from "@/types";
 import { Record } from "@/core";
 import { createCompositeKey } from "./index";
 

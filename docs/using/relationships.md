@@ -210,7 +210,7 @@ export interface IFmRelationshipOptions {
 
 > As is always the case, interfaces or types specified in this documentation will attempt
 > to be up-to-date but they are always exposed by this library so expect the typings that
-> are exported the "official documentation". This typing is defined in `src/@types/relationships`.
+> are exported the "official documentation". This typing is defined in `src/@/types/relationships`.
 
 ## Async Values and Dispatch
 

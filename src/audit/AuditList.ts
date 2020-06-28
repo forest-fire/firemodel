@@ -1,4 +1,4 @@
-import { IAuditLogItem, IModel, IModelOptions } from "@types";
+import { IAuditLogItem, IModel, IModelOptions } from "@/types";
 
 import { AuditBase } from "@/audit";
 import { SerializedQuery } from "universal-fire";

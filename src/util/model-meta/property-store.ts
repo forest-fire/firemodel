@@ -1,4 +1,4 @@
-import { IFmModelPropertyMeta, IModel } from "@types";
+import { IFmModelPropertyMeta, IModel } from "@/types";
 
 import { IDictionary } from "common-types";
 import { hashToArray } from "typed-conversions";

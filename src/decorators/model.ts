@@ -1,6 +1,6 @@
 import "reflect-metadata";
 
-import { FmModelConstructor, IFmModelMeta, IModel } from "@types";
+import { FmModelConstructor, IFmModelMeta, IModel } from "@/types";
 import {
   addModelMeta,
   getModelProperty,

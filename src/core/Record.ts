@@ -28,7 +28,7 @@ import {
   IReduxDispatch,
   IWatcherEventContext,
   IWriteOperation,
-} from "@types";
+} from "@/types";
 import { IDictionary, Nullable, Omit, dotNotation, fk, pk } from "common-types";
 import { WatchDispatcher, findWatchers } from "./watchers";
 import {

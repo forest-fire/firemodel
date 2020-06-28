@@ -19,7 +19,7 @@ import {
   FmModelConstructor,
   ICompositeKey,
   IModel,
-} from "@types";
+} from "@/types";
 import { FireModelError, FireModelProxyError } from "@/errors";
 
 /**

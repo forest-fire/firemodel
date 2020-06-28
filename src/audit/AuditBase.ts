@@ -1,6 +1,6 @@
 import { FireModel, Record } from "@/core";
 import { IAbstractedDatabase, ISerializedQuery } from "universal-fire";
-import { IModel, IModelOptions } from "@types";
+import { IModel, IModelOptions } from "@/types";
 
 import { pathJoin } from "@/util";
 

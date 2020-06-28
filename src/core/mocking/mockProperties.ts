@@ -1,4 +1,4 @@
-import { IMockRelationshipConfig, IModel } from "@types";
+import { IMockRelationshipConfig, IModel } from "@/types";
 
 import { IAbstractedDatabase } from "universal-fire";
 import { IDictionary } from "common-types";

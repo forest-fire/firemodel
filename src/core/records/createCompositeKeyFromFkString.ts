@@ -1,4 +1,4 @@
-import { ICompositeKey, IModel } from "@types";
+import { ICompositeKey, IModel } from "@/types";
 
 import { FireModelError } from "@/errors";
 import { capitalize } from "@/util";

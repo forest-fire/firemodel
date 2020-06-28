@@ -1,5 +1,5 @@
-import { IFmPathValuePair } from "@types";
-import { IModel } from "@types";
+import { IFmPathValuePair } from "@/types";
+import { IModel } from "@/types";
 import { Record } from "@/core";
 import { pathJoin } from "common-types";
 

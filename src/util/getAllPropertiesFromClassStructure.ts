@@ -1,4 +1,4 @@
-import { IModel } from "@types";
+import { IModel } from "@/types";
 import { hashToArray } from "typed-conversions";
 import { propertiesByModel } from "@/util";
 

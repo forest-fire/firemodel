@@ -1,6 +1,10 @@
 import "reflect-metadata";
 
-import { IFmModelPropertyMeta, IFmModelRelationshipMeta, IModel } from "@types";
+import {
+  IFmModelPropertyMeta,
+  IFmModelRelationshipMeta,
+  IModel,
+} from "@/types";
 import {
   addPropertyToModelMeta,
   addRelationshipToModelMeta,

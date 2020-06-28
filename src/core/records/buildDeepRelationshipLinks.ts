@@ -1,4 +1,4 @@
-import { IFkReference, IModel } from "@types";
+import { IFkReference, IModel } from "@/types";
 
 import { IDictionary } from "common-types";
 import { Record } from "@/core";

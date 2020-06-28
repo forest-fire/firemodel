@@ -5,7 +5,7 @@ import {
   IPrimaryKey,
   IReduxDispatch,
   IWatcherEventContext,
-} from "@types";
+} from "@/types";
 import { IAbstractedDatabase, IRtdbDbEvent } from "universal-fire";
 import {
   WatchList,
@@ -18,7 +18,7 @@ import {
 
 import { FireModel } from "@/core";
 import { FireModelError } from "@/errors";
-import { IModel } from "@types";
+import { IModel } from "@/types";
 import { firstKey } from "@/util";
 
 /**
