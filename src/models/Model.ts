@@ -3,15 +3,14 @@ export type NonProperties<T> = {
   [P in keyof T]: T[P] extends () => any ? never : P;
 }[keyof T];
 export type Properties<T> = Pick<T, NonProperties<T>>;
+
+import { IFmModelMeta, IModel } from "@/types";
+import { index, mock, model, property } from "@/decorators";
+
 import { epochWithMilliseconds } from "common-types";
-import { property } from "../decorators/constraints";
-import { mock } from "../decorators/mock";
-import { model } from "../decorators/model";
-import { index, uniqueIndex } from "../decorators/indexing";
-import { IFmModelMeta } from "../decorators/types";
 
 @model()
-export class Model {
+export class Model implements IModel {
   // prettier-ignore
   // TODO: This should be made required and the API updated to make it optional where appropriate
   /** The primary-key for the record */

@@ -1,6 +1,7 @@
-import { FmMockType, IFmModelPropertyMeta } from "./types";
-import { propertyReflector } from "./reflector";
-import { propertiesByModel } from "./model-meta/property-store";
+import { FmMockType, IFmModelPropertyMeta } from "@/types";
+
+import { propertiesByModel } from "@/util";
+import { propertyReflector } from "@/decorators";
 
 export function mock(value: FmMockType, ...rest: any[]) {
   return propertyReflector<IFmModelPropertyMeta>(

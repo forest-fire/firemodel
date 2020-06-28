@@ -1,4 +1,5 @@
-import { model, Model, property, mock } from "../../../src";
+import { mock, model, property } from "../../../src";
+
 import { UserProfile } from "./UserProfile";
 
 @model({ dbOffset: "move" })

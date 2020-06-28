@@ -1,10 +1,16 @@
-export { hasMany, IFmHasMany, IFmHasMany as fks } from "./hasMany";
-export { belongsTo, hasOne, ownedBy } from "./hasOne";
-export { index, uniqueIndex } from "./indexing";
-export * from "./constraints";
-export * from "./model";
-export * from "./types";
-export * from "./defaultValue";
+// #autoindex:named, exclude: propertyReflector
+export * from "./propertyReflector";
+//#region autoindexed files
+// indexed at: 6th Jun, 2020, 01:36 PM ( GMT-7 )
+// local file exports
 export * from "./OneWay";
-export * from "./mock";
+export * from "./constraints";
+export * from "./decorator";
+export * from "./defaultValue";
 export * from "./encrypt";
+export * from "./hasMany";
+export * from "./hasOne";
+export * from "./indexing";
+export * from "./mock";
+export * from "./model";
+//#endregion

@@ -1,22 +1,18 @@
-import { Model } from "../models/Model";
-import { propertyReflector } from "./reflector";
-import { Omit } from "common-types";
-import { relationshipsByModel } from "./model-meta/relationship-store";
 import {
   IFmModelRelationshipMeta,
-  IFmFunctionToConstructor,
-  IFmRelationshipDirectionality
-} from "./types";
-import { DecoratorProblem } from "../errors/decorators/DecoratorProblem";
-import { FireModelError } from "../errors/FireModelError";
-import {
-  modelRegistryLookup,
-  listRegisteredModels,
-  modelNameLookup,
-  modelConstructorLookup,
+  IFmRelationshipDirectionality,
   IFnToModelConstructor,
-  IModelConstructor
-} from "../record/relationships/modelRegistration";
+  IModelConstructor,
+} from "@/types";
+import {
+  modelConstructorLookup,
+  modelNameLookup,
+  relationshipsByModel,
+} from "@/util";
+
+import { DecoratorProblem } from "@/errors";
+import { Omit } from "common-types";
+import { propertyReflector } from "@/decorators";
 
 export function belongsTo(
   /**
@@ -49,7 +45,9 @@ export function belongsTo(
       isProperty: false,
       relType: "hasOne",
       directionality,
-      fkConstructor
+      fkConstructor,
+      inverseProperty,
+      hasInverse: inverseProperty !== undefined ? true : false,
     };
     if (inverseProperty) {
       payload.inverseProperty = inverseProperty;

@@ -1,9 +1,7 @@
 import "reflect-metadata";
 
-import * as chai from "chai";
 import * as helpers from "./testing/helpers";
 
-// tslint:disable:no-implicit-dependencies
 import {
   FmEvents,
   IFmLocalEvent,
@@ -16,19 +14,18 @@ import { IDictionary, pathJoin, wait } from "common-types";
 import { IRealTimeAdmin, RealTimeAdmin } from "universal-fire";
 
 import { FancyPerson } from "./testing/FancyPerson";
-import { FireModel } from "../src/FireModel";
+import { FireModel } from "@/index";
 import { Person } from "./testing/Person";
-const expect = chai.expect;
 
 helpers.setupEnv();
 
 describe("Tests using REAL db =>�", () => {
   let db: IRealTimeAdmin;
-  before(async () => {
+  beforeAll(async () => {
     db = await RealTimeAdmin.connect({ mocking: true });
     FireModel.defaultDb = db;
   });
-  after(async () => {
+  afterAll(async () => {
     try {
       await db.remove(`/authenticated/fancyPeople`);
     } catch (e) {
@@ -67,10 +64,18 @@ describe("Tests using REAL db =>�", () => {
 
     const eventTypes: string[] = Array.from(new Set(events.map((e) => e.type)));
 
-    expect(eventTypes).to.include(FmEvents.WATCHER_STARTING);
-    expect(eventTypes).to.include(FmEvents.WATCHER_STARTED);
-    expect(eventTypes).to.not.include(FmEvents.RECORD_ADDED);
-    expect(eventTypes).to.not.include(FmEvents.RECORD_ADDED_LOCALLY);
+    expect(eventTypes).toEqual(
+      expect.arrayContaining([FmEvents.WATCHER_STARTING])
+    );
+    expect(eventTypes).toEqual(
+      expect.arrayContaining([FmEvents.WATCHER_STARTED])
+    );
+    expect(eventTypes).toEqual(
+      expect.not.arrayContaining([FmEvents.RECORD_ADDED])
+    );
+    expect(eventTypes).toEqual(
+      expect.not.arrayContaining([FmEvents.RECORD_ADDED_LOCALLY])
+    );
 
     await Record.add(FancyPerson, {
       name: "Bob the Builder",
@@ -79,7 +84,9 @@ describe("Tests using REAL db =>�", () => {
       new Set(events.map((e) => e.type))
     );
 
-    expect(eventTypes2).to.include(FmEvents.RECORD_ADDED);
+    expect(eventTypes2).toEqual(
+      expect.arrayContaining([FmEvents.RECORD_ADDED])
+    );
   });
 
   it("Updating a record with duplicate values does not fire event watcher event", async () => {
@@ -95,9 +102,15 @@ describe("Tests using REAL db =>�", () => {
     await wait(50);
     const eventTypes: string[] = Array.from(new Set(events.map((e) => e.type)));
 
-    expect(eventTypes).to.include(FmEvents.RECORD_CHANGED_LOCALLY);
-    expect(eventTypes).to.include(FmEvents.RECORD_CHANGED_CONFIRMATION);
-    expect(eventTypes).to.not.include(FmEvents.RECORD_CHANGED);
+    expect(eventTypes).toEqual(
+      expect.arrayContaining([FmEvents.RECORD_CHANGED_LOCALLY])
+    );
+    expect(eventTypes).toEqual(
+      expect.arrayContaining([FmEvents.RECORD_CHANGED_CONFIRMATION])
+    );
+    expect(eventTypes).toEqual(
+      expect.not.arrayContaining([FmEvents.RECORD_CHANGED])
+    );
   });
 
   it("Detects changes at various nested levels of the watch/listener", async () => {
@@ -114,32 +127,36 @@ describe("Tests using REAL db =>�", () => {
     const deepPath = pathJoin(jack.dbPath, "/favorite/sports/basketball");
     await db.set(deepPath, true);
     const eventTypes: string[] = Array.from(new Set(events.map((e) => e.type)));
-    expect(eventTypes).to.include(FmEvents.WATCHER_STARTING);
-    expect(eventTypes).to.include(FmEvents.WATCHER_STARTED);
-    expect(
-      eventTypes,
-      `RECORD_ADDED should have been included [${eventTypes}]`
-    ).to.include(FmEvents.RECORD_ADDED);
-    const added = events.filter((e) => e.type === FmEvents.RECORD_ADDED).pop();
-    expect(added.key).to.equal(jack.id);
+    expect(eventTypes).toEqual(
+      expect.arrayContaining([FmEvents.WATCHER_STARTING])
+    );
+    expect(eventTypes).toEqual(
+      expect.arrayContaining([FmEvents.WATCHER_STARTED])
+    );
+    expect(eventTypes).toEqual(expect.arrayContaining([FmEvents.RECORD_ADDED]));
+    const added = events
+      .filter((e) => e.type === FmEvents.RECORD_ADDED)
+      .reverse()
+      .pop();
+    expect(added.key).toBe(jack.id);
     events = [];
     // child path updated directly
     const childPath = pathJoin(jack.dbPath, "/favorite");
     await db.set(childPath, "steelers");
-    expect(events).to.have.lengthOf(1);
+    expect(events).toHaveLength(1);
     const updated = events.pop();
-    expect(updated.type).to.equal(FmEvents.RECORD_CHANGED);
-    expect(updated.key).to.equal(jack.id);
+    expect(updated.type).toBe(FmEvents.RECORD_CHANGED);
+    expect(updated.key).toBe(jack.id);
     events = [];
     // full update of record
     await db.set(jack.dbPath, {
       name: jack.data.name,
       favorite: "red sox",
     });
-    expect(events).to.have.lengthOf(1);
+    expect(events).toHaveLength(1);
     const replaced = events.pop();
-    expect(replaced.type).to.equal(FmEvents.RECORD_CHANGED);
-    expect(replaced.key).to.equal(jack.id);
+    expect(replaced.type).toBe(FmEvents.RECORD_CHANGED);
+    expect(replaced.key).toBe(jack.id);
   });
 
   it.skip("value listener returns correct key and value", async () => {
@@ -157,15 +174,14 @@ describe("Tests using REAL db =>�", () => {
     const addedLocally = events.filter(
       (e) => e.type === FmEvents.RECORD_ADDED_LOCALLY
     );
-    console.log(addedLocally);
 
-    expect(addedLocally).to.have.lengthOf(1);
-    expect(addedLocally[0].key).to.equal(person.id);
+    expect(addedLocally).toHaveLength(1);
+    expect(addedLocally[0].key).toBe(person.id);
 
     const confirmed = events.filter(
       (e) => e.type === FmEvents.RECORD_ADDED_CONFIRMATION
     );
-    expect(confirmed).to.have.lengthOf(1);
-    expect(confirmed[0].key).to.equal(person.id);
+    expect(confirmed).toHaveLength(1);
+    expect(confirmed[0].key).toBe(person.id);
   });
 });

@@ -1,6 +1,6 @@
-import { Record } from "../index";
-import { IFmRecordMeta } from "./events";
-import { IFmLocalEvent } from "./IFmLocalEvent";
+import { IFmLocalEvent, IFmRecordMeta } from "@/types";
+
+import { Record } from "@/core";
 
 export function UnwatchedLocalEvent<T>(
   rec: Record<T>,
@@ -14,7 +14,7 @@ export function UnwatchedLocalEvent<T>(
     pluralName: rec.pluralName,
     localModelName: rec.META.localModelName,
     localPath: rec.localPath,
-    localPostfix: rec.META.localPostfix
+    localPostfix: rec.META.localPostfix,
   };
 
   return { ...event, ...meta, dbPath: rec.dbPath, watcherSource: "unknown" };

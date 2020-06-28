@@ -1,6 +1,6 @@
-import { propertyReflector } from "./reflector";
-import { IFmModelPropertyMeta, FmMockType } from ".";
-import { propertiesByModel } from "./model-meta/property-store";
+import { IFmModelPropertyMeta } from "@/types";
+import { propertiesByModel } from "@/util";
+import { propertyReflector } from "@/decorators";
 
 // TODO: make the defaultValue typed
 /**

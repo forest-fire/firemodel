@@ -1,0 +1,11 @@
+import { IAuditChange, IModel } from "../types";
+import { IDictionary } from "common-types";
+export declare function normalized(...args: string[]): string[];
+export declare function slashNotation(...args: string[]): string;
+export declare function firstKey<T extends IDictionary = IDictionary>(thingy: T): string;
+export declare function dotNotation(...args: string[]): string;
+export declare function updateToAuditChanges<T = any>(changed: IDictionary, prior: IDictionary): IAuditChange[];
+export declare function withoutMetaOrPrivate<T extends IModel>(model: T): T;
+export declare function capitalize(str: string): string;
+export declare function lowercase(str: string): string;
+export declare function stripLeadingSlash(str: string): string;
