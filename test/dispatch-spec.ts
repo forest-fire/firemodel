@@ -1,18 +1,18 @@
-import * as chai from "chai";
-
-import { FireModel, IMultiPathUpdates } from "../src/FireModel";
-// tslint:disable:no-implicit-dependencies
-import { IFmChangedProperties, IFmWatchEvent, Record } from "../src";
+import {
+  IFmChangedProperties,
+  IFmWatchEvent,
+  IVuexDispatch,
+  Record,
+  VeuxWrapper,
+} from "@/index";
 import { IRealTimeAdmin, RealTimeAdmin } from "universal-fire";
-import { IVuexDispatch, VeuxWrapper } from "../src/state-mgmt/VuexWrapper";
-import { compareHashes, withoutMetaOrPrivate } from "../src/util";
 
-import { FmEvents } from "../src/state-mgmt";
+import { FmEvents } from "@/index";
 import { Person } from "./testing/Person";
 import { PersonWithLocal } from "./testing/PersonWithLocal";
 import { PersonWithLocalAndPrefix } from "./testing/PersonWithLocalAndPrefix";
+import { compareHashes } from "@/util";
 import { wait } from "./testing/helpers";
-const expect = chai.expect;
 
 describe("Dispatch →", () => {
   let db: IRealTimeAdmin;
@@ -44,20 +44,20 @@ describe("Dispatch →", () => {
       deltas
     );
 
-    expect(deltas.added).to.include("age");
-    expect(deltas.changed).to.include("name");
-    expect(deltas.removed).to.include("gender");
+    expect(deltas.added).toEqual(expect.arrayContaining(["age"]));
+    expect(deltas.changed).toEqual(expect.arrayContaining(["name"]));
+    expect(deltas.removed).toEqual(expect.arrayContaining(["gender"]));
     Object.keys(result).map((key: keyof typeof result) => {
       if (key.includes("company")) {
-        expect(result[key]).to.equal(null);
+        expect(result[key]).toBe(null);
       }
 
       if (key.includes("age")) {
-        expect(result[key]).to.equal(55);
+        expect(result[key]).toBe(55);
       }
 
       if (key.includes("name")) {
-        expect(result[key]).to.equal("Bob Marley");
+        expect(result[key]).toBe("Bob Marley");
       }
     });
   });
@@ -69,10 +69,10 @@ describe("Dispatch →", () => {
     });
 
     person.set("name", "Carol");
-    expect(person.isDirty).to.equal(true);
-    expect(person.get("name")).to.equal("Carol");
+    expect(person.isDirty).toBe(true);
+    expect(person.get("name")).toBe("Carol");
     await wait(15);
-    expect(person.isDirty).to.equal(false);
+    expect(person.isDirty).toBe(false);
   });
 
   it("waiting for set() fires the appropriate Redux event; and inProgress is set", async () => {
@@ -84,22 +84,22 @@ describe("Dispatch →", () => {
     Record.dispatch = async (e: IFmWatchEvent<Person>) => events.push(e);
 
     await person.set("name", "Carol");
-    expect(person.get("name")).to.equal("Carol"); // local change took place
-    expect(events.length).to.equal(2); // two phase commit
-    expect(person.isDirty).to.equal(false); // value  back to false
+    expect(person.get("name")).toBe("Carol"); // local change took place
+    expect(events.length).toBe(2); // two phase commit
+    expect(person.isDirty).toBe(false); // value  back to false
 
     // 1st EVENT (local change)
     let event = events[0];
 
-    expect(event.type).to.equal(FmEvents.RECORD_CHANGED_LOCALLY);
-    expect(event.value.name).to.equal("Carol");
+    expect(event.type).toBe(FmEvents.RECORD_CHANGED_LOCALLY);
+    expect(event.value.name).toBe("Carol");
 
     // 2nd EVENT
     event = events[1];
-    expect(event.type).to.equal(FmEvents.RECORD_CHANGED_CONFIRMATION);
-    expect(event.value).to.be.an("object");
-    expect(event.value.name).to.equal("Carol");
-    expect(event.value.age).to.equal(18);
+    expect(event.type).toBe(FmEvents.RECORD_CHANGED_CONFIRMATION);
+    expect(event.value).toBeInstanceOf(Object);
+    expect(event.value.name).toBe("Carol");
+    expect(event.value.age).toBe(18);
   });
 
   it("VuexWrapper converts calling structure to what Vuex expects", async () => {
@@ -120,8 +120,8 @@ describe("Dispatch →", () => {
     await person.update({
       age: 25,
     });
-    expect(events).to.have.lengthOf(4);
-    expect(types.size).to.equal(2);
+    expect(events).toHaveLength(4);
+    expect(types.size).toBe(2);
   });
 
   it("By default the localPath is the singular modelName", async () => {
@@ -140,9 +140,7 @@ describe("Dispatch →", () => {
       age: 12,
     });
 
-    events.forEach((event) =>
-      expect(event.localPath).to.equal(event.modelName)
-    );
+    events.forEach((event) => expect(event.localPath).toBe(event.modelName));
   });
 
   it("When @model decorator and setting localModelName we can override the localPath", async () => {
@@ -164,12 +162,7 @@ describe("Dispatch →", () => {
       age: 12,
     });
 
-    events.forEach((event) =>
-      expect(
-        event.localPath,
-        `The localPath [ ${event.localPath} ] should equal the model's localModelName [ ${person.META.localModelName}`
-      )
-    );
+    events.forEach((event) => expect(event.localPath));
   });
 
   it("The when dispatching events without a listener the source is 'unknown'", async () => {
@@ -187,8 +180,7 @@ describe("Dispatch →", () => {
     await person.update({
       age: 12,
     });
-    console.log(events);
 
-    events.forEach((event) => expect(event.watcherSource).to.equal("unknown"));
+    events.forEach((event) => expect(event.watcherSource).toBe("unknown"));
   });
 });

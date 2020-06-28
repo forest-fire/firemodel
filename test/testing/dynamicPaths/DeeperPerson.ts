@@ -1,4 +1,4 @@
-import { model, Model, property } from "../../../src";
+import { Model, model, property } from "../../../src";
 
 export interface IDeepName {
   first: string;

@@ -1,4 +1,5 @@
-import { model, Model, property, hasMany, fks, mock } from "../../../src";
+import { Model, fks, hasMany, mock, model, property } from "../../../src";
+
 import DeepPerson from "./DeepPerson";
 
 @model()

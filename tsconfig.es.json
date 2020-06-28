@@ -1,18 +1,21 @@
 {
+  "extends": "./tsconfig.json",
   "compilerOptions": {
     "declaration": true,
     "module": "es2015",
-    "target": "es2020",
-    "lib": ["es2020", "esnext.asynciterable", "es2015.reflect", "DOM"],
+    "target": "es2017",
+    "lib": ["es2017", "esnext.asynciterable", "es2015.reflect", "DOM"],
     "moduleResolution": "node",
     "sourceMap": true,
     "noImplicitAny": true,
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
+    "noEmit": false,
     "outDir": "./dist/es",
     "removeComments": false,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true
   },
-  "include": ["src/**/*"]
+  "include": ["src/**/*"],
+  "exclude": ["test/**/*"]
 }

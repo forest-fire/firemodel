@@ -1,21 +1,17 @@
 import "reflect-metadata";
 
-import * as chai from "chai";
 import * as helpers from "./testing/helpers";
 
-// tslint:disable:no-implicit-dependencies
-import { IFmWatchEvent, List, Record } from "../src/index";
+import { IFmWatchEvent, List, Record } from "@/index";
 import { IRealTimeAdmin, RealTimeAdmin } from "universal-fire";
 
 import { Car } from "./testing/Car";
 import Company from "./testing/dynamicPaths/Company";
-import { FireModel } from "../src/FireModel";
-import { FmEvents } from "../src/state-mgmt";
-import { Mock } from "../src/Mock";
+import { FireModel } from "@/index";
+import { FmEvents } from "@/index";
+import { Mock } from "@/index";
 import { Person } from "./testing/Person";
 import { SerializedQuery } from "universal-fire";
-
-const expect = chai.expect;
 
 describe("List class: ", () => {
   let db: IRealTimeAdmin;
@@ -25,28 +21,28 @@ describe("List class: ", () => {
   });
   it("can instantiate with new operator", () => {
     const list = new List<Person>(Person);
-    expect(list).to.be.instanceof(List);
-    expect(list.length).to.equal(0);
-    expect(list.modelName).to.equal("person");
-    expect(list.pluralName).to.equal("people");
-    expect(list.dbPath).to.equal(`${list.META.dbOffset}/people`);
+    expect(list).toBeInstanceOf(List);
+    expect(list.length).toBe(0);
+    expect(list.modelName).toBe("person");
+    expect(list.pluralName).toBe("people");
+    expect(list.dbPath).toBe(`${list.META.dbOffset}/people`);
   });
 
   it("can instantiate with create() method", () => {
     const list = List.create(Person, { db });
-    expect(list).to.be.instanceof(List);
-    expect(list.length).to.equal(0);
-    expect(list.modelName).to.equal("person");
-    expect(list.pluralName).to.equal("people");
-    expect(list.dbPath).to.equal(`${list.META.dbOffset}/people`);
+    expect(list).toBeInstanceOf(List);
+    expect(list.length).toBe(0);
+    expect(list.modelName).toBe("person");
+    expect(list.pluralName).toBe("people");
+    expect(list.dbPath).toBe(`${list.META.dbOffset}/people`);
   });
 
   it("Static dbPath() provides appropriate database path for Models", async () => {
     const car = List.dbPath(Car);
-    expect(car).to.equal("car-offset/cars");
+    expect(car).toBe("car-offset/cars");
 
     const dynamic = List.dbPath(Company, { group: "123" });
-    expect(dynamic).to.equal("123/testing/companies");
+    expect(dynamic).toBe("123/testing/companies");
   });
 
   it("List can SET a dictionary of records", async () => {
@@ -61,13 +57,13 @@ describe("List class: ", () => {
       },
     });
 
-    expect(list).to.have.lengthOf(2);
-    expect(list.map((i) => i.name)).to.include("Joe");
-    expect(list.map((i) => i.name)).to.include("Roger");
-    expect(list.map((i) => i.age)).to.include(14);
-    expect(list.map((i) => i.age)).to.include(22);
-    expect(list.data[0].createdAt).is.a("number");
-    expect(list.data[1].createdAt).is.a("number");
+    expect(list).toHaveLength(2);
+    expect(list.map((i) => i.name)).toEqual(expect.arrayContaining(["Joe"]));
+    expect(list.map((i) => i.name)).toEqual(expect.arrayContaining(["Roger"]));
+    expect(list.map((i) => i.age)).toEqual(expect.arrayContaining([14]));
+    expect(list.map((i) => i.age)).toEqual(expect.arrayContaining([22]));
+    expect(list.data[0].createdAt).toBeNumber();
+    expect(list.data[1].createdAt).toBeNumber();
   });
 
   it("can instantiate with all() method", async () => {
@@ -79,11 +75,11 @@ describe("List class: ", () => {
       .pathPrefix("authenticated");
     db.mock.queueSchema("person", 25).generate();
     const list = await List.all(Person, { db });
-    expect(list).to.be.instanceof(List);
-    expect(list.length).to.equal(25);
-    expect(list.modelName).to.equal("person");
-    expect(list.pluralName).to.equal("people");
-    expect(list.dbPath).to.equal(`${list.META.dbOffset}/people`);
+    expect(list).toBeInstanceOf(List);
+    expect(list.length).toBe(25);
+    expect(list.modelName).toBe("person");
+    expect(list.pluralName).toBe("people");
+    expect(list.dbPath).toBe(`${list.META.dbOffset}/people`);
   });
 
   it("can instantiate with from() method", async () => {
@@ -97,7 +93,7 @@ describe("List class: ", () => {
 
     const q = SerializedQuery.create(db).limitToLast(5);
     const results = await List.fromQuery(Person, q, { db });
-    expect(results.length).to.equal(5);
+    expect(results.length).toBe(5);
   });
 
   it("can instantiate with a where() method", async () => {
@@ -115,10 +111,10 @@ describe("List class: ", () => {
     const oldFolks = await List.where(Person, "age", 99);
     const youngFolks = await List.where(Person, "age", ["<", 90]);
 
-    expect(oldFolks).to.be.an.instanceof(List);
-    expect(youngFolks).to.be.an.instanceof(List);
-    expect(oldFolks.length).to.equal(2);
-    expect(youngFolks.length).to.equal(10);
+    expect(oldFolks).toBeInstanceOf(List);
+    expect(youngFolks).toBeInstanceOf(List);
+    expect(oldFolks.length).toBe(2);
+    expect(youngFolks.length).toBe(10);
   });
 
   it("can instantiate with first() and last() methods", async () => {
@@ -136,9 +132,9 @@ describe("List class: ", () => {
     const firstCreatedDate = first.data[0].createdAt;
     const lastCreatedDate = last.data[0].createdAt;
 
-    expect(first).to.be.length(5);
-    expect(last).to.be.length(5);
-    expect(firstCreatedDate).to.be.lessThan(lastCreatedDate);
+    expect(first).toHaveLength(5);
+    expect(last).toHaveLength(5);
+    expect(firstCreatedDate).toBeLessThan(lastCreatedDate);
   });
 
   it("can instantiate with recent(), and inactive() methods", async () => {
@@ -156,9 +152,9 @@ describe("List class: ", () => {
     const recentCreatedDate = recent.data[0].lastUpdated;
     const inactiveCreatedDate = inactive.data[0].lastUpdated;
 
-    expect(recent).to.be.length(6);
-    expect(inactive).to.be.length(4);
-    expect(recentCreatedDate).to.be.greaterThan(inactiveCreatedDate);
+    expect(recent).toHaveLength(6);
+    expect(inactive).toHaveLength(4);
+    expect(recentCreatedDate).toBeGreaterThan(inactiveCreatedDate);
   });
 
   it("can instantiate with since() returns correct results", async () => {
@@ -180,7 +176,7 @@ describe("List class: ", () => {
 
     const since = await List.since(Person, timestamp);
 
-    expect(since).to.be.length(8);
+    expect(since).toHaveLength(8);
   });
 
   it("an instantiated List can call get() with a valid ID and get a Record", async () => {
@@ -196,10 +192,10 @@ describe("List class: ", () => {
     const firstPersonId = helpers.firstKey(db.mock.db.authenticated.people);
     const list = await List.all(Person);
     const record = list.findById(firstPersonId);
-    expect(record).to.be.an("object");
-    expect(record).to.be.an.instanceOf(Record);
-    expect(record.data).to.be.an.instanceOf(Person);
-    expect(record.data.name).to.be.a("string");
+    expect(record).toBeInstanceOf(Object);
+    expect(record).toBeInstanceOf(Record);
+    expect(record.data).toBeInstanceOf(Person);
+    expect(record.data.name).toBeString();
   });
 
   it("an instantiated List can call getData() with a valid ID and get a Model", async () => {
@@ -215,9 +211,9 @@ describe("List class: ", () => {
     const firstPersonId = helpers.firstKey(db.mock.db.authenticated.people);
     const list = await List.all(Person);
     const person = list.getData(firstPersonId);
-    expect(person).to.be.an("object");
-    expect(person).to.be.an.instanceOf(Person);
-    expect(person.name).to.be.a("string");
+    expect(person).toBeInstanceOf(Object);
+    expect(person).toBeInstanceOf(Person);
+    expect(person.name).toBeString();
   });
 
   it("an instantiated List calling get() with an invalid ID throws an error", async () => {
@@ -235,7 +231,7 @@ describe("List class: ", () => {
       const record = list.findById("not-there");
       throw new Error("Invalid ID should have thrown error");
     } catch (e) {
-      expect(e.name).to.equal("NotFound");
+      expect(e.name).toBe("NotFound");
     }
   });
 
@@ -252,7 +248,7 @@ describe("List class: ", () => {
     const list = await List.all(Person);
     try {
       const record = list.findById("not-there", null);
-      expect(record).to.equal(null);
+      expect(record).toBe(null);
     } catch (e) {
       throw new Error(
         "When default value is provided no error should be raised"
@@ -272,7 +268,7 @@ describe("List class: ", () => {
     const list = await List.all(Person);
     try {
       const record = list.getData("not-there", null);
-      expect(record).to.equal(null);
+      expect(record).toBe(null);
     } catch (e) {
       throw new Error(
         "When default value is provided no error should be raised"
@@ -293,7 +289,7 @@ describe("List class: ", () => {
     const list = await List.all(Person);
     try {
       const record = list.getData("not-there", null);
-      expect(record).to.equal(null);
+      expect(record).toBe(null);
     } catch (e) {
       throw new Error(
         "When default value is provided no error should be raised"
@@ -315,9 +311,9 @@ describe("List class: ", () => {
     db.mock.queueSchema("person", 3, { age: 12 }).generate();
     const list = await List.all(Person);
     const firstPersonId = helpers.firstKey(db.mock.db.authenticated.people);
-    expect(list.findWhere("id", firstPersonId)).is.an("object");
-    expect(list.findWhere("name", "foobar")).is.an("object");
-    expect(list.findWhere("age", 12)).is.an("object");
+    expect(list.findWhere("id", firstPersonId)).toBeInstanceOf(Object);
+    expect(list.findWhere("name", "foobar")).toBeInstanceOf(Object);
+    expect(list.findWhere("age", 12)).toBeInstanceOf(Object);
   });
 
   it("using findWhere() returns appropriately when record not found", async () => {
@@ -332,11 +328,11 @@ describe("List class: ", () => {
     db.mock.queueSchema("person", 3, { age: 12 }).generate();
     const list = await List.all(Person);
     try {
-      expect(list.findWhere("name", "foobar")).is.an("object");
+      expect(list.findWhere("name", "foobar")).toBeInstanceOf(Object);
     } catch (e) {
-      expect(e.name).to.equal("NotFound");
+      expect(e.name).toBe("NotFound");
     }
-    expect(list.findWhere("name", "foobar", "default")).to.equal("default");
+    expect(list.findWhere("name", "foobar", "default")).toBe("default");
   });
 
   it("using find() returns a record when passed in filter finds record", async () => {
@@ -355,8 +351,8 @@ describe("List class: ", () => {
     const people = await List.all(Person);
 
     people.map((person) => {
-      expect(person.id).to.be.a("string");
-      expect(person.age).to.be.a("number");
+      expect(person.id).toBeString();
+      expect(person.age).toBeNumber();
       const foundById = people.findWhere("id", person.id);
       const foundByAge = people.findWhere("age", person.age);
     });
@@ -369,16 +365,16 @@ describe("List class: ", () => {
     const peeps = await List.all(Person);
     const id = peeps.data[1].id;
     const removed = await peeps.removeById(id);
-    expect(peeps).to.have.lengthOf(9);
+    expect(peeps).toHaveLength(9);
     const eventTypes = new Set(events.map((e) => e.type));
 
-    expect(eventTypes).to.contain(FmEvents.RECORD_REMOVED_CONFIRMATION);
-    expect(eventTypes).to.contain(FmEvents.RECORD_REMOVED_LOCALLY);
+    expect(eventTypes).toContain(FmEvents.RECORD_REMOVED_CONFIRMATION);
+    expect(eventTypes).toContain(FmEvents.RECORD_REMOVED_LOCALLY);
 
     const peeps2 = await List.all(Person);
-    expect(peeps2).to.have.length(9);
+    expect(peeps2).toHaveLength(9);
     const ids = new Set(peeps2.map((p) => p.id));
-    expect(ids.has(id)).to.equal(false);
+    expect(ids.has(id)).toBe(false);
   });
 
   it("using add() changes local state, db state, and state mgmt", async () => {
@@ -386,17 +382,21 @@ describe("List class: ", () => {
     const events: Array<IFmWatchEvent<Person>> = [];
     Record.dispatch = async (evt: IFmWatchEvent<Person>) => events.push(evt);
     const peeps = await List.all(Person);
-    expect(peeps).to.have.lengthOf(10);
+    expect(peeps).toHaveLength(10);
     const newRec = await peeps.add({
       name: "Christy Brinkley",
       age: 50,
     });
-    expect(peeps).to.have.lengthOf(11);
+    expect(peeps).toHaveLength(11);
     const ids = new Set(peeps.map((p) => p.id));
-    expect(ids.has(newRec.id)).to.equal(true);
+    expect(ids.has(newRec.id)).toBe(true);
 
     const eventTypes = events.map((e) => e.type);
-    expect(eventTypes).to.contain(FmEvents.RECORD_ADDED_CONFIRMATION);
-    expect(eventTypes).to.contain(FmEvents.RECORD_ADDED_LOCALLY);
+    expect(eventTypes).toEqual(
+      expect.arrayContaining([FmEvents.RECORD_ADDED_CONFIRMATION])
+    );
+    expect(eventTypes).toEqual(
+      expect.arrayContaining([FmEvents.RECORD_ADDED_LOCALLY])
+    );
   });
 });

@@ -1,9 +1,8 @@
-import { FmMockType, IFmModelPropertyMeta } from "./types";
-import { propertyReflector } from "./reflector";
-import { propertiesByModel } from "./model-meta/property-store";
+import { IFmModelPropertyMeta } from "@/types";
+import { propertiesByModel } from "@/util";
+import { propertyReflector } from "@/decorators";
 
 export const encrypt = propertyReflector<IFmModelPropertyMeta>(
-    { encrypt: true },
-    propertiesByModel
-  );
-
+  { encrypt: true },
+  propertiesByModel
+);

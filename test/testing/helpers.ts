@@ -1,12 +1,13 @@
-// tslint:disable:no-implicit-dependencies
-import { IDictionary } from "common-types";
-import { first, last } from "lodash";
+import "./test-console"; // TS declaration
 
 import * as fs from "fs";
-import * as yaml from "js-yaml";
 import * as process from "process";
-import "./test-console"; // TS declaration
-import { stdout, stderr } from "test-console";
+import * as yaml from "js-yaml";
+
+import { first, last } from "lodash";
+import { stderr, stdout } from "test-console";
+
+import { IDictionary } from "common-types";
 
 // tslint:disable-next-line
 interface Console {
@@ -33,30 +34,43 @@ export function restoreStdoutAndStderr() {
 }
 
 export async function wait(ms: number) {
-  return new Promise(resolve => setTimeout(resolve, ms));
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 export async function timeout(ms: number) {
-  return new Promise(resolve => setTimeout(resolve, ms));
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+export interface IStagedVariables {
+  dev: IDictionary;
+  test: IDictionary;
+  stage: IDictionary;
+  prod: IDictionary;
 }
 
 let envIsSetup = false;
-
+const stage = (process.env.AWS_STAGE || "dev") as keyof IStagedVariables &
+  string;
 export function setupEnv() {
   if (!envIsSetup) {
-    if (!process.env.AWS_STAGE) {
+    if (!stage) {
       process.env.AWS_STAGE = "test";
     }
-    const current = process.env;
-    const yamlConfig: IDictionary = yaml.safeLoad(
+    const yamlConfig = yaml.safeLoad(
       fs.readFileSync("./env.yml", "utf8")
-    );
+    ) as IStagedVariables;
+    if (typeof yamlConfig === "string") {
+      throw new Error(
+        `Attempt to setup the test environment failed as env.yml was not brought in as a dictionary!`
+      );
+    }
     const combined = {
-      ...yamlConfig[process.env.AWS_STAGE],
-      ...process.env
+      ...yamlConfig[stage],
+      ...process.env,
     };
+    console.log(`ENV setup for "${stage}" stage:`);
 
-    Object.keys(combined).forEach(key => (process.env[key] = combined[key]));
+    Object.keys(combined).forEach((key) => (process.env[key] = combined[key]));
     envIsSetup = true;
 
     return combined;

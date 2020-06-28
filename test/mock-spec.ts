@@ -1,7 +1,5 @@
-import * as chai from "chai";
 import * as helpers from "./testing/helpers";
 
-// tslint:disable:no-implicit-dependencies
 import {
   FireModel,
   FmEvents,
@@ -20,8 +18,8 @@ import { Car } from "./testing/Car";
 import { Company } from "./testing/Company";
 import { FancyPerson } from "./testing/FancyPerson";
 import { Mock as FireMock } from "firemock";
-import { Mock } from "../src/Mock";
-const expect = chai.expect;
+import { Mock } from "@/index";
+
 helpers.setupEnv();
 @model({})
 export class SimplePerson extends Model {
@@ -33,10 +31,10 @@ export class SimplePerson extends Model {
 describe("Mocking:", () => {
   let db: IRealTimeAdmin;
   let realDb: IRealTimeAdmin;
-  before(async () => {
+  beforeAll(async () => {
     realDb = await RealTimeAdmin.connect({ mocking: true });
   });
-  after(async () => {
+  afterAll(async () => {
     const fancy = Record.create(FancyPerson);
     try {
       await realDb.remove(fancy.dbOffset);
@@ -51,17 +49,19 @@ describe("Mocking:", () => {
 
   it("FireMock.prepare() leads to immediate availability of faker library", async () => {
     const m = await FireMock.prepare();
-    expect(m.faker).is.a("object");
-    expect(m.faker.address.city).is.a("function");
+    expect(m.faker).toBeInstanceOf(Object);
+    expect(m.faker.address.city).toBeInstanceOf(Function);
   });
 
   it("the auto-mock works for named properties", async () => {
     await Mock(SimplePerson, db).generate(10);
     const people = await List.all(SimplePerson);
 
-    expect(people).to.have.lengthOf(10);
+    expect(people).toHaveLength(10);
     people.map((person) => {
-      expect(person.age).to.be.a("number").greaterThan(0).lessThan(101);
+      expect(person.age).toBeNumber();
+      expect(person.age).toBeGreaterThan(0);
+      expect(person.age).toBeLessThan(101);
     });
   });
 
@@ -69,20 +69,20 @@ describe("Mocking:", () => {
     const m = await Mock(FancyPerson, db).generate(10);
     const people = await List.all(FancyPerson);
 
-    expect(people).to.have.lengthOf(10);
+    expect(people).toHaveLength(10);
     people.map((person) => {
-      expect(person.otherPhone).to.be.a("string");
-      expect(/[\.\(-]/.test(person.otherPhone)).to.equal(true);
+      expect(person.otherPhone).toBeString();
+      expect(/[\.\(-]/.test(person.otherPhone)).toBe(true);
     });
   });
 
   it("passing in a function to @mock produces expected results", async () => {
     await Mock(FancyPerson, db).generate(10);
     const people = await List.all(FancyPerson);
-    expect(people).to.have.lengthOf(10);
+    expect(people).toHaveLength(10);
     people.map((person) => {
-      expect(person.foobar).to.be.a("string");
-      expect(person.foobar).to.contain("hello");
+      expect(person.foobar).toBeString();
+      expect(person.foobar).toContain("hello");
     });
   });
 
@@ -93,11 +93,11 @@ describe("Mocking:", () => {
       .generate(numberOfFolks);
 
     const people = await List.all(FancyPerson);
-    expect(people).to.have.lengthOf(numberOfFolks);
+    expect(people).toHaveLength(numberOfFolks);
 
     people.map((person) => {
-      expect(person.employer).to.be.a("string");
-      expect(person.cars).to.be.an("object");
+      expect(person.employer).toBeString();
+      expect(person.cars).toBeInstanceOf(Object);
     });
   });
 
@@ -116,9 +116,9 @@ describe("Mocking:", () => {
     const cars = await List.all(Car);
     const company = await List.all(Company);
 
-    expect(cars.length).to.equal(numberOfFolks * 2);
-    expect(company.length).to.equal(numberOfFolks);
-    expect(people).to.have.lengthOf(numberOfFolks * 5);
+    expect(cars.length).toBe(numberOfFolks * 2);
+    expect(company.length).toBe(numberOfFolks);
+    expect(people).toHaveLength(numberOfFolks * 5);
 
     const carIds = cars.map((car) => car.id);
     carIds.map((id) => people.findWhere("cars", id));
@@ -127,8 +127,8 @@ describe("Mocking:", () => {
     companyIds.map((id) => people.findWhere("employer", id));
   });
 
-  it("using a specific config for createRelationshipLinks works as expected", async function () {
-    this.timeout(15000);
+  it("using a specific config for createRelationshipLinks works as expected", async () => {
+    jest.setTimeout(15000);
     const numberOfFolks = 25;
     await Mock(FancyPerson, db)
       .followRelationshipLinks({
@@ -137,7 +137,7 @@ describe("Mocking:", () => {
       .generate(numberOfFolks);
     const people = await List.all(FancyPerson);
 
-    expect(people).to.have.lengthOf(numberOfFolks);
+    expect(people).toHaveLength(numberOfFolks);
   });
 
   it("Adding a record fires local events as expected", async () => {
@@ -149,15 +149,19 @@ describe("Mocking:", () => {
 
     const types = events.map((e) => e.type);
 
-    expect(types).to.include(FmEvents.RECORD_ADDED_LOCALLY);
-    expect(types).to.include(FmEvents.RECORD_ADDED_CONFIRMATION);
+    expect(types).toEqual(
+      expect.arrayContaining([FmEvents.RECORD_ADDED_LOCALLY])
+    );
+    expect(types).toEqual(
+      expect.arrayContaining([FmEvents.RECORD_ADDED_CONFIRMATION])
+    );
   });
 
   it("Mocking data does not fire fire local events (RECORD_ADD_LOCALLY, RECORD_ADD_CONFIRMATION) to dispatch", async () => {
     const events: IDictionary[] = [];
     FireModel.dispatch = async (e: IReduxAction) => events.push(e);
     await Mock(FancyPerson).generate(10);
-    expect(events).to.have.lengthOf(0);
+    expect(events).toHaveLength(0);
   });
 
   it("Adding a record with {silent: true} raises an error in real db", async () => {
@@ -174,7 +178,7 @@ describe("Mocking:", () => {
         { silent: true }
       );
     } catch (e) {
-      expect(e.code).to.equal("forbidden");
+      expect(e.code).toBe("forbidden");
     }
   });
 
@@ -192,14 +196,15 @@ describe("Mocking:", () => {
 
     const eventTypes: Set<string> = new Set();
     events.forEach((e) => eventTypes.add(e.type));
-    console.log(eventTypes);
 
-    expect(Array.from(eventTypes)).to.include(FmEvents.RECORD_ADDED);
-    expect(Array.from(eventTypes)).to.include(
-      "@firemodel/RECORD_ADDED_LOCALLY"
+    expect(Array.from(eventTypes)).toEqual(
+      expect.arrayContaining([FmEvents.RECORD_ADDED])
     );
-    expect(Array.from(eventTypes)).to.include(
-      "@firemodel/RECORD_ADDED_CONFIRMATION"
+    expect(Array.from(eventTypes)).toEqual(
+      expect.arrayContaining(["@firemodel/RECORD_ADDED_LOCALLY"])
+    );
+    expect(Array.from(eventTypes)).toEqual(
+      expect.arrayContaining(["@firemodel/RECORD_ADDED_CONFIRMATION"])
     );
     const locally = events.find(
       (e) => e.type === FmEvents.RECORD_ADDED_LOCALLY
@@ -207,9 +212,9 @@ describe("Mocking:", () => {
     const confirm = events.find(
       (e) => e.type === FmEvents.RECORD_ADDED_CONFIRMATION
     );
-    expect(locally).to.haveOwnProperty("transactionId");
-    expect(confirm).to.haveOwnProperty("transactionId");
-    expect(locally.transactionId).to.equal(confirm.transactionId);
+    expect(locally).toHaveProperty("transactionId");
+    expect(confirm).toHaveProperty("transactionId");
+    expect(locally.transactionId).toBe(confirm.transactionId);
   });
 
   it("Mocking data does NOT fire watcher events but adding a record DOES [ mock db ]", async () => {
@@ -222,12 +227,14 @@ describe("Mocking:", () => {
       .start({ name: "my-test-watcher" });
 
     let eventTypes: Set<string> = new Set(events.map((e) => e.type));
-    expect(Array.from(eventTypes)).to.not.include(FmEvents.RECORD_ADDED);
+    expect(Array.from(eventTypes)).toEqual(
+      expect.not.arrayContaining([FmEvents.RECORD_ADDED])
+    );
 
     await Mock(FancyPerson).generate(1);
     eventTypes = new Set(events.map((e) => e.type));
 
-    expect(Array.from(eventTypes)).to.not.include(FmEvents.RECORD_ADDED);
+    expect(Array.from(eventTypes)).toContain(FmEvents.RECORD_ADDED);
     await Record.add(FancyPerson, {
       name: "Bob the Builder",
     });
@@ -235,7 +242,9 @@ describe("Mocking:", () => {
       new Set(events.map((e) => e.type))
     );
 
-    expect(eventTypes2).to.include(FmEvents.RECORD_ADDED);
+    expect(eventTypes2).toEqual(
+      expect.arrayContaining([FmEvents.RECORD_ADDED])
+    );
   });
 
   it.skip("Updating a record with values which are unchanged does NOT fire a server watch event", async () => {

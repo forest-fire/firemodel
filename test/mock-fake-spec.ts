@@ -4,38 +4,38 @@ import { FireModel, List, Mock } from "../src";
 import { Product } from "./testing/Product";
 // import { DB, SDK } from "universal-fire";
 import { RealTimeAdmin } from "@forest-fire/real-time-admin";
-import { expect } from "chai";
-// tslint:disable:no-implicit-dependencies
-import { fakeIt } from "../src/Mock/fakeIt";
+import { fakeIt } from "@/index";
 
 const helper = new MockHelper();
 
 describe("Test parameterized mock built-in fakes", () => {
-  before(async () => {
+  beforeAll(async () => {
     await FireMock.prepare();
   });
 
   it("number min/max works", () => {
     for (let i = 0; i < 100; i++) {
       const val = fakeIt(helper, "number", { min: 1, max: 10 });
-      expect(val).to.be.greaterThan(0).and.lessThan(11);
-      expect(val).to.equal(Math.floor(val));
+      expect(val).toBeGreaterThan(0);
+      expect(val).toBeLessThan(11);
+      expect(val).toBe(Math.floor(val));
     }
   });
 
   it("number min/max works with negatives", () => {
     for (let i = 0; i < 100; i++) {
       const val = fakeIt(helper, "number", { min: -10, max: 0 });
-      expect(val).to.be.greaterThan(-11).and.lessThan(1);
-      expect(val).to.equal(Math.floor(val));
+      expect(val).toBeGreaterThan(-11);
+      expect(val).toBeLessThan(1);
+      expect(val).toBe(Math.floor(val));
     }
   });
 
-  it.skip("number precision 0 works", () => {
+  it("number precision 0 works", () => {
     for (let i = 0; i < 100; i++) {
       const val = fakeIt(helper, "number", { min: 1, max: 10, precision: 0 });
 
-      expect(val).to.equal(Math.floor(val));
+      expect(val).toBe(Math.floor(val));
     }
   });
 
@@ -55,9 +55,10 @@ describe("Test parameterized mock built-in fakes", () => {
     for (let i = 0; i < 100; i++) {
       const val = fakeIt(helper, "price", { min: 1, max: 100 });
       const amt = Number(val.replace("$", "").replace(".00", ""));
-      expect(val).to.be.a("string");
-      expect(val.slice(0, 1)).to.equal("$");
-      expect(amt).to.be.greaterThan(0).and.lessThan(101);
+      expect(val).toBeString();
+      expect(val.slice(0, 1)).toBe("$");
+      expect(amt).toBeGreaterThan(0);
+      expect(amt).toBeLessThan(101);
     }
   });
 
@@ -65,7 +66,7 @@ describe("Test parameterized mock built-in fakes", () => {
     for (let i = 0; i < 10; i++) {
       const val = fakeIt(helper, "price", { min: 1, max: 100, symbol: "£" });
 
-      expect(val.slice(0, 1)).to.equal("£");
+      expect(val.slice(0, 1)).toBe("£");
     }
   });
 
@@ -73,7 +74,7 @@ describe("Test parameterized mock built-in fakes", () => {
     for (let i = 0; i < 10; i++) {
       const val = fakeIt(helper, "price", { min: 1, max: 100 });
       const cents = val.replace(/.*\./, "");
-      expect(cents).to.equal("00");
+      expect(cents).toBe("00");
     }
   });
 
@@ -90,7 +91,7 @@ describe("Test parameterized mock built-in fakes", () => {
         variableCents: true,
       });
       const cents = val.replace(/.*\./, "");
-      expect(cents).to.have.lengthOf(2);
+      expect(cents).toHaveLength(2);
       if (cents === "00") {
         totals.zeros++;
       } else if (cents === "99") {
@@ -100,9 +101,9 @@ describe("Test parameterized mock built-in fakes", () => {
       }
     }
 
-    expect(totals.zeros).to.be.greaterThan(0);
-    expect(totals.nines).to.be.greaterThan(0);
-    expect(totals.others).to.be.greaterThan(0);
+    expect(totals.zeros).toBeGreaterThan(0);
+    expect(totals.nines).toBeGreaterThan(0);
+    expect(totals.others).toBeGreaterThan(0);
   });
 
   it("Distribution works as expected", async () => {
@@ -115,31 +116,35 @@ describe("Test parameterized mock built-in fakes", () => {
         [9, "rarely"],
         [90, "often"]
       );
-      expect(["often", "rarely", "almostNever"]).to.include(val);
+      expect(["often", "rarely", "almostNever"]).toEqual(
+        expect.arrayContaining([val])
+      );
       totals[val as keyof typeof totals]++;
     }
 
-    expect(totals.often).to.be.greaterThan(totals.rarely);
-    expect(totals.rarely).to.be.greaterThan(totals.almostNever);
+    expect(totals.often).toBeGreaterThan(totals.rarely);
+    expect(totals.rarely).toBeGreaterThan(totals.almostNever);
   });
 
   it("datePastString returns a proper string notation", async () => {
     const response = fakeIt(helper, "datePastString");
-    expect(response).to.be.a("string");
-    expect(
-      response.replace(/[0-9]{4}\-[0-9]{2}\-[0-9]{2}/, "replaced")
-    ).to.equal("replaced");
+    expect(response).toBeString();
+    expect(response.replace(/[0-9]{4}\-[0-9]{2}\-[0-9]{2}/, "replaced")).toBe(
+      "replaced"
+    );
   });
 
   it("number mocks can set a max and min value which will be respected", async () => {
     for (let i = 0; i < 100; i++) {
       const response = fakeIt(helper, "number", { min: 1, max: 25 });
-      expect(response).to.be.greaterThan(0).and.lessThan(26);
+      expect(response).toBeGreaterThan(0);
+      expect(response).toBeLessThan(26);
     }
 
     for (let i = 0; i < 100; i++) {
       const response = fakeIt(helper, "number", { min: 50, max: 99 });
-      expect(response).to.be.greaterThan(49).and.lessThan(100);
+      expect(response).toBeGreaterThan(49);
+      expect(response).toBeLessThan(100);
     }
 
     // Now let's do the test in a more "real world" situation
@@ -149,7 +154,8 @@ describe("Test parameterized mock built-in fakes", () => {
     await Mock(Product).generate(10);
     const people = await List.all(Product);
     people.forEach((p) => {
-      expect(p.minCost).to.be.greaterThan(9).and.lessThan(101);
+      expect(p.minCost).toBeGreaterThan(9);
+      expect(p.minCost).toBeLessThan(101);
     });
   });
 });

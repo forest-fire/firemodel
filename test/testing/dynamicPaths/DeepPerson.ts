@@ -1,21 +1,21 @@
 import {
-  model,
   Model,
-  property,
-  hasMany,
-  fks,
-  hasOne,
   fk,
+  fks,
+  hasMany,
+  hasOne,
+  index,
   mock,
-  uniqueIndex,
-  index
+  model,
+  property,
 } from "../../../src";
-import Hobby from "./Hobby";
-import Company from "./Company";
-import Location from "./Location";
-import { HumanAttribute } from "./HumanAttribute";
-import School from "./School";
+
 import Car from "./Car";
+import Company from "./Company";
+import Hobby from "./Hobby";
+import { HumanAttribute } from "./HumanAttribute";
+import Location from "./Location";
+import School from "./School";
 
 export interface IDeepName {
   first: string;
@@ -44,7 +44,7 @@ export default class DeepPerson extends Model {
   // prettier-ignore
   @hasMany(() => Hobby, "practitioners") hobbies?: fks;
   // prettier-ignore
-  @hasMany(() => Car, "owners") cars?: fks;
+  @hasMany(Car, "owners") cars?: fks;
   // prettier-ignore
   @hasMany('DeepPerson', "children") parents?: fks;
   // prettier-ignore

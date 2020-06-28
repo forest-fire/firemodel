@@ -10,7 +10,7 @@
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
     "removeComments": false,
-    "typeRoots": ["./node_modules/@types"]
+    "typeRoots": ["./node_modules/@/types"]
   },
   "include": ["**/*.ts"],
   "exclude": ["node_modules"]

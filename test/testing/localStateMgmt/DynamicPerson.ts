@@ -1,4 +1,4 @@
-import { Model, property, min, max, length, model } from "../../../src";
+import { Model, length, max, min, model, property } from "../../../src";
 
 @model({ localPrefix: "/foo/bar/:id" })
 export class DynamicPerson extends Model {

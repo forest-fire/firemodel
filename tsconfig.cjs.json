@@ -1,4 +1,5 @@
 {
+  "extends": "./tsconfig.json",
   "compilerOptions": {
     "declaration": false,
     "module": "commonjs",
@@ -10,11 +11,12 @@
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
     "outDir": "./dist/cjs",
+    "noEmit": false,
     "removeComments": false,
-    "typeRoots": ["./node_modules/@types"],
+    "typeRoots": ["./node_modules/@/types"],
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true
   },
   "include": ["src/**/*"],
-  "exclude": ["node_modules/**/*"]
+  "exclude": ["test/**/*"]
 }

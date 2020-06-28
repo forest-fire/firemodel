@@ -1,12 +1,4 @@
-import { IReduxAction, IFmLocalEvent } from "./index";
-
-/**
- * The Vuex equivalent of a Redux dispatch call
- */
-export type IVuexDispatch<I = IFmLocalEvent<any>, O = any> = (
-  type: string,
-  payload: Omit<I, "type">
-) => Promise<O>;
+import { IReduxAction, IVuexDispatch } from "@/types";
 
 /**
  * wraps a Vuex function's to Mutation.commit() function so it's

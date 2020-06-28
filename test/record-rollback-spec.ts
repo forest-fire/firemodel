@@ -1,8 +1,6 @@
 import { IRealTimeAdmin, RealTimeAdmin } from "universal-fire";
 
-import { FireModel } from "../src/FireModel";
-// tslint:disable:no-implicit-dependencies
-import { expect } from "chai";
+import { FireModel } from "@/index";
 
 describe("Rolling back a record => ", () => {
   let db: IRealTimeAdmin;

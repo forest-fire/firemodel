@@ -1,13 +1,13 @@
 import {
-  fk,
+  Model,
+  fks,
+  hasMany,
   length,
+  mock,
   model,
   property,
-  Model,
-  mock,
-  hasMany,
-  fks
-} from "../../src";
+} from "../../src/index";
+
 import { Person } from "./AuditedPerson";
 
 @model({ dbOffset: "authenticated", audit: true })

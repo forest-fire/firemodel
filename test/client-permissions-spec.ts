@@ -1,11 +1,9 @@
-// tslint:disable:no-implicit-dependencies
-import * as chai from "chai";
-const expect = chai.expect;
-import { IDictionary } from "common-types";
-// import { DB, SDK, IAbstractedDatabase } from "universal-fire";
-import { RealTimeClient } from "@forest-fire/real-time-client";
 import { FireModel, Record } from "../src";
+
 import { Car } from "./testing/permissions/Car";
+import { IDictionary } from "common-types";
+import { RealTimeClient } from "@forest-fire/real-time-client";
+
 const clientConfig = {
   apiKey: "AIzaSyDuimhtnMcV1zeTl4m1MphOgWnzS17QhBM",
   authDomain: "abstracted-admin.firebaseapp.com",
@@ -18,7 +16,7 @@ const clientConfig = {
 describe("Validating client permissions with an anonymous user", () => {
   let db: RealTimeClient;
 
-  before(async () => {
+  beforeAll(async () => {
     db = await RealTimeClient.connect(clientConfig);
     FireModel.defaultDb = db;
   });
@@ -38,13 +36,11 @@ describe("Validating client permissions with an anonymous user", () => {
         cost: 10000,
       });
     } catch (e) {
-      console.log(e);
-
-      expect(e.code).to.equal("permission-denied");
+      expect(e.code).toBe("permission-denied");
     }
 
     expect(
       events.filter((i: any) => i.type === "@firemodel/RECORD_ADDED_ROLLBACK")
-    ).to.have.lengthOf(1);
+    ).toHaveLength(1);
   });
 });
