@@ -140,7 +140,7 @@ describe("Watch →", () => {
     }
   });
 
-  it.only("Watching a List uses pluralName for localPath unless localModelName is set", async () => {
+  it("Watching a List uses pluralName for localPath unless localModelName is set", async () => {
     Watch.reset();
     FireModel.defaultDb = await RealTimeAdmin.connect({
       mocking: true,

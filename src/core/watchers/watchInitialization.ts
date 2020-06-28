@@ -29,7 +29,8 @@ export async function waitForInitialization<T = Model>(
   watcher: IWatcherEventContext<T>,
   timeout: number = 750
 ): Promise<void> {
-  const startTime = performance.now();
+  const startTime = new Date().getTime();
+
   let stopWaiting = false;
   function possibleProblem() {
     console.info(
@@ -41,11 +42,15 @@ export async function waitForInitialization<T = Model>(
     );
   }
 
+  function ready<T>(watcher: IWatcherEventContext<T>) {
+    return hasInitialized()[watcher.watcherId] ? true : false;
+  }
+
   // poll for readiness; checking at each checkpoint if we need to
   // express that the expected timeframe has been exceeded.
   while (!ready(watcher) && !stopWaiting) {
     await wait(50);
-    const currentTime = performance.now();
+    const currentTime = new Date().getTime();
     console.log(currentTime - startTime);
 
     if (currentTime - startTime > timeout) {
@@ -53,8 +58,4 @@ export async function waitForInitialization<T = Model>(
       possibleProblem();
     }
   }
-}
-
-function ready<T>(watcher: IWatcherEventContext<T>) {
-  return hasInitialized()[watcher.watcherId] ? true : false;
 }
