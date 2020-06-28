@@ -18,7 +18,7 @@ module.exports = {
     "@/private": "<rootDir>/src/private",
     "@types": "<rootDir>/src/types/index",
     "@errors": "<rootDir>/errors/index",
-    "@decorators": "<rootDir>/decorators/index",
+    "@/decorators": "<rootDir>/decorators/index",
     // "^@/(.*)$": resolve(__dirname, "./src/$1"),
   },
   // adds more assertions to the default library that Jest provides

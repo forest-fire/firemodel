@@ -1,5 +1,5 @@
 import { IAuditChange, IAuditOperations } from "@types";
-import { index, model, property } from "@decorators";
+import { index, model, property } from "@/decorators";
 
 import { Model } from "@/models";
 

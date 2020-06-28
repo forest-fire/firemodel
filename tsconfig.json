@@ -19,7 +19,7 @@
       "@/*": ["src/*"],
       "@types": ["src/@types/index"],
       "@errors": ["src/errors/index"],
-      "@decorators": ["src/decorators/index"]
+      "@/decorators": ["src/decorators/index"]
     },
     "plugins": [
       { "transform": "typescript-transform-paths" },

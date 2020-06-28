@@ -1,7 +1,7 @@
 import { IDictionary } from "common-types";
 import type { ISerializedQuery, IAbstractedDatabase } from "universal-fire";
 import { WatchRecord } from "./";
-import { IWatcherEventContext, IFmWatcherStartOptions, IWatchEventClassification, IListOptions, IReduxDispatch, FmModelConstructor, ICompositeKey, IModel } from "../../@types/index";
+import { IWatcherEventContext, IFmWatcherStartOptions, IWatchEventClassification, IListOptions, IReduxDispatch, FmModelConstructor, ICompositeKey, IModel } from "../../@types";
 /**
  * The base class which both `WatchList` and `WatchRecord` derive.
  */

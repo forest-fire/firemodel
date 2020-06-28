@@ -13,7 +13,7 @@ import {
 import { getPushKeys, modelRegister } from "@/util";
 
 import { IDictionary } from "common-types";
-import { getDbIndexes } from "@decorators";
+import { getDbIndexes } from "@/decorators";
 
 export function model(options: Partial<IFmModelMeta> = {}) {
   let isDirty: boolean = false;
