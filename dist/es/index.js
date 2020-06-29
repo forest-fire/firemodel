@@ -1,6 +1,52 @@
 import { SerializedQuery } from 'universal-fire';
 import { getMockHelper, Mock as Mock$1 } from 'firemock';
 
+var alphabet = "-0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz";
+
+function randomString(alphabet, length) {
+    var buffer = [];
+    length = length | 0;
+    while (length) {
+        var r = (Math.random() * alphabet.length) | 0;
+        buffer.push(alphabet.charAt(r));
+        length -= 1;
+    }
+    return buffer.join("");
+}
+
+var lastTimestamp = 0;
+function key(timestamp, as) {
+    if (timestamp === undefined) {
+        timestamp = Date.now();
+        if (timestamp <= lastTimestamp) {
+            timestamp = lastTimestamp + 1;
+        }
+        lastTimestamp = timestamp;
+    }
+    if (timestamp instanceof Date) {
+        timestamp = timestamp.getTime();
+    }
+    var result = new Array(9);
+    for (var i = 7; i >= 0; --i) {
+        result[i] = alphabet.charAt(timestamp % 64);
+        timestamp = Math.floor(timestamp / 64);
+    }
+    if (timestamp !== 0) {
+        throw new Error("Unexpected timestamp.");
+    }
+    switch (as) {
+        case "max":
+            result[8] = "zzzzzzzzzzzz";
+            break;
+        case "min":
+            result[8] = "------------";
+            break;
+        default:
+            result[8] = randomString(alphabet, 12);
+    }
+    return result.join("");
+}
+
 const NamedFakes = {
     /** produces an "id" that looks/behaves like a Firebase key */
     id: true,
@@ -8345,52 +8391,6 @@ function NumberBetween(startEnd) {
     return (Math.floor(Math.random() * (startEnd[1] - startEnd[0] + 1)) + startEnd[0]);
 }
 
-var alphabet = "-0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz";
-
-function randomString(alphabet, length) {
-    var buffer = [];
-    length = length | 0;
-    while (length) {
-        var r = (Math.random() * alphabet.length) | 0;
-        buffer.push(alphabet.charAt(r));
-        length -= 1;
-    }
-    return buffer.join("");
-}
-
-var lastTimestamp = 0;
-function key(timestamp, as) {
-    if (timestamp === undefined) {
-        timestamp = Date.now();
-        if (timestamp <= lastTimestamp) {
-            timestamp = lastTimestamp + 1;
-        }
-        lastTimestamp = timestamp;
-    }
-    if (timestamp instanceof Date) {
-        timestamp = timestamp.getTime();
-    }
-    var result = new Array(9);
-    for (var i = 7; i >= 0; --i) {
-        result[i] = alphabet.charAt(timestamp % 64);
-        timestamp = Math.floor(timestamp / 64);
-    }
-    if (timestamp !== 0) {
-        throw new Error("Unexpected timestamp.");
-    }
-    switch (as) {
-        case "max":
-            result[8] = "zzzzzzzzzzzz";
-            break;
-        case "min":
-            result[8] = "------------";
-            break;
-        default:
-            result[8] = randomString(alphabet, 12);
-    }
-    return result.join("");
-}
-
 function toInteger(dirtyNumber) {
   if (dirtyNumber === null || dirtyNumber === true || dirtyNumber === false) {
     return NaN;
@@ -14571,5 +14571,5 @@ class DexieRecord {
     }
 }
 
-export { AuditLog, DexieDb, DexieList, DexieRecord, FireModel, FmEvents, List, Mock, MockApi, Model, NamedFakes, OneWay, PropertyNamePatterns, Record, RelationshipCardinality, RelationshipPolicy, UnwatchedLocalEvent, VeuxWrapper, Watch, WatchBase, WatchDispatcher, WatchList, WatchRecord, addDispatchForWatcher, addRelationships, addToWatcherPool, belongsTo, buildDeepRelationshipLinks, buildRelationshipPaths, clearWatcherPool, constrain, constrainedProperty, createCompositeKey, createCompositeKeyFromFkString, createCompositeKeyRefFromRecord, createCompositeRef, defaultValue, desc, discoverRootPath, encrypt, extractFksFromPaths, fakeIt, findWatchers, getDbIndexes, getFromWatcherPool, getWatchList, getWatchRecord, getWatcherPool, getWatcherPoolList, hasInitialized, hasMany, hasOne, index, indexesForModel, length, localRelnOp, locallyUpdateFkOnRecord, max, min, mock, mockProperties, mockValue, model, ownedBy, processHasMany, processHasOne, property, propertyDecorator, propertyReflector, pushKey, reduceCompositeNotationToStringRepresentation, relationshipOperation, relnConfirmation, relnRollback, removeFromWatcherPool, uniqueIndex, waitForInitialization };
+export { AuditLog, DexieDb, DexieList, DexieRecord, FireModel, FmEvents, List, Mock, MockApi, Model, NamedFakes, OneWay, PropertyNamePatterns, Record, RelationshipCardinality, RelationshipPolicy, UnwatchedLocalEvent, VeuxWrapper, Watch, WatchBase, WatchDispatcher, WatchList, WatchRecord, addDispatchForWatcher, addRelationships, addToWatcherPool, belongsTo, buildDeepRelationshipLinks, buildRelationshipPaths, clearWatcherPool, constrain, constrainedProperty, createCompositeKey, createCompositeKeyFromFkString, createCompositeKeyRefFromRecord, createCompositeRef, defaultValue, desc, discoverRootPath, encrypt, extractFksFromPaths, fakeIt, key as fbKey, findWatchers, getDbIndexes, getFromWatcherPool, getWatchList, getWatchRecord, getWatcherPool, getWatcherPoolList, hasInitialized, hasMany, hasOne, index, indexesForModel, length, localRelnOp, locallyUpdateFkOnRecord, max, min, mock, mockProperties, mockValue, model, ownedBy, processHasMany, processHasOne, property, propertyDecorator, propertyReflector, pushKey, reduceCompositeNotationToStringRepresentation, relationshipOperation, relnConfirmation, relnRollback, removeFromWatcherPool, uniqueIndex, waitForInitialization };
 //# sourceMappingURL=index.js.map
