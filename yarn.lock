@@ -856,12 +856,12 @@
     exec-sh "^0.3.2"
     minimist "^1.2.0"
 
-"@firebase/app-types@0.6.1", "@firebase/app-types@^0.6.0":
+"@firebase/app-types@0.6.1", "@firebase/app-types@^0.6.0", "@firebase/app-types@^0.6.1":
   version "0.6.1"
   resolved "https://registry.yarnpkg.com/@firebase/app-types/-/app-types-0.6.1.tgz#dcbd23030a71c0c74fc95d4a3f75ba81653850e9"
   integrity sha512-L/ZnJRAq7F++utfuoTKX4CLBG5YR7tFO3PLzG1/oXXKEezJ0kRL3CMRoueBEmTCzVb/6SIs2Qlaw++uDgi5Xyg==
 
-"@firebase/app@^0.6.0", "@firebase/app@^0.6.2", "@firebase/app@^0.6.4":
+"@firebase/app@^0.6.0", "@firebase/app@^0.6.2", "@firebase/app@^0.6.4", "@firebase/app@^0.6.7":
   version "0.6.7"
   resolved "https://registry.yarnpkg.com/@firebase/app/-/app-0.6.7.tgz#f5b67c0a4cacfaa93d0c942dfbab1d10c4986b85"
   integrity sha512-6NpIZ3iMrCR2XOShK5oi3YYB0GXX5yxVD8p3+2N+X4CF5cERyIrDRf8+YXOFgr+bDHSbVcIyzpWv6ijhg4MJlw==
@@ -879,12 +879,12 @@
   resolved "https://registry.yarnpkg.com/@firebase/auth-interop-types/-/auth-interop-types-0.1.5.tgz#9fc9bd7c879f16b8d1bb08373a0f48c3a8b74557"
   integrity sha512-88h74TMQ6wXChPA6h9Q3E1Jg6TkTHep2+k63OWg3s0ozyGVMeY+TTOti7PFPzq5RhszQPQOoCi59es4MaRvgCw==
 
-"@firebase/auth-types@0.10.1", "@firebase/auth-types@^0.10.0":
+"@firebase/auth-types@0.10.1", "@firebase/auth-types@^0.10.0", "@firebase/auth-types@^0.10.1":
   version "0.10.1"
   resolved "https://registry.yarnpkg.com/@firebase/auth-types/-/auth-types-0.10.1.tgz#7815e71c9c6f072034415524b29ca8f1d1770660"
   integrity sha512-/+gBHb1O9x/YlG7inXfxff/6X3BPZt4zgBv4kql6HEmdzNQCodIRlEYnI+/da+lN+dha7PjaFH7C7ewMmfV7rw==
 
-"@firebase/auth@^0.14.2", "@firebase/auth@^0.14.3":
+"@firebase/auth@^0.14.2", "@firebase/auth@^0.14.3", "@firebase/auth@^0.14.7":
   version "0.14.7"
   resolved "https://registry.yarnpkg.com/@firebase/auth/-/auth-0.14.7.tgz#9a46dd68efff7af7ec8c420b35f26d118c773cff"
   integrity sha512-NTQY9luV70XUA6zGYOWloDSaOT+l0/R4u3W7ptqVCfZNc4DAt7euUkTbj7SDD14902sHF54j+tk5kmpEmMd0jA==
@@ -906,7 +906,7 @@
   dependencies:
     "@firebase/app-types" "0.6.1"
 
-"@firebase/database@^0.6.0", "@firebase/database@^0.6.1":
+"@firebase/database@^0.6.0", "@firebase/database@^0.6.1", "@firebase/database@^0.6.6":
   version "0.6.6"
   resolved "https://registry.yarnpkg.com/@firebase/database/-/database-0.6.6.tgz#77b9bef3c38589975c1f9b3b79089916139e8212"
   integrity sha512-TqUJOaCATF/h3wpqhPT9Fz1nZI6gBv/M2pHZztUjX4A9o9Bq93NyqUurYiZnGB7zpSkEADFCVT4f0VBrWdHlNw==
@@ -965,6 +965,16 @@
     "@forest-fire/utility" "^0.52.1"
     firemock "^0.52.7"
 
+"@forest-fire/abstracted-database@^0.53.3":
+  version "0.53.3"
+  resolved "https://registry.yarnpkg.com/@forest-fire/abstracted-database/-/abstracted-database-0.53.3.tgz#19c0e5f73a71406b9967b0537a02c734556f0c29"
+  integrity sha512-O6Sm/JiExw2/640MhDpT8YzWZcH3q1OpR0GOQ5R27xbLI06gAp9AETdMzRNqMUTv4u934EGIoC5O8t9DQ0+AiQ==
+  dependencies:
+    "@forest-fire/serialized-query" "^0.53.3"
+    "@forest-fire/types" "^0.53.0"
+    "@forest-fire/utility" "^0.53.0"
+    firemock "^0.53.1"
+
 "@forest-fire/firestore-admin@^0.52.8":
   version "0.52.8"
   resolved "https://registry.yarnpkg.com/@forest-fire/firestore-admin/-/firestore-admin-0.52.8.tgz#8b23603ed76303792ac5982a0bea1c5d638d6296"
@@ -973,6 +983,16 @@
     "@forest-fire/firestore-db" "^0.52.8"
     "@forest-fire/types" "^0.52.0"
     "@forest-fire/utility" "^0.52.1"
+    firebase-admin "^8.12.1"
+
+"@forest-fire/firestore-admin@^0.53.3":
+  version "0.53.3"
+  resolved "https://registry.yarnpkg.com/@forest-fire/firestore-admin/-/firestore-admin-0.53.3.tgz#bba9e61ca0278330f04d84b2b59a5024de499547"
+  integrity sha512-KgmnoqNXAP5fHvqAkJk7UY4AJtBFviH6/4uW3/b+ECuBPkQDojrLIaD7RiNvgyOjI/1dELIykzoNhWID36YEYQ==
+  dependencies:
+    "@forest-fire/firestore-db" "^0.53.3"
+    "@forest-fire/types" "^0.53.0"
+    "@forest-fire/utility" "^0.53.0"
     firebase-admin "^8.12.1"
 
 "@forest-fire/firestore-client@^0.52.8":
@@ -987,6 +1007,18 @@
     "@forest-fire/types" "^0.52.0"
     "@forest-fire/utility" "^0.52.1"
 
+"@forest-fire/firestore-client@^0.53.3":
+  version "0.53.3"
+  resolved "https://registry.yarnpkg.com/@forest-fire/firestore-client/-/firestore-client-0.53.3.tgz#36509b155fe8a26ab18312d4d82efdac8ac98ef3"
+  integrity sha512-wugy2KxWXS4p3Ym1Kmo4CyG0vILWvBgJqFxE2zBpNuw97SVSKI7XysqyJuO8a3y7jXod1nhoqgnEHmqVLaFkug==
+  dependencies:
+    "@firebase/app" "^0.6.0"
+    "@firebase/auth" "^0.14.2"
+    "@firebase/firestore" "^1.14.0"
+    "@forest-fire/firestore-db" "^0.53.3"
+    "@forest-fire/types" "^0.53.0"
+    "@forest-fire/utility" "^0.53.0"
+
 "@forest-fire/firestore-db@^0.52.8":
   version "0.52.8"
   resolved "https://registry.yarnpkg.com/@forest-fire/firestore-db/-/firestore-db-0.52.8.tgz#c3bc65b83c71daa09e7d293c141225757080c482"
@@ -996,6 +1028,16 @@
     "@forest-fire/serialized-query" "^0.52.8"
     "@forest-fire/types" "^0.52.0"
     "@forest-fire/utility" "^0.52.1"
+
+"@forest-fire/firestore-db@^0.53.3":
+  version "0.53.3"
+  resolved "https://registry.yarnpkg.com/@forest-fire/firestore-db/-/firestore-db-0.53.3.tgz#72459c374aa2d90ef0ce78eaf6fd7cc4e7c4c1e8"
+  integrity sha512-OM7zyr1umYH0JbyUlGHSIETBAff0Q6X1klVgZvooNSOFcbelN5/fqrAULL/7RUjFNMiO6Hh3W2aejMeT1/AmOg==
+  dependencies:
+    "@forest-fire/abstracted-database" "^0.53.3"
+    "@forest-fire/serialized-query" "^0.53.3"
+    "@forest-fire/types" "^0.53.0"
+    "@forest-fire/utility" "^0.53.0"
 
 "@forest-fire/real-time-admin@^0.52.8":
   version "0.52.8"
@@ -1010,6 +1052,24 @@
     common-types "^1.14.3"
     firebase-admin "^8.12.1"
     firemock "^0.52.7"
+    is-gzip "^2.0.0"
+    lodash.first "^3.0.0"
+    lodash.last "^3.0.0"
+    typed-conversions "^0.10.4"
+
+"@forest-fire/real-time-admin@^0.53.3":
+  version "0.53.3"
+  resolved "https://registry.yarnpkg.com/@forest-fire/real-time-admin/-/real-time-admin-0.53.3.tgz#fe5160bcc28f038f2789e0ab30a3d09fed2d1b2f"
+  integrity sha512-vMTMWJpGmk+jPPiAKKPeDRlfGVXqjxggzKAWcoXVjcEvK5NuWXy0r29bYBD4JW71B4qkyV+EU01RXcWnLsy2AA==
+  dependencies:
+    "@firebase/app" "^0.6.4"
+    "@firebase/database-types" "^0.5.1"
+    "@forest-fire/real-time-db" "^0.53.3"
+    "@forest-fire/types" "^0.53.0"
+    "@forest-fire/utility" "^0.53.0"
+    common-types "^1.14.3"
+    firebase-admin "^8.12.1"
+    firemock "^0.53.1"
     is-gzip "^2.0.0"
     lodash.first "^3.0.0"
     lodash.last "^3.0.0"
@@ -1037,6 +1097,28 @@
     lodash.last "^3.0.0"
     typed-conversions "^0.10.4"
 
+"@forest-fire/real-time-client@^0.53.3":
+  version "0.53.3"
+  resolved "https://registry.yarnpkg.com/@forest-fire/real-time-client/-/real-time-client-0.53.3.tgz#c9d26d4a37e48696a7a5a93e6a3c88dba9412b72"
+  integrity sha512-8h66vzLjYxrXBQPYB0cM+U6Il/bVxAAhWACBFh+qJV9e/srFCcBSqr2Oxtjh/sxtt6vIRaRxH5bqMxyYzhc6Bw==
+  dependencies:
+    "@firebase/app" "^0.6.7"
+    "@firebase/app-types" "^0.6.1"
+    "@firebase/auth" "^0.14.7"
+    "@firebase/auth-types" "^0.10.1"
+    "@firebase/database" "^0.6.6"
+    "@firebase/database-types" "^0.5.1"
+    "@forest-fire/abstracted-database" "^0.53.3"
+    "@forest-fire/real-time-db" "^0.53.3"
+    "@forest-fire/types" "^0.53.0"
+    "@forest-fire/utility" "^0.53.0"
+    common-types "^1.15.7"
+    events "^3.1.0"
+    firemock "^0.53.1"
+    lodash.first "^3.0.0"
+    lodash.last "^3.0.0"
+    typed-conversions "^0.11.1"
+
 "@forest-fire/real-time-db@^0.52.8":
   version "0.52.8"
   resolved "https://registry.yarnpkg.com/@forest-fire/real-time-db/-/real-time-db-0.52.8.tgz#db1b78cf043465d44ea8130fc58fb3808fb80757"
@@ -1050,6 +1132,19 @@
     firemock "^0.52.7"
     typed-conversions "^0.10.4"
 
+"@forest-fire/real-time-db@^0.53.3":
+  version "0.53.3"
+  resolved "https://registry.yarnpkg.com/@forest-fire/real-time-db/-/real-time-db-0.53.3.tgz#5ba60852963e2f370f37c9cf11b62a9103402226"
+  integrity sha512-DgmMUTs3G1ADGAqZIOBQbyfsqci1w2lnSS7xPAV9wM875S9H3uhTY/yOmNEFBatkQPI/xaCb1lgkIvKuMZXNSA==
+  dependencies:
+    "@forest-fire/abstracted-database" "^0.53.3"
+    "@forest-fire/serialized-query" "^0.53.3"
+    "@forest-fire/types" "^0.53.0"
+    "@forest-fire/utility" "^0.53.0"
+    common-types "^1.14.2"
+    firemock "^0.53.1"
+    typed-conversions "^0.10.4"
+
 "@forest-fire/serialized-query@^0.52.4", "@forest-fire/serialized-query@^0.52.7", "@forest-fire/serialized-query@^0.52.8":
   version "0.52.8"
   resolved "https://registry.yarnpkg.com/@forest-fire/serialized-query/-/serialized-query-0.52.8.tgz#e446b537a614841aa229e75cf464400b8a7d6d0a"
@@ -1059,6 +1154,15 @@
     common-types "^1.14.3"
     universal-fire "^0.52.8"
 
+"@forest-fire/serialized-query@^0.53.1", "@forest-fire/serialized-query@^0.53.3":
+  version "0.53.3"
+  resolved "https://registry.yarnpkg.com/@forest-fire/serialized-query/-/serialized-query-0.53.3.tgz#1ae7064301d78dea0c2e1ad598407f1a3629bfd9"
+  integrity sha512-+n9DcDcz9GWDZMwgQabGGaSoX8fZpBjx32A1hooV2HCzonr/F+ZfnomtT6EY6ttPrKVBVWEWehd1WZt0VNV/KQ==
+  dependencies:
+    "@forest-fire/types" "^0.53.0"
+    common-types "^1.14.3"
+    universal-fire "^0.53.3"
+
 "@forest-fire/serializer-factory@^0.52.8":
   version "0.52.8"
   resolved "https://registry.yarnpkg.com/@forest-fire/serializer-factory/-/serializer-factory-0.52.8.tgz#0aab0a13808e207c94fbe781d056355c775b33df"
@@ -1066,6 +1170,15 @@
   dependencies:
     "@forest-fire/abstracted-database" "^0.52.8"
     "@forest-fire/serialized-query" "^0.52.8"
+    common-types "^1.14.3"
+
+"@forest-fire/serializer-factory@^0.53.3":
+  version "0.53.3"
+  resolved "https://registry.yarnpkg.com/@forest-fire/serializer-factory/-/serializer-factory-0.53.3.tgz#12badaa225ce4e4f61c23739c96f471435d413ea"
+  integrity sha512-Dj3o/R5JJtPMBsoSomlmTnXYZ463Fh9t0G9VESUyL/1qyo26HB7hh1/vu3GVUY1lhG7Him2YFNOcodyd6u83FQ==
+  dependencies:
+    "@forest-fire/abstracted-database" "^0.53.3"
+    "@forest-fire/serialized-query" "^0.53.3"
     common-types "^1.14.3"
 
 "@forest-fire/serilizer-factory@^0.52.4":
@@ -1091,12 +1204,35 @@
     faker "^4.1.0"
     firebase-admin "^8.12.1"
 
+"@forest-fire/types@^0.53.0":
+  version "0.53.0"
+  resolved "https://registry.yarnpkg.com/@forest-fire/types/-/types-0.53.0.tgz#4ce5fb3ba3a11b0533df4f281c6b6dece78b8fd8"
+  integrity sha512-5Gnwew12HPAjF/ecjn3YShSVL6N1Q7y9DCf/7LsnMcJ/DpmXeyy7gBUmmzpEU3CG8Y7vjkeQLhWcXKc3Ar5sqQ==
+  dependencies:
+    "@firebase/app-types" "^0.6.0"
+    "@firebase/auth-types" "^0.10.0"
+    "@firebase/database-types" "^0.5.0"
+    "@firebase/firestore-types" "^1.10.1"
+    "@types/faker" "^4.1.12"
+    common-types "^1.14.3"
+    faker "^4.1.0"
+    firebase-admin "^8.12.1"
+
 "@forest-fire/utility@^0.52.1":
   version "0.52.1"
   resolved "https://registry.yarnpkg.com/@forest-fire/utility/-/utility-0.52.1.tgz#76ef89d16e5c2662f0fa62c193d29d2124347f63"
   integrity sha512-KEyZZJkAQMuCNdDpcYzYDBDBfqisiwsqSilfhMLJ5ksjgO+ECCEvN+WwWtbjo2plUWCA+ZsPgR0yVYmybk9FCw==
   dependencies:
     "@forest-fire/types" "^0.52.0"
+    common-types "^1.14.3"
+    is-gzip "^2.0.0"
+
+"@forest-fire/utility@^0.53.0":
+  version "0.53.0"
+  resolved "https://registry.yarnpkg.com/@forest-fire/utility/-/utility-0.53.0.tgz#8783f74906a5c22d0dc59c7dd666513431401d10"
+  integrity sha512-3rwPVM6pycezAwCdagDgPpy66b8A44jU8L/JlLcB07WgRLzqcDA3LkklPuiBsKGagh7Rggr7b2jTdY1fej4BDw==
+  dependencies:
+    "@forest-fire/types" "^0.53.0"
     common-types "^1.14.3"
     is-gzip "^2.0.0"
 
@@ -5454,6 +5590,27 @@ firemock@^0.52.7:
     lodash.last "^3.0.0"
     lodash.set "^4.3.2"
     typed-conversions "^0.10.4"
+
+firemock@^0.53.1:
+  version "0.53.1"
+  resolved "https://registry.yarnpkg.com/firemock/-/firemock-0.53.1.tgz#d64570895a24b0c42acd572e1a533689ff9094b4"
+  integrity sha512-l1gfHiC4GdWlVkrHvY4Obw38YWHgWzC3SAC/wjtQ5S+PnmeqNkj0qd0515wu6BZoCuSrVUFZBa6ggvFrLqyk5Q==
+  dependencies:
+    "@forest-fire/serialized-query" "^0.53.1"
+    "@forest-fire/types" "^0.53.0"
+    "@types/faker" "^4.1.12"
+    common-types "^1.15.7"
+    deepmerge "^4.2.2"
+    email-validator "^2.0.4"
+    faker "^4.1.0"
+    fast-copy "^2.0.4"
+    fast-equals "^2.0.0"
+    firebase-key "^2.0.2"
+    lodash.first "^3.0.0"
+    lodash.get "^4.4.2"
+    lodash.last "^3.0.0"
+    lodash.set "^4.3.2"
+    typed-conversions "^0.11.1"
 
 flatten@^1.0.2:
   version "1.0.3"
@@ -11675,6 +11832,24 @@ universal-fire@^0.52.8:
     "@forest-fire/serializer-factory" "^0.52.8"
     "@forest-fire/serilizer-factory" "^0.52.4"
     "@forest-fire/types" "^0.52.0"
+    common-types "^1.15.6"
+
+universal-fire@^0.53.3:
+  version "0.53.3"
+  resolved "https://registry.yarnpkg.com/universal-fire/-/universal-fire-0.53.3.tgz#5b0bbc54f4f7068a2f531e04a44cfa68a3f4587e"
+  integrity sha512-9YXm9ZC6+McWuHjw9JOhQnft40o7LHnzU7QbBJaWQMl3n/YH/NwsxMNiU9JWF3bYGK8ALiBzhqMg4uoErmi6KA==
+  dependencies:
+    "@forest-fire/abstracted-database" "^0.53.3"
+    "@forest-fire/firestore-admin" "^0.53.3"
+    "@forest-fire/firestore-client" "^0.53.3"
+    "@forest-fire/firestore-db" "^0.53.3"
+    "@forest-fire/real-time-admin" "^0.53.3"
+    "@forest-fire/real-time-client" "^0.53.3"
+    "@forest-fire/real-time-db" "^0.53.3"
+    "@forest-fire/serialized-query" "^0.53.3"
+    "@forest-fire/serializer-factory" "^0.53.3"
+    "@forest-fire/serilizer-factory" "^0.52.4"
+    "@forest-fire/types" "^0.53.0"
     common-types "^1.15.6"
 
 universalify@^0.1.0:
