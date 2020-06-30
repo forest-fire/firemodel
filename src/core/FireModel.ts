@@ -12,7 +12,6 @@ import {
   IReduxDispatch,
   IModel,
 } from "@/types";
-import {} from "@/core";
 
 import {
   getModelMeta,
