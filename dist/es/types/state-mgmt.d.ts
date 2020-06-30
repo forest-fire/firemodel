@@ -1,7 +1,6 @@
 import { FmEvents, IFmPathValuePair, IFmRecordMeta, IFmRelationshipOperation, IModel, IMultiPathUpdates, IWatchEventClassification, IWatcherSource } from "./";
-import { IPathBasedWatchEvent, ISerializedQuery, IValueBasedWatchEvent } from "universal-fire";
+import { IPathBasedWatchEvent, IRtdbDbEvent, ISerializedQuery, IValueBasedWatchEvent } from "universal-fire";
 import { epoch, fk, pk } from "common-types";
-import { EventType } from "@firebase/database-types";
 import { IDictionary } from "common-types";
 export declare type Extractable<T, U> = T extends U ? any : never;
 export declare type NotString<T> = string extends T ? never : any;
@@ -29,11 +28,16 @@ export interface IReduxAction extends IDictionary {
 }
 export declare type IFmEventType = "value" | "child_added" | "child_moved" | "child_removed" | "child_changed";
 /**
- * An event coming from Firebase; the event property
- * as an optional parameter to the _path based_ event
- * is just for convenience as in fact there never is a
- * value in these events but in downstream conditional logic
- * it's useful to have it listed as "optional"
+ * An watcher based _event_ coming from Firebase.
+ *
+ * - an event will originate from either a "value" or "child" based
+ * event watcher; this distinction is found in the `eventFamily` prop.
+ * - typically a "value" based event happens when you watching a disvrete
+ * `Record` whereas _child_ based events come from watching a Firebase
+ * query.
+ * - another distinction is **value** versus **path** based events; this distinction
+ * is not strictly speaking a **Firebase** distinction but rather a **Firemodel**
+ * distinction. Value based events
  */
 export declare type IFmServerEvent = IValueBasedWatchEvent | (IPathBasedWatchEvent & {
     value?: undefined;
@@ -65,7 +69,7 @@ export interface IFmLocalEventBase<T> {
      * A Unique ID for the given event payload
      */
     transactionId: string;
-    eventType: EventType | "local";
+    eventType: IRtdbDbEvent | "local";
     /**
      * The event's payload value; this will be returned in all "value based"
      * events but not in "path based" events like relationship changes which
