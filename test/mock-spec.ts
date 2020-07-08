@@ -49,7 +49,7 @@ describe("Mocking:", () => {
 
   it("FireMock.prepare() leads to immediate availability of faker library", async () => {
     const m = await FireMock.prepare();
-    expect(m.faker).toBeInstanceOf(Object);
+    expect(m.faker).toBeObject();
     expect(m.faker.address.city).toBeInstanceOf(Function);
   });
 
