@@ -9,3 +9,4 @@ serverless-package/
 docs/.vuepress/dist/*
 .git
 .rpt2_cache
+dist/*
