@@ -132,9 +132,9 @@ export class List<T extends IModel> extends FireModel<T> {
     model: new () => T,
     options: IListOptions<T> = {}
   ): Promise<List<T>> {
-    const query = SerializedQuery.create<T>(this.defaultDb).orderByChild(
-      "lastUpdated"
-    );
+    const query = SerializedQuery.create<T>(
+      options.db || this.defaultDb
+    ).orderByChild("lastUpdated");
     const list = await List.fromQuery<T>(model, query, options);
 
     return list;
@@ -153,7 +153,7 @@ export class List<T extends IModel> extends FireModel<T> {
     howMany: number,
     options: IListOptions<T> = {}
   ): Promise<List<T>> {
-    const query = SerializedQuery.create<T>(this.defaultDb)
+    const query = SerializedQuery.create<T>(options.db || this.defaultDb)
       .orderByChild("createdAt")
       .limitToLast(howMany);
     const list = await List.fromQuery(model, query, options);
@@ -177,7 +177,7 @@ export class List<T extends IModel> extends FireModel<T> {
     offset: number = 0,
     options: IListOptions<T> = {}
   ): Promise<List<T>> {
-    const query = SerializedQuery.create<T>(this.defaultDb)
+    const query = SerializedQuery.create<T>(options.db || this.defaultDb)
       .orderByChild("lastUpdated")
       .limitToFirst(howMany);
     const list = await List.fromQuery(model, query, options);
@@ -203,7 +203,7 @@ export class List<T extends IModel> extends FireModel<T> {
       throw e;
     }
 
-    const query = SerializedQuery.create<T>(this.defaultDb)
+    const query = SerializedQuery.create<T>(options.db || this.defaultDb)
       .orderByChild("lastUpdated")
       .startAt(since);
 
@@ -224,7 +224,7 @@ export class List<T extends IModel> extends FireModel<T> {
     howMany: number,
     options: IListOptions<T> = {}
   ): Promise<List<T>> {
-    const query = SerializedQuery.create<T>(this.defaultDb)
+    const query = SerializedQuery.create<T>(options.db || this.defaultDb)
       .orderByChild("lastUpdated")
       .limitToLast(howMany);
     const list = await List.fromQuery(model, query, options);
@@ -243,7 +243,7 @@ export class List<T extends IModel> extends FireModel<T> {
     howMany: number,
     options: IListOptions<T> = {}
   ): Promise<List<T>> {
-    const query = SerializedQuery.create<T>(this.defaultDb)
+    const query = SerializedQuery.create<T>(options.db || this.defaultDb)
       .orderByChild("createdAt")
       .limitToFirst(howMany);
     const list = await List.fromQuery(model, query, options);
@@ -314,7 +314,7 @@ export class List<T extends IModel> extends FireModel<T> {
       val = value[1];
       operation = value[0];
     }
-    const query = SerializedQuery.create<T>(this.defaultDb)
+    const query = SerializedQuery.create<T>(options.db || this.defaultDb)
       .orderByChild(property)
       // @ts-ignore
       // Not sure why there is a typing issue here.
