@@ -12977,9 +12977,14 @@ class Record extends FireModel {
     /**
      * Associates a new FK to a relationship on the given `Model`; returning
      * the primary model as a return value
+     *
+     * @param model The `Model` which the association will originate from
+     * @param pk the _primary key_ of the primary model above
+     * @param property the _property_ on the primary model which relates to another model(s)
+     * @param refs one or more FK references
      */
-    static async associate(model, id, property, refs) {
-        const obj = await Record.get(model, id);
+    static async associate(model, pk, property, refs) {
+        const obj = await Record.get(model, pk);
         await obj.associate(property, refs);
         return obj;
     }

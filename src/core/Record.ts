@@ -28,8 +28,17 @@ import {
   IReduxDispatch,
   IWatcherEventContext,
   IWriteOperation,
+  PropertyOf,
 } from "@/types";
-import { IDictionary, Nullable, Omit, dotNotation, fk, pk } from "common-types";
+import {
+  IDictionary,
+  Nullable,
+  Omit,
+  dotNotation,
+  fk,
+  pk,
+  ConstructorFor,
+} from "common-types";
 import { WatchDispatcher, findWatchers } from "./watchers";
 import {
   buildDeepRelationshipLinks,
@@ -338,17 +347,23 @@ export class Record<T extends IModel> extends FireModel<T> implements IRecord {
   }
 
   //#region STATIC: Relationships
+
   /**
    * Associates a new FK to a relationship on the given `Model`; returning
    * the primary model as a return value
+   *
+   * @param model The `Model` which the association will originate from
+   * @param pk the _primary key_ of the primary model above
+   * @param property the _property_ on the primary model which relates to another model(s)
+   * @param refs one or more FK references
    */
   public static async associate<T extends IModel>(
-    model: new () => T,
-    id: pk,
-    property: keyof T & string,
+    model: ConstructorFor<T>,
+    pk: pk,
+    property: PropertyOf<T>,
     refs: IFkReference<any> | IFkReference<any>[]
   ) {
-    const obj = await Record.get(model, id);
+    const obj = await Record.get(model, pk);
     await obj.associate(property, refs);
     return obj;
   }

@@ -1,6 +1,6 @@
 import { FireModel } from "./";
-import { ICompositeKey, IFMEventName, IFkReference, IFmCrudOperations, IFmDispatchOptions, IFmRelationshipOptions, IFmRelationshipOptionsForHasMany, IModel, IRecord, IRecordOptions, IRecordRelationshipMeta, IReduxDispatch } from "../types";
-import { IDictionary, Nullable, fk, pk } from "common-types";
+import { ICompositeKey, IFMEventName, IFkReference, IFmCrudOperations, IFmDispatchOptions, IFmRelationshipOptions, IFmRelationshipOptionsForHasMany, IModel, IRecord, IRecordOptions, IRecordRelationshipMeta, IReduxDispatch, PropertyOf } from "../types";
+import { IDictionary, Nullable, fk, pk, ConstructorFor } from "common-types";
 import { IAbstractedDatabase } from "universal-fire";
 export declare class Record<T extends IModel> extends FireModel<T> implements IRecord {
     protected options: IRecordOptions;
@@ -102,8 +102,13 @@ export declare class Record<T extends IModel> extends FireModel<T> implements IR
     /**
      * Associates a new FK to a relationship on the given `Model`; returning
      * the primary model as a return value
+     *
+     * @param model The `Model` which the association will originate from
+     * @param pk the _primary key_ of the primary model above
+     * @param property the _property_ on the primary model which relates to another model(s)
+     * @param refs one or more FK references
      */
-    static associate<T extends IModel>(model: new () => T, id: pk, property: keyof T & string, refs: IFkReference<any> | IFkReference<any>[]): Promise<Record<T>>;
+    static associate<T extends IModel>(model: ConstructorFor<T>, pk: pk, property: PropertyOf<T>, refs: IFkReference<any> | IFkReference<any>[]): Promise<Record<T>>;
     /**
      * Given a database _path_ and a `Model`, pull out the composite key from
      * the path. This works for Models that do and _do not_ have dynamic segments
