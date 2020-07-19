@@ -4,6 +4,9 @@ import { IDictionary, datetime } from "common-types";
 import { IAbstractedDatabase } from "universal-fire";
 import { IModel } from "@/types";
 
+/** A property of a record */
+export type PropertyOf<T> = keyof T & string;
+
 export type FmModelConstructor<T extends IModel> = new () => T;
 
 /** _options_ allowed to modify the behavior/configuration of a `Model` */
