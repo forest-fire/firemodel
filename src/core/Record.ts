@@ -29,6 +29,7 @@ import {
   IWatcherEventContext,
   IWriteOperation,
   PropertyOf,
+  IPrimaryKey,
 } from "@/types";
 import {
   IDictionary,
@@ -223,19 +224,19 @@ export class Record<T extends IModel> extends FireModel<T> implements IRecord {
    * update an existing record in the database with a dictionary of prop/value pairs
    *
    * @param model the _model_ type being updated
-   * @param id the `id` for the model being updated
+   * @param pk the `id` for the model being updated
    * @param updates properties to update; this is a non-destructive operation so properties not expressed will remain unchanged. Also, because values are _nullable_ you can set a property to `null` to REMOVE it from the database.
    * @param options
    */
   public static async update<T extends IModel>(
     model: new () => T,
-    id: string | ICompositeKey<T>,
+    pk: IPrimaryKey<T>,
     updates: Nullable<Partial<T>>,
     options: IRecordOptions = {}
   ) {
     let r;
     try {
-      r = await Record.get(model, id, options);
+      r = await Record.get(model, pk, options);
       await r.update(updates);
     } catch (e) {
       const err = new Error(`Problem adding new Record: ${e.message}`);
@@ -250,18 +251,18 @@ export class Record<T extends IModel> extends FireModel<T> implements IRecord {
    * Pushes a new item into a property that is setup as a "pushKey"
    *
    * @param model the model being operated on
-   * @param id  `id` or `composite-key` that uniquely identifies a record
+   * @param pk  an `id` or `CompositeKey` that uniquely identifies a record
    * @param property the property on the record
    * @param payload the new payload you want to push into the array
    */
   public static async pushKey<T extends IModel>(
     model: new () => T,
-    id: string | ICompositeKey<T>,
+    pk: IPrimaryKey<T>,
     property: keyof T & string,
     payload: any,
     options: IRecordOptions = {}
   ) {
-    const obj = await Record.get(model, id, options);
+    const obj = await Record.get(model, pk, options);
     return obj.pushKey(property, payload);
   }
 
@@ -326,22 +327,22 @@ export class Record<T extends IModel> extends FireModel<T> implements IRecord {
    */
   public static async get<T extends IModel>(
     model: new () => T,
-    id: string | ICompositeKey<T>,
+    pk: IPrimaryKey<T>,
     options: IRecordOptions = {}
   ) {
     const record = Record.create(model, options);
-    await record._getFromDB(id);
+    await record._getFromDB(pk);
     return record;
   }
 
   public static async remove<T extends IModel>(
     model: new () => T,
-    id: IFkReference<T>,
+    pk: IPrimaryKey<T>,
     /** if there is a known current state of this model you can avoid a DB call to get it */
     currentState?: Record<T>
   ) {
     // TODO: add lookup in local state to see if we can avoid DB call
-    const record = currentState ? currentState : await Record.get(model, id);
+    const record = currentState ? currentState : await Record.get(model, pk);
     await record.remove();
     return record;
   }
@@ -359,7 +360,7 @@ export class Record<T extends IModel> extends FireModel<T> implements IRecord {
    */
   public static async associate<T extends IModel>(
     model: ConstructorFor<T>,
-    pk: pk,
+    pk: IPrimaryKey<T>,
     property: PropertyOf<T>,
     refs: IFkReference<any> | IFkReference<any>[]
   ) {
