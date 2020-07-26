@@ -1,5 +1,6 @@
 import { FireModelError } from "@/errors";
 import { IDictionary } from "common-types";
+import { IAbstractedDatabase } from "universal-fire";
 
 /**
  * **IFmRelationshipOperation**
@@ -55,6 +56,11 @@ export interface IFmRelationshipOptions {
    * to ensure the rollback is complete.
    */
   rollback?: (e: FireModelError) => Promise<void>;
+
+  /**
+   * Provide an explicit reference to the database for the relationship operations
+   */
+  db?: IAbstractedDatabase;
 }
 
 /**

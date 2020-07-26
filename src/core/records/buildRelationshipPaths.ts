@@ -43,7 +43,7 @@ export function buildRelationshipPaths<T>(
     const fkModelConstructor = meta.relationship(property).fkConstructor();
     const inverseProperty = meta.relationship(property).inverseProperty;
     const fkRecord = Record.createWith(fkModelConstructor, fkRef, {
-      db: rec.db,
+      db: options.db || rec.db,
     });
     const results: IFmPathValuePair[] = [];
 

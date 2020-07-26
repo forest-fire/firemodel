@@ -366,10 +366,11 @@ export class Record<T extends IModel> extends FireModel<T> implements IRecord {
     model: ConstructorFor<T>,
     pk: IPrimaryKey<T>,
     property: PropertyOf<T>,
-    refs: IFkReference<any> | IFkReference<any>[]
+    refs: IFkReference<any> | IFkReference<any>[],
+    options: IFmRelationshipOptions
   ) {
     const obj = await Record.get(model, pk);
-    await obj.associate(property, refs);
+    await obj.associate(property, refs, options);
     return obj;
   }
 
@@ -1210,7 +1211,7 @@ export class Record<T extends IModel> extends FireModel<T> implements IRecord {
     if (isHasManyRelationship(this, property)) {
       throw new NotHasOneRelationship(this, property, "setRelationship");
     }
-    const paths = buildRelationshipPaths(this, property, fkId);
+    const paths = buildRelationshipPaths(this, property, fkId, options);
     await relationshipOperation(this, "set", property, [fkId], paths, options);
   }
 
