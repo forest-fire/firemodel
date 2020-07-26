@@ -1678,6 +1678,11 @@ export class Record<T extends IModel> extends FireModel<T> implements IRecord {
    * Allows for the static "add" method to add a record
    */
   private async _adding(options: IRecordOptions) {
+    let defaultDb = FireModel.defaultDb;
+    if (options.db) {
+      FireModel.defaultDb = options.db;
+    }
+
     if (!this.id) {
       this.id = fbKey();
     }
@@ -1741,6 +1746,8 @@ export class Record<T extends IModel> extends FireModel<T> implements IRecord {
           this.modelName
         )} [${this.id} model) --  were: ${relationshipsTouched.join(", ")}`
       );
+    } finally {
+      FireModel.defaultDb = defaultDb;
     }
 
     return this;
