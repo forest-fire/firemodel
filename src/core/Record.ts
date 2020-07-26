@@ -293,6 +293,10 @@ export class Record<T extends IModel> extends FireModel<T> implements IRecord {
     payload: Partial<T> | string,
     options: IRecordOptions = {}
   ) {
+    const defaultDb = FireModel.defaultDb;
+    if (options.db) {
+      FireModel.defaultDb = options.db;
+    }
     const rec = Record.create(model, options);
 
     if (options.setDeepRelationships === true) {
@@ -311,7 +315,7 @@ export class Record<T extends IModel> extends FireModel<T> implements IRecord {
     // the async possibilites of this method (only if `options.setDeepRelationships`)
     // are not negatively impacting this method
     rec._initialize(properties, options);
-
+    FireModel.defaultDb = defaultDb;
     return rec;
   }
 
@@ -1250,6 +1254,10 @@ export class Record<T extends IModel> extends FireModel<T> implements IRecord {
     data: Partial<T>,
     options: IRecordOptions = {}
   ): Promise<void> {
+    const defaultDb = FireModel.defaultDb;
+    if (options.db) {
+      FireModel.defaultDb = options.db;
+    }
     if (data) {
       Object.keys(data).map((key) => {
         this._data[key as keyof T] = data[key as keyof T];
@@ -1281,7 +1289,9 @@ export class Record<T extends IModel> extends FireModel<T> implements IRecord {
         }
       }
     }
-    await Promise.all(promises);
+    await Promise.all(promises).finally(() => {
+      FireModel.defaultDb = defaultDb;
+    });
 
     const now = new Date().getTime();
     if (!this._data.lastUpdated) {
