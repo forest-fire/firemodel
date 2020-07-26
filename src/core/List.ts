@@ -287,7 +287,8 @@ export class List<T extends IModel> extends FireModel<T> {
     }
 
     const dbPath = List.dbPath(model, options.offsets);
-    await FireModel.defaultDb.update(dbPath, records);
+    const db = options.db || FireModel.defaultDb;
+    await db.update(dbPath, records);
   }
 
   /**
