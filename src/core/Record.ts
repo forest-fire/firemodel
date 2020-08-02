@@ -367,7 +367,7 @@ export class Record<T extends IModel> extends FireModel<T> implements IRecord {
     pk: IPrimaryKey<T>,
     property: PropertyOf<T>,
     refs: IFkReference<any> | IFkReference<any>[],
-    options: IFmRelationshipOptions
+    options: IFmRelationshipOptions = {}
   ) {
     const obj = await Record.get(model, pk);
     await obj.associate(property, refs, options);
