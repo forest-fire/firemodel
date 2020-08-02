@@ -51,7 +51,6 @@ export async function waitForInitialization<T = Model>(
   while (!ready(watcher) && !stopWaiting) {
     await wait(50);
     const currentTime = new Date().getTime();
-    console.log(currentTime - startTime);
 
     if (currentTime - startTime > timeout) {
       stopWaiting = true;

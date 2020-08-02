@@ -2,6 +2,7 @@ import { ICompositeKey, IModel } from "@/types";
 
 import { FireModelError } from "@/errors";
 import { capitalize } from "@/util";
+import { Record } from "../Record";
 
 export function createCompositeKeyFromFkString<T = ICompositeKey>(
   fkCompositeRef: string,
@@ -27,9 +28,9 @@ export function createCompositeKeyFromFkString<T = ICompositeKey>(
 function setWithType<T extends IModel>(prop: string, value: string, model: T) {
   if (!model.META.property(prop)) {
     throw new FireModelError(
-      `When building a "typed" composite key based on the model ${capitalize(
+      `When building a composite key for the model ${capitalize(
         model.constructor.name
-      )}, the property "${prop}" was presented but this property doesn't exist on this model!`,
+      )}, the property "${prop}" was presented but this property doesn't exist on this model! `,
       "firemodel/property-does-not-exist"
     );
   }
