@@ -126,6 +126,11 @@ export interface IFmBuildRelationshipOptions {
    * set to "remove"
    */
   operation?: "remove" | "add";
+
+  /**
+   * Optionally pass in an explicit database connection
+   */
+  db?: IAbstractedDatabase;
 }
 
 export interface IRecordOptions {
