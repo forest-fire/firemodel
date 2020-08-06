@@ -1678,7 +1678,7 @@ export class Record<T extends IModel> extends FireModel<T> implements IRecord {
         `Failed to load the Record "${this.modelName}::${
           this.id
         }" with composite key of:\n ${JSON.stringify(keys, null, 2)}`,
-        "firebase/invalid-composite-key"
+        "firebase/no-record-found"
       );
     }
 
