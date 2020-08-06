@@ -9,7 +9,7 @@ import { IDictionary, epochWithMilliseconds } from "common-types";
 import { IListOptions, IModel, IPrimaryKey, IReduxDispatch } from "@/types";
 import { capitalize, getModelMeta, pathJoin } from "@/util";
 
-import { FireModelError } from "@/errors";
+import { FireModelError, FireModelProxyError } from "@/errors";
 import { arrayToHash } from "typed-conversions";
 
 const DEFAULT_IF_NOT_FOUND = "__DO_NOT_USE__";
@@ -335,6 +335,8 @@ export class List<T extends IModel> extends FireModel<T> {
    * **Note:** the term `ids` is not entirely accurate, it should probably be phrased as `fks`
    * because the "id" can be any form of `ICompositeKey` as well just a plain `id`. The naming
    * here is just to retain consistency with the **Watch** api.
+   *
+   * `removed` COMMENT
    */
   public static async ids<T extends IModel>(
     model: new () => T,
@@ -342,10 +344,59 @@ export class List<T extends IModel> extends FireModel<T> {
   ) {
     const promises: any[] = [];
     const results: T[] = [];
-    fks.forEach((fk) => {
-      promises.push(Record.get(model, fk).then((p) => results.push(p.data)));
+    const errors: Array<{ error: FireModelError; id: IPrimaryKey<T> }> = [];
+    fks.forEach((id) => {
+      promises.push(
+        Record.get(model, id)
+          .then((p) => results.push(p.data))
+          .catch((error) => errors.push({ error, id }))
+      );
     });
     await Promise.all(promises);
+    // if error resulted from record not existing; this should NOT be seen as
+    // an error but all other errors will
+    if (errors.length > 0) {
+      if (
+        errors.every(
+          (err) => !err.error.code || err.error.code !== "no-record-found"
+        )
+      ) {
+        const realErrors = errors.filter(
+          (err) => !err.error.code || err.error.code !== "no-record-found"
+        );
+        const emptyResults = errors.filter(
+          (err) => err.error.code && err.error.code === "no-record-found"
+        );
+
+        const errorOverview = errors
+          .map((i) => `[ ${JSON.stringify(i.id)}]: ${i.error.message}`)
+          .join("\n");
+        if (results.length > 0) {
+          throw new FireModelError(
+            `While calling List.ids(${capitalize(
+              model.name
+            )}, ...) all of the ids requested failed. Structured versions of these errors can be found in the "errors" properoty but here is a summary of the error messages recieved:\n\n${errorOverview}`,
+            "failure-of-list-ids",
+            errors
+          );
+        }
+
+        throw new FireModelError(
+          `While calling List.ids(${capitalize(
+            model.name
+          )}, ...) there were some successful results but there were error(s) on ${
+            realErrors.length
+          } of the ${fks.length} requested records.${
+            emptyResults.length > 0
+              ? `There were also ${emptyResults.length} records which came back with empty results (which may be fine). Structured versions of these errors can be found in the "errors" properoty but here is a summary of the error messages recieved:\n\n${errorOverview}`
+              : ""
+          }`,
+          "errors-in-list-ids"
+        );
+      }
+    } else {
+    }
+
     const obj = new List(model);
     obj._data = results;
 

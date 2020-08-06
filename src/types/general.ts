@@ -2,7 +2,15 @@ import { IDictionary, datetime } from "common-types";
 
 // import { IAbstractedDatabase } from "universal-fire";
 import { IAbstractedDatabase } from "universal-fire";
-import { IModel } from "@/types";
+import { IModel, IPrimaryKey } from "@/types";
+import type { FireModelError } from "@/errors";
+
+export interface IUnderlyingError<T> {
+  /** an identifying characteristic of the individual error */
+  id: string | IPrimaryKey<T>;
+  /** the error itself */
+  error: FireModelError;
+}
 
 /** A property of a record */
 export type PropertyOf<T> = keyof T & string;
