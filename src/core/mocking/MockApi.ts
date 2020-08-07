@@ -9,15 +9,22 @@ import { Record } from "@/core";
 
 let mockPrepared = false;
 
+const config: IMockRelationshipConfig = {
+  relationshipBehavior: "ignore",
+  exceptionPassthrough: false,
+};
+
+/**
+ * **Mock API**
+ *
+ * The mock API gives you the ability to generate realistic data based on
+ * a Firemodel `Model` (and it's relationships)
+ */
 export function MockApi<T>(
   db: IAbstractedDatabase,
   modelConstructor: new () => T
 ) {
-  const config: IMockRelationshipConfig = {
-    relationshipBehavior: "ignore",
-    exceptionPassthrough: false,
-  };
-  const MockApi = {
+  return {
     /**
      * generate
      *
@@ -89,6 +96,7 @@ export function MockApi<T>(
 
       return mocks;
     },
+
     /**
      * createRelationshipLinks
      *
@@ -100,7 +108,7 @@ export function MockApi<T>(
       cardinality?: IDictionary<[number, number] | number | true>
     ) {
       config.relationshipBehavior = "link";
-      return MockApi;
+      return MockApi<T>(db, modelConstructor);
     },
 
     /**
@@ -108,13 +116,13 @@ export function MockApi<T>(
      */
     dynamicPathBehavior(options: string) {
       //
-      return MockApi;
+      return MockApi<T>(db, modelConstructor);
     },
 
     /** All overrides for the primary model are passed along to FK's as well */
     overridesPassThrough() {
       config.exceptionPassthrough = true;
-      return MockApi;
+      return MockApi<T>(db, modelConstructor);
     },
 
     /**
@@ -133,9 +141,7 @@ export function MockApi<T>(
       if (cardinality) {
         config.cardinality = cardinality;
       }
-      return MockApi;
+      return MockApi<T>(db, modelConstructor);
     },
   };
-
-  return MockApi;
 }
