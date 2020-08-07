@@ -38,5 +38,5 @@ export function Mock<T extends IModel>(
     );
   }
 
-  return MockApi<T>(db, modelConstructor);
+  return new MockApi<T>(db, modelConstructor);
 }

@@ -386,6 +386,8 @@ describe("MOCK uses dynamic dbOffsets", () => {
       await Mock(DeeperPerson).generate(3);
       throw new Error("Should have failed");
     } catch (e) {
+      console.log("intended to be mock-not-ready:", e.messsage);
+
       expect(e.code).toBe("mock-not-ready");
     }
   });
