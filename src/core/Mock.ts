@@ -1,15 +1,10 @@
-import { FireModel, Record } from "@/core";
+import { FireModel, IMockOptions } from "@/core";
 
 import { FireModelError } from "@/errors";
 import { IAbstractedDatabase } from "universal-fire";
 import { IModel } from "@/types";
 import { MockApi } from "./mocking/MockApi";
-
-function defaultCardinality<T>(r: Record<T>) {
-  return r.META.relationships.reduce((prev, curr) => {
-    prev = { ...prev, [curr.property]: true };
-  }, {} as any);
-}
+import { capitalize } from "@/util";
 
 /**
  * Provides a _Model_ aware means of mocking your data.
@@ -19,7 +14,8 @@ function defaultCardinality<T>(r: Record<T>) {
  */
 export function Mock<T extends IModel>(
   modelConstructor: new () => T,
-  db?: IAbstractedDatabase
+  db: IAbstractedDatabase | undefined = undefined,
+  options: IMockOptions = {}
 ) {
   if (!db) {
     if (FireModel.defaultDb) {
@@ -32,9 +28,11 @@ export function Mock<T extends IModel>(
     }
   }
 
-  if (!db.isMockDb) {
-    console.warn(
-      "You are using Mock() with a real database; typically a mock database is preferred"
+  if (!db.isMockDb && !options.allowRealDatabase) {
+    throw new FireModelError(
+      `You are using Mock(${capitalize(
+        modelConstructor.name
+      )}) with a real database; typically a mock database is preferred`
     );
   }
 

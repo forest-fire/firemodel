@@ -32,6 +32,7 @@ describe("Mocking:", () => {
   let db: IRealTimeAdmin;
   let realDb: IRealTimeAdmin;
   beforeAll(async () => {
+    // TODO: check why "realDb" is a mock DB
     realDb = await RealTimeAdmin.connect({ mocking: true });
   });
   afterAll(async () => {
@@ -192,7 +193,6 @@ describe("Mocking:", () => {
     await Record.add(FancyPerson, {
       name: "Bob Barker",
     });
-    await wait(5); // ensures that DB event has time to fire
 
     const eventTypes: Set<string> = new Set();
     events.forEach((e) => eventTypes.add(e.type));
@@ -245,9 +245,5 @@ describe("Mocking:", () => {
     expect(eventTypes2).toEqual(
       expect.arrayContaining([FmEvents.RECORD_ADDED])
     );
-  });
-
-  it.skip("Updating a record with values which are unchanged does NOT fire a server watch event", async () => {
-    //
   });
 });
