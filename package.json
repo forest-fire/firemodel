@@ -1,6 +1,6 @@
 {
   "name": "firemodel",
-  "version": "0.56.2",
+  "version": "0.57.0",
   "description": "Modeling, Access, and Mocking for Firebase Projects",
   "license": "MIT",
   "repository": "https://github.com/forest-fire/firemodel",
@@ -55,21 +55,20 @@
     "wait-in-parallel": "^1.2.6"
   },
   "peerDependencies": {
-    "universal-fire": "^0.56.0"
+    "universal-fire": "~0.57.0"
   },
   "optionalDependencies": {
     "common-types": "^1.15.8",
     "date-fns": "^2.15.0",
     "dexie": "^3.0.2",
-    "reflect-metadata": "^0.1.13",
     "firebase-key": "^2.0.2",
-    "typed-conversions": "^0.11.1",
+    "firemock": "~0.57.0",
     "pluralize": "^8.0.0",
-    "firemock": "^0.56.0"
+    "reflect-metadata": "^0.1.13",
+    "typed-conversions": "^0.11.1"
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^12.0.0",
-    "rollup-plugin-analyzer": "^3.3.0",
     "@rollup/plugin-json": "^4.0.3",
     "@rollup/plugin-node-resolve": "^8.1.0",
     "@rollup/plugin-typescript": "^4.1.2",
@@ -92,7 +91,7 @@
     "do-devops": "^0.4.0",
     "esbuild": "^0.5.9",
     "fake-indexeddb": "^3.0.2",
-    "firemock": "^0.56.0",
+    "firemock": "~0.57.0",
     "jest": "^26.0.1",
     "jest-babel": "^1.0.1",
     "jest-extended": "^0.11.5",
@@ -103,6 +102,7 @@
     "prettier": "^2.0.5",
     "rimraf": "^3.0.0",
     "rollup": "^2.18.0",
+    "rollup-plugin-analyzer": "^3.3.0",
     "rollup-plugin-typescript2": "^0.27.1",
     "test-console": "^1.1.0",
     "ts-jest": "^26.1.1",
