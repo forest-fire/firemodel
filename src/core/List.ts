@@ -9,7 +9,7 @@ import { IDictionary, epochWithMilliseconds } from "common-types";
 import { IListOptions, IModel, IPrimaryKey, IReduxDispatch } from "@/types";
 import { capitalize, getModelMeta, pathJoin } from "@/util";
 
-import { FireModelError, FireModelProxyError } from "@/errors";
+import { FireModelError } from "@/errors";
 import { arrayToHash } from "typed-conversions";
 
 const DEFAULT_IF_NOT_FOUND = "__DO_NOT_USE__";
@@ -151,11 +151,15 @@ export class List<T extends IModel> extends FireModel<T> {
   public static async first<T extends IModel>(
     model: new () => T,
     howMany: number,
-    options: IListOptions<T> = {}
+    options: Omit<IListOptions<T>, "limit"> = {}
   ): Promise<List<T>> {
-    const query = SerializedQuery.create<T>(options.db || this.defaultDb)
+    let query = SerializedQuery.create<T>(options.db || this.defaultDb)
       .orderByChild("createdAt")
       .limitToLast(howMany);
+
+    //TODO: there definitely typing problems in this Serialized Query union
+    if (options.offset) (query as any).offset(options.offset);
+
     const list = await List.fromQuery(model, query, options);
 
     return list;
@@ -203,9 +207,13 @@ export class List<T extends IModel> extends FireModel<T> {
       throw e;
     }
 
-    const query = SerializedQuery.create<T>(options.db || this.defaultDb)
+    let query = SerializedQuery.create<T>(options.db || this.defaultDb)
       .orderByChild("lastUpdated")
       .startAt(since);
+
+    // TODO: fix this typing nonsense
+    if (options.limit) (query as any).limit(options.limit);
+    if (options.offset) (query as any).offset(options.offset);
 
     const list = await List.fromQuery(model, query, options);
 
@@ -243,9 +251,13 @@ export class List<T extends IModel> extends FireModel<T> {
     howMany: number,
     options: IListOptions<T> = {}
   ): Promise<List<T>> {
-    const query = SerializedQuery.create<T>(options.db || this.defaultDb)
+    let query = SerializedQuery.create<T>(options.db || this.defaultDb)
       .orderByChild("createdAt")
       .limitToFirst(howMany);
+    // TODO: fix typing!
+    if (options.limit) (query as any).limit(options.limit);
+    if (options.offset) (query as any).offset(options.offset);
+
     const list = await List.fromQuery(model, query, options);
 
     return list;
@@ -315,11 +327,14 @@ export class List<T extends IModel> extends FireModel<T> {
       val = value[1];
       operation = value[0];
     }
-    const query = SerializedQuery.create<T>(options.db || this.defaultDb)
+    let query = SerializedQuery.create<T>(options.db || this.defaultDb)
       .orderByChild(property)
       // @ts-ignore
-      // Not sure why there is a typing issue here.
+      // TODO: Not sure why there is a typing issue here.
       .where(operation, val);
+
+    if (options.limit) query.limit(options.limit);
+    if (options.offset) query.offset(options.offset);
 
     const list = await List.fromQuery(model, query, options);
 
@@ -488,84 +503,6 @@ export class List<T extends IModel> extends FireModel<T> {
     const list = List.create(this._modelConstructor);
     list._data = this._data.filter(f);
     return list;
-  }
-
-  /** Returns another List with data filtered down by passed in filter function */
-  public find(
-    f: ListFilterFunction<T>,
-    defaultIfNotFound = DEFAULT_IF_NOT_FOUND
-  ): Record<T> {
-    const filtered = this._data.filter(f);
-    const r = Record.create(this._modelConstructor);
-    if (filtered.length > 0) {
-      return Record.createWith(this._modelConstructor, filtered[0]);
-    } else {
-      if (defaultIfNotFound !== DEFAULT_IF_NOT_FOUND) {
-        return defaultIfNotFound as any;
-      } else {
-        const e = new Error(
-          `find(fn) did not find a value in the List [ length: ${this.data.length} ]`
-        );
-        e.name = "NotFound";
-        throw e;
-      }
-    }
-  }
-
-  public filterWhere<K extends keyof T>(prop: K, value: T[K]): List<T> {
-    const whereFilter = (item: T) => item[prop] === value;
-
-    const list = new List(this._modelConstructor);
-    list._data = this.data.filter(whereFilter);
-    return list;
-  }
-
-  public filterContains<K extends keyof T>(prop: K, value: any): List<T> {
-    return this.filter((item: any) => Object.keys(item[prop]).includes(value));
-  }
-
-  /**
-   * findWhere
-   *
-   * returns the first record in the list where the property equals the
-   * specified value. If no value is found then an error is thrown unless
-   * it is stated
-   */
-  public findWhere(
-    prop: keyof T & string,
-    value: T[typeof prop],
-    defaultIfNotFound = DEFAULT_IF_NOT_FOUND
-  ): Record<T> {
-    const list =
-      this.META.isProperty(prop) ||
-      (this.META.isRelationship(prop) &&
-        this.META.relationship(prop).relType === "hasOne")
-        ? this.filterWhere(prop, value)
-        : this.filterContains(prop, value);
-
-    if (list.length > 0) {
-      return Record.createWith(this._modelConstructor, list._data[0]);
-    } else {
-      if (defaultIfNotFound !== DEFAULT_IF_NOT_FOUND) {
-        return defaultIfNotFound as any;
-      } else {
-        const valid =
-          this.META.isProperty(prop) ||
-          (this.META.isRelationship(prop) &&
-            this.META.relationship(prop).relType === "hasOne")
-            ? this.map((i) => i[prop])
-            : this.map((i) => Object.keys(i[prop]));
-        const e = new Error(
-          `List<${
-            this.modelName
-          }>.findWhere(${prop}, ${value}) was not found in the List [ length: ${
-            this.data.length
-          } ]. \n\nValid values include: \n\n${valid.join("\t")}`
-        );
-        e.name = "NotFound";
-        throw e;
-      }
-    }
   }
 
   /**

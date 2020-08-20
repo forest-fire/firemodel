@@ -297,67 +297,6 @@ describe("List class: ", () => {
     }
   });
 
-  it("using findWhere() returns a record when property/value is found", async () => {
-    db.mock
-      .addSchema<Person>("person", (h: any) => () => ({
-        name: h.faker.name.firstName(),
-        age: h.faker.random.number({ min: 1, max: 50 }),
-        createdAt: h.faker.date.past().valueOf(),
-        lastUpdated: h.faker.date.recent().valueOf(),
-      }))
-      .pathPrefix("authenticated");
-    db.mock.queueSchema("person", 30);
-    db.mock.queueSchema("person", 1, { name: "foobar" });
-    db.mock.queueSchema("person", 3, { age: 12 }).generate();
-    const list = await List.all(Person);
-    const firstPersonId = helpers.firstKey(db.mock.db.authenticated.people);
-    expect(list.findWhere("id", firstPersonId)).toBeInstanceOf(Object);
-    expect(list.findWhere("name", "foobar")).toBeInstanceOf(Object);
-    expect(list.findWhere("age", 12)).toBeInstanceOf(Object);
-  });
-
-  it("using findWhere() returns appropriately when record not found", async () => {
-    db.mock
-      .addSchema<Person>("person", (h: any) => () => ({
-        name: h.faker.name.firstName(),
-        age: h.faker.random.number({ min: 1, max: 50 }),
-        createdAt: h.faker.date.past().valueOf(),
-        lastUpdated: h.faker.date.recent().valueOf(),
-      }))
-      .pathPrefix("authenticated");
-    db.mock.queueSchema("person", 3, { age: 12 }).generate();
-    const list = await List.all(Person);
-    try {
-      expect(list.findWhere("name", "foobar")).toBeInstanceOf(Object);
-    } catch (e) {
-      expect(e.name).toBe("NotFound");
-    }
-    expect(list.findWhere("name", "foobar", "default")).toBe("default");
-  });
-
-  it("using find() returns a record when passed in filter finds record", async () => {
-    db.mock
-      .addSchema<Person>("person", (h: any) => () => ({
-        name: h.faker.name.firstName(),
-        age: h.faker.random.number({ min: 1, max: 50 }),
-        createdAt: h.faker.date.past().valueOf(),
-        lastUpdated: h.faker.date.recent().valueOf(),
-      }))
-      .pathPrefix("authenticated");
-    db.mock.queueSchema("person", 30);
-    db.mock.queueSchema("person", 1, { name: "foobar" });
-    db.mock.queueSchema("person", 3, { age: 12 }).generate();
-
-    const people = await List.all(Person);
-
-    people.map((person) => {
-      expect(person.id).toBeString();
-      expect(person.age).toBeNumber();
-      const foundById = people.findWhere("id", person.id);
-      const foundByAge = people.findWhere("age", person.age);
-    });
-  });
-
   it("using remove() able to change local state, db state, and state mgmt", async () => {
     await Mock(Person, db).generate(10);
     const events: Array<IFmWatchEvent<Person>> = [];

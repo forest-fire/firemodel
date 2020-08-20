@@ -122,10 +122,10 @@ describe("Mocking:", () => {
     expect(people).toHaveLength(numberOfFolks * 5);
 
     const carIds = cars.map((car) => car.id);
-    carIds.map((id) => people.findWhere("cars", id));
+    carIds.map((id) => people.filter((i) => i.id === id));
 
     const companyIds = company.map((c) => c.id);
-    companyIds.map((id) => people.findWhere("employer", id));
+    companyIds.map((id) => people.filter((i) => i.id === id));
   });
 
   it("using a specific config for createRelationshipLinks works as expected", async () => {

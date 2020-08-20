@@ -23,6 +23,13 @@ export interface IModelOptions {
   db?: IAbstractedDatabase;
 }
 
+export enum SortOrder {
+  /** Sort in Ascending order */
+  ASC = "ASC",
+  /** Sort in Decending order */
+  DEC = "DEC",
+}
+
 /**
  * **List Options**
  *
@@ -32,9 +39,21 @@ export interface IModelOptions {
  * - `offsets`: for dynamic paths, specify the dynamic properties needed
  * - `db`: allows you to specify a non-default Firebase DB
  */
-export interface IListOptions<T> extends IModelOptions {
+export interface IListOptions<T, K extends keyof T = keyof T>
+  extends IModelOptions {
   offsets?: Partial<T>;
+  /** optionally use a specific database connection rather than the _default_ connection */
   db?: IAbstractedDatabase;
+
+  /** limit the results returned to a discrete number of records; useful for pagination */
+  limit?: number;
+  /**
+   * Offset the starting record for the server to return; this is useful for pagination purposes
+   *
+   * > **Note:** please do not confuse this with the `offsets` option which is for specifying properties
+   * of the "composite key" in a Model which has a dynamic path
+   */
+  offset?: number;
 }
 
 export interface IMetaData {
