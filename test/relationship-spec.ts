@@ -109,10 +109,11 @@ describe("Relationship > ", () => {
   it("building a TYPED composite key errors when invalid property is introduced", async () => {
     try {
       const t1 = createCompositeKeyFromFkString("foo::age:13::geo:CT", Person);
+
       throw new Error("Should not reach this point because of invalid prop");
     } catch (e) {
       expect(e.firemodel).toBe(true);
-      expect(e.code).toBe("property-does-not-exist");
+      expect(e.code).toBe("invalid-composite-key");
     }
   });
 

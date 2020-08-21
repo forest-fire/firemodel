@@ -1,6 +1,10 @@
 // #autoindex:named
 //#region autoindexed files
-// indexed at: 8th Aug, 2020, 08:01 AM ( GMT-7 )
+
+// index last changed at: 8th Aug, 2020, 08:34 PM ( GMT-7 )
+// export: named; exclusions: index, private.
+// files: MockApi, PropertyNamePatterns, addRelationships, fakeIt, mockProperties, mockValue, processHasMany, processHasOne, types.
+
 // local file exports
 export * from "./MockApi";
 export * from "./PropertyNamePatterns";
@@ -11,4 +15,5 @@ export * from "./mockValue";
 export * from "./processHasMany";
 export * from "./processHasOne";
 export * from "./types";
+
 //#endregion

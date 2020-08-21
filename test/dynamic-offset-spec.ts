@@ -280,11 +280,12 @@ describe("LIST uses static offsets() with static API methods", () => {
     await Mock(DeepPerson).generate(3, { group: "test", age: 32 });
     await Mock(DeepPerson).generate(6, { group: "test", age: 45 });
     await Mock(DeepPerson).generate(5, { group: "test2", age: 45 });
+
     const people = await List.where(DeepPerson, "age", 45, {
       offsets: { group: "test" },
     });
-    // console.log({people: people.data})
-    expect(people.data.length).toBe(6);
+
+    expect(people.length).toEqual(6);
     expect(people.filter((i) => i.age === 45)).toHaveLength(6);
   });
 });
@@ -386,8 +387,6 @@ describe("MOCK uses dynamic dbOffsets", () => {
       await Mock(DeeperPerson).generate(3);
       throw new Error("Should have failed");
     } catch (e) {
-      console.log("intended to be mock-not-ready:", e.messsage);
-
       expect(e.code).toBe("mock-not-ready");
     }
   });

@@ -169,7 +169,8 @@ describe("Relationship > ", () => {
     bob = await Record.get(FancyPerson, "bobs-yur-uncle");
     expect(bob.get("employer")).toBe("e8899");
     const people = await List.all(FancyPerson);
-    const bob2 = people.findById(bob.id);
+    const bob2 = people.getRecord(bob.id);
+    people.get("1234");
     expect(bob2.get("employer")).toBe("e8899");
     const company = await Record.get(Company, "e8899");
   });

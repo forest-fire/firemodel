@@ -1,4 +1,4 @@
-# Frontend State Mgmt
+# State Mgmt / Dispatching
 
 ## Overview
 

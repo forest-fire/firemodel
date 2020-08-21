@@ -4,8 +4,8 @@ module.exports = {
       serviceWorker: true,
       updatePopup: {
         message: "New Firemodel content is available",
-        buttonText: "Refresh"
-      }
+        buttonText: "Refresh",
+      },
     },
     // mermaid: true,
     "@vuepress/back-to-top": true,
@@ -13,14 +13,14 @@ module.exports = {
     "@vuepress/medium-zoom": true,
     autometa: {
       site: {
-        name: "Firemodel"
+        name: "Firemodel",
       },
       canonical_base: "https://firemodel.info",
       author: {
         name: "Ken Snyder",
-        twitter: "yankeeinlondon"
-      }
-    }
+        twitter: "yankeeinlondon",
+      },
+    },
   },
   title: "Firemodel",
   description: "Modeling, Access, and Mocking for Firebase Projects",
@@ -33,8 +33,8 @@ module.exports = {
         rel: "favicon",
         href: "/icons/icon-16.png",
         type: "image/png",
-        sizes: "16x16"
-      }
+        sizes: "16x16",
+      },
     ],
     [
       "link",
@@ -42,8 +42,8 @@ module.exports = {
         rel: "favicon",
         href: "/icons/icon-32.png",
         type: "image/png",
-        sizes: "32x32"
-      }
+        sizes: "32x32",
+      },
     ],
     [
       "link",
@@ -51,28 +51,28 @@ module.exports = {
         rel: "favicon",
         href: "/icons/icon-48.png",
         type: "image/png",
-        sizes: "48x48"
-      }
+        sizes: "48x48",
+      },
     ],
     [
       "link",
-      { rel: "icon", href: "/icons/icon-rounded-32.png", sizes: "32x32" }
+      { rel: "icon", href: "/icons/icon-rounded-32.png", sizes: "32x32" },
     ],
     [
       "link",
-      { rel: "icon", href: "/icons/icon-rounded-48.png", sizes: "48x48" }
+      { rel: "icon", href: "/icons/icon-rounded-48.png", sizes: "48x48" },
     ],
     [
       "link",
-      { rel: "icon", href: "/icons/icon-rounded-192.png", sizes: "192x192" }
+      { rel: "icon", href: "/icons/icon-rounded-192.png", sizes: "192x192" },
     ],
     [
       "link",
-      { rel: "icon", href: "/icons/icon-rounded-225.png", sizes: "225x225" }
+      { rel: "icon", href: "/icons/icon-rounded-225.png", sizes: "225x225" },
     ],
     [
       "link",
-      { rel: "icon", href: "/icons/icon-rounded-512.png", sizes: "512x512" }
+      { rel: "icon", href: "/icons/icon-rounded-512.png", sizes: "512x512" },
     ],
     ["link", { rel: "manifest", href: "/manifest.json" }],
     [
@@ -80,94 +80,94 @@ module.exports = {
       {
         rel: "apple-touch-icon-precomposed",
         href: "/icons/icon-rounded-192.png",
-        sizes: "192x192"
-      }
+        sizes: "192x192",
+      },
     ],
     [
       "link",
       {
         rel: "apple-touch-startup-image",
         href: "icons/apple_splash_2048.png",
-        sizes: "2048x2732"
-      }
+        sizes: "2048x2732",
+      },
     ],
     [
       "link",
       {
         rel: "apple-touch-startup-image",
         href: "icons/apple_splash_1668.png",
-        sizes: "1668x2224"
-      }
+        sizes: "1668x2224",
+      },
     ],
     [
       "link",
       {
         rel: "apple-touch-startup-image",
         href: "icons/apple_splash_1536.png",
-        sizes: "1536x2048"
-      }
+        sizes: "1536x2048",
+      },
     ],
     [
       "link",
       {
         rel: "apple-touch-startup-image",
         href: "icons/apple_splash_1125.png",
-        sizes: "1125x2436"
-      }
+        sizes: "1125x2436",
+      },
     ],
     [
       "link",
       {
         rel: "apple-touch-startup-image",
         href: "icons/apple_splash_1242.png",
-        sizes: "1242x2208"
-      }
+        sizes: "1242x2208",
+      },
     ],
     [
       "link",
       {
         rel: "apple-touch-startup-image",
         href: "icons/apple_splash_750.png",
-        sizes: "750x1334"
-      }
+        sizes: "750x1334",
+      },
     ],
     [
       "link",
       {
         rel: "apple-touch-startup-image",
         href: "icons/apple_splash_640.png",
-        sizes: "640x1136"
-      }
+        sizes: "640x1136",
+      },
     ],
 
     [
       "link",
-      { rel: "apple-touch-icon", href: "touch-icon-iphone", sizes: "120x120" }
+      { rel: "apple-touch-icon", href: "touch-icon-iphone", sizes: "120x120" },
     ],
     [
       "link",
       {
         rel: "apple-touch-icon",
         sizes: "152x152",
-        href: "/icons/touch-icon-ipad"
-      }
+        href: "/icons/touch-icon-ipad",
+      },
     ],
     [
       "link",
       {
         rel: "apple-touch-icon",
         sizes: "180x180",
-        href: "touch-icon-iphone-retina"
-      }
+        href: "touch-icon-iphone-retina",
+      },
     ],
     [
       "link",
       {
         rel: "apple-touch-icon",
         sizes: "167x167",
-        href: "/icons/touch-icon-ipad-retina"
-      }
-    ]
+        href: "/icons/touch-icon-ipad-retina",
+      },
+    ],
   ],
   // markdown: {
   //   config: md => {
@@ -178,32 +178,32 @@ module.exports = {
   themeConfig: {
     editLinks: true,
     serviceWorker: {
-      updatePopup: true
+      updatePopup: true,
     },
     nav: [
       {
         text: "Getting Started",
-        link: "/getting-started/"
+        link: "/getting-started/",
       },
       {
         text: "Modeling",
-        link: "/modeling/"
+        link: "/modeling/",
       },
       {
         text: "Using",
-        link: "/using/"
+        link: "/using/",
       },
       {
-        text: "Mocking",
-        link: "/mocking/"
-      }
+        text: "Testing",
+        link: "/testing/",
+      },
     ],
     sidebar: {
       "/getting-started/": [
         {
           title: "Getting Started",
-          children: ["/getting-started/", "configuring"]
-        }
+          children: ["/getting-started/", "configuring"],
+        },
       ],
       "/modeling/": [
         {
@@ -216,17 +216,17 @@ module.exports = {
             "property-constraints",
             "dynamic-paths",
             "relationships",
-            "permissions-and-indexes"
-          ]
+            "permissions-and-indexes",
+          ],
         },
         {
           title: "📓 Other Sections",
           collapsable: false,
           children: [
             ["/using/", "Using Firemodel"],
-            ["/mocking/", "Mocking in Firemodel"]
-          ]
-        }
+            ["/mocking/", "Mocking in Firemodel"],
+          ],
+        },
       ],
       "/using/": [
         {
@@ -239,8 +239,8 @@ module.exports = {
             "relationships",
             "watching",
             "dispatch-and-events",
-            "review-of-objects"
-          ]
+            "review-of-objects",
+          ],
         },
         {
           title: "Advanced Topics",
@@ -250,17 +250,17 @@ module.exports = {
             "dynamic-paths",
             "auditing",
             "dexie",
-            "graphql"
-          ]
+            "graphql",
+          ],
         },
         {
           title: "📓 Other Sections",
           collapsable: false,
           children: [
             ["/modeling/", "Modeling in Firemodel"],
-            ["/mocking/", "Mocking in Firemodel"]
-          ]
-        }
+            ["/mocking/", "Mocking in Firemodel"],
+          ],
+        },
       ],
       "/mocking/": [
         {
@@ -271,18 +271,18 @@ module.exports = {
             "configure-mocking",
             "extending",
             "relationships",
-            "auth-mocking"
-          ]
+            "auth-mocking",
+          ],
         },
         {
           title: "📓 Other Sections",
           collapsable: false,
           children: [
             ["/modeling/", "Modeling in Firemodel"],
-            ["/using/", "Using Firemodel"]
-          ]
-        }
-      ]
-    }
-  }
+            ["/using/", "Using Firemodel"],
+          ],
+        },
+      ],
+    },
+  },
 };

@@ -5,14 +5,28 @@ import {
   ISerializedQuery,
   SerializedQuery,
 } from "universal-fire";
-import { IDictionary, epochWithMilliseconds } from "common-types";
-import { IListOptions, IModel, IPrimaryKey, IReduxDispatch } from "@/types";
+import {
+  IDictionary,
+  epochWithMilliseconds,
+  ConstructorFor,
+  datetime,
+  datestring,
+} from "common-types";
+import {
+  IFmQueryDefn,
+  IListOptions,
+  IListQueryOptions,
+  IModel,
+  IPrimaryKey,
+  IReduxDispatch,
+} from "@/types";
 import { capitalize, getModelMeta, pathJoin } from "@/util";
 
-import { FireModelError, FireModelProxyError } from "@/errors";
+import { FireModelError } from "@/errors";
 import { arrayToHash } from "typed-conversions";
+import { queryAdjustForNext, reduceOptionsForQuery } from "./lists";
 
-const DEFAULT_IF_NOT_FOUND = "__DO_NOT_USE__";
+const DEFAULT_IF_NOT_FOUND = Symbol("DEFAULT_IF_NOT_FOUND");
 
 function addTimestamps<T extends IModel>(obj: IDictionary) {
   const datetime = new Date().getTime();
@@ -42,15 +56,16 @@ export class List<T extends IModel> extends FireModel<T> {
     return FireModel.defaultDb;
   }
 
+  // TODO: should `set` be removed?
   /**
-   * Set
+   * **set**
    *
    * Sets a given model to the payload passed in. This is
    * a destructive operation ... any other records of the
    * same type that existed beforehand are removed.
    */
   public static async set<T extends IModel>(
-    model: new () => T,
+    model: ConstructorFor<T>,
     payload: IDictionary<T>,
     options: IListOptions<T> = {}
   ) {
@@ -85,12 +100,15 @@ export class List<T extends IModel> extends FireModel<T> {
     }
   }
 
+  /**
+   * Set the default dispatch function
+   */
   public static set dispatch(fn: IReduxDispatch) {
     FireModel.dispatch = fn;
   }
 
   public static create<T extends IModel>(
-    model: new () => T,
+    model: ConstructorFor<T>,
     options?: IListOptions<T>
   ) {
     return new List<T>(model, options);
@@ -104,7 +122,7 @@ export class List<T extends IModel> extends FireModel<T> {
    * @param options model options
    */
   public static async fromQuery<T extends IModel>(
-    model: new () => T,
+    model: ConstructorFor<T>,
     query: ISerializedQuery<T>,
     options: IListOptions<T> = {}
   ): Promise<List<T>> {
@@ -116,28 +134,64 @@ export class List<T extends IModel> extends FireModel<T> {
         : List.dbPath(model);
 
     query.setPath(path);
-    list._query = query;
-    await list.load(query);
 
-    return list;
+    return list._loadQuery(query);
   }
 
   /**
-   * Loads all the records of a given schema-type ordered by lastUpdated
+   * **query**
    *
-   * @param schema the schema type
-   * @param options model options
+   * Allow connecting any valid Firebase query to the List object
+   */
+  public static async query<T extends IModel>(
+    model: ConstructorFor<T>,
+    query: IFmQueryDefn<T>,
+    options: IListQueryOptions<T> = {}
+  ) {
+    const db = options.db || FireModel.defaultDb;
+    if (!db) {
+      throw new FireModelError(
+        `Attempt to query database with List before setting a database connection! Either set a default database or explicitly add the DB connection to queries.`,
+        "not-allowed"
+      );
+    }
+
+    const path =
+      options && options.offsets
+        ? List.dbPath(model, options.offsets)
+        : List.dbPath(model);
+    const q = SerializedQuery.create<T>(db, path);
+    const list = List.create(model, options);
+    if (options.paginate) {
+      list._pageSize = options.paginate;
+    }
+
+    return list._loadQuery(query(q));
+  }
+
+  /**
+   * Loads all the records of a given Model.
+   *
+   * **Note:** will order results by `lastUpdated` unless
+   * an `orderBy` property is passed into the options hash.
    */
   public static async all<T extends IModel>(
-    model: new () => T,
+    model: ConstructorFor<T>,
     options: IListOptions<T> = {}
   ): Promise<List<T>> {
-    const query = SerializedQuery.create<T>(
-      options.db || this.defaultDb
-    ).orderByChild("lastUpdated");
-    const list = await List.fromQuery<T>(model, query, options);
+    return List.query<T>(
+      model,
+      (q) => {
+        q.orderByChild(options.orderBy || "lastUpdated");
+        if (options.limitToFirst) q.limitToFirst(options.limitToFirst);
+        if (options.limitToLast) q.limitToLast(options.limitToLast);
+        if (options.startAt) q.startAt(options.startAt);
+        if (options.endAt) q.endAt(options.endAt);
 
-    return list;
+        return q;
+      },
+      reduceOptionsForQuery<T>(options)
+    );
   }
 
   /**
@@ -149,67 +203,114 @@ export class List<T extends IModel> extends FireModel<T> {
    * @param options model options
    */
   public static async first<T extends IModel>(
-    model: new () => T,
+    model: ConstructorFor<T>,
     howMany: number,
-    options: IListOptions<T> = {}
+    options: Omit<
+      IListOptions<T>,
+      "limitToFirst" | "limitToLast" | "startAt" | "orderBy"
+    > = {}
   ): Promise<List<T>> {
-    const query = SerializedQuery.create<T>(options.db || this.defaultDb)
-      .orderByChild("createdAt")
-      .limitToLast(howMany);
-    const list = await List.fromQuery(model, query, options);
+    return List.query<T>(
+      model,
+      (q) => {
+        q.orderByChild("createdAt").limitToLast(howMany);
+        if (options.paginate && options.endAt) {
+          console.info(
+            `Call to List.first(${capitalize(
+              model.constructor.name
+            )}, ${howMany}) set the option to paginate AND set a value to 'endAt'. This is typically not done but may be fine.`
+          );
+        }
+        if (options.endAt) q.endAt(options.endAt);
 
-    return list;
+        return q;
+      },
+      reduceOptionsForQuery<T>(options)
+    );
   }
 
   /**
    * recent
    *
-   * Get recent items of a given type/schema (based on lastUpdated)
-   *
-   * @param model the TYPE you are interested
-   * @param howMany the quantity to of records to bring back
-   * @param offset start at an offset position (useful for paging)
-   * @param options
+   * Get a discrete number of records which represent the most _recently_
+   * updated records (uses the `lastUpdated` property on the model).
    */
   public static async recent<T extends IModel>(
-    model: new () => T,
+    model: ConstructorFor<T>,
     howMany: number,
-    offset: number = 0,
-    options: IListOptions<T> = {}
+    options: Omit<
+      IListOptions<T>,
+      "limitToFirst" | "limitToLast" | "orderBy" | "endAt"
+    > = {}
   ): Promise<List<T>> {
-    const query = SerializedQuery.create<T>(options.db || this.defaultDb)
-      .orderByChild("lastUpdated")
-      .limitToFirst(howMany);
-    const list = await List.fromQuery(model, query, options);
+    return List.query<T>(
+      model,
+      (q) => {
+        q.orderByChild("lastUpdated").limitToFirst(howMany);
 
-    return list;
+        if (options.paginate && options.startAt) {
+          console.info(
+            `Call to List.recent(${capitalize(
+              model.constructor.name
+            )}, ${howMany}) set the option to paginate AND set a value to 'startAt'. This is typically not done but may be fine.`
+          );
+        }
+        if (options.startAt) q.startAt(options.startAt);
+
+        return q;
+      },
+      reduceOptionsForQuery<T>(options)
+    );
   }
 
   /**
    * **since**
    *
-   * Brings back all records that have changed since a given date (using `lastUpdated` field)
+   * Brings back all records that have changed since a given date
+   * (using `lastUpdated` field)
    */
   public static async since<T extends IModel>(
-    model: new () => T,
-    since: epochWithMilliseconds,
-    options: IListOptions<T> = {}
+    model: ConstructorFor<T>,
+    since: epochWithMilliseconds | datetime | datestring | Date,
+    options: Omit<IListOptions<T>, "startAt" | "endAt" | "orderBy"> = {}
   ): Promise<List<T>> {
-    if (typeof since !== "number") {
-      const e = new Error(
-        `Invalid "since" parameter; value must be number instead got a(n) ${typeof since} [ ${since} ]`
-      );
-      e.name = "NotAllowed";
-      throw e;
+    switch (typeof since) {
+      case "string":
+        since = new Date(since).getTime();
+        break;
+      case "object":
+        if (!(since instanceof Date)) {
+          throw new FireModelError(
+            `Call to List.since(${capitalize(
+              model.constructor.name
+            )}) failed as the since parameter was of an unrecognized type (an object but not a Date)`,
+            "invalid-request"
+          );
+        }
+        since = since.getTime();
+        break;
+      case "number":
+        // nothing to do
+        break;
+      default:
+        throw new FireModelError(
+          `Call to List.since(${capitalize(
+            model.constructor.name
+          )}) failed because the since parameter was of the wrong type [ ${typeof since} ]`,
+          "invalid-request"
+        );
     }
 
-    const query = SerializedQuery.create<T>(options.db || this.defaultDb)
-      .orderByChild("lastUpdated")
-      .startAt(since);
+    return List.query<T>(
+      model,
+      (q) => {
+        q.orderByChild("lastUpdated").startAt(since);
+        if (options.limitToFirst) q.startAt(options.limitToFirst);
 
-    const list = await List.fromQuery(model, query, options);
-
-    return list;
+        return q;
+      },
+      reduceOptionsForQuery<T>(options)
+    );
   }
 
   /**
@@ -220,49 +321,70 @@ export class List<T extends IModel> extends FireModel<T> {
    * without any update for the longest.
    */
   public static async inactive<T extends IModel>(
-    model: new () => T,
+    model: ConstructorFor<T>,
     howMany: number,
-    options: IListOptions<T> = {}
+    options: Omit<
+      IListOptions<T>,
+      "limitToLast" | "limitToFirst" | "orderBy"
+    > = {}
   ): Promise<List<T>> {
-    const query = SerializedQuery.create<T>(options.db || this.defaultDb)
-      .orderByChild("lastUpdated")
-      .limitToLast(howMany);
-    const list = await List.fromQuery(model, query, options);
+    return List.query<T>(
+      model,
+      (q) => {
+        q.orderByChild("lastUpdated").limitToLast(howMany);
+        if (options.startAt) q.startAt(options.startAt);
+        if (options.endAt) q.endAt(options.startAt);
 
-    return list;
+        return q;
+      },
+      reduceOptionsForQuery<T>(options)
+    );
   }
 
   /**
-   * **List.last()**
+   * **last**
    *
-   * Lists the _last "x"_ items of a given model where "last" refers to the datetime
+   * Lists the last _x_ items of a given model where "last" refers to the datetime
    * that the record was **created**.
    */
   public static async last<T extends IModel>(
-    model: new () => T,
+    model: ConstructorFor<T>,
     howMany: number,
-    options: IListOptions<T> = {}
+    options: Omit<IListOptions<T>, "orderBy"> = {}
   ): Promise<List<T>> {
-    const query = SerializedQuery.create<T>(options.db || this.defaultDb)
-      .orderByChild("createdAt")
-      .limitToFirst(howMany);
-    const list = await List.fromQuery(model, query, options);
+    return List.query<T>(
+      model,
+      (q) => {
+        q.orderByChild("createdAt").limitToFirst(howMany);
 
-    return list;
+        if (options.startAt) q.startAt(options.startAt);
+        if (options.endAt) q.endAt(options.endAt);
+
+        return q;
+      },
+      reduceOptionsForQuery<T>(options)
+    );
   }
 
   /**
-   * **List.find()**
+   * **findWhere**
    *
    * Runs a `List.where()` search and returns the first result as a _model_
    * of type `T`. If no results were found it returns `undefined`.
    */
-  public static async find<T extends IModel, K extends keyof T>(
-    model: new () => T,
+  public static async findWhere<T extends IModel, K extends keyof T>(
+    model: ConstructorFor<T>,
     property: K & string,
     value: T[K] | [IComparisonOperator, T[K]],
     options: IListOptions<T> = {}
   ) {
+    if (property === "id" && !Array.isArray(value)) {
+      const modelName = capitalize(model.constructor.name);
+      console.warn(
+        `you used List.find(${modelName}, "id", ${value} ) this will be converted to Record.get(${modelName}, ${value}). The List.find() command should be used for properties other than "id"; please make a note of this and change your code accordingly!`
+      );
+      return Record.get(model, (value as unknown) as string);
+    }
     const results = await List.where(model, property, value, options);
     return results.length > 0 ? results.data[0] : undefined;
   }
@@ -272,7 +394,7 @@ export class List<T extends IModel> extends FireModel<T> {
    * is only available to those who are using the Admin SDK/API.
    */
   public static async bulkPut<T extends IModel>(
-    model: new () => T,
+    model: ConstructorFor<T>,
     records: T[] | IDictionary<T>,
     options: IListOptions<T> = {}
   ) {
@@ -304,10 +426,10 @@ export class List<T extends IModel> extends FireModel<T> {
    * array item is the operator, the second the value you are comparing against.
    */
   public static async where<T extends IModel, K extends keyof T>(
-    model: new () => T,
+    model: ConstructorFor<T>,
     property: K & string,
     value: T[K] | [IComparisonOperator, T[K]],
-    options: IListOptions<T> = {}
+    options: Omit<IListOptions<T>, "orderBy" | "startAt" | "endAt"> = {}
   ) {
     let operation: IComparisonOperator = "=";
     let val = value;
@@ -315,18 +437,22 @@ export class List<T extends IModel> extends FireModel<T> {
       val = value[1];
       operation = value[0];
     }
-    const query = SerializedQuery.create<T>(options.db || this.defaultDb)
-      .orderByChild(property)
-      // @ts-ignore
-      // Not sure why there is a typing issue here.
-      .where(operation, val);
 
-    const list = await List.fromQuery(model, query, options);
+    return List.query<T>(
+      model,
+      (q) => {
+        q.orderByChild(property);
+        q.where(operation, val);
 
-    return list;
+        if (options.limitToFirst) q.limitToFirst(options.limitToFirst);
+        if (options.limitToLast) q.limitToLast(options.limitToLast);
+
+        return q;
+      },
+      reduceOptionsForQuery<T>(options)
+    );
   }
 
-  // TODO: add unit tests!
   /**
    * Get's a _list_ of records. The return object is a `List` but the way it is composed
    * doesn't actually do a query against the database but instead it just takes the array of
@@ -339,7 +465,7 @@ export class List<T extends IModel> extends FireModel<T> {
    * `removed` COMMENT
    */
   public static async ids<T extends IModel>(
-    model: new () => T,
+    model: ConstructorFor<T>,
     ...fks: IPrimaryKey<T>[]
   ) {
     const promises: any[] = [];
@@ -411,7 +537,7 @@ export class List<T extends IModel> extends FireModel<T> {
    * dynamic path segments if that is needed for the given model.
    */
   public static dbPath<T extends IModel, K extends keyof T>(
-    model: new () => T,
+    model: ConstructorFor<T>,
     offsets?: Partial<T>
   ) {
     const obj = offsets ? List.create(model, { offsets }) : List.create(model);
@@ -425,11 +551,18 @@ export class List<T extends IModel> extends FireModel<T> {
 
   private _data: T[] = [];
   private _query: ISerializedQuery<T>;
+  private _options: IListOptions<T>;
+  /** the pagination page size; 0 indicates that pagination is not turned on */
+  private _pageSize: number = 0;
+  private _page: number = 0;
+  /** flag indicating if all records have now been retrieved */
+  private _paginationComplete: boolean = false;
 
-  constructor(model: new () => T, options: IListOptions<T> = {}) {
+  constructor(model: ConstructorFor<T>, options: IListOptions<T> = {}) {
     super();
     this._modelConstructor = model;
     this._model = new model();
+    this._options = options;
     if (options.db) {
       this._db = options.db;
       if (!FireModel.defaultDb) {
@@ -441,12 +574,33 @@ export class List<T extends IModel> extends FireModel<T> {
     }
   }
 
+  //#region Getters
+
+  /**
+   * The query used in this List instance
+   */
   public get query(): ISerializedQuery<T> {
     return this._query;
   }
 
   public get length(): number {
     return this._data.length;
+  }
+
+  /** flag indicating whether pagination is being used on this List instance */
+  public get usingPagination(): boolean {
+    return this._pageSize > 0 ? true : false;
+  }
+
+  /**
+   * How many "pages" are loaded from Firebase currently.
+   */
+  public get pagesLoaded(): Readonly<number> {
+    return this.usingPagination ? this._page + 1 : undefined;
+  }
+
+  public get pageSize(): Readonly<number> {
+    return this.usingPagination ? this._pageSize : undefined;
   }
 
   public get dbPath() {
@@ -483,89 +637,45 @@ export class List<T extends IModel> extends FireModel<T> {
     return meta.localPostfix;
   }
 
+  //#endregion Getters
+
+  //#region Public API
+
+  /**
+   * Load the next _page_ in a paginated query.
+   *
+   * This function returns an error if the List object is not setup
+   * for pagination.
+   */
+  public async next() {
+    if (!this.usingPagination) {
+      throw new FireModelError(
+        `Attempt to call "List.next()" on a list that is _not_ paginated [ ${capitalize(
+          this.modelName
+        )} ]`
+      );
+    }
+
+    this._query = queryAdjustForNext(this._query, this._page);
+    this._page++;
+    const data = (
+      await List.query(
+        this._modelConstructor,
+        (q) => this._query,
+        this._options
+      )
+    ).data;
+    if (data.length < this._pageSize) {
+      this._paginationComplete = true;
+    }
+    this._data = this._data.concat(...data);
+  }
+
   /** Returns another List with data filtered down by passed in filter function */
   public filter(f: ListFilterFunction<T>) {
     const list = List.create(this._modelConstructor);
     list._data = this._data.filter(f);
     return list;
-  }
-
-  /** Returns another List with data filtered down by passed in filter function */
-  public find(
-    f: ListFilterFunction<T>,
-    defaultIfNotFound = DEFAULT_IF_NOT_FOUND
-  ): Record<T> {
-    const filtered = this._data.filter(f);
-    const r = Record.create(this._modelConstructor);
-    if (filtered.length > 0) {
-      return Record.createWith(this._modelConstructor, filtered[0]);
-    } else {
-      if (defaultIfNotFound !== DEFAULT_IF_NOT_FOUND) {
-        return defaultIfNotFound as any;
-      } else {
-        const e = new Error(
-          `find(fn) did not find a value in the List [ length: ${this.data.length} ]`
-        );
-        e.name = "NotFound";
-        throw e;
-      }
-    }
-  }
-
-  public filterWhere<K extends keyof T>(prop: K, value: T[K]): List<T> {
-    const whereFilter = (item: T) => item[prop] === value;
-
-    const list = new List(this._modelConstructor);
-    list._data = this.data.filter(whereFilter);
-    return list;
-  }
-
-  public filterContains<K extends keyof T>(prop: K, value: any): List<T> {
-    return this.filter((item: any) => Object.keys(item[prop]).includes(value));
-  }
-
-  /**
-   * findWhere
-   *
-   * returns the first record in the list where the property equals the
-   * specified value. If no value is found then an error is thrown unless
-   * it is stated
-   */
-  public findWhere(
-    prop: keyof T & string,
-    value: T[typeof prop],
-    defaultIfNotFound = DEFAULT_IF_NOT_FOUND
-  ): Record<T> {
-    const list =
-      this.META.isProperty(prop) ||
-      (this.META.isRelationship(prop) &&
-        this.META.relationship(prop).relType === "hasOne")
-        ? this.filterWhere(prop, value)
-        : this.filterContains(prop, value);
-
-    if (list.length > 0) {
-      return Record.createWith(this._modelConstructor, list._data[0]);
-    } else {
-      if (defaultIfNotFound !== DEFAULT_IF_NOT_FOUND) {
-        return defaultIfNotFound as any;
-      } else {
-        const valid =
-          this.META.isProperty(prop) ||
-          (this.META.isRelationship(prop) &&
-            this.META.relationship(prop).relType === "hasOne")
-            ? this.map((i) => i[prop])
-            : this.map((i) => Object.keys(i[prop]));
-        const e = new Error(
-          `List<${
-            this.modelName
-          }>.findWhere(${prop}, ${value}) was not found in the List [ length: ${
-            this.data.length
-          } ]. \n\nValid values include: \n\n${valid.join("\t")}`
-        );
-        e.name = "NotFound";
-        throw e;
-      }
-    }
   }
 
   /**
@@ -590,6 +700,11 @@ export class List<T extends IModel> extends FireModel<T> {
     return this.data.reduce(f, initialValue);
   }
 
+  public paginate(pageSize: number) {
+    this._pageSize = pageSize;
+    return this;
+  }
+
   /**
    * Gives access to the List's array of records
    */
@@ -598,46 +713,57 @@ export class List<T extends IModel> extends FireModel<T> {
   }
 
   /**
-   * Returns the Record object with the given ID, errors if not found (name: NotFound)
-   * unless call signature includes "defaultIfNotFound"
+   * Gets a `Record<T>` from within the list of items.
    *
-   * @param id the unique ID which is being looked for
-   * @param defaultIfNotFound the default value returned if the ID is not found in the list
+   * If you just want the Model's data then use `getData` instead.
    */
-  public findById(
-    id: string,
-    defaultIfNotFound: any = DEFAULT_IF_NOT_FOUND
-  ): Record<T> {
-    const find = this.filter((f) => f.id === id);
-    if (find.length === 0) {
-      if (defaultIfNotFound !== DEFAULT_IF_NOT_FOUND) {
-        return defaultIfNotFound;
-      }
-      const e = new Error(
-        `Could not find "${id}" in list of ${this.pluralName}`
+  public getRecord(id: string) {
+    const found = this.filter((f) => f.id === id);
+    if (found.length === 0) {
+      throw new FireModelError(
+        `Could not find "${id}" in list of ${this.pluralName}`,
+        "not-found"
       );
-      e.name = "NotFound";
-      throw e;
     }
 
-    return Record.createWith(this._modelConstructor, find.data[0]);
+    return Record.createWith(this._modelConstructor, found.data[0]);
   }
 
-  public async removeById(id: string, ignoreOnNotFound: boolean = false) {
-    const rec = this.findById(id, null);
-    if (!rec) {
-      if (!ignoreOnNotFound) {
+  /**
+   * Deprecated: use `List.getRecord()`
+   */
+  public findById(id: string): Record<T> {
+    console.warn("List.findById() is deprecated. Use List.get() instead.");
+    return this.getRecord(id);
+  }
+
+  /**
+   * Allows for records managed by this **List** to be removed from the
+   * database.
+   */
+  public async remove(id: string, ignoreOnNotFound: boolean = false) {
+    try {
+      const rec = this.getRecord(id);
+      await rec.remove();
+      this._data = this.filter((f) => f.id !== id).data;
+    } catch (e) {
+      if (!ignoreOnNotFound && e.code === "not-found") {
         throw new FireModelError(
-          `Could not remove "${id}" in list of ${this.pluralName} as the ID was not found!`,
+          `Could not remove "${id}" in the supplied List of "${capitalize(
+            this.pluralName
+          )}" as the ID did not exist!`,
           `firemodel/not-allowed`
         );
       } else {
-        return;
+        throw e;
       }
     }
+  }
 
-    const removed = await Record.remove(this._modelConstructor, id, rec);
-    this._data = this.filter((f) => f.id !== id).data;
+  /** deprecated ... use List.remove() instead */
+  public async removeById(id: string, ignoreOnNotFound: boolean = false) {
+    console.log(`List.removeById() is deprecated; use List.remove() instead`);
+    return this.remove(id, ignoreOnNotFound);
   }
 
   public async add(payload: T) {
@@ -647,31 +773,22 @@ export class List<T extends IModel> extends FireModel<T> {
   }
 
   /**
-   * Returns the single instance of an object contained by the List container
-   *
-   * @param id the unique ID which is being looked for
-   * @param defaultIfNotFound the default value returned if the ID is not found in the list
+   * Gets the data from a given record; return _undefined_ if not found
    */
-  public getData(id: string, defaultIfNotFound: any = DEFAULT_IF_NOT_FOUND): T {
-    let record: Record<T>;
-    try {
-      record = this.findById(id, defaultIfNotFound);
-      return record === defaultIfNotFound
-        ? defaultIfNotFound
-        : ((record as any).data as T);
-    } catch (e) {
-      if (e.name === "NotFound" && defaultIfNotFound !== DEFAULT_IF_NOT_FOUND) {
-        return defaultIfNotFound;
-      } else {
-        throw e;
-      }
-    }
+  public get(id: string): T {
+    return this.data.find((i) => i.id === id);
+  }
+
+  /** Deprecated: use `List.get()` instead */
+  public getData(id: string): T {
+    console.log("List.getData() is deprecated; use List.get()");
+    return this.get(id);
   }
 
   /**
-   * Loads data into the `List` object
+   * Loads data from a query into the `List` object
    */
-  public async load(pathOrQuery: string | ISerializedQuery<T>) {
+  protected async _loadQuery(query: ISerializedQuery<T>) {
     if (!this.db) {
       const e = new Error(
         `The attempt to load data into a List requires that the DB property be initialized first!`
@@ -679,9 +796,13 @@ export class List<T extends IModel> extends FireModel<T> {
       e.name = "NoDatabase";
       throw e;
     }
-    this._data = await this.db.getList<T>(pathOrQuery);
+
+    this._query = query;
+    this._data = await this.db.getList<T>(query);
     return this;
   }
+
+  //#endregion Public API
 
   private _injectDynamicDbOffsets(dbOffset: string) {
     if (dbOffset.indexOf(":") === -1) {
