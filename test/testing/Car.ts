@@ -1,7 +1,14 @@
-import { Model, fk, hasMany, hasOne, index, model, property } from "@/index";
+import {
+  Model,
+  fk,
+  hasOne,
+  index,
+  model,
+  property,
+  mock,
+} from "../../src/index";
 
 import { FancyPerson } from "./FancyPerson";
-import { mock } from "@/decorators";
 
 function modelYear() {
   return 2018 - Math.floor(Math.random() * 10);
@@ -9,10 +16,8 @@ function modelYear() {
 
 @model({ dbOffset: "car-offset" })
 export class Car extends Model {
-  @property public model: string;
-  @property public cost: number;
-  // prettier-ignore
+  @property @mock("random", "Impala", "Nova", "Galaxy") public model: string;
+  @property @mock("number", { min: 1000, max: 20000 }) public cost: number;
   @property @mock(modelYear) @index public modelYear: number;
-  // prettier-ignore
   @hasOne(() => FancyPerson) public owner?: fk;
 }

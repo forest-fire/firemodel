@@ -1,6 +1,10 @@
 //#autoindex
 //#region autoindexed files
-// indexed at: 6th Jun, 2020, 01:40 PM ( GMT-7 )
+
+// index last changed at: 8th Aug, 2020, 08:34 PM ( GMT-7 )
+// export: named; exclusions: index, private.
+// files: buildDeepRelationshipLinks, buildRelationshipPaths, createCompositeKey, createCompositeKeyFromFkString, createCompositeKeyString, extractFksFromPaths, locallyUpdateFkOnRecord, reduceCompositeNotationToStringRepresentation, reduceHashToRelativePaths, relationshipOperation.
+
 // local file exports
 export * from "./buildDeepRelationshipLinks";
 export * from "./buildRelationshipPaths";
@@ -12,4 +16,5 @@ export * from "./locallyUpdateFkOnRecord";
 export * from "./reduceCompositeNotationToStringRepresentation";
 export * from "./reduceHashToRelativePaths";
 export * from "./relationshipOperation";
+
 //#endregion

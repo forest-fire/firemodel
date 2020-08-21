@@ -1244,6 +1244,8 @@ export class Record<T extends IModel> extends FireModel<T> implements IRecord {
   //#endregion
 
   //#region PRIVATE METHODS
+
+  // TODO: must be a better way to do this
   /**
    * Allows an empty Record to be initialized to a known state.
    * This is not intended to allow for mass property manipulation other

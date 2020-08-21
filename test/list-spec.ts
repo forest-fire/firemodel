@@ -3,7 +3,7 @@ import "reflect-metadata";
 import * as helpers from "./testing/helpers";
 
 import { IFmWatchEvent, List, Record } from "@/index";
-import { IRealTimeAdmin, RealTimeAdmin } from "universal-fire";
+import { IRealTimeAdmin, RealTimeAdmin, SerializedQuery } from "universal-fire";
 
 import { Car } from "./testing/Car";
 import Company from "./testing/dynamicPaths/Company";
@@ -11,7 +11,6 @@ import { FireModel } from "@/index";
 import { FmEvents } from "@/index";
 import { Mock } from "@/index";
 import { Person } from "./testing/Person";
-import { SerializedQuery } from "universal-fire";
 
 describe("List class: ", () => {
   let db: IRealTimeAdmin;
@@ -191,14 +190,14 @@ describe("List class: ", () => {
     db.mock.queueSchema("person", 30).generate();
     const firstPersonId = helpers.firstKey(db.mock.db.authenticated.people);
     const list = await List.all(Person);
-    const record = list.findById(firstPersonId);
+    const record = list.getRecord(firstPersonId);
     expect(record).toBeInstanceOf(Object);
     expect(record).toBeInstanceOf(Record);
     expect(record.data).toBeInstanceOf(Person);
     expect(record.data.name).toBeString();
   });
 
-  it("an instantiated List can call getData() with a valid ID and get a Model", async () => {
+  it("list.get() with a valid ID retrieves the model data for that record", async () => {
     db.mock
       .addSchema<Person>("person", (h: any) => () => ({
         name: h.faker.name.firstName(),
@@ -210,9 +209,8 @@ describe("List class: ", () => {
     db.mock.queueSchema("person", 30).generate();
     const firstPersonId = helpers.firstKey(db.mock.db.authenticated.people);
     const list = await List.all(Person);
-    const person = list.getData(firstPersonId);
+    const person = list.get(firstPersonId);
     expect(person).toBeInstanceOf(Object);
-    expect(person).toBeInstanceOf(Person);
     expect(person.name).toBeString();
   });
 
@@ -228,14 +226,14 @@ describe("List class: ", () => {
     db.mock.queueSchema("person", 30).generate();
     const list = await List.all(Person);
     try {
-      const record = list.findById("not-there");
+      const record = list.getRecord("not-there");
       throw new Error("Invalid ID should have thrown error");
     } catch (e) {
-      expect(e.name).toBe("NotFound");
+      expect(e.code).toBe("not-found");
     }
   });
 
-  it("an instantiated List calling get() with an invalid ID and default value returnes the default value", async () => {
+  it("list.get() returns undefined when non-existent id is passed", async () => {
     db.mock
       .addSchema<Person>("person", (h: any) => () => ({
         name: h.faker.name.firstName(),
@@ -246,55 +244,8 @@ describe("List class: ", () => {
       .pathPrefix("authenticated");
     db.mock.queueSchema("person", 30).generate();
     const list = await List.all(Person);
-    try {
-      const record = list.findById("not-there", null);
-      expect(record).toBe(null);
-    } catch (e) {
-      throw new Error(
-        "When default value is provided no error should be raised"
-      );
-    }
-  });
-  it("an instantiated List calling getData() with an invalid ID and default value returnes the default value", async () => {
-    db.mock
-      .addSchema<Person>("person", (h: any) => () => ({
-        name: h.faker.name.firstName(),
-        age: h.faker.random.number({ min: 1, max: 50 }),
-        createdAt: h.faker.date.past().valueOf(),
-        lastUpdated: h.faker.date.recent().valueOf(),
-      }))
-      .pathPrefix("authenticated");
-    db.mock.queueSchema("person", 30).generate();
-    const list = await List.all(Person);
-    try {
-      const record = list.getData("not-there", null);
-      expect(record).toBe(null);
-    } catch (e) {
-      throw new Error(
-        "When default value is provided no error should be raised"
-      );
-    }
-  });
-
-  it("an instantiated List calling findData() with a valid ID returnes the default value", async () => {
-    db.mock
-      .addSchema<Person>("person", (h: any) => () => ({
-        name: h.faker.name.firstName(),
-        age: h.faker.random.number({ min: 1, max: 50 }),
-        createdAt: h.faker.date.past().valueOf(),
-        lastUpdated: h.faker.date.recent().valueOf(),
-      }))
-      .pathPrefix("authenticated");
-    db.mock.queueSchema("person", 30).generate();
-    const list = await List.all(Person);
-    try {
-      const record = list.getData("not-there", null);
-      expect(record).toBe(null);
-    } catch (e) {
-      throw new Error(
-        "When default value is provided no error should be raised"
-      );
-    }
+    const record = list.get("not-there");
+    expect(record).toBe(undefined);
   });
 
   it("using remove() able to change local state, db state, and state mgmt", async () => {
@@ -303,7 +254,7 @@ describe("List class: ", () => {
     Record.dispatch = async (evt: IFmWatchEvent<Person>) => events.push(evt);
     const peeps = await List.all(Person);
     const id = peeps.data[1].id;
-    const removed = await peeps.removeById(id);
+    const removed = await peeps.remove(id);
     expect(peeps).toHaveLength(9);
     const eventTypes = new Set(events.map((e) => e.type));
 

@@ -1,9 +1,14 @@
 // #autoindex:named
 
 //#region autoindexed files
-// indexed at: 6th Jun, 2020, 02:09 PM ( GMT-7 )
+
+// index last changed at: 8th Aug, 2020, 08:34 PM ( GMT-7 )
+// export: named; exclusions: index, private.
+// files: DexieDb, DexieList, DexieRecord.
+
 // local file exports
 export * from "./DexieDb";
 export * from "./DexieList";
 export * from "./DexieRecord";
+
 //#endregion

@@ -2,7 +2,6 @@ import { ICompositeKey, IModel } from "@/types";
 
 import { FireModelError } from "@/errors";
 import { capitalize } from "@/util";
-import { Record } from "../Record";
 
 export function createCompositeKeyFromFkString<T = ICompositeKey>(
   fkCompositeRef: string,
@@ -17,7 +16,7 @@ export function createCompositeKeyFromFkString<T = ICompositeKey>(
       (acc: any, curr) => {
         const [prop, value] = curr;
         acc[prop as keyof ICompositeKey<T>] = model
-          ? setWithType<T>(prop, value, model)
+          ? setWithType<T>(prop as keyof T & string, value, model)
           : value;
         return acc;
       },
@@ -25,8 +24,30 @@ export function createCompositeKeyFromFkString<T = ICompositeKey>(
     );
 }
 
-function setWithType<T extends IModel>(prop: string, value: string, model: T) {
-  if (!model.META.property(prop)) {
+/**
+ * Sets the props in the composite key to the appropriate _type_.
+ * This is needed because a string-based FK reference provides name/value
+ * pairs but type information is lost in this format and must be returned
+ * to full fidelity.
+ */
+function setWithType<T extends IModel>(
+  prop: keyof T & string,
+  value: string,
+  model: T
+) {
+  const isProp = model.META.isProperty(prop);
+  const isRel = model.META.isRelationship(prop);
+  if (!isProp && !isRel) {
+    throw new FireModelError(
+      `Failed to identify the type for property "${prop}" on a model because this property is neither a value or a relationship property on this model!`,
+      "invalid-composite-key"
+    );
+  }
+  const type = isProp
+    ? model.META.property(prop).type
+    : model.META.relationship(prop).type;
+
+  if (!type) {
     throw new FireModelError(
       `When building a composite key for the model ${capitalize(
         model.constructor.name
@@ -34,7 +55,6 @@ function setWithType<T extends IModel>(prop: string, value: string, model: T) {
       "firemodel/property-does-not-exist"
     );
   }
-  const type = model.META.property(prop).type;
 
   switch (type) {
     case "number":
