@@ -171,7 +171,7 @@ if(andThen.done()) { ... }
 
 > Note: if you don't initialize pagination option and then try to use `next()` or `done()` then  Firemodel will become very angry and throw an error. Don't anger Firemodel ... bad karma.
 
-If you are using _bespoke_ queries then you can still get utility out of the pagination API by taking advantage of some additional properties which will be passed into the query function generator:
+If you are using _bespoke_ queries then you can still get utility out of the pagination features by taking advantage of some additional properties which will be passed into the query function generator:
 
 ```ts
 const aStepAtATime = await List.query(

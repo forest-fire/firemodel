@@ -24,7 +24,7 @@ import { capitalize, getModelMeta, pathJoin } from "@/util";
 
 import { FireModelError } from "@/errors";
 import { arrayToHash } from "typed-conversions";
-import { reduceOptionsForQuery } from "./lists";
+import { queryAdjustForNext, reduceOptionsForQuery } from "./lists";
 
 const DEFAULT_IF_NOT_FOUND = Symbol("DEFAULT_IF_NOT_FOUND");
 
@@ -100,6 +100,9 @@ export class List<T extends IModel> extends FireModel<T> {
     }
   }
 
+  /**
+   * Set the default dispatch function
+   */
   public static set dispatch(fn: IReduxDispatch) {
     FireModel.dispatch = fn;
   }
@@ -548,6 +551,7 @@ export class List<T extends IModel> extends FireModel<T> {
 
   private _data: T[] = [];
   private _query: ISerializedQuery<T>;
+  private _options: IListOptions<T>;
   /** the pagination page size; 0 indicates that pagination is not turned on */
   private _pageSize: number = 0;
   private _page: number = 0;
@@ -558,6 +562,7 @@ export class List<T extends IModel> extends FireModel<T> {
     super();
     this._modelConstructor = model;
     this._model = new model();
+    this._options = options;
     if (options.db) {
       this._db = options.db;
       if (!FireModel.defaultDb) {
@@ -571,6 +576,9 @@ export class List<T extends IModel> extends FireModel<T> {
 
   //#region Getters
 
+  /**
+   * The query used in this List instance
+   */
   public get query(): ISerializedQuery<T> {
     return this._query;
   }
@@ -579,27 +587,20 @@ export class List<T extends IModel> extends FireModel<T> {
     return this._data.length;
   }
 
-  /** how many pages are loaded from Firebase currently */
+  /** flag indicating whether pagination is being used on this List instance */
+  public get usingPagination(): boolean {
+    return this._pageSize > 0 ? true : false;
+  }
+
+  /**
+   * How many "pages" are loaded from Firebase currently.
+   */
   public get pagesLoaded(): Readonly<number> {
-    if (!this._pageSize) {
-      throw new FireModelError(
-        `Attempt to get "pagesLoaded" on a list that is _not_ paginated [ ${capitalize(
-          this.modelName
-        )} ]`
-      );
-    }
-    return this._page + 1;
+    return this.usingPagination ? this._page + 1 : undefined;
   }
 
   public get pageSize(): Readonly<number> {
-    if (!this._pageSize) {
-      throw new FireModelError(
-        `Attempt to get "pagesLoaded" on a list that is _not_ paginated [ ${capitalize(
-          this.modelName
-        )} ]`
-      );
-    }
-    return this._pageSize;
+    return this.usingPagination ? this._pageSize : undefined;
   }
 
   public get dbPath() {
@@ -647,13 +648,27 @@ export class List<T extends IModel> extends FireModel<T> {
    * for pagination.
    */
   public async next() {
-    if (!this._pageSize) {
+    if (!this.usingPagination) {
       throw new FireModelError(
         `Attempt to call "List.next()" on a list that is _not_ paginated [ ${capitalize(
           this.modelName
         )} ]`
       );
     }
+
+    this._query = queryAdjustForNext(this._query, this._page);
+    this._page++;
+    const data = (
+      await List.query(
+        this._modelConstructor,
+        (q) => this._query,
+        this._options
+      )
+    ).data;
+    if (data.length < this._pageSize) {
+      this._paginationComplete = true;
+    }
+    this._data = this._data.concat(...data);
   }
 
   /** Returns another List with data filtered down by passed in filter function */

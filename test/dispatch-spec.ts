@@ -68,10 +68,10 @@ describe("Dispatch →", () => {
       age: 18,
     });
 
-    person.set("name", "Carol");
+    const p = person.set("name", "Carol");
     expect(person.isDirty).toBe(true);
     expect(person.get("name")).toBe("Carol");
-    await wait(15);
+    await p;
     expect(person.isDirty).toBe(false);
   });
 
