@@ -13,8 +13,7 @@ import {
 
 import { Record } from "@/core";
 import { createCompositeKeyRefFromRecord } from "./index";
-import { getModelMeta } from "@/util";
-import { pathJoin } from "common-types";
+import { getModelMeta, pathJoin } from "@/util";
 
 /**
  * Builds all the DB paths needed to update a pairing of a PK:FK. It is intended

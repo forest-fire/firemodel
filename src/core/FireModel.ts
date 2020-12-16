@@ -3,7 +3,7 @@ import {
   IAdminConfig,
   IClientConfig,
 } from "universal-fire";
-import { IDictionary, pathJoin } from "common-types";
+import { IDictionary } from "common-types";
 import {
   IFmChangedProperties,
   IFmModelMeta,
@@ -227,15 +227,15 @@ const db = await FireModel.connect(DB, options);
     deltas: IFmChangedProperties<T>
   ): IDictionary {
     const added = (deltas.added || []).reduce((agg: IDictionary, curr) => {
-      agg[pathJoin(this.dbPath, curr)] = rec.get(curr);
+      agg[`${this.dbPath}/${curr}`.replace(/\/{2,3}/, '/')] = rec.get(curr);
       return agg;
     }, {});
     const removed = (deltas.removed || []).reduce((agg: IDictionary, curr) => {
-      agg[pathJoin(this.dbPath, curr)] = null;
+      agg[`${this.dbPath}/${curr}`.replace(/\/{2,3}/, '/')] = null;
       return agg;
     }, {});
     const updated = (deltas.changed || []).reduce((agg: IDictionary, curr) => {
-      agg[pathJoin(this.dbPath, curr)] = rec.get(curr);
+      agg[`${this.dbPath}/${curr}`.replace(/\/{2,3}/, '/')] = rec.get(curr);
       return agg;
     }, {});
 
