@@ -1,7 +1,7 @@
 import { IFmPathValuePair } from "@/types";
 import { IModel } from "@/types";
 import { Record } from "@/core";
-import { pathJoin } from "common-types";
+import { pathJoin } from "@/util";
 
 export function extractFksFromPaths<T extends IModel>(
   rec: Record<T>,

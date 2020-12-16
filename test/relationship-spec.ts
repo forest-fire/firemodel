@@ -15,7 +15,7 @@ import { FmEvents } from "@/index";
 import OffsetCar from "./testing/dynamicPaths/Car";
 import { Pay } from "./testing/Pay";
 import { Person } from "./testing/Person";
-import { pathJoin } from "common-types";
+import { pathJoin } from "@/util";
 
 const hasManyPaths = (id: string, now: number) => [
   { path: `/authenticated/people/${id}/children/janet`, value: true },

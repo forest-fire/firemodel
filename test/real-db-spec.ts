@@ -10,12 +10,13 @@ import {
   Record,
   Watch,
 } from "../src";
-import { IDictionary, pathJoin, wait } from "common-types";
+import { IDictionary, wait } from "common-types";
 import { IRealTimeAdmin, RealTimeAdmin } from "universal-fire";
 
 import { FancyPerson } from "./testing/FancyPerson";
 import { FireModel } from "@/index";
 import { Person } from "./testing/Person";
+import { pathJoin } from "@/util";
 
 helpers.setupEnv();
 

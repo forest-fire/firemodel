@@ -35,7 +35,6 @@ import {
   IDictionary,
   Nullable,
   Omit,
-  dotNotation,
   fk,
   pk,
   ConstructorFor,
@@ -389,9 +388,10 @@ export class Record<T extends IModel> extends FireModel<T> implements IRecord {
     }
 
     const r = Record.create(model);
-    const pathParts = dotNotation(path).split(".");
+    const pathParts = path.replace(/\//gs, ".").split(".");
+    
     const compositeKey: IDictionary = {};
-    const segments = dotNotation(r.dbOffset).split(".");
+    const segments = r.dbOffset.replace(/\//gs, ".").split(".");
     if (
       segments.length > pathParts.length ||
       pathParts.length - 2 > segments.length
