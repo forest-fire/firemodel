@@ -67,7 +67,7 @@ export function buildRelationshipPaths<T>(
       property,
       // we must add the fk id to path (versus value) to make the write non-destructive
       // to other hasMany keys which already exist
-      hasManyReln ? fkId : ""
+      hasManyReln ? fkId : undefined
     );
 
     // Add paths for current record
