@@ -12,7 +12,7 @@ import {
   property,
 } from "../src";
 import { IDictionary, wait } from "common-types";
-import { IRealTimeAdmin, RealTimeAdmin } from "universal-fire";
+import { IAbstractedDatabase, IRealTimeAdmin, RealTimeAdmin } from "universal-fire";
 
 import { Car } from "./testing/Car";
 import { Company } from "./testing/Company";
@@ -29,8 +29,8 @@ export class SimplePerson extends Model {
 }
 
 describe("Mocking:", () => {
-  let db: IRealTimeAdmin;
-  let realDb: IRealTimeAdmin;
+  let db: IAbstractedDatabase;
+  let realDb: IAbstractedDatabase;
   beforeAll(async () => {
     // TODO: check why "realDb" is a mock DB
     realDb = await RealTimeAdmin.connect({ mocking: true });

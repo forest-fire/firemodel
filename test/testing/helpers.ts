@@ -56,7 +56,7 @@ export function setupEnv() {
     if (!stage) {
       process.env.AWS_STAGE = "test";
     }
-    const yamlConfig = yaml.safeLoad(
+    const yamlConfig = yaml.load(
       fs.readFileSync("./env.yml", "utf8")
     ) as IStagedVariables;
     if (typeof yamlConfig === "string") {

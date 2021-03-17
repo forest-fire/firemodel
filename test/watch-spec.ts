@@ -11,7 +11,7 @@ import {
   getWatcherPool,
 } from "@/index";
 import { IDictionary, wait } from "common-types";
-import { IRealTimeAdmin, RealTimeAdmin } from "universal-fire";
+import { IAbstractedDatabase, RealTimeAdmin } from "universal-fire";
 
 import { BaseSerializer } from "@forest-fire/serialized-query";
 import { DeeperPerson } from "./testing/dynamicPaths/DeeperPerson";
@@ -22,7 +22,7 @@ import { setupEnv } from "./testing/helpers";
 setupEnv();
 
 describe("Watch →", () => {
-  let realDB: IRealTimeAdmin;
+  let realDB: IAbstractedDatabase;
   beforeAll(async () => {
     realDB = await RealTimeAdmin.connect();
     FireModel.defaultDb = realDB;
