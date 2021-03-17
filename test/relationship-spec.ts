@@ -32,10 +32,8 @@ const hasOnePaths = (id: string, now: number) => [
 ];
 
 describe("Relationship > ", () => {
-  let db: IRealTimeAdmin;
   beforeEach(async () => {
-    db = await RealTimeAdmin.connect({ mocking: true });
-    FireModel.defaultDb = db;
+    FireModel.defaultDb = await RealTimeAdmin.connect({ mocking: true });;
   });
 
   it("extractFksFromPath pulls out the ids which are being changed", async () => {
