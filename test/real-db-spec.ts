@@ -16,7 +16,8 @@ import { IAbstractedDatabase, IRealTimeAdmin, RealTimeAdmin } from "universal-fi
 import { FancyPerson } from "./testing/FancyPerson";
 import { FireModel } from "@/index";
 import { Person } from "./testing/Person";
-import { pathJoin } from "@/util";
+import { pathJoin } from "native-dash";
+
 
 helpers.setupEnv();
 

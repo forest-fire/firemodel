@@ -13,7 +13,8 @@ import {
 
 import { Record } from "@/core";
 import { createCompositeKeyRefFromRecord } from "./index";
-import { getModelMeta, pathJoin } from "@/util";
+import { getModelMeta } from "@/util";
+import { pathJoin } from "native-dash";
 
 /**
  * Builds all the DB paths needed to update a pairing of a PK:FK. It is intended
@@ -67,7 +68,7 @@ export function buildRelationshipPaths<T>(
       property,
       // we must add the fk id to path (versus value) to make the write non-destructive
       // to other hasMany keys which already exist
-      hasManyReln ? fkId : undefined
+      hasManyReln ? fkId : ""
     );
 
     // Add paths for current record

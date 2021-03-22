@@ -1,10 +1,11 @@
 import { FireModel, List, Record } from "@/index";
+import { pathJoin } from "native-dash";
 import { IRealTimeAdmin, RealTimeAdmin } from "universal-fire";
 
 import { DynamicPerson } from "./testing/localStateMgmt/DynamicPerson";
 import { Person } from "./testing/localStateMgmt/Person";
 import { PostfixPerson } from "./testing/localStateMgmt/PostfixPerson";
-import { pathJoin } from "@/util";
+
 
 describe("Client state management", () => {
   beforeAll(async () => {

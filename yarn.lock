@@ -8651,6 +8651,11 @@ nanomatch@^1.2.9:
     snapdragon "^0.8.1"
     to-regex "^3.0.1"
 
+native-dash@^1.10.0:
+  version "1.10.0"
+  resolved "https://registry.yarnpkg.com/native-dash/-/native-dash-1.10.0.tgz#ba9cf90a0b927705699bac335e92382a19b1e97e"
+  integrity sha512-DDIUubO1N5Ul7Ldd9JfkdzMAungddSTgwY8Qyk6k0cS7z7vx8AdgWhRCBVnymFnQbs/wRQdnC2yiL28jlt/E/Q==
+
 native-dash@~1.2.7:
   version "1.2.7"
   resolved "https://registry.yarnpkg.com/native-dash/-/native-dash-1.2.7.tgz#3f944664a0762fef04c0444be9b14b23cac8d198"

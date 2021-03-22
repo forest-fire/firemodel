@@ -15,7 +15,7 @@ import { FmEvents } from "@/index";
 import OffsetCar from "./testing/dynamicPaths/Car";
 import { Pay } from "./testing/Pay";
 import { Person } from "./testing/Person";
-import { pathJoin } from "@/util";
+import { pathJoin } from "native-dash";
 
 const hasManyPaths = (id: string, now: number) => [
   { path: `/authenticated/people/${id}/children/janet`, value: true },
@@ -72,6 +72,7 @@ describe("Relationship > ", () => {
       name: "Microsquish",
     });
     const paths = buildRelationshipPaths(person, "company", "microsoft");
+    console.log(pathJoin(person.dbPath, "company", ""), pathJoin(person.dbPath, "company", ""))
     expect(paths.map((i) => i.path)).toEqual(
       expect.arrayContaining([pathJoin(person.dbPath, "company")])
     );

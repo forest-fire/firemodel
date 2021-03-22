@@ -1,7 +1,7 @@
 import { IFmPathValuePair } from "@/types";
 import { IModel } from "@/types";
 import { Record } from "@/core";
-import { pathJoin } from "@/util";
+import { pathJoin } from "native-dash";
 
 export function extractFksFromPaths<T extends IModel>(
   rec: Record<T>,
