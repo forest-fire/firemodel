@@ -285,6 +285,8 @@ describe("LIST uses static offsets() with static API methods", () => {
       offsets: { group: "test" },
     });
 
+    console.log(people.length);
+
     expect(people.length).toEqual(6);
     expect(people.filter((i) => i.age === 45)).toHaveLength(6);
   });

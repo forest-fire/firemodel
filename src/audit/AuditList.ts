@@ -3,7 +3,7 @@ import { IAuditLogItem, IModel, IModelOptions } from "@/types";
 import { AuditBase } from "@/audit";
 import { SerializedQuery } from "universal-fire";
 import { epochWithMilliseconds } from "common-types";
-import { pathJoin } from "@/util";
+import { pathJoin } from "native-dash";
 
 export class AuditList<T extends IModel> extends AuditBase<T> {
   constructor(modelKlass: new () => T, options: IModelOptions = {}) {
