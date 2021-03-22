@@ -4,7 +4,7 @@ import { AuditBase } from "@/audit";
 import { Parallel } from "wait-in-parallel";
 import { SerializedQuery } from "universal-fire";
 import { epochWithMilliseconds } from "common-types";
-import { pathJoin } from "@/util";
+import { pathJoin } from "native-dash";
 
 export class AuditRecord<T extends IModel> extends AuditBase {
   constructor(

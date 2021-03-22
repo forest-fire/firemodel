@@ -36,10 +36,8 @@ const addFatherAndChildren = async () => {
 };
 
 describe("Relationship > ", () => {
-  let db: IRealTimeAdmin;
   beforeEach(async () => {
-    db = await RealTimeAdmin.connect({ mocking: true });
-    FireModel.defaultDb = db;
+    FireModel.defaultDb = await RealTimeAdmin.connect({ mocking: true });;
     FireModel.dispatch = null;
   });
 

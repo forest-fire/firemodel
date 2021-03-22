@@ -3,10 +3,8 @@ import { IRealTimeAdmin, RealTimeAdmin } from "universal-fire";
 import { FireModel } from "@/index";
 
 describe("Rolling back a record => ", () => {
-  let db: IRealTimeAdmin;
   beforeEach(async () => {
-    db = await RealTimeAdmin.connect({ mocking: true });
-    FireModel.defaultDb = db;
+    FireModel.defaultDb = await RealTimeAdmin.connect({ mocking: true });;
   });
 
   // TODO: write test

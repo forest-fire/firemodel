@@ -53,7 +53,6 @@ import {
   compareHashes,
   getModelMeta,
   isHasManyRelationship,
-  pathJoin,
   withoutMetaOrPrivate,
 } from "@/util";
 
@@ -62,6 +61,7 @@ import { UnwatchedLocalEvent } from "@/state-mgmt";
 import { default as copy } from "fast-copy";
 import { key as fbKey } from "firebase-key";
 import { writeAudit } from "@/audit";
+import { pathJoin } from "native-dash";
 
 //#endregion
 

@@ -3,7 +3,7 @@ import "reflect-metadata";
 import * as helpers from "./testing/helpers";
 
 import { IFmWatchEvent, List, Record } from "@/index";
-import { IRealTimeAdmin, RealTimeAdmin, SerializedQuery } from "universal-fire";
+import { IAbstractedDatabase, IMockApi, RealTimeAdmin, SerializedQuery } from "universal-fire";
 
 import { Car } from "./testing/Car";
 import Company from "./testing/dynamicPaths/Company";
@@ -13,7 +13,7 @@ import { Mock } from "@/index";
 import { Person } from "./testing/Person";
 
 describe("List class: ", () => {
-  let db: IRealTimeAdmin;
+  let db: IAbstractedDatabase;
   beforeEach(async () => {
     db = await RealTimeAdmin.connect({ mocking: true });
     FireModel.defaultDb = db;
@@ -116,9 +116,8 @@ describe("List class: ", () => {
     expect(youngFolks.length).toBe(10);
   });
 
-  it("can instantiate with first() and last() methods", async () => {
-    db.mock
-      .addSchema<Person>("person", (h) => () => ({
+  it("can instantiate with first() and last() methods", async () => { 
+      (db.mock as IMockApi).addSchema<Person>("person", (h) => () => ({
         name: h.faker.name.firstName(),
         age: h.faker.random.number({ min: 1, max: 50 }),
         createdAt: h.faker.date.past().valueOf(),
@@ -137,7 +136,7 @@ describe("List class: ", () => {
   });
 
   it("can instantiate with recent(), and inactive() methods", async () => {
-    db.mock
+    (db.mock as IMockApi)
       .addSchema<Person>("person", (h: any) => () => ({
         name: h.faker.name.firstName(),
         age: h.faker.random.number({ min: 1, max: 50 }),
@@ -158,7 +157,7 @@ describe("List class: ", () => {
 
   it("can instantiate with since() returns correct results", async () => {
     const timestamp = new Date().getTime();
-    db.mock
+    (db.mock as IMockApi)
       .addSchema<Person>("person", (h: any) => () => ({
         name: h.faker.name.firstName(),
         age: h.faker.random.number({ min: 1, max: 49 }),
@@ -179,7 +178,7 @@ describe("List class: ", () => {
   });
 
   it("an instantiated List can call get() with a valid ID and get a Record", async () => {
-    db.mock
+    (db.mock as IMockApi)
       .addSchema<Person>("person", (h: any) => () => ({
         name: h.faker.name.firstName(),
         age: h.faker.random.number({ min: 1, max: 50 }),
@@ -198,7 +197,7 @@ describe("List class: ", () => {
   });
 
   it("list.get() with a valid ID retrieves the model data for that record", async () => {
-    db.mock
+    (db.mock as IMockApi)
       .addSchema<Person>("person", (h: any) => () => ({
         name: h.faker.name.firstName(),
         age: h.faker.random.number({ min: 1, max: 50 }),
@@ -215,7 +214,7 @@ describe("List class: ", () => {
   });
 
   it("an instantiated List calling get() with an invalid ID throws an error", async () => {
-    db.mock
+    (db.mock as IMockApi)
       .addSchema<Person>("person", (h: any) => () => ({
         name: h.faker.name.firstName(),
         age: h.faker.random.number({ min: 1, max: 50 }),
@@ -234,7 +233,7 @@ describe("List class: ", () => {
   });
 
   it("list.get() returns undefined when non-existent id is passed", async () => {
-    db.mock
+    (db.mock as IMockApi)
       .addSchema<Person>("person", (h: any) => () => ({
         name: h.faker.name.firstName(),
         age: h.faker.random.number({ min: 1, max: 50 }),

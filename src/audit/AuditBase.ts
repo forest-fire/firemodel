@@ -1,9 +1,7 @@
 import { FireModel, Record } from "@/core";
 import { IAbstractedDatabase, ISerializedQuery } from "universal-fire";
 import { IModel, IModelOptions } from "@/types";
-
-import { pathJoin } from "@/util";
-
+import { pathJoin } from "native-dash";
 export class AuditBase<T extends IModel = IModel> {
   protected _modelKlass: new () => T;
   protected _record: Record<T>;

@@ -20,11 +20,11 @@ import {
   IPrimaryKey,
   IReduxDispatch,
 } from "@/types";
-import { capitalize, getModelMeta, pathJoin } from "@/util";
-
+import { capitalize, getModelMeta  } from "@/util";
 import { FireModelError } from "@/errors";
 import { arrayToHash } from "typed-conversions";
 import { queryAdjustForNext, reduceOptionsForQuery } from "./lists";
+import { pathJoin } from "native-dash";
 
 const DEFAULT_IF_NOT_FOUND = Symbol("DEFAULT_IF_NOT_FOUND");
 

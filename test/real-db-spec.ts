@@ -11,17 +11,18 @@ import {
   Watch,
 } from "../src";
 import { IDictionary, wait } from "common-types";
-import { IRealTimeAdmin, RealTimeAdmin } from "universal-fire";
+import { IAbstractedDatabase, IRealTimeAdmin, RealTimeAdmin } from "universal-fire";
 
 import { FancyPerson } from "./testing/FancyPerson";
 import { FireModel } from "@/index";
 import { Person } from "./testing/Person";
-import { pathJoin } from "@/util";
+import { pathJoin } from "native-dash";
+
 
 helpers.setupEnv();
 
 describe("Tests using REAL db =>�", () => {
-  let db: IRealTimeAdmin;
+  let db: IAbstractedDatabase;
   beforeAll(async () => {
     db = await RealTimeAdmin.connect({ mocking: true });
     FireModel.defaultDb = db;

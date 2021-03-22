@@ -7,7 +7,7 @@ import {
   Record,
   Watch,
 } from "@/index";
-import { IRealTimeAdmin, RealTimeAdmin } from "universal-fire";
+import { IAbstractedDatabase, IRealTimeAdmin, RealTimeAdmin } from "universal-fire";
 import { firstKey, firstRecord, lastRecord } from "./testing/helpers";
 
 import Company from "./testing/dynamicPaths/Company";
@@ -18,7 +18,7 @@ import { HumanAttribute } from "./testing/dynamicPaths/HumanAttribute";
 import { IDictionary } from "common-types";
 
 describe("Dynamic offsets reflected in path", () => {
-  let db: IRealTimeAdmin;
+  let db: IAbstractedDatabase;
   beforeEach(async () => {
     db = await RealTimeAdmin.connect({ mocking: true });
     FireModel.defaultDb = db;
@@ -89,7 +89,7 @@ describe("Dynamic offsets reflected in path", () => {
 
 describe("Dynamic offsets work with relationships", () => {
   let person: Record<DeepPerson>;
-  let db: IRealTimeAdmin;
+  let db: IAbstractedDatabase;
   let hobbies: List<Hobby>;
   beforeEach(async () => {
     db = await RealTimeAdmin.connect({ mocking: true });
@@ -260,7 +260,7 @@ describe("Dynamic offsets work with relationships", () => {
 });
 
 describe("LIST uses static offsets() with static API methods", () => {
-  let db: IRealTimeAdmin;
+  let db: IAbstractedDatabase;
   beforeAll(async () => {
     db = await RealTimeAdmin.connect({ mocking: true });
     FireModel.defaultDb = db;
@@ -285,13 +285,15 @@ describe("LIST uses static offsets() with static API methods", () => {
       offsets: { group: "test" },
     });
 
+    console.log(people.length);
+
     expect(people.length).toEqual(6);
     expect(people.filter((i) => i.age === 45)).toHaveLength(6);
   });
 });
 
 describe("MOCK uses dynamic dbOffsets", () => {
-  let db: IRealTimeAdmin;
+  let db: IAbstractedDatabase;
   beforeEach(async () => {
     db = await RealTimeAdmin.connect({ mocking: true });
     FireModel.defaultDb = db;

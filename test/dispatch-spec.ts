@@ -15,10 +15,8 @@ import { compareHashes } from "@/util";
 import { wait } from "./testing/helpers";
 
 describe("Dispatch →", () => {
-  let db: IRealTimeAdmin;
   beforeEach(async () => {
-    db = await RealTimeAdmin.connect({ mocking: true });
-    Record.defaultDb = db;
+    Record.defaultDb = await RealTimeAdmin.connect({ mocking: true });
     Record.dispatch = null;
   });
 
