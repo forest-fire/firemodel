@@ -6,8 +6,7 @@ import {
   IFmModelRelationshipMeta,
 } from "@/types";
 import { IReduxAction, IReduxDispatch } from "./state-mgmt";
-
-import { IAbstractedDatabase } from "universal-fire";
+import { IDatabaseSdk, ISdk } from "@forest-fire/types";
 import { IFmFunctionToConstructor } from "./decorator-types";
 import { IModel } from "./model-types";
 
@@ -27,7 +26,7 @@ export interface IRecord<T extends IModel = IModel> {
   properties: IFmModelPropertyMeta[];
   relationships: IFmModelRelationshipMeta[];
   dispatch: IReduxDispatch<IReduxAction, any>;
-  db: IAbstractedDatabase;
+  db: IDatabaseSdk<ISdk>;
   pushKeys: string[];
   data: T;
   hasDynamicPath: boolean;
@@ -130,11 +129,11 @@ export interface IFmBuildRelationshipOptions {
   /**
    * Optionally pass in an explicit database connection
    */
-  db?: IAbstractedDatabase;
+  db?: IDatabaseSdk<ISdk>;
 }
 
 export interface IRecordOptions {
-  db?: IAbstractedDatabase;
+  db?: IDatabaseSdk<ISdk>;
   logging?: any;
   id?: string;
   /** if you're working off of a mocking database, there are situations where adding a record silently (aka., not triggering any listener events) is desirable and should be allowed */

@@ -1,4 +1,5 @@
 import { ISerializedQuery } from "universal-fire";
+import { ISdk } from "@forest-fire/types";
 
 /**
  * **IFmQueryDefn**
@@ -17,8 +18,8 @@ import { ISerializedQuery } from "universal-fire";
  */
 export interface IFmQueryDefn<T> {
   (
-    q: ISerializedQuery<T>,
+    q: ISerializedQuery<ISdk, T>,
     offset?: number,
     pageSize?: number
-  ): ISerializedQuery<T>;
+  ): ISerializedQuery<ISdk, T>;
 }

@@ -1,13 +1,12 @@
 import { IFmModelPropertyMeta, IModel, NamedFakes } from "@/types";
 import { PropertyNamePatterns, fakeIt } from "./index";
-
-import { IAbstractedDatabase } from "universal-fire";
-import { MockHelper } from "firemock";
+import { ISchemaHelper } from "@forest-fire/fixture"
+import { IDatabaseSdk, ISdk } from "@forest-fire/types";
 
 export function mockValue<T extends IModel>(
-  db: IAbstractedDatabase,
+  db: IDatabaseSdk<ISdk>,
   propMeta: IFmModelPropertyMeta<T>,
-  mockHelper: MockHelper,
+  mockHelper: ISchemaHelper<any>,
   ...rest: any[]
 ) {
   mockHelper.context = propMeta;

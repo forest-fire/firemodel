@@ -1,6 +1,5 @@
 import { IDictionary } from "common-types";
-
-import type { ISerializedQuery, IAbstractedDatabase } from "universal-fire";
+import { IDatabaseSdk, ISdk, ISerializedQuery } from "@forest-fire/types";
 
 import {
   WatchRecord,
@@ -26,11 +25,11 @@ import { FireModelError, FireModelProxyError } from "@/errors";
  * The base class which both `WatchList` and `WatchRecord` derive.
  */
 export class WatchBase<T extends IModel> {
-  protected _query: ISerializedQuery<T>;
+  protected _query: ISerializedQuery<ISdk, T>;
   protected _modelConstructor: FmModelConstructor<T>;
   protected _eventType: IWatchEventClassification;
   protected _dispatcher: IReduxDispatch;
-  protected _db: IAbstractedDatabase;
+  protected _db: IDatabaseSdk<ISdk>;
   protected _modelName: string;
   protected _localModelName: string;
   protected _pluralName: string;
@@ -250,7 +249,7 @@ export class WatchBase<T extends IModel> {
     return coreDispatch;
   }
 
-  protected get db(): IAbstractedDatabase {
+  protected get db(): IDatabaseSdk<ISdk> {
     if (!this._db) {
       if (FireModel.defaultDb) {
         this._db = FireModel.defaultDb;

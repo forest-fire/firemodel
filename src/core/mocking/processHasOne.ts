@@ -5,13 +5,12 @@ import {
 } from "@/types";
 import { Mock, Record } from "@/core";
 
-import { IAbstractedDatabase } from "universal-fire";
-
+import { IDatabaseSdk, ISdk } from "@forest-fire/types";
 export async function processHasOne<T>(
   source: Record<T>,
   rel: IFmModelRelationshipMeta<T>,
   config: IMockRelationshipConfig,
-  db: IAbstractedDatabase
+  db: IDatabaseSdk<ISdk>
 ): Promise<IMockResponse<T>> {
   const fkMock = Mock(rel.fkConstructor(), db);
   const fkMockMeta = (await fkMock.generate(1)).pop();

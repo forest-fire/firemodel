@@ -6,7 +6,8 @@ import {
   IReduxDispatch,
   IWatcherEventContext,
 } from "@/types";
-import { IAbstractedDatabase, IRtdbDbEvent } from "universal-fire";
+import { IRtdbDbEvent } from "universal-fire";
+import {IDatabaseSdk, ISdk} from "@forest-fire/types";
 import {
   WatchList,
   WatchRecord,
@@ -31,7 +32,7 @@ export class Watch<T extends IModel = IModel> {
    * Sets the default database for all Firemodel
    * classes such as `FireModel`, `Record`, and `List`
    */
-  public static set defaultDb(db: IAbstractedDatabase) {
+  public static set defaultDb(db: IDatabaseSdk<ISdk>) {
     FireModel.defaultDb = db;
   }
 
@@ -94,7 +95,7 @@ export class Watch<T extends IModel = IModel> {
   /**
    * stops watching either a specific watcher or ALL if no hash code is provided
    */
-  public static stop(hashCode?: string, oneOffDB?: IAbstractedDatabase) {
+  public static stop(hashCode?: string, oneOffDB?: IDatabaseSdk<ISdk>) {
     const codes = new Set(Object.keys(getWatcherPool()));
     const db = oneOffDB || FireModel.defaultDb;
     if (!db) {

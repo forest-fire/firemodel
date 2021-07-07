@@ -14,7 +14,7 @@ import { createCompositeRef, locallyUpdateFkOnRecord } from "./index";
 import { IDictionary } from "common-types";
 import { IModel } from "@/types";
 import { Record } from "@/core";
-import { Reference } from "firemock";
+import { IRtdbReference } from "@forest-fire/types";
 
 /**
  * **relationshipOperation**
@@ -158,7 +158,7 @@ export async function localRelnOp<F extends IModel, T extends IModel>(
     rec.dispatch({ ...event, type });
     const ref = rec.db.ref("/");
     // TODO: replace with multiPathSet/transaction
-    await (ref as Reference).update(
+    await (ref as IRtdbReference).update(
       event.paths.reduce((acc: IDictionary, curr) => {
         acc[curr.path] = curr.value;
         return acc;

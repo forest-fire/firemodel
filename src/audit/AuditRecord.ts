@@ -62,7 +62,7 @@ export class AuditRecord<T extends IModel> extends AuditBase {
 
     this._query = this._query
       .setPath(this.byId)
-      .orderByChild("value")
+      .orderByChild("value" as any)
       .startAt(when);
     const qr = await this.db.getList(this._query);
 
@@ -86,7 +86,7 @@ export class AuditRecord<T extends IModel> extends AuditBase {
 
     this._query = this._query
       .setPath(this.byId)
-      .orderByChild("value")
+      .orderByChild("value" as any)
       .endAt(when);
     const qr = await this.db.getList(this._query);
 
@@ -116,7 +116,7 @@ export class AuditRecord<T extends IModel> extends AuditBase {
 
     this._query = this._query
       .setPath(this.byId)
-      .orderByChild("value")
+      .orderByChild("value" as any)
       .startAt(after)
       .endAt(before);
     const qr = await this.db.getList(this._query);

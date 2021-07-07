@@ -1,6 +1,6 @@
 import { IFnToModelConstructor, IModel, NamedFakes } from "@/types";
 
-import { MockHelper } from "firemock";
+import { ISchemaHelper } from "@forest-fire/fixture";
 
 export type FmRelationshipType = "hasMany" | "hasOne";
 /**
@@ -155,7 +155,7 @@ export interface IFmModelAttributeBase<T> {
   fkModelName?: string;
 }
 
-export type MockFunction<T = any> = (context: MockHelper) => T | Promise<T>;
+export type MockFunction<T = any> = (context: ISchemaHelper<any>) => T | Promise<T>;
 export type FmMockType = keyof typeof NamedFakes | MockFunction;
 
 export interface IModelIndexMeta {

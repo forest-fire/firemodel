@@ -1,10 +1,10 @@
 import { FireModel, Record } from "@/core";
 import {
-  IAbstractedDatabase,
   IComparisonOperator,
   ISerializedQuery,
   SerializedQuery,
 } from "universal-fire";
+import { IDatabaseSdk, ISdk } from "@forest-fire/types";
 import {
   IDictionary,
   epochWithMilliseconds,
@@ -48,7 +48,7 @@ export class List<T extends IModel> extends FireModel<T> {
    * Sets the default database to be used by all FireModel classes
    * unless explicitly told otherwise
    */
-  public static set defaultDb(db: IAbstractedDatabase) {
+  public static set defaultDb(db: IDatabaseSdk<ISdk>) {
     FireModel.defaultDb = db;
   }
 
@@ -123,7 +123,7 @@ export class List<T extends IModel> extends FireModel<T> {
    */
   public static async fromQuery<T extends IModel>(
     model: ConstructorFor<T>,
-    query: ISerializedQuery<T>,
+    query: ISerializedQuery<ISdk, T>,
     options: IListOptions<T> = {}
   ): Promise<List<T>> {
     const list = List.create(model, options);
@@ -160,7 +160,7 @@ export class List<T extends IModel> extends FireModel<T> {
       options && options.offsets
         ? List.dbPath(model, options.offsets)
         : List.dbPath(model);
-    const q = SerializedQuery.create<T>(db, path);
+    const q = SerializedQuery.create<T, ISdk>(db, path);
     const list = List.create(model, options);
     if (options.paginate) {
       list._pageSize = options.paginate;
@@ -304,7 +304,7 @@ export class List<T extends IModel> extends FireModel<T> {
     return List.query<T>(
       model,
       (q) => {
-        q.orderByChild("lastUpdated").startAt(since);
+        q.orderByChild("lastUpdated").startAt(since as any);
         if (options.limitToFirst) q.startAt(options.limitToFirst);
 
         return q;
@@ -550,7 +550,7 @@ export class List<T extends IModel> extends FireModel<T> {
   //#endregion
 
   private _data: T[] = [];
-  private _query: ISerializedQuery<T>;
+  private _query: ISerializedQuery<ISdk, T>;
   private _options: IListOptions<T>;
   /** the pagination page size; 0 indicates that pagination is not turned on */
   private _pageSize: number = 0;
@@ -579,7 +579,7 @@ export class List<T extends IModel> extends FireModel<T> {
   /**
    * The query used in this List instance
    */
-  public get query(): ISerializedQuery<T> {
+  public get query(): ISerializedQuery<ISdk, T> {
     return this._query;
   }
 
@@ -788,7 +788,7 @@ export class List<T extends IModel> extends FireModel<T> {
   /**
    * Loads data from a query into the `List` object
    */
-  protected async _loadQuery(query: ISerializedQuery<T>) {
+  protected async _loadQuery(query: ISerializedQuery<ISdk, T>) {
     if (!this.db) {
       const e = new Error(
         `The attempt to load data into a List requires that the DB property be initialized first!`

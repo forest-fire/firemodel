@@ -1,7 +1,6 @@
 import { IDictionary, datetime } from "common-types";
 
-// import { IAbstractedDatabase } from "universal-fire";
-import { IAbstractedDatabase } from "universal-fire";
+import { IDatabaseSdk, ISdk } from "@forest-fire/types";
 import { IModel, IPrimaryKey } from "@/types";
 import type { FireModelError } from "@/errors";
 
@@ -20,7 +19,7 @@ export type FmModelConstructor<T extends IModel> = new () => T;
 /** _options_ allowed to modify the behavior/configuration of a `Model` */
 export interface IModelOptions {
   logger?: ILogger;
-  db?: IAbstractedDatabase;
+  db?: IDatabaseSdk<ISdk>;
 }
 
 export enum SortOrder {
@@ -69,7 +68,7 @@ export interface IListOptions<T, K extends keyof T = keyof T>
    * optionally use an _explicit_ database connection rather than the
    * _default_ connection located at `FireModel.defaultDb`.
    */
-  db?: IAbstractedDatabase;
+  db?: IDatabaseSdk<ISdk>;
 
   /**
    * Specifies which property in the Model should be used to order the query

@@ -74,11 +74,11 @@ export const WatchDispatcher = <T>(
       const recordProps =
         typeof event.value === "object"
           ? { id: event.key, ...event.value }
-          : { id: event.key };
+          : { id: event.key } ;
 
       const rec = Record.createWith(
         watcherContext.modelConstructor,
-        recordProps
+        recordProps as unknown as Partial<T>
       );
 
       let type: FmEvents;

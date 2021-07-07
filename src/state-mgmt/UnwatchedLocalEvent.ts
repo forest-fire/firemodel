@@ -1,11 +1,11 @@
-import { IFmLocalEvent, IFmRecordMeta } from "@/types";
+import { IFmLocalEvent, IFmRecordMeta, IReduxAction } from "@/types";
 
 import { Record } from "@/core";
 
 export function UnwatchedLocalEvent<T>(
   rec: Record<T>,
   event: IFmLocalEvent<T>
-) {
+): IFmRecordMeta<T> & IReduxAction {
   const meta: IFmRecordMeta<T> = {
     dynamicPathProperties: rec.dynamicPathComponents,
     compositeKey: rec.compositeKey,

@@ -1,7 +1,7 @@
 import { IMockRelationshipConfig, IMockResponse, IModel } from "@/types";
 import { processHasMany, processHasOne } from "./index";
 
-import { IAbstractedDatabase } from "universal-fire";
+import { IDatabaseSdk, ISdk } from "@forest-fire/types";
 import { IDictionary } from "common-types";
 import { Record } from "@/core";
 
@@ -9,7 +9,7 @@ import { Record } from "@/core";
  * Adds relationships to mocked records
  */
 export function addRelationships<T extends IModel>(
-  db: IAbstractedDatabase,
+  db: IDatabaseSdk<ISdk>,
   config: IMockRelationshipConfig,
   exceptions: IDictionary = {}
 ) {

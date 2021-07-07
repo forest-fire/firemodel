@@ -55,8 +55,7 @@ import {
   isHasManyRelationship,
   withoutMetaOrPrivate,
 } from "@/util";
-
-import { IAbstractedDatabase } from "universal-fire";
+import {IDatabaseSdk, ISdk} from "@forest-fire/types";
 import { UnwatchedLocalEvent } from "@/state-mgmt";
 import { default as copy } from "fast-copy";
 import { key as fbKey } from "firebase-key";
@@ -67,7 +66,7 @@ import { pathJoin } from "native-dash";
 
 export class Record<T extends IModel> extends FireModel<T> implements IRecord {
   //#region STATIC INTERFACE
-  public static set defaultDb(db: IAbstractedDatabase) {
+  public static set defaultDb(db: IDatabaseSdk<ISdk>) {
     FireModel.defaultDb = db;
   }
   public static get defaultDb() {
@@ -1480,7 +1479,9 @@ export class Record<T extends IModel> extends FireModel<T> implements IRecord {
     // Send CRUD to Firebase
     try {
       if (this.db.isMockDb && this.db.mock && options.silent) {
-        this.db.mock.silenceEvents();
+        // TODO: This shoul donly affect vuex-firemodel-plugin. This repo has anything to do with `store`
+        // store is not being used here. So, no need to silenceEvents here.
+        // this.db.mock.silenceEvents();
       }
       this._data.lastUpdated = new Date().getTime();
       const path = this.dbPath;
@@ -1586,7 +1587,9 @@ export class Record<T extends IModel> extends FireModel<T> implements IRecord {
         }
       }
       if (this.db.isMockDb && this.db.mock && options.silent) {
-        this.db.mock.restoreEvents();
+        // TODO: This should only affect vuex-firemodel-plugin. This repo has anything to do with `store`
+        // store is not being used here. So, no need to silenceEvents here.
+        // this.db.mock.restoreEvents();
       }
     } catch (e) {
       // send failure event

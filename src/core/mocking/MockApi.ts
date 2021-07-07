@@ -6,9 +6,9 @@ import {
 import { addRelationships, mockProperties } from "./index";
 
 import { FireModelError } from "@/errors";
-import { IAbstractedDatabase } from "universal-fire";
+import { IDatabaseSdk, ISdk } from "@forest-fire/types";
 import { IDictionary } from "common-types";
-import { Mock } from "firemock";
+import { Fixture } from "@forest-fire/fixture";
 import { Record } from "@/core";
 
 let mockPrepared = false;
@@ -27,13 +27,13 @@ export class MockApi<T> {
   };
 
   constructor(
-    db: IAbstractedDatabase,
+    db: IDatabaseSdk<ISdk>,
     modelConstructor: FmModelConstructor<T>
   ) {
     this._db = db;
     this._modelConstructor = modelConstructor;
   }
-  private _db: IAbstractedDatabase;
+  private _db: IDatabaseSdk<ISdk>;
   private _modelConstructor: FmModelConstructor<T>;
 
   /**
@@ -49,7 +49,7 @@ export class MockApi<T> {
     exceptions: Partial<T> = {}
   ): Promise<Array<IMockResponse<T>>> {
     if (!mockPrepared) {
-      await Mock.prepare();
+      await Fixture.prepare();
       mockPrepared = true;
     }
 

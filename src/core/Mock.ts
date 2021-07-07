@@ -1,10 +1,10 @@
 import { FireModel, IMockOptions } from "@/core";
 
 import { FireModelError } from "@/errors";
-import { IAbstractedDatabase } from "universal-fire";
 import { IModel } from "@/types";
 import { MockApi } from "./mocking/MockApi";
 import { capitalize } from "@/util";
+import { IDatabaseSdk, ISdk } from "@forest-fire/types";
 
 /**
  * Provides a _Model_ aware means of mocking your data.
@@ -14,7 +14,7 @@ import { capitalize } from "@/util";
  */
 export function Mock<T extends IModel>(
   modelConstructor: new () => T,
-  db: IAbstractedDatabase | undefined = undefined,
+  db: IDatabaseSdk<ISdk> | undefined = undefined,
   options: IMockOptions = {}
 ) {
   if (!db) {

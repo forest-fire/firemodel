@@ -15,6 +15,7 @@ import {
   IValueBasedWatchEvent,
 } from "universal-fire";
 import { epoch, fk, pk } from "common-types";
+import {ISdk} from "@forest-fire/types"
 
 // TODO: replace this with typing from universal-fire
 import { IDictionary } from "common-types";
@@ -242,7 +243,7 @@ export interface IWatcherEventContextBase<T extends IModel = IModel>
    * Indicates the **Firebase** event type/family; either `value` or `child`
    */
   eventFamily: IWatchEventClassification;
-  query: ISerializedQuery<T> | Array<ISerializedQuery<T>>;
+  query: ISerializedQuery<ISdk, T> | Array<ISerializedQuery<ISdk, T>>;
   /**
    * The date/time when this watcher was started.
    */
@@ -270,7 +271,7 @@ export interface IWatcherEventContextListofRecords<T extends IModel = IModel>
    * The underlying _record queries_ used to achieve
    * the `list-of-records` watcher.
    */
-  query: Array<ISerializedQuery<T>>;
+  query: Array<ISerializedQuery<ISdk,T>>;
   eventFamily: "child";
 }
 
@@ -280,7 +281,7 @@ export interface IWatcherEventContextList<T extends IModel = IModel>
   /**
    * The query setup to watch a `List`
    */
-  query: ISerializedQuery<T>;
+  query: ISerializedQuery<ISdk,T>;
   eventFamily: "child";
 }
 
@@ -290,7 +291,7 @@ export interface IWatcherEventContextRecord<T extends IModel = IModel>
   /**
    * The query setup to watch a `Record`
    */
-  query: ISerializedQuery<T>;
+  query: ISerializedQuery<ISdk, T>;
   eventFamily: "value";
 }
 

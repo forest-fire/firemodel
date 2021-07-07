@@ -1,5 +1,4 @@
 import {
-  IAbstractedDatabase,
   IAdminConfig,
   IClientConfig,
 } from "universal-fire";
@@ -19,7 +18,7 @@ import {
   listRegisteredModels,
   modelRegistryLookup,
 } from "@/util";
-
+import { IDatabaseSdk, ISdk } from "@forest-fire/types";
 import type { Record } from "@/core";
 
 // tslint:disable-next-line:no-var-requires
@@ -41,7 +40,7 @@ export class FireModel<T extends IModel> {
    * "default" database to use should a given transaction not state a DB
    * connection explicitly.
    */
-  public static set defaultDb(db: IAbstractedDatabase) {
+  public static set defaultDb(db: IDatabaseSdk<ISdk>) {
     this._defaultDb = db;
   }
 
@@ -136,7 +135,7 @@ export class FireModel<T extends IModel> {
   }
 
   /** the connected real-time database */
-  public get db(): IAbstractedDatabase {
+  public get db(): IDatabaseSdk<ISdk> {
     if (!this._db) {
       this._db = FireModel.defaultDb;
     }
@@ -175,7 +174,7 @@ const db = await FireModel.connect(DB, options);
    * databases) but the vast majority of projects only have ONE firebase
    * database so this just makes the whole process much easier.
    */
-  public static async connect<T extends IAbstractedDatabase>(
+  public static async connect<T extends IDatabaseSdk<ISdk>>(
     RTDB: {
       connect: (options: Partial<IAdminConfig> & IClientConfig) => T;
     },
@@ -204,7 +203,7 @@ const db = await FireModel.connect(DB, options);
     // TODO: implement this!
     return false;
   }
-  private static _defaultDb: IAbstractedDatabase;
+  private static _defaultDb: IDatabaseSdk<ISdk>;
   private static _dispatchActive: boolean = false;
   /** the dispatch function used to interact with frontend frameworks */
   private static _dispatch: IReduxDispatch = defaultDispatch;
@@ -216,7 +215,7 @@ const db = await FireModel.connect(DB, options);
   /** the data structure/model that this class operates around */
   protected _model: T;
   protected _modelConstructor: new () => T;
-  protected _db: IAbstractedDatabase;
+  protected _db: IDatabaseSdk<ISdk>;
 
   //#endregion
 

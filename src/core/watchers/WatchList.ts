@@ -5,7 +5,7 @@ import {
 } from "universal-fire";
 import { IListOptions, IModel, IPrimaryKey } from "@/types";
 import { List, Record, Watch } from "@/core";
-
+import {ISdk} from "@forest-fire/types"
 import { FireModelError } from "@/errors";
 import { WatchBase } from "./WatchBase";
 import { epochWithMilliseconds } from "common-types";
@@ -266,7 +266,7 @@ export class WatchList<T extends IModel> extends WatchBase<T> {
    *
    * @param query
    */
-  public fromQuery(inputQuery: ISerializedQuery<T>): WatchList<T> {
+  public fromQuery(inputQuery: ISerializedQuery<ISdk, T>): WatchList<T> {
     this._query = inputQuery;
 
     return this;
@@ -307,7 +307,7 @@ export class WatchList<T extends IModel> extends WatchBase<T> {
     } else {
       val = value;
     }
-    this._query = SerializedQuery.create<T>(this.db, this._query.path)
+    this._query = SerializedQuery.create<T, ISdk>(this.db, this._query.path)
       .orderByChild(property)
       // TODO: fix typing issue here.
       // @ts-ignore
@@ -328,7 +328,7 @@ export class WatchList<T extends IModel> extends WatchBase<T> {
         offsets: this._offsets,
       });
 
-      this._query = SerializedQuery.create<T>(this.db, lst.dbPath);
+      this._query = SerializedQuery.create<T, ISdk>(this.db, lst.dbPath);
       this._modelName = lst.modelName;
       this._pluralName = lst.pluralName;
       this._localPath = lst.localPath;

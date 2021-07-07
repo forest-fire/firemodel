@@ -1,15 +1,15 @@
 import { IMockRelationshipConfig, IModel } from "@/types";
 
-import { IAbstractedDatabase } from "universal-fire";
+import { IDatabaseSdk, ISdk } from "@forest-fire/types";
 import { IDictionary } from "common-types";
 import { Record } from "@/core";
-import { getMockHelper } from "firemock";
+import { getFakerLibrary, getMockHelper } from "@forest-fire/fixture";
 import { getModelMeta } from "@/util";
 import { mockValue } from "./index";
 
 /** adds mock values for all the properties on a given model */
 export function mockProperties<T extends IModel>(
-  db: IAbstractedDatabase,
+  db: IDatabaseSdk<ISdk>,
   config: IMockRelationshipConfig = { relationshipBehavior: "ignore" },
   exceptions: IDictionary
 ) {
@@ -19,7 +19,7 @@ export function mockProperties<T extends IModel>(
 
     const recProps: Partial<T> = {};
     // set properties on the record with mocks
-    const mh = await getMockHelper(db);
+    const mh  = await getMockHelper(db);
 
     for (const prop of props) {
       const p = prop.property as keyof T;

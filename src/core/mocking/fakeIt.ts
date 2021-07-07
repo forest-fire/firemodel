@@ -1,9 +1,9 @@
 import { IDictionary } from "common-types";
-import { MockHelper } from "firemock";
 import { NamedFakes } from "@/types";
 // TODO: bring in this functionality again
 import { key as fbKey } from "firebase-key";
 import { format } from "date-fns";
+import { ISchemaHelper } from "@forest-fire/fixture";
 
 const sequence: IDictionary<number> = {};
 
@@ -37,7 +37,7 @@ function getDistribution<T = any>(...distribution: Array<[number, T]>) {
 }
 
 export function fakeIt<T = any>(
-  helper: MockHelper,
+  helper: ISchemaHelper<any>,
   type: keyof typeof NamedFakes,
   ...rest: any[]
 ) {

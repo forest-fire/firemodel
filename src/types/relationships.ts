@@ -1,6 +1,6 @@
 import { FireModelError } from "@/errors";
 import { IDictionary } from "common-types";
-import { IAbstractedDatabase } from "universal-fire";
+import { IDatabaseSdk, ISdk } from "@forest-fire/types";
 
 /**
  * **IFmRelationshipOperation**
@@ -60,7 +60,7 @@ export interface IFmRelationshipOptions {
   /**
    * Provide an explicit reference to the database for the relationship operations
    */
-  db?: IAbstractedDatabase;
+  db?: IDatabaseSdk<ISdk>;
 }
 
 /**
